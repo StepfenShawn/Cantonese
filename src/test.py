@@ -15,7 +15,7 @@ i = 0
 print("==============START TEST================")
 while i < len(file_list):
     print("Running:" + file_list[i] +  "......")
-    os.system("python3 contonese.py " + file_list[i])
+    os.system("python contonese.py " + file_list[i])
     print("End")
     i += 1
 print("=============END=======================")

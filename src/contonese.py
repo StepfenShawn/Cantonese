@@ -24,7 +24,9 @@ keyword = {
     "IN"        : "喺",
     "FUNCEND"   : "搞掂",
     "FUNCBEGIN" : "要做咩",
-    "AND"       : "同埋"
+    "AND"       : "同埋",
+    "OR"        : "定系",
+    "RETURN"    : "返转头"
 }
 
 build_in_func = {
@@ -69,9 +71,11 @@ def contonese_run(code):
                ["$", "function"],
                ["就", "is"],
                [keyword["AND"], "and"],
+               [keyword["OR"], "or"],
                [keyword["CALL"], "call"], 
                [keyword["IMPORT"], "import"],
-               [keyword["IN"], "in"]
+               [keyword["IN"], "in"],
+               [keyword["RETURN"], "return"]
             ]
     build_in_func_repl = [
         [build_in_func["INPUT"], "input"],
@@ -99,10 +103,10 @@ def contonese_run(code):
     run(contonese_parser.Node, False)
 
 def contonese_token(code):
-    keywords = r'(?P<keywords>(畀我睇下){1}|(点样先){1}|(收工){1}|(喺){1}|' \
-               r'(讲嘢){1}|(系){1})|(如果){1}|(嘅话){1}|(->){1}|({){1}|(}){1}|(同埋){1}|' \
+    keywords = r'(?P<keywords>(畀我睇下){1}|(点样先){1}|(收工){1}|(喺){1}|(定系){1}|' \
+               r'(讲嘢){1}|(系){1})|(唔系){1}|(如果){1}|(嘅话){1}|(->){1}|({){1}|(}){1}|(同埋){1}|' \
                r'(落操场玩跑步){1}|(\$){1}|(用下){1}|(使下){1}|(要做咩){1}|(搞掂){1}|(就){1}|' \
-               r'(玩到){1}|(为止){1}'
+               r'(玩到){1}|(为止){1}|(返转头){1}'
     op =  r'(?P<op>\+\+|\+=|\+|--|-=|-|\*=|/=|/|%=|%)'
     num = r'(?P<num>\d+)'
     ID =  r'(?P<ID>[a-zA-Z_][a-zA-Z_0-9]*)'
@@ -127,8 +131,8 @@ def node_exit_new(Node):
 def node_let_new(Node, key ,value):
     Node.append(["node_let", key, value])
 
-def node_if_new(Node, cond, stmt):
-    Node.append(["node_if", cond, stmt])
+def node_if_new(Node, cond, stmt, else_part):
+    Node.append(["node_if", cond, stmt, else_part])
 
 def node_loop_new(Node, cond, stmt):
     Node.append(["node_loop", cond, stmt])
@@ -145,6 +149,9 @@ def node_build_in_func_call_new(Node, var, func_name, args):
 
 def node_import_new(Node, name):
     Node.append(["node_import", name])
+
+def node_return_new(Node, v):
+    Node.append(["node_return", v])
 
 class Parser(object):
     def __init__(self, tokens, Node):
@@ -201,16 +208,27 @@ class Parser(object):
                 node_let_new(self.Node, self.get_value(self.get(0)), self.get_value(self.get(2)))
                 self.skip(3)
             elif self.match("if"):
-                cond = self.get(0)
+                cond = self.get_value(self.get(0))
                 self.skip(4) # Skip the "then", "do", "begin"
                 stmt = []
                 while self.tokens[self.pos][1] != "end":
                     stmt.append(self.tokens[self.pos])
                     self.pos += 1
                 node_if = []
-                Parser(stmt, node_if).parse()
-                node_if_new(self.Node, cond, node_if)
+                node_else = []
                 self.skip(1) # Skip the "end"
+                if self.match("is not"): # case '唔系'
+                    self.skip(3) # skip the then, "do", "begin"
+                    else_stmt = []
+                    while self.tokens[self.pos][1] != "end":
+                        else_stmt.append(self.tokens[self.pos])
+                        self.pos += 1
+                else:
+                    node_else = ["NoneType", ""]
+                node_if_new(self.Node, cond, node_if, node_else)
+                Parser(stmt, node_if).parse()
+                if len(else_stmt) != 0:
+                    Parser(else_stmt, node_else).parse()
             elif self.match("while_do"):
                 stmt = []
                 while self.tokens[self.pos][1] != "while":
@@ -259,6 +277,9 @@ class Parser(object):
                     args = None
                 node_build_in_func_call_new(self.Node, self.get_value(self.get(-1)), self.get_value(self.get(0)), args)
                 self.skip(2)
+            elif self.match("return"):
+                node_return_new(self.Node, self.get_value(self.get(0)))
+                self.skip(1)
             else:
                 break
 
@@ -267,7 +288,7 @@ TO_PY_CODE = ""
 # TODO: Build a simple vm for Contonese  
 def run(Nodes, to_py, TAB = '', label = ''):
     def check(tab):
-        if label != 'whi_run' and label != 'if_run':
+        if label != 'whi_run' and label != 'if_run' and label != 'else_run':
             tab = ''
     global TO_PY_CODE
     if Nodes == None:
@@ -311,20 +332,28 @@ def run(Nodes, to_py, TAB = '', label = ''):
              if to_py:
                 TO_PY_CODE += TAB + "if " + node[1][1] + ":\n"
                 run(node[2], True, '\t', 'if_run')
+                label = ''
+                if node[3] != ["NoneType", ""]:
+                    TO_PY_CODE += TAB + "else:\n"
+                    run(node[3], True, '\t', 'else_run')
+                    label = ''
              else:
-                if eval(node[1][1][1 : -1], variable):
+                if eval(node[1][1], variable):
                     run(node[2], False)
+                else:
+                    run(node[3], False)
         if node[0] == "node_loop":
             if to_py:
                 TO_PY_CODE += TAB + "while " + node[1][1] + ":\n"
                 run(node[2], True, '\t', 'whi_run')
+                label = ''
             else:
                 while eval(node[1][1], variable):
                     run(node[2], False)
         if node[0] == "node_fundef":
             run(node[3], True)
             stmt_code = TO_PY_CODE
-            #stmt_code = stmt_code.replace("\n", "\n\t")
+            stmt_code = stmt_code.replace("\n", "\n\t")
             TO_PY_CODE = ""
             # check if has args
             if node[2] == 'None':
@@ -335,6 +364,10 @@ def run(Nodes, to_py, TAB = '', label = ''):
             exec(node[1][1], variable)
         if node[0] == "node_bcall":
             exec(node[1][1] + "." + node[2][1] + "(" + node[3][1] + ")", variable)
+        if node[0] == "node_return":
+            if to_py:
+                check(TAB)
+                TO_PY_CODE += TAB + "return " + node[1][1] + "\n"
 
 def main():
     if len(sys.argv) == 2:

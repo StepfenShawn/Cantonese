@@ -1,0 +1,14 @@
+/*
+    On developing
+*/
+$quick_sort |alist, start, end| 要做咩:
+    如果 |start > end| 嘅话 -> {
+        返转头
+    }
+    讲嘢: |low| 系 start
+    讲嘢: |high| 系 end
+    讲嘢: |mid| 系 |alist[low]|
+    落操场玩跑步
+
+    玩到 |low < high| 为止
+搞掂
