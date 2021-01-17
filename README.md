@@ -28,34 +28,66 @@
 如果 |A 系 2| 嘅话 -> {
     畀我睇下 "A 系 2" 点样先?
 }
+唔系嘅话 -> {
+    畀我睇下 "A 唔系 2" 点样先?
+}
 ```
 ### 函数
+用Contonese实现的阶乘:  
 ```
-$SayHello 要做咩:
-    畀我睇下 "Hello" 点样先？
+$factorial |n| 要做咩:
+    如果 |n == 0| 嘅话 -> {
+        返转头 1
+    }
+    唔系嘅话 -> {
+        返转头 |factorial(n - 1) * n|
+    }
 搞掂
-
-用下 |SayHello()|
-
-$SayFuck 要做咩:
-    畀我睇下 "SayFuck" 点样先？
-搞掂
-
-用下 |SayFuck()|
-
-$output |string| 要做咩:
-    畀我睇下 |string| 点样先？
-搞掂
-用下 |output("Hello")|
+```
+### 错误捕捉语句
+try-except-finally:  
+```
+执嘢 -> {
+    讲嘢: |A| 系 |B|
+}
+揾到 |NameError| 嘅话 -> {
+    畀我睇下 "揾到NameError" 点样先？
+}
+执手尾 -> {
+    畀我睇下 "执手尾" 点样先？
+    讲嘢: |A| 系 1
+    讲嘢: |B| 系 1
+    畀我睇下 |A, B| 点样先？
+}
 ```
 # 更多例子
-See the [here](examples/).
+### 显示当前时间
+```
+使下 datetime
+畀我睇下 |宜家几点| 点样先？
+```
+运行结果:  
+```
+2021-01-17 09:16:20.767191
+```
+### 暂停
+```
+使下 time
+训阵先 /* 暂停2s */
+训 5 /* 暂停5s */
+```  
+### 来个随机数
+```
+使下 random
+讲嘢: |A| 就 |求其啦|
+```
+See more [here](examples/).
 
 
 # 如何运行?
 环境只支持Python3,因为这才符合广东人先进的思想!  
 ```shell
-python3 src/contonese.py [-文件名]
+python src/contonese.py [-文件名]
 ```
 
 # TODOs

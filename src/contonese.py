@@ -26,7 +26,10 @@ keyword = {
     "FUNCBEGIN" : "要做咩",
     "AND"       : "同埋",
     "OR"        : "定系",
-    "RETURN"    : "返转头"
+    "RETURN"    : "返转头",
+    "TRY"       : "执嘢",
+    "EXCEPT"    : "揾到",
+    "FINALLY"   : "执手尾"
 }
 
 build_in_func = {
@@ -106,7 +109,7 @@ def contonese_token(code):
     keywords = r'(?P<keywords>(畀我睇下){1}|(点样先){1}|(收工){1}|(喺){1}|(定系){1}|' \
                r'(讲嘢){1}|(系){1})|(唔系){1}|(如果){1}|(嘅话){1}|(->){1}|({){1}|(}){1}|(同埋){1}|' \
                r'(落操场玩跑步){1}|(\$){1}|(用下){1}|(使下){1}|(要做咩){1}|(搞掂){1}|(就){1}|' \
-               r'(玩到){1}|(为止){1}|(返转头){1}'
+               r'(玩到){1}|(为止){1}|(返转头){1}|(执嘢){1}|(揾到){1}|(执手尾){1}'
     op =  r'(?P<op>\+\+|\+=|\+|--|-=|-|\*=|/=|/|%=|%)'
     num = r'(?P<num>\d+)'
     ID =  r'(?P<ID>[a-zA-Z_][a-zA-Z_0-9]*)'
@@ -152,6 +155,9 @@ def node_import_new(Node, name):
 
 def node_return_new(Node, v):
     Node.append(["node_return", v])
+
+def node_try_new(Node, try_part, execpt_part, finally_part):
+    Node.append(["node_try", execpt_part, finally_part])
 
 class Parser(object):
     def __init__(self, tokens, Node):
@@ -211,15 +217,29 @@ class Parser(object):
                 cond = self.get_value(self.get(0))
                 self.skip(4) # Skip the "then", "do", "begin"
                 stmt = []
-                while self.tokens[self.pos][1] != "end":
-                    stmt.append(self.tokens[self.pos])
-                    self.pos += 1
+                case_end = 0 # The times of case "end"
+                should_end = 1
+                while case_end != should_end:
+                    # TODO: Sovle the IndexError
+                    try:
+                        if self.match("if"):
+                            should_end += 1
+                            stmt.append([None, 'if'])
+                            #self.pos += 1
+                        if self.match("end"):
+                            case_end += 1
+                            #self.pos += 1
+                        else:
+                            stmt.append(self.tokens[self.pos])
+                            self.pos += 1
+                    except Exception:
+                        pass
                 node_if = []
                 node_else = []
+                else_stmt = []
                 self.skip(1) # Skip the "end"
                 if self.match("is not"): # case '唔系'
                     self.skip(3) # skip the then, "do", "begin"
-                    else_stmt = []
                     while self.tokens[self.pos][1] != "end":
                         else_stmt.append(self.tokens[self.pos])
                         self.pos += 1

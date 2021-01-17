@@ -20,4 +20,4 @@ while i < len(file_list):
     i += 1
 print("=============END=======================")
 endtime = datetime.datetime.now()
-print("Finish in " + str((endtime - starttime).seconds) + "s!")
+print("Finished in " + str((endtime - starttime).seconds) + "s!")
