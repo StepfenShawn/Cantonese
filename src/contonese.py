@@ -29,7 +29,11 @@ keyword = {
     "RETURN"    : "返转头",
     "TRY"       : "执嘢",
     "EXCEPT"    : "揾到",
-    "FINALLY"   : "执手尾"
+    "FINALLY"   : "执手尾",
+    "RAISE"     : "掟个",
+    "ENDRAISE"  : "来睇下",
+    "TURTLEBEGIN" : "老作一下",
+    "ASSERT"    : "谂下"
 }
 
 build_in_func = {
@@ -78,8 +82,13 @@ def contonese_run(code):
                [keyword["CALL"], "call"], 
                [keyword["IMPORT"], "import"],
                [keyword["IN"], "in"],
-               [keyword["RETURN"], "return"]
+               [keyword["RETURN"], "return"],
+               [keyword["RAISE"], "raise"],
+               [keyword["ENDRAISE"], "endraise"],
+               [keyword["TURTLEBEGIN"], "turtle_begin"],
+               [keyword["ASSERT"], "assert"]
             ]
+
     build_in_func_repl = [
         [build_in_func["INPUT"], "input"],
         # Datetime library
@@ -94,6 +103,7 @@ def contonese_run(code):
         [build_in_func["REMOVE"], "remove"],
         [build_in_func["GETLEN"], ".__len__()"]
     ]
+
     tokens = []
     for token in contonese_token(code):
         tokens.append(token)
@@ -106,10 +116,10 @@ def contonese_run(code):
     run(contonese_parser.Node, False)
 
 def contonese_token(code):
-    keywords = r'(?P<keywords>(畀我睇下){1}|(点样先){1}|(收工){1}|(喺){1}|(定){1}|' \
+    keywords = r'(?P<keywords>(畀我睇下){1}|(点样先){1}|(收工){1}|(喺){1}|(定){1}|(老作一下){1}|' \
                r'(讲嘢){1}|(系){1})|(唔系){1}|(如果){1}|(嘅话){1}|(->){1}|({){1}|(}){1}|(同埋){1}|' \
-               r'(落操场玩跑步){1}|(\$){1}|(用下){1}|(使下){1}|(要做咩){1}|(搞掂){1}|(就){1}|' \
-               r'(玩到){1}|(为止){1}|(返转头){1}|(执嘢){1}|(揾到){1}|(执手尾){1}'
+               r'(落操场玩跑步){1}|(\$){1}|(用下){1}|(使下){1}|(要做咩){1}|(搞掂){1}|(就){1}|(谂下){1}|' \
+               r'(玩到){1}|(为止){1}|(返转头){1}|(执嘢){1}|(揾到){1}|(执手尾){1}|(掟个){1}|(来睇下){1}'
     op =  r'(?P<op>\+\+|\+=|\+|--|-=|-|\*=|/=|/|%=|%)'
     num = r'(?P<num>\d+)'
     ID =  r'(?P<ID>[a-zA-Z_][a-zA-Z_0-9]*)'
@@ -163,12 +173,18 @@ def node_return_new(Node, v):
 def node_try_new(Node, try_part, execpt_part, finally_part):
     Node.append(["node_try", execpt_part, finally_part])
 
-# TODO: Add "raise" and "for" stmt
+# TODO: Add "for" stmt
 def node_raise_new(Node, execption):
     Node.append(["node_raise", execption])
 
 def node_for_new(Node, iterating_var, sequence, stmt_part):
     Node.append(["node_for", iterating_var, sequence, stmt_part])
+
+def node_turtle_new(Node, instruction):
+    Node.append(["node_turtle", instruction])
+
+def node_assert_new(Node, args):
+    Node.append(["node_assert", args])
 
 class Parser(object):
     def __init__(self, tokens, Node):
@@ -334,6 +350,16 @@ class Parser(object):
                     Parser(func_stmt, node_func).parse()
                     node_func_new(self.Node, func_name, "None", node_func)
                     self.skip(1) # Skip the funcend
+            elif self.match("turtle_begin"):
+                self.skip(2) # Skip the "do", "begin"
+                turtle_inst = "from turtle import * \n"
+                while self.tokens[self.pos][1] != "end":
+                    turtle_inst += str(self.get_value(self.tokens[self.pos])[1]) + '\n'
+                    self.pos += 1
+                turtle_inst = turtle_inst.replace("画个圆", "circle").replace("写隻字", "write").\
+                    replace("听我窝打", "exitonclick")
+                node_turtle_new(self.Node, turtle_inst)
+                self.skip(1)
             elif self.match("call"):
                 node_call_new(self.Node, self.get_value(self.get(0)))
                 self.skip(1)
@@ -350,6 +376,12 @@ class Parser(object):
             elif self.match("return"):
                 node_return_new(self.Node, self.get_value(self.get(0)))
                 self.skip(1)
+            elif self.match("assert"):
+                node_assert_new(self.Node, self.get_value(self.get(0)))
+                self.skip(1)
+            elif self.match("raise"):
+                node_raise_new(self.Node, self.get_value(self.get(0)))
+                self.skip(2)
             else:
                 break
 
@@ -449,6 +481,14 @@ def run(Nodes, to_py, TAB = '', label = ''):
                 TO_PY_CODE += TAB + "raise " + node[1][1] + "\n"
             else:
                 exec("raise " + node[1][1] + "\n", variable)
+        if node[0] == "node_turtle":
+            exec(node[1], variable)
+        if node[0] == "node_assert":
+            if to_py:
+                check(TAB)
+                TO_PY_CODE += TAB + "assert" + node[1][1] + "\n"
+            else:
+                exec("assert " + node[1][1] + "\n", variable)
 
 def main():
     if len(sys.argv) == 2:

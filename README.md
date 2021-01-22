@@ -44,6 +44,20 @@ $factorial |n| 要做咩:
     }
 搞掂
 ```
+### 抛出异常
+```
+掟个 |ImportError| 来睇下?
+```
+### 断言语句
+```
+谂下: |1 + 1 == 3| ?
+```  
+运行结果:  
+```
+Traceback (most recent call last):
+    ......
+AssertionError
+```
 ### 错误捕捉语句
 try-except-finally:  
 ```
@@ -84,6 +98,14 @@ try-except-finally:
 运行结果:  
 ```
 0.15008236307867207
+```  
+### 海龟绘图
+```
+老作一下 -> {
+    首先: |画个圆(100)|
+    跟住: |写隻字("Made By Contonese\n")|
+    最尾: |听我窝打()| /* 等待退出 */
+}
 ```  
 
 See more [here](examples/).

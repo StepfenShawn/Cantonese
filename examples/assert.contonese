@@ -1,0 +1,6 @@
+/*
+    Contonese Assert语句
+*/
+谂下: |1 + 1 == 2| ?
+/* 抛出 AssertionError */
+谂下: |1 - 1 == 1| ?
