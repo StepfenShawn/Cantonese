@@ -74,18 +74,23 @@ try-except-finally:
 ```
 使下 time
 训阵先 /* 暂停2s */
-训 5 /* 暂停5s */
+训 5s /* 暂停5s */
 ```  
 ### 来个随机数
 ```
 使下 random
 讲嘢: |A| 就 |求其啦|
 ```
+运行结果:  
+```
+0.15008236307867207
+```  
+
 See more [here](examples/).
 
 
 # 如何运行?
-环境只支持Python3,因为这才符合广东人先进的思想!  
+Contonese语言运行在Python虚拟机上,环境只支持Python3,因为这才符合广东人先进的思想!  
 ```shell
 python src/contonese.py [-文件名]
 ```

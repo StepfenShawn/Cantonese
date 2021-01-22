@@ -4,11 +4,11 @@
 import io
 import os
 import glob
-import re
 import datetime
 
 starttime = datetime.datetime.now()
 file_list = []
+# Get all the file names under examples
 for f in glob.glob(os.path.join('..\examples', '*.contonese')):
     file_list.append(f)
 i = 0
@@ -20,4 +20,5 @@ while i < len(file_list):
     i += 1
 print("=============END=======================")
 endtime = datetime.datetime.now()
+# Count and Output the runtime
 print("Finished in " + str((endtime - starttime).seconds) + "s!")

@@ -25,7 +25,7 @@ keyword = {
     "FUNCEND"   : "搞掂",
     "FUNCBEGIN" : "要做咩",
     "AND"       : "同埋",
-    "OR"        : "定系",
+    "OR"        : "定",
     "RETURN"    : "返转头",
     "TRY"       : "执嘢",
     "EXCEPT"    : "揾到",
@@ -106,7 +106,7 @@ def contonese_run(code):
     run(contonese_parser.Node, False)
 
 def contonese_token(code):
-    keywords = r'(?P<keywords>(畀我睇下){1}|(点样先){1}|(收工){1}|(喺){1}|(定系){1}|' \
+    keywords = r'(?P<keywords>(畀我睇下){1}|(点样先){1}|(收工){1}|(喺){1}|(定){1}|' \
                r'(讲嘢){1}|(系){1})|(唔系){1}|(如果){1}|(嘅话){1}|(->){1}|({){1}|(}){1}|(同埋){1}|' \
                r'(落操场玩跑步){1}|(\$){1}|(用下){1}|(使下){1}|(要做咩){1}|(搞掂){1}|(就){1}|' \
                r'(玩到){1}|(为止){1}|(返转头){1}|(执嘢){1}|(揾到){1}|(执手尾){1}'
@@ -134,8 +134,12 @@ def node_exit_new(Node):
 def node_let_new(Node, key ,value):
     Node.append(["node_let", key, value])
 
-def node_if_new(Node, cond, stmt, else_part):
-    Node.append(["node_if", cond, stmt, else_part])
+def node_if_new(Node, cond, stmt, else_part, elif_cond, elif_part = []):
+    if elif_part != [] and elif_cond != '':
+        Node.append(["node_if", cond, stmt, elif_part, else_part])
+    else:
+        Node.append(["node_if", cond, stmt, else_part])
+
 
 def node_loop_new(Node, cond, stmt):
     Node.append(["node_loop", cond, stmt])
@@ -158,6 +162,13 @@ def node_return_new(Node, v):
 
 def node_try_new(Node, try_part, execpt_part, finally_part):
     Node.append(["node_try", execpt_part, finally_part])
+
+# TODO: Add "raise" and "for" stmt
+def node_raise_new(Node, execption):
+    Node.append(["node_raise", execption])
+
+def node_for_new(Node, iterating_var, sequence, stmt_part):
+    Node.append(["node_for", iterating_var, sequence, stmt_part])
 
 class Parser(object):
     def __init__(self, tokens, Node):
@@ -219,36 +230,75 @@ class Parser(object):
                 stmt = []
                 case_end = 0 # The times of case "end"
                 should_end = 1
-                while case_end != should_end:
-                    # TODO: Sovle the IndexError
-                    try:
-                        if self.match("if"):
-                            should_end += 1
-                            stmt.append([None, 'if'])
-                            #self.pos += 1
-                        if self.match("end"):
-                            case_end += 1
-                            #self.pos += 1
-                        else:
-                            stmt.append(self.tokens[self.pos])
-                            self.pos += 1
-                    except Exception:
-                        pass
+                while case_end != should_end and self.pos < len(self.tokens):
+                    if self.get(0)[1] == "if":
+                        should_end += 1
+                        stmt.append(self.tokens[self.pos])
+                        self.pos += 1
+                    if self.get(0)[1] == "end":
+                        case_end += 1
+                        self.pos += 1
+                    else:
+                        stmt.append(self.tokens[self.pos])
+                        self.pos += 1
+
                 node_if = []
                 node_else = []
+                node_elif = []
+
+                elif_stmt = []
                 else_stmt = []
-                self.skip(1) # Skip the "end"
+                elif_stmt = []
+
+                has_elif = False
+
+                if self.match("or"): 
+                    if self.match("is"): # case '定系'
+                        has_elif = True
+                        elif_cond = self.get_value(self.get(0))
+                        self.skip(3) # skip the then, "do", "begin"
+                        # reset the case_end and should_end
+                        case_end, should_end = 0, 1
+                        while case_end != should_end and self.pos < len(self.tokens):
+                            if self.get(0)[1] == "if":
+                                should_end += 1
+                                elif_stmt.append(self.tokens[self.pos])
+                                self.pos += 1
+                            if self.get(0)[1] == "end":
+                                case_end += 1
+
+                            else:
+                                elif_stmt.append(self.tokens[self.pos])
+                                self.pos += 1
+                       
                 if self.match("is not"): # case '唔系'
                     self.skip(3) # skip the then, "do", "begin"
-                    while self.tokens[self.pos][1] != "end":
-                        else_stmt.append(self.tokens[self.pos])
-                        self.pos += 1
+                    # reset the case_end and should_end
+                    case_end, should_end = 0, 1
+                    while case_end != should_end and self.pos < len(self.tokens):
+                        if self.get(0)[1] == "if":
+                            should_end += 1
+                            else_stmt.append(self.tokens[self.pos])
+                            self.pos += 1
+                        if self.get(0)[1] == "end":
+                            case_end += 1
+                        else:
+                            else_stmt.append(self.tokens[self.pos])
+                            self.pos += 1
+                    self.skip(1) # Skip the "end"
                 else:
                     node_else = ["NoneType", ""]
-                node_if_new(self.Node, cond, node_if, node_else)
-                Parser(stmt, node_if).parse()
-                if len(else_stmt) != 0:
+                if has_elif:
+                    node_if_new(self.Node, cond, node_if, elif_cond, node_else, node_else)
+                    Parser(stmt, node_if).parse()
+                    Parser(elif_stmt, node_elif).parse()
+                    # The if-elif-else stmt must hava else part
                     Parser(else_stmt, node_else).parse()
+                else:
+                    node_if_new(self.Node, cond, node_if, node_else)
+                    Parser(stmt, node_if).parse()
+                    if len(else_stmt) != 0:
+                        Parser(else_stmt, node_else).parse()
             elif self.match("while_do"):
                 stmt = []
                 while self.tokens[self.pos][1] != "while":
@@ -308,7 +358,7 @@ TO_PY_CODE = ""
 # TODO: Build a simple vm for Contonese  
 def run(Nodes, to_py, TAB = '', label = ''):
     def check(tab):
-        if label != 'whi_run' and label != 'if_run' and label != 'else_run':
+        if label != 'whi_run' and label != 'if_run' and label != 'else_run' and label != 'elif_run':
             tab = ''
     global TO_PY_CODE
     if Nodes == None:
@@ -361,7 +411,8 @@ def run(Nodes, to_py, TAB = '', label = ''):
                 if eval(node[1][1], variable):
                     run(node[2], False)
                 else:
-                    run(node[3], False)
+                    if node[3] != ["NoneType", ""]:
+                        run(node[3], False)
         if node[0] == "node_loop":
             if to_py:
                 TO_PY_CODE += TAB + "while " + node[1][1] + ":\n"
@@ -381,13 +432,23 @@ def run(Nodes, to_py, TAB = '', label = ''):
             else:
                 exec("def " + node[1][1] + "(" + node[2][1] + "):\n\t" + stmt_code, variable)
         if node[0] == "node_call":
-            exec(node[1][1], variable)
+            if to_py:
+                check(TAB)
+                TO_PY_CODE += TAB + node[1][1] + "\n"
+            else:
+                exec(node[1][1], variable)
         if node[0] == "node_bcall":
             exec(node[1][1] + "." + node[2][1] + "(" + node[3][1] + ")", variable)
         if node[0] == "node_return":
             if to_py:
                 check(TAB)
                 TO_PY_CODE += TAB + "return " + node[1][1] + "\n"
+        if node[0] == "node_raise":
+            if to_py:
+                check(TAB)
+                TO_PY_CODE += TAB + "raise " + node[1][1] + "\n"
+            else:
+                exec("raise " + node[1][1] + "\n", variable)
 
 def main():
     if len(sys.argv) == 2:
