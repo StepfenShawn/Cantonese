@@ -13,6 +13,15 @@
 讲嘢 |A| 系 1
 讲嘢 |B| 系 2
 ```
+### 查看变量类型
+```
+讲嘢 |A| 系 1
+起底: |A|
+```
+运行结果:  
+```
+<class 'int'>
+```
 ### 循环
 打印从1到100:  
 ```
@@ -43,7 +52,7 @@ $factorial |n| 要做咩:
         返转头 |factorial(n - 1) * n|
     }
 搞掂
-```
+```  
 ### 抛出异常
 ```
 掟个 |ImportError| 来睇下?
@@ -73,7 +82,7 @@ try-except-finally:
     讲嘢: |B| 系 1
     畀我睇下 |A, B| 点样先？
 }
-```
+```  
 # 更多例子
 ### 显示当前时间
 ```
@@ -102,9 +111,9 @@ try-except-finally:
 ### 海龟绘图
 ```
 老作一下 -> {
-    首先: |画个圆(100)|
+    首先: |画个圈(100)|
     跟住: |写隻字("Made By Contonese\n")|
-    最尾: |听我窝打()| /* 等待退出 */
+    最尾: |听我支笛()|
 }
 ```  
 
@@ -116,6 +125,18 @@ Contonese语言运行在Python虚拟机上,环境只支持Python3,因为这才�
 ```shell
 python src/contonese.py [-文件名]
 ```
-
+将Contonese转化成Python:  
+```
+python src/contonese.py -to_py [文件名]
+```
+例如:  
+```
+python src/contonese.py examples/helloworld.contonese -to_py
+```
+运行结果:  
+```
+print(" Hello World! ")
+exit()
+```
 # TODOs
-本项目代码写的很简陋(烂)，欢迎各位粤语与编程爱好者参与讨论与贡献!为粤语文化遗产的保护贡献出自己的一份力量! 但愿在不远的将来，粤语的传承棒不会在我们这一代丢失!  
+本项目代码写的很简陋(烂)，欢迎各位粤语与编程爱好者参与讨论与贡献!为粤语文化遗产的保护贡献出自己的一份力量!  

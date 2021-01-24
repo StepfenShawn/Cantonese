@@ -2,11 +2,7 @@
   Contonese实现FizzBuzz问题
 */
 
-/*
-  Can not work yet
-*/
-
-讲嘢: |i| 系 1
+讲嘢: |i| 系 0
 落操场玩跑步
     讲嘢: i 系 |i + 1|
   如果 |i % 3 == 0 同埋 i % 5 == 0| 嘅话 -> {
