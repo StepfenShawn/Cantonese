@@ -91,7 +91,8 @@ def contonese_run(code, is_to_py):
                [keyword["GETTYPE"], "gettype"],
                [keyword["TRY"], "try"],
                [keyword["EXCEPT"], "except"],
-               [keyword["FINALLY"], "finally"]
+               [keyword["FINALLY"], "finally"],
+               ["比唔上", "<"]
             ]
 
     build_in_func_repl = [

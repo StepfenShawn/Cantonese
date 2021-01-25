@@ -44,15 +44,30 @@
 ### 函数
 用Contonese实现的阶乘:  
 ```
-$factorial |n| 要做咩:
-    如果 |n == 0| 嘅话 -> {
+$factorial |项数| 要做咩:
+    如果 |项数 系 0| 嘅话 -> {
         返转头 1
     }
     唔系嘅话 -> {
-        返转头 |factorial(n - 1) * n|
+        返转头 |factorial(项数 - 1) * 项数|
     }
 搞掂
 ```  
+返回最大值:  
+```
+$get_max |数字1, 数字2| 要做咩:
+    如果 |数字1 比唔上 数字2| 嘅话 -> {
+        返转头 |数字2|
+    }
+    唔系嘅话 -> {
+        返转头 |数字1|
+    }
+搞掂
+```
+调用函数:  
+```
+用下 |get_max(23, 17)|
+```
 ### 抛出异常
 ```
 掟个 |ImportError| 来睇下?
@@ -82,7 +97,12 @@ try-except-finally:
     讲嘢: |B| 系 1
     畀我睇下 |A, B| 点样先？
 }
-```  
+``` 
+### 调用Python库
+```
+使下 os
+使下 math
+``` 
 # 更多例子
 ### 显示当前时间
 ```
@@ -127,7 +147,7 @@ python src/contonese.py [-文件名]
 ```
 将Contonese转化成Python:  
 ```
-python src/contonese.py -to_py [文件名]
+python src/contonese.py [文件名] -to_py
 ```
 例如:  
 ```
