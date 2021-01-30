@@ -1,5 +1,5 @@
 """
-    Test script for contonese examples
+    Test script for cantonese examples
 """
 import io
 import os
@@ -9,13 +9,13 @@ import datetime
 starttime = datetime.datetime.now()
 file_list = []
 # Get all the file names under examples
-for f in glob.glob(os.path.join('..\examples', '*.contonese')):
+for f in glob.glob(os.path.join('..\examples', '*.cantonese')):
     file_list.append(f)
 i = 0
 print("==============START TEST================")
 while i < len(file_list):
     print("Running:" + file_list[i] +  "......")
-    os.system("python contonese.py " + file_list[i])
+    os.system("python cantonese.py " + file_list[i])
     print("End")
     i += 1
 print("=============END=======================")

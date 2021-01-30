@@ -1,5 +1,5 @@
 /*
-    Contonese Assert语句
+    Cantonese Assert语句
 */
 谂下: |1 + 1 == 2| ?
 /* 抛出 AssertionError */

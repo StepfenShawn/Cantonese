@@ -1,0 +1,14 @@
+/*
+    Cantonese实现阶乘
+*/
+$factorial |n| 要做咩:
+    如果 |n == 0| 嘅话 -> {
+        返转头 1
+    }
+    唔系嘅话 -> {
+        返转头 |factorial(n - 1) * n|
+    }
+搞掂
+
+畀我睇下 |factorial(2)| 点样先？
+畀我睇下 |factorial(6)| 点样先？

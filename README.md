@@ -48,7 +48,7 @@
 }
 ```
 ### 函数
-用Contonese实现的阶乘:  
+用Cantonese实现的阶乘:  
 ```
 $factorial |项数| 要做咩:
     如果 |项数 系 0| 嘅话 -> {
@@ -161,7 +161,7 @@ Duck is sleeping
 ```
 老作一下 -> {
     首先: |画个圈(100)|
-    跟住: |写隻字("Made By Contonese\n")|
+    跟住: |写隻字("Made By Cantonese\n")|
     最尾: |听我支笛()|
 }
 ```  
@@ -173,17 +173,17 @@ See more [here](examples/).
 
 
 # 如何运行?
-Contonese语言运行在Python虚拟机上,环境只支持Python3,因为这才符合广东人先进的思想!  
+Cantonese语言运行在Python虚拟机上,环境只支持Python3,因为这才符合广东人先进的思想!  
 ```shell
-python src/contonese.py [-文件名]
+python src/cantonese.py [-文件名]
 ```
-将Contonese转化成Python:  
+将Cantonese转化成Python:  
 ```
-python src/contonese.py [文件名] -to_py
+python src/cantonese.py [文件名] -to_py
 ```
 例如:  
 ```
-python src/contonese.py examples/helloworld.contonese -to_py
+python src/cantonese.py examples/helloworld.cantonese -to_py
 ```
 运行结果:  
 ```

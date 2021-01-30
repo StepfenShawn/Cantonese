@@ -59,9 +59,9 @@ def trans(code, rep):
         code = code.replace(r[0], r[1])
     return code
     
-def contonese_run(code, is_to_py):
+def cantonese_run(code, is_to_py):
     keywords_replace = [
-               # Keywords for contonese
+               # Keywords for cantonese
                [keyword["PRINT"] , "print"], 
                [keyword["ENDPRINT"] , "endprint"], 
                [keyword["EXIT"], "exit"], 
@@ -125,21 +125,21 @@ def contonese_run(code, is_to_py):
     ]
 
     tokens = []
-    for token in contonese_token(code):
+    for token in cantonese_token(code):
         tokens.append(token)
     for i in range(len(tokens)):
         if tokens[i][0] != 'string':
             tokens[i][1] = trans(tokens[i][1], keywords_replace)
             tokens[i][1] = trans(tokens[i][1], build_in_func_repl)
-    contonese_parser = Parser(tokens, [])
-    contonese_parser.parse()
-    run(contonese_parser.Node, True)
+    cantonese_parser = Parser(tokens, [])
+    cantonese_parser.parse()
+    run(cantonese_parser.Node, True)
     if is_to_py:
         print(TO_PY_CODE)
     else:
         exec(TO_PY_CODE, variable)
 
-def contonese_token(code):
+def cantonese_token(code):
     keywords = r'(?P<keywords>(畀我睇下){1}|(点样先){1}|(收工){1}|(喺){1}|(定){1}|(老作一下){1}|(起底){1}|' \
                r'(讲嘢){1}|(系){1})|(唔系){1}|(如果){1}|(嘅话){1}|(->){1}|({){1}|(}){1}|(同埋){1}|' \
                r'(落操场玩跑步){1}|(\$){1}|(用下){1}|(使下){1}|(要做咩){1}|(搞掂){1}|(就){1}|(谂下){1}|' \
@@ -535,7 +535,7 @@ class Parser(object):
 
 variable = {}
 TO_PY_CODE = ""
-# TODO: Build a simple vm for Contonese  
+# TODO: Build a simple vm for Cantonese  
 def run(Nodes, to_py, TAB = '', label = ''):
     def check(tab):
         if label != 'whi_run' and label != 'if_run' and label != 'else_run' and  \
@@ -656,7 +656,7 @@ def main():
             is_to_py = False
             if len(sys.argv) > 2 and sys.argv[2] == "-to_py":
                 is_to_py = True
-            contonese_run(code, is_to_py)
+            cantonese_run(code, is_to_py)
     except FileNotFoundError:
         print("揾唔到你嘅文件 :(")
 

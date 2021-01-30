@@ -1,5 +1,5 @@
 /*
-    Contonese实现二分搜索
+    Cantonese实现二分搜索
 */
 $binarySearch |数组, 数字| 要做咩:
     讲嘢: |小下标| 系 0
