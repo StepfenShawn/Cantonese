@@ -37,7 +37,11 @@ keyword = {
     "GETTYPE"   : "起底",
     "FROM"      : "从",
     "TO"        : "行到",
-    "ENDFOR"    : "行晒"
+    "ENDFOR"    : "行晒",
+    "CLASS"     : "咩系",
+    "EXTEND"    : "佢个老豆叫",
+    "METHOD"    : "佢识得",
+    "CLASSEND"  : "明白未啊"
 }
 
 build_in_func = {
@@ -63,7 +67,11 @@ def contonese_run(code, is_to_py):
                [keyword["EXIT"], "exit"], 
                [keyword["ASSIGN"], "assign"], 
                ["收工", "exit"], 
-               ["辛苦晒啦", "exit"], 
+               ["辛苦晒啦", "exit"],
+               [keyword["CLASS"], "class"],
+               [keyword["EXTEND"], "extend"],
+               [keyword["METHOD"], "method"],
+               [keyword["CLASSEND"], "endclass"],
                [keyword["ISNOT"], "is not"],
                [keyword["IS"], "is"], 
                [keyword["IF"], "if"], 
@@ -136,7 +144,7 @@ def contonese_token(code):
                r'(讲嘢){1}|(系){1})|(唔系){1}|(如果){1}|(嘅话){1}|(->){1}|({){1}|(}){1}|(同埋){1}|' \
                r'(落操场玩跑步){1}|(\$){1}|(用下){1}|(使下){1}|(要做咩){1}|(搞掂){1}|(就){1}|(谂下){1}|' \
                r'(玩到){1}|(为止){1}|(返转头){1}|(执嘢){1}|(揾到){1}|(执手尾){1}|(掟个){1}|(来睇下){1}|' \
-               r'(从){1}|(行到){1}|(行晒){1}'
+               r'(从){1}|(行到){1}|(行晒){1}|(咩系){1}|(佢个老豆叫){1}|(佢识得){1}|(明白未啊){1}'
     op =  r'(?P<op>\+\+|\+=|\+|--|-=|-|\*=|/=|/|%=|%)'
     num = r'(?P<num>\d+)'
     ID =  r'(?P<ID>[a-zA-Z_][a-zA-Z_0-9]*)'
@@ -212,6 +220,13 @@ def node_assert_new(Node, args):
 
 def node_gettype_new(Node, value):
     Node.append(["node_gettype", value])
+
+def node_class_new(Node, name , extend, method):
+    Node.append(["node_class", name, extend, method])
+
+# TODO: Add args
+def node_method_new(Node, name, stmt):
+    Node.append(["node_method", name, stmt])
 
 class Parser(object):
     def __init__(self, tokens, Node):
@@ -489,6 +504,32 @@ class Parser(object):
                 node_gettype_new(self.Node, self.get_value(self.get(0)))
                 self.skip(1)
             
+            elif self.match("class"):
+                class_name = self.get_value(self.get(0))
+                self.skip(1)
+                if self.match("extend"):
+                    extend = self.get_value(self.get(0))
+                    self.skip(1)
+                class_stmt = []
+                node_class = []
+                while self.tokens[self.pos][1] != "endclass":
+                    class_stmt.append(self.tokens[self.pos])
+                    self.pos += 1
+                Parser(class_stmt, node_class).parse()
+                self.skip(1) # Skip the "end"
+                node_class_new(self.Node, class_name, extend, node_class)
+            
+            elif self.match("method"):
+                method_name = self.get_value(self.get(0))
+                self.skip(3) # Skip the "method_name", "do", "begin"
+                method_stmt = []
+                node_method = []
+                while self.tokens[self.pos][1] != "end" and self.pos < len(self.tokens):
+                    method_stmt.append(self.tokens[self.pos])
+                    self.pos += 1
+                Parser(method_stmt, node_method).parse()
+                self.skip(1) # Skip the "end"
+                node_method_new(self.Node, method_name, node_method)
             else:
                 break
 
@@ -499,7 +540,8 @@ def run(Nodes, to_py, TAB = '', label = ''):
     def check(tab):
         if label != 'whi_run' and label != 'if_run' and label != 'else_run' and  \
             label != 'elif_run' and label != "func_run" and label != "try_run" and \
-            label != "except_run" and label != "finally_run" and label != "for_run":
+            label != "except_run" and label != "finally_run" and label != "for_run" and \
+            label != "class_run" and label != "method_run":
             tab = ''
     global TO_PY_CODE
     if Nodes == None:
@@ -593,6 +635,17 @@ def run(Nodes, to_py, TAB = '', label = ''):
             TO_PY_CODE += TAB + "finally:\n"
             run(node[1], True, TAB + '\t', 'finally_run')
             label = ''
+        if node[0] == "node_class":
+            check(TAB)
+            TO_PY_CODE += TAB + "class " + node[1][1] + "(" \
+                          + node[2][1] + "):\n"
+            run(node[3], True, TAB + '\t', 'class_run')
+            label = ''
+        if node[0] == "node_method":
+            check(TAB)
+            TO_PY_CODE += TAB + "def " + node[1][1] + "(self):\n"
+            run(node[2], True, TAB + '\t', "method_run")
+            label = ''
 
 def main():
     try:
@@ -605,7 +658,7 @@ def main():
                 is_to_py = True
             contonese_run(code, is_to_py)
     except FileNotFoundError:
-        print("搵唔到你嘅文件 :(")
+        print("揾唔到你嘅文件 :(")
 
 if __name__ == '__main__':
     main()

@@ -108,7 +108,30 @@ try-except-finally:
 ```
 使下 os
 使下 math
-``` 
+```
+### 面向对象编程
+声明对象`duck`, 继承至`object`, 分别有两个方法`游水`和`睡觉`:  
+```
+咩系 |duck|?
+    佢个老豆叫 |object|
+    佢识得 |游水| -> {
+        畀我睇下 "Duck is swimming" 点样先？
+    }
+    佢识得 |睡觉| -> {
+        畀我睇下 "Duck is sleeping" 点样先？
+    }
+明白未啊?
+```  
+调用类中的方法:  
+```
+用下 |duck().游水()|
+用下 |duck().睡觉()|
+```
+运行结果:  
+```
+Duck is swimming
+Duck is sleeping
+```
 # 更多例子
 ### 显示当前时间
 ```
@@ -142,6 +165,9 @@ try-except-finally:
     最尾: |听我支笛()|
 }
 ```  
+运行结果:    
+![turtle_result](img/turtle_etc.jpg)  
+
 
 See more [here](examples/).
 
@@ -166,3 +192,7 @@ exit()
 ```
 # TODOs
 本项目代码写的很简陋(烂)，欢迎各位粤语与编程爱好者参与讨论与贡献!为粤语文化遗产的保护贡献出自己的一份力量!  
+今后要做的是:  
+* 完善语法错误检查
+* 添加更多语句
+* 编写编辑器插件
