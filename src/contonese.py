@@ -34,7 +34,10 @@ keyword = {
     "ENDRAISE"  : "来睇下",
     "TURTLEBEGIN" : "老作一下",
     "ASSERT"    : "谂下",
-    "GETTYPE"   : "起底"
+    "GETTYPE"   : "起底",
+    "FROM"      : "从",
+    "TO"        : "行到",
+    "ENDFOR"    : "行晒"
 }
 
 build_in_func = {
@@ -78,6 +81,7 @@ def contonese_run(code, is_to_py):
                [keyword["WHILEEND"], "whi_end"],
                ["$", "function"],
                ["就", "is"],
+               ["比唔上", "<"],
                [keyword["AND"], "and"],
                [keyword["OR"], "or"],
                [keyword["CALL"], "call"], 
@@ -92,7 +96,9 @@ def contonese_run(code, is_to_py):
                [keyword["TRY"], "try"],
                [keyword["EXCEPT"], "except"],
                [keyword["FINALLY"], "finally"],
-               ["比唔上", "<"]
+               [keyword["FROM"], "from"],
+               [keyword["TO"], "to"],
+               [keyword["ENDFOR"], "endfor"]
             ]
 
     build_in_func_repl = [
@@ -129,7 +135,8 @@ def contonese_token(code):
     keywords = r'(?P<keywords>(畀我睇下){1}|(点样先){1}|(收工){1}|(喺){1}|(定){1}|(老作一下){1}|(起底){1}|' \
                r'(讲嘢){1}|(系){1})|(唔系){1}|(如果){1}|(嘅话){1}|(->){1}|({){1}|(}){1}|(同埋){1}|' \
                r'(落操场玩跑步){1}|(\$){1}|(用下){1}|(使下){1}|(要做咩){1}|(搞掂){1}|(就){1}|(谂下){1}|' \
-               r'(玩到){1}|(为止){1}|(返转头){1}|(执嘢){1}|(揾到){1}|(执手尾){1}|(掟个){1}|(来睇下){1}'
+               r'(玩到){1}|(为止){1}|(返转头){1}|(执嘢){1}|(揾到){1}|(执手尾){1}|(掟个){1}|(来睇下){1}|' \
+               r'(从){1}|(行到){1}|(行晒){1}'
     op =  r'(?P<op>\+\+|\+=|\+|--|-=|-|\*=|/=|/|%=|%)'
     num = r'(?P<num>\d+)'
     ID =  r'(?P<ID>[a-zA-Z_][a-zA-Z_0-9]*)'
@@ -191,7 +198,6 @@ def node_except_new(Node, _except, except_part):
 def node_finally_new(Node, finally_part):
     Node.append(["node_finally", finally_part])
 
-# TODO: Add "for" stmt
 def node_raise_new(Node, execption):
     Node.append(["node_raise", execption])
 
@@ -396,12 +402,27 @@ class Parser(object):
                 self.skip(1)
             
             elif self.match_type("expr") or self.match_type("ID"):
-                if self.get(1)[0] != 'keywords' or self.get(1)[0] != 'callfunc':
+                if self.match("from"):
+                    iterating_var = self.get_value(self.get(-2))
+                    seq = "(" + str(self.get_value(self.get(0))[1]) + "," \
+                          + str(self.get_value(self.get(2))[1]) + ")"
+                    self.skip(3)
+                    node_for = []
+                    for_stmt = []
+                    while self.tokens[self.pos][1] != "endfor":
+                        for_stmt.append(self.tokens[self.pos])
+                        self.pos += 1
+                    Parser(for_stmt, node_for).parse()
+                    node_for_new(self.Node, iterating_var, seq, node_for)
+                    self.skip(1) # skip the "endfor"
+                elif self.get(1)[0] != 'keywords' and self.get(1)[0] != 'call_func':
                     args = self.get_value(self.get(1))
+                    node_build_in_func_call_new(self.Node, self.get_value(self.get(-1)), self.get_value(self.get(0)), args)
+                    self.skip(2)
                 else:
                     args = None
-                node_build_in_func_call_new(self.Node, self.get_value(self.get(-1)), self.get_value(self.get(0)), args)
-                self.skip(2)
+                    node_build_in_func_call_new(self.Node, self.get_value(self.get(-1)), self.get_value(self.get(0)), args)
+                    self.skip(2)
 
             elif self.match("return"):
                 node_return_new(self.Node, self.get_value(self.get(0)))
@@ -478,7 +499,7 @@ def run(Nodes, to_py, TAB = '', label = ''):
     def check(tab):
         if label != 'whi_run' and label != 'if_run' and label != 'else_run' and  \
             label != 'elif_run' and label != "func_run" and label != "try_run" and \
-            label != "except_run" and label != "finally_run":
+            label != "except_run" and label != "finally_run" and label != "for_run":
             tab = ''
     global TO_PY_CODE
     if Nodes == None:
@@ -515,8 +536,15 @@ def run(Nodes, to_py, TAB = '', label = ''):
             run(node[1], True, TAB + '\t', 'else_run')
             label = ''
         if node[0] == "node_loop":
+            check(TAB)
             TO_PY_CODE += TAB + "while " + node[1][1] + ":\n"
             run(node[2], True, TAB + '\t', 'whi_run')
+            label = ''
+        if node[0] == "node_for":
+            check(TAB)
+            TO_PY_CODE += TAB + "for " + node[1][1] + " in " + "range" + \
+                          node[2] + ":\n"
+            run(node[3], True, TAB + '\t', "for_run")
             label = ''
         if node[0] == "node_fundef":
             # check if has args
