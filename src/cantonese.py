@@ -41,7 +41,8 @@ keyword = {
     "CLASS"     : "咩系",
     "EXTEND"    : "佢个老豆叫",
     "METHOD"    : "佢识得",
-    "CLASSEND"  : "明白未啊"
+    "CLASSEND"  : "明白未啊",
+    "CMD"       : "落Order"
 }
 
 build_in_func = {
@@ -106,7 +107,8 @@ def cantonese_run(code, is_to_py):
                [keyword["FINALLY"], "finally"],
                [keyword["FROM"], "from"],
                [keyword["TO"], "to"],
-               [keyword["ENDFOR"], "endfor"]
+               [keyword["ENDFOR"], "endfor"],
+               [keyword["CMD"], "cmd"]
             ]
 
     build_in_func_repl = [
@@ -144,7 +146,7 @@ def cantonese_token(code):
                r'(讲嘢){1}|(系){1})|(唔系){1}|(如果){1}|(嘅话){1}|(->){1}|({){1}|(}){1}|(同埋){1}|' \
                r'(落操场玩跑步){1}|(\$){1}|(用下){1}|(使下){1}|(要做咩){1}|(搞掂){1}|(就){1}|(谂下){1}|' \
                r'(玩到){1}|(为止){1}|(返转头){1}|(执嘢){1}|(揾到){1}|(执手尾){1}|(掟个){1}|(来睇下){1}|' \
-               r'(从){1}|(行到){1}|(行晒){1}|(咩系){1}|(佢个老豆叫){1}|(佢识得){1}|(明白未啊){1}'
+               r'(从){1}|(行到){1}|(行晒){1}|(咩系){1}|(佢个老豆叫){1}|(佢识得){1}|(明白未啊){1}|(落Order){1}'
     op =  r'(?P<op>\+\+|\+=|\+|--|-=|-|\*=|/=|/|%=|%)'
     num = r'(?P<num>\d+)'
     ID =  r'(?P<ID>[a-zA-Z_][a-zA-Z_0-9]*)'
@@ -227,6 +229,9 @@ def node_class_new(Node, name , extend, method):
 # TODO: Add args
 def node_method_new(Node, name, stmt):
     Node.append(["node_method", name, stmt])
+
+def node_cmd_new(Node, cmd):
+    Node.append(["node_cmd", cmd])
 
 class Parser(object):
     def __init__(self, tokens, Node):
@@ -424,12 +429,23 @@ class Parser(object):
                     self.skip(3)
                     node_for = []
                     for_stmt = []
-                    while self.tokens[self.pos][1] != "endfor":
-                        for_stmt.append(self.tokens[self.pos])
-                        self.pos += 1
+                    should_end = 1
+                    case_end = 0
+                    while should_end != case_end and self.pos < len(self.tokens):
+                        if self.get(0)[1] == "endfor":
+                            case_end += 1
+                            self.pos += 1
+                        elif self.get(0)[0] == "expr" or self.get(0)[0] == "ID" and \
+                             self.self.get(0)[1] == "from":
+                            should_end += 1
+                            for_stmt.append(self.tokens[self.pos])
+                            self.pos += 1
+                        else:
+                            for_stmt.append(self.tokens[self.pos])
+                            self.pos += 1
                     Parser(for_stmt, node_for).parse()
-                    node_for_new(self.Node, iterating_var, seq, node_for)
                     self.skip(1) # skip the "endfor"
+                    node_for_new(self.Node, iterating_var, seq, node_for)
                 elif self.get(1)[0] != 'keywords' and self.get(1)[0] != 'call_func':
                     args = self.get_value(self.get(1))
                     node_build_in_func_call_new(self.Node, self.get_value(self.get(-1)), self.get_value(self.get(0)), args)
@@ -530,6 +546,11 @@ class Parser(object):
                 Parser(method_stmt, node_method).parse()
                 self.skip(1) # Skip the "end"
                 node_method_new(self.Node, method_name, node_method)
+            
+            elif self.match("cmd"):
+                node_cmd_new(self.Node, self.get_value(self.get(0)))
+                self.skip(1)
+            
             else:
                 break
 
@@ -612,6 +633,9 @@ def run(Nodes, to_py, TAB = '', label = ''):
         if node[0] == "node_raise":
             check(TAB)
             TO_PY_CODE += TAB + "raise " + node[1][1] + "\n"
+        if node[0] == "node_cmd":
+            check(TAB)
+            TO_PY_CODE += TAB + "os.system(" + node[1][1] + ")\n"
         if node[0] == "node_turtle":
             exec(node[1], variable)
         if node[0] == "node_assert":

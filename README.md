@@ -168,8 +168,13 @@ Duck is sleeping
 运行结果:    
 ![turtle_result](img/turtle_etc.jpg)  
 
+### 迷宫小游戏
+[代码](examples/game.cantonese)  
+运行结果:  
+![game_result](img/game_result.jpg)
 
-See more [here](examples/).
+
+[这里](examples/)查看更多例子.  
 
 
 # 如何运行?
