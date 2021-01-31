@@ -42,7 +42,8 @@ keyword = {
     "EXTEND"    : "佢个老豆叫",
     "METHOD"    : "佢识得",
     "CLASSEND"  : "明白未啊",
-    "CMD"       : "落Order"
+    "CMD"       : "落Order",
+    "PASS"      : "咩都唔做"
 }
 
 build_in_func = {
@@ -53,7 +54,8 @@ build_in_func = {
     "REMOVE"    : "摞走",
     "GETLEN"    : "嘅长度",
     "TWO_SECS"  : "阵先",
-    "INPUT"     : "畀你"
+    "INPUT"     : "畀你",
+    "CLEAR"     : "散水"
 }
 def trans(code, rep):
     for r in rep:
@@ -91,6 +93,7 @@ def cantonese_run(code, is_to_py):
                ["$", "function"],
                ["就", "is"],
                ["比唔上", "<"],
+               ["或者", "or"],
                [keyword["AND"], "and"],
                [keyword["OR"], "or"],
                [keyword["CALL"], "call"], 
@@ -108,7 +111,8 @@ def cantonese_run(code, is_to_py):
                [keyword["FROM"], "from"],
                [keyword["TO"], "to"],
                [keyword["ENDFOR"], "endfor"],
-               [keyword["CMD"], "cmd"]
+               [keyword["CMD"], "cmd"],
+               [keyword["PASS"], "pass"]
             ]
 
     build_in_func_repl = [
@@ -123,7 +127,8 @@ def cantonese_run(code, is_to_py):
         # List
         [build_in_func["APPEND"], "append"],
         [build_in_func["REMOVE"], "remove"],
-        [build_in_func["GETLEN"], ".__len__()"]
+        [build_in_func["GETLEN"], ".__len__()"],
+        [build_in_func["CLEAR"], "clear"]
     ]
 
     tokens = []
@@ -143,7 +148,7 @@ def cantonese_run(code, is_to_py):
 
 def cantonese_token(code):
     keywords = r'(?P<keywords>(畀我睇下){1}|(点样先){1}|(收工){1}|(喺){1}|(定){1}|(老作一下){1}|(起底){1}|' \
-               r'(讲嘢){1}|(系){1})|(唔系){1}|(如果){1}|(嘅话){1}|(->){1}|({){1}|(}){1}|(同埋){1}|' \
+               r'(讲嘢){1}|(系){1})|(唔系){1}|(如果){1}|(嘅话){1}|(->){1}|({){1}|(}){1}|(同埋){1}|(咩都唔做){1}|' \
                r'(落操场玩跑步){1}|(\$){1}|(用下){1}|(使下){1}|(要做咩){1}|(搞掂){1}|(就){1}|(谂下){1}|' \
                r'(玩到){1}|(为止){1}|(返转头){1}|(执嘢){1}|(揾到){1}|(执手尾){1}|(掟个){1}|(来睇下){1}|' \
                r'(从){1}|(行到){1}|(行晒){1}|(咩系){1}|(佢个老豆叫){1}|(佢识得){1}|(明白未啊){1}|(落Order){1}'
@@ -154,7 +159,7 @@ def cantonese_token(code):
     expr = r'(?P<expr>[|](.*?)[|])'
     callfunc = r'(?P<callfunc>[&](.*?)[)])'
     build_in_funcs = r'(?P<build_in_funcs>(宜家几点){1}|(求其啦){1}|(训){1}|(加啲){1}|(摞走){1}|(嘅长度){1}|(阵先){1}|' \
-                     r'(畀你){1})'
+                     r'(畀你){1})|(散水){1}'
     patterns = re.compile('|'.join([keywords, ID, num, op, string, expr, callfunc, build_in_funcs]))
     for match in re.finditer(patterns, code):
         yield [match.lastgroup, match.group()]
@@ -444,16 +449,15 @@ class Parser(object):
                             for_stmt.append(self.tokens[self.pos])
                             self.pos += 1
                     Parser(for_stmt, node_for).parse()
-                    self.skip(1) # skip the "endfor"
                     node_for_new(self.Node, iterating_var, seq, node_for)
                 elif self.get(1)[0] != 'keywords' and self.get(1)[0] != 'call_func':
                     args = self.get_value(self.get(1))
                     node_build_in_func_call_new(self.Node, self.get_value(self.get(-1)), self.get_value(self.get(0)), args)
                     self.skip(2)
                 else:
-                    args = None
+                    args = "None"
                     node_build_in_func_call_new(self.Node, self.get_value(self.get(-1)), self.get_value(self.get(0)), args)
-                    self.skip(2)
+                    self.skip(1)
 
             elif self.match("return"):
                 node_return_new(self.Node, self.get_value(self.get(0)))
@@ -519,6 +523,9 @@ class Parser(object):
             elif self.match("gettype"):
                 node_gettype_new(self.Node, self.get_value(self.get(0)))
                 self.skip(1)
+            
+            elif self.match("pass"):
+                self.Node.append(["node_pass"])
             
             elif self.match("class"):
                 class_name = self.get_value(self.get(0))
@@ -624,9 +631,16 @@ def run(Nodes, to_py, TAB = '', label = ''):
         if node[0] == "node_call":
             check(TAB)
             TO_PY_CODE += TAB + node[1][1] + "\n"
+        if node[0] == "node_pass":
+            check(TAB)
+            TO_PY_CODE += TAB + "pass\n"
         if node[0] == "node_bcall":
             check(TAB)
-            TO_PY_CODE += TAB + node[1][1] + "." + node[2][1] + "(" + node[3][1] + ")\n" 
+            # check if has args
+            if node[3] != "None":
+                TO_PY_CODE += TAB + node[1][1] + "." + node[2][1] + "(" + node[3][1] + ")\n"
+            else:
+                TO_PY_CODE += TAB + node[1][1] + "." + node[2][1] + "()\n"
         if node[0] == "node_return":
             check(TAB)
             TO_PY_CODE += TAB + "return " + node[1][1] + "\n"
