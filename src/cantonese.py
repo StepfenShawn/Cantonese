@@ -687,14 +687,17 @@ def run(Nodes, to_py, TAB = '', label = ''):
 
 def main():
     try:
-        with open(sys.argv[1], encoding = "utf-8") as f:
-            code = f.read()
-            # Skip the comment
-            code = re.sub(re.compile(r'/\*.*?\*/', re.S), ' ', code)
-            is_to_py = False
-            if len(sys.argv) > 2 and sys.argv[2] == "-to_py":
-                is_to_py = True
-            cantonese_run(code, is_to_py)
+        if len(sys.argv) > 1:
+            with open(sys.argv[1], encoding = "utf-8") as f:
+                code = f.read()
+                # Skip the comment
+                code = re.sub(re.compile(r'/\*.*?\*/', re.S), ' ', code)
+                is_to_py = False
+                if len(sys.argv) > 3 and sys.argv[2] == "-to_py":
+                    is_to_py = True
+                cantonese_run(code, is_to_py)
+        else:
+            print("你想点啊? (请输入你嘅文件)")
     except FileNotFoundError:
         print("揾唔到你嘅文件 :(")
 
