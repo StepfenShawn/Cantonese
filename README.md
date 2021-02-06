@@ -21,8 +21,8 @@
 <a href="#19">点样运行?</a>  
 <a href="#20">TODOs</a>  
 # <a name="0">引言</a>
-粤语编程语言系咩? 佢系一门用粤语黎同计算机沟通嘅编程语言。  
-喺呢个语言度，计算机可以读明白你写嘅粤语。所以话，你可以用粤语黎操作(虐待)计算机。
+粤语编程语言系咩? 佢系一门用粤语嚟同计算机沟通嘅编程语言。  
+喺呢个语言度，计算机可以读明你写嘅粤语。所以话，你可以用粤语嚟操作(虐待)计算机。
 
 # <a name="1">咋咋淋入门</a>
 ### <a name="2">Hello World</a>
@@ -70,7 +70,7 @@
 }
 ```
 ### <a name="7">函数</a>
-用Cantonese实现嘅阶乘:  
+用 Cantonese 实现嘅阶乘:  
 ```
 $factorial |项数| 要做咩:
     如果 |项数 系 0| 嘅话 -> {
@@ -126,7 +126,7 @@ try-except-finally:
     畀我睇下 |A, B| 点样先？
 }
 ``` 
-### <a name="11">调用Python库</a>
+### <a name="11">调用 Python 库</a>
 ```
 使下 os
 使下 math
@@ -170,7 +170,7 @@ Duck is sleeping
 训阵先 /* 暂停2s */
 训 5s /* 暂停5s */
 ```  
-### <a name="16">黎个随机数</a>
+### <a name="16">嚟个随机数</a>
 ```
 使下 random
 讲嘢: |A| 就 |求其啦|
@@ -196,15 +196,15 @@ Duck is sleeping
 ![game_result](img/game_result.jpg)
 
 
-[喺尼度](examples/)睇下更多例子.  
+[喺呢度](examples/)睇下更多例子.  
 
 
 # <a name="19">点样运行?</a>
-Cantonese语言运行在Python虚拟机上,环境只支持Python3,因为这才符合广东人先进的思想!  
+Cantonese 语言运行喺 Python 虚拟机上，环境净系支持 Python3，因为噉先符合广东人先进嘅思想!  
 ```shell
 python src/cantonese.py [-文件名]
 ```
-将Cantonese转化成Python:  
+将 Cantonese 转化成 Python:  
 ```
 python src/cantonese.py [文件名] -to_py
 ```
@@ -218,8 +218,8 @@ print(" Hello World! ")
 exit()
 ```
 # <a name="20">TODOs</a>
-本项目代码写的很陋(烂)，欢迎各个粤语同埋编程爱好者一齐讨论与贡献!为粤语文化遗产的保护贡献出自己嘅一份力量!  
+本项目代码写得很陋(烂)，欢迎各个粤语同埋编程爱好者一齐讨论同贡献！为粤语文化遗产嘅保护贡献出自己嘅一份力量！
 今后要做咩:  
 * 完善语法错误检查
-* 加多滴语句
+* 加多啲语句
 * 编写编辑器插件
