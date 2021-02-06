@@ -1,19 +1,41 @@
-# 引言
-什么是粤语编程语言? 它是一门用粤语来与计算机沟通的编程语言。  
-在这个语言里，计算机能够读懂你写的粤语。因此，你可以用粤语来操作(虐待)计算机。
+# 粤语编程语言
+<a href="#0">引言</a>  
+<a href="#1">咋咋淋入门</a>  
+&emsp;&emsp;<a href="#2">Hello World</a>  
+&emsp;&emsp;<a href="#3">赋值语句 </a>  
+&emsp;&emsp;<a href="#4">睇下变量嘅类型</a>  
+&emsp;&emsp;<a href="#5">循环</a>  
+&emsp;&emsp;<a href="#6">条件语句</a>  
+&emsp;&emsp;<a href="#7">函数</a>  
+&emsp;&emsp;<a href="#8">抛出异常</a>  
+&emsp;&emsp;<a href="#9">断言语句</a>  
+&emsp;&emsp;<a href="#10">错误捕捉语句</a>  
+&emsp;&emsp;<a href="#11">调用Python库</a>  
+&emsp;&emsp;<a href="#12">面向对象编程</a>  
+<a href="#13">更多例子</a>  
+&emsp;&emsp;<a href="#14">睇睇时间</a>  
+&emsp;&emsp;<a href="#15">暂停</a>  
+&emsp;&emsp;<a href="#16">黎个随机数</a>  
+&emsp;&emsp;<a href="#17">海龟画图</a>  
+&emsp;&emsp;<a href="#18">迷宫游戏仔</a>  
+<a href="#19">点样运行?</a>  
+<a href="#20">TODOs</a>  
+# <a name="0">引言</a>
+粤语编程语言系咩? 佢系一门用粤语黎同计算机沟通嘅编程语言。  
+喺呢个语言度，计算机可以读明白你写嘅粤语。所以话，你可以用粤语黎操作(虐待)计算机。
 
-# 快速入门
-### Hello World
-用粤语写的第一个程序Hello World:  
+# <a name="1">咋咋淋入门</a>
+### <a name="2">Hello World</a>
+用粤语写嘅第一个程序Hello World:  
 ```
 畀我睇下 " Hello World! " 点样先?
 ```
-### 赋值语句 
+### <a name="3">赋值语句 </a>
 ```
 讲嘢 |A| 系 1
 讲嘢 |B| 系 2
 ```
-### 查看变量类型
+### <a name="4">睇下变量嘅类型</a>
 ```
 讲嘢 |A| 系 1
 起底: |A|
@@ -22,7 +44,7 @@
 ```
 <class 'int'>
 ```
-### 循环
+### <a name="5">循环</a>
 打印从1到100:  
 ```
 讲嘢: |start| 系 0
@@ -31,13 +53,13 @@
     畀我睇下 |start| 点样先?
 玩到 |start < 100| 为止
 ```
-当然也可以使用`For`循环:  
+当然用`For`循环都得:  
 ```
 |A| 从 1 行到 100
     畀我睇下 |A| 点样先?
 行晒
 ```
-### 条件语句
+### <a name="6">条件语句</a>
 ```
 讲嘢: |A| 系 2
 如果 |A 系 2| 嘅话 -> {
@@ -47,8 +69,8 @@
     畀我睇下 "A 唔系 2" 点样先?
 }
 ```
-### 函数
-用Cantonese实现的阶乘:  
+### <a name="7">函数</a>
+用Cantonese实现嘅阶乘:  
 ```
 $factorial |项数| 要做咩:
     如果 |项数 系 0| 嘅话 -> {
@@ -74,11 +96,11 @@ $get_max |数字1, 数字2| 要做咩:
 ```
 用下 |get_max(23, 17)|
 ```
-### 抛出异常
+### <a name="8">抛出异常</a>
 ```
 掟个 |ImportError| 来睇下?
 ```
-### 断言语句
+### <a name="9">断言语句</a>
 ```
 谂下: |1 + 1 == 3| ?
 ```  
@@ -88,7 +110,7 @@ Traceback (most recent call last):
     ......
 AssertionError
 ```
-### 错误捕捉语句
+### <a name="10">错误捕捉语句</a>
 try-except-finally:  
 ```
 执嘢 -> {
@@ -104,13 +126,13 @@ try-except-finally:
     畀我睇下 |A, B| 点样先？
 }
 ``` 
-### 调用Python库
+### <a name="11">调用Python库</a>
 ```
 使下 os
 使下 math
 ```
-### 面向对象编程
-声明对象`duck`, 继承至`object`, 分别有两个方法`游水`和`睡觉`:  
+### <a name="12">面向对象编程</a>
+声明对象`duck`, 继承至`object`, 分别有两个方法`游水`同埋`睡觉`:  
 ```
 咩系 |duck|?
     佢个老豆叫 |object|
@@ -122,7 +144,7 @@ try-except-finally:
     }
 明白未啊?
 ```  
-调用类中的方法:  
+调用类中嘅方法:  
 ```
 用下 |duck().游水()|
 用下 |duck().睡觉()|
@@ -132,8 +154,8 @@ try-except-finally:
 Duck is swimming
 Duck is sleeping
 ```
-# 更多例子
-### 显示当前时间
+# <a name="13">更多例子</a>
+### <a name="14">显示当前时间</a>
 ```
 使下 datetime
 畀我睇下 |宜家几点| 点样先？
@@ -142,13 +164,13 @@ Duck is sleeping
 ```
 2021-01-17 09:16:20.767191
 ```
-### 暂停
+### <a name="15">暂停</a>
 ```
 使下 time
 训阵先 /* 暂停2s */
 训 5s /* 暂停5s */
 ```  
-### 来个随机数
+### <a name="16">黎个随机数</a>
 ```
 使下 random
 讲嘢: |A| 就 |求其啦|
@@ -157,7 +179,7 @@ Duck is sleeping
 ```
 0.15008236307867207
 ```  
-### 海龟绘图
+### <a name="17">海龟绘图</a>
 ```
 老作一下 -> {
     首先: |画个圈(100)|
@@ -168,16 +190,16 @@ Duck is sleeping
 运行结果:    
 ![turtle_result](img/turtle_etc.jpg)  
 
-### 迷宫小游戏
+### <a name="18">迷宫游戏仔</a>
 [代码](examples/game.cantonese)  
 运行结果:  
 ![game_result](img/game_result.jpg)
 
 
-[这里](examples/)查看更多例子.  
+[喺尼度](examples/)睇下更多例子.  
 
 
-# 如何运行?
+# <a name="19">点样运行?</a>
 Cantonese语言运行在Python虚拟机上,环境只支持Python3,因为这才符合广东人先进的思想!  
 ```shell
 python src/cantonese.py [-文件名]
@@ -190,14 +212,14 @@ python src/cantonese.py [文件名] -to_py
 ```
 python src/cantonese.py examples/helloworld.cantonese -to_py
 ```
-运行结果:  
+运行嘅结果系:  
 ```
 print(" Hello World! ")
 exit()
 ```
-# TODOs
-本项目代码写的很简陋(烂)，欢迎各位粤语与编程爱好者参与讨论与贡献!为粤语文化遗产的保护贡献出自己的一份力量!  
-今后要做的是:  
+# <a name="20">TODOs</a>
+本项目代码写的很陋(烂)，欢迎各个粤语同埋编程爱好者一齐讨论与贡献!为粤语文化遗产的保护贡献出自己嘅一份力量!  
+今后要做咩:  
 * 完善语法错误检查
-* 添加更多语句
+* 加多滴语句
 * 编写编辑器插件
