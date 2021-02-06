@@ -15,7 +15,7 @@
 <a href="#13">更多例子</a>  
 &emsp;&emsp;<a href="#14">睇睇时间</a>  
 &emsp;&emsp;<a href="#15">暂停</a>  
-&emsp;&emsp;<a href="#16">黎个随机数</a>  
+&emsp;&emsp;<a href="#16">嚟个随机数</a>  
 &emsp;&emsp;<a href="#17">海龟画图</a>  
 &emsp;&emsp;<a href="#18">迷宫游戏仔</a>  
 <a href="#19">点样运行?</a>  
@@ -132,10 +132,11 @@ try-except-finally:
 使下 math
 ```
 ### <a name="12">面向对象编程</a>
-声明对象`duck`, 继承至`object`, 分别有两个方法`游水`同埋`睡觉`:  
+声明对象`duck`, 继承至`object`, 分别有两个方法`游水`同埋`睡觉`, 仲有一个属性`性别`:  
 ```
 咩系 |duck|?
     佢个老豆叫 |object|
+    佢嘅 |性别| 系 "公"
     佢识得 |游水| -> {
         畀我睇下 "Duck is swimming" 点样先？
     }

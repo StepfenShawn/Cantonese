@@ -68,7 +68,8 @@ def cantonese_run(code, is_to_py):
                [keyword["PRINT"] , "print"], 
                [keyword["ENDPRINT"] , "endprint"], 
                [keyword["EXIT"], "exit"], 
-               [keyword["ASSIGN"], "assign"], 
+               [keyword["ASSIGN"], "assign"],
+               ["佢嘅", "assign"], 
                ["收工", "exit"], 
                ["辛苦晒啦", "exit"],
                [keyword["CLASS"], "class"],
@@ -149,7 +150,7 @@ def cantonese_run(code, is_to_py):
 def cantonese_token(code):
     keywords = r'(?P<keywords>(畀我睇下){1}|(点样先){1}|(收工){1}|(喺){1}|(定){1}|(老作一下){1}|(起底){1}|' \
                r'(讲嘢){1}|(系){1})|(唔系){1}|(如果){1}|(嘅话){1}|(->){1}|({){1}|(}){1}|(同埋){1}|(咩都唔做){1}|' \
-               r'(落操场玩跑步){1}|(\$){1}|(用下){1}|(使下){1}|(要做咩){1}|(搞掂){1}|(就){1}|(谂下){1}|' \
+               r'(落操场玩跑步){1}|(\$){1}|(用下){1}|(使下){1}|(要做咩){1}|(搞掂){1}|(就){1}|(谂下){1}|(佢嘅){1}|' \
                r'(玩到){1}|(为止){1}|(返转头){1}|(执嘢){1}|(揾到){1}|(执手尾){1}|(掟个){1}|(来睇下){1}|' \
                r'(从){1}|(行到){1}|(行晒){1}|(咩系){1}|(佢个老豆叫){1}|(佢识得){1}|(明白未啊){1}|(落Order){1}'
     op =  r'(?P<op>\+\+|\+=|\+|--|-=|-|\*=|/=|/|%=|%)'
@@ -228,12 +229,11 @@ def node_assert_new(Node, args):
 def node_gettype_new(Node, value):
     Node.append(["node_gettype", value])
 
-def node_class_new(Node, name , extend, method):
+def node_class_new(Node, name, extend, method):
     Node.append(["node_class", name, extend, method])
 
-# TODO: Add args
-def node_method_new(Node, name, stmt):
-    Node.append(["node_method", name, stmt])
+def node_method_new(Node, name, args, stmt):
+    Node.append(["node_method", name, args, stmt])
 
 def node_cmd_new(Node, cmd):
     Node.append(["node_cmd", cmd])
@@ -277,6 +277,7 @@ class Parser(object):
             return True
         else:
             return False
+
     # TODO: Add error check
     def parse(self):
         while True:
@@ -299,20 +300,22 @@ class Parser(object):
             elif self.match("if"):
                 cond = self.get_value(self.get(0))
                 self.skip(4) # Skip the "then", "do", "begin"
-                case_end = 0 # The times of case "end"
-                should_end = 1
+                if_case_end = 0 # The times of case "end"
+                if_should_end = 1
                 node_if = []
                 stmt_if = []
-                while case_end != should_end and self.pos < len(self.tokens):
+                while if_case_end != if_should_end and self.pos < len(self.tokens):
                     if self.get(0)[1] == "if":
-                        should_end += 1
+                        if_should_end += 1
                         stmt_if.append(self.tokens[self.pos])
                         self.pos += 1
                     elif self.get(0)[1] == "end":
-                        case_end += 1
+                        if_case_end += 1
+                        if if_case_end != if_should_end:
+                            stmt_if.append(self.tokens[self.pos])
                         self.pos += 1
                     elif self.get(0)[1] == "elif":
-                        should_end += 1
+                        if_should_end += 1
                         stmt_if.append(self.tokens[self.pos])
                         self.pos += 1
                     else:
@@ -324,20 +327,22 @@ class Parser(object):
             elif self.match("or") and self.match("is"): # case "定系" elif
                 cond = self.get_value(self.get(0))
                 self.skip(4) # Skip the "then", "do", "begin"
-                case_end = 0 # The times of case "end"
-                should_end = 1
+                elif_case_end = 0 # The times of case "end"
+                elif_should_end = 1
                 node_elif = []
                 stmt_elif = []
-                while case_end != should_end and self.pos < len(self.tokens):
+                while elif_case_end != elif_should_end and self.pos < len(self.tokens):
                     if self.get(0)[1] == "if":
-                        should_end += 1
+                        elif_should_end += 1
                         stmt_elif.append(self.tokens[self.pos])
                         self.pos += 1
                     elif self.get(0)[1] == "end":
-                        case_end += 1
+                        elif_case_end += 1
+                        if elif_case_end != elif_should_end:
+                            stmt_elif.append(self.tokens[self.pos])
                         self.pos += 1
                     elif self.get(0)[1] == "elif":
-                        should_end += 1
+                        elif_should_end += 1
                         stmt_elif.append(self.tokens[self.pos])
                         self.pos += 1
                     else:
@@ -348,20 +353,22 @@ class Parser(object):
 
             elif self.match("is not"): # case "唔系" else
                 self.skip(3) # Skip the "then", "do", "begin"
-                case_end = 0 # The times of case "end"
-                should_end = 1
+                else_case_end = 0 # The times of case "end"
+                else_should_end = 1
                 node_else = []
                 stmt_else = []
-                while case_end != should_end:
+                while else_case_end != else_should_end and self.pos < len(self.tokens):
                     if self.get(0)[1] == "if":
-                        should_end += 1
+                        else_should_end += 1
                         stmt_else.append(self.tokens[self.pos])
                         self.pos += 1
                     elif self.get(0)[1] == "end":
-                        case_end += 1
+                        else_case_end += 1
+                        if else_case_end != else_should_end:
+                            stmt_else.append(self.tokens[self.pos])
                         self.pos += 1
                     elif self.get(0)[1] == "elif":
-                        should_end += 1
+                        else_should_end += 1
                         stmt_else.append(self.tokens[self.pos])
                         self.pos += 1
                     else:
@@ -434,22 +441,25 @@ class Parser(object):
                     self.skip(3)
                     node_for = []
                     for_stmt = []
-                    should_end = 1
-                    case_end = 0
-                    while should_end != case_end and self.pos < len(self.tokens):
-                        if self.get(0)[1] == "endfor":
-                            case_end += 1
-                            self.pos += 1
-                        elif self.get(0)[0] == "expr" or self.get(0)[0] == "ID" and \
-                             self.self.get(0)[1] == "from":
-                            should_end += 1
+                    for_case_end = 0
+                    for_should_end = 1
+                    while for_should_end != for_case_end and self.pos < len(self.tokens):
+                        if (self.get(0)[0] == "expr" or self.get(0)[0] == "ID") \
+                             and self.get(1)[1] == "from":
+                            for_should_end += 1
                             for_stmt.append(self.tokens[self.pos])
+                            self.pos += 1
+                        elif self.get(0)[1] == "endfor":
+                            for_case_end += 1
+                            if for_case_end != for_should_end:
+                                for_stmt.append(self.tokens[self.pos])
                             self.pos += 1
                         else:
                             for_stmt.append(self.tokens[self.pos])
                             self.pos += 1
                     Parser(for_stmt, node_for).parse()
                     node_for_new(self.Node, iterating_var, seq, node_for)
+
                 elif self.get(1)[0] != 'keywords' and self.get(1)[0] != 'call_func':
                     args = self.get_value(self.get(1))
                     node_build_in_func_call_new(self.Node, self.get_value(self.get(-1)), self.get_value(self.get(0)), args)
@@ -544,7 +554,14 @@ class Parser(object):
             
             elif self.match("method"):
                 method_name = self.get_value(self.get(0))
-                self.skip(3) # Skip the "method_name", "do", "begin"
+                self.skip(1)
+                # Check if has args
+                if self.get(0)[0] == "expr":
+                    args = self.get_value(self.get(0))
+                    self.skip(1)
+                else:
+                    args = "None"
+                self.skip(2) # Skip the "do", "begin"
                 method_stmt = []
                 node_method = []
                 while self.tokens[self.pos][1] != "end" and self.pos < len(self.tokens):
@@ -552,7 +569,7 @@ class Parser(object):
                     self.pos += 1
                 Parser(method_stmt, node_method).parse()
                 self.skip(1) # Skip the "end"
-                node_method_new(self.Node, method_name, node_method)
+                node_method_new(self.Node, method_name, args, node_method)
             
             elif self.match("cmd"):
                 node_cmd_new(self.Node, self.get_value(self.get(0)))
@@ -681,8 +698,11 @@ def run(Nodes, to_py, TAB = '', label = ''):
             label = ''
         if node[0] == "node_method":
             check(TAB)
-            TO_PY_CODE += TAB + "def " + node[1][1] + "(self):\n"
-            run(node[2], True, TAB + '\t', "method_run")
+            if node[2] == 'None':
+                TO_PY_CODE += TAB + "def " + node[1][1] + "(self):\n"
+            else:
+                TO_PY_CODE += TAB + "def " + node[1][1] + "(self, " + node[2][1] + "):\n"
+            run(node[3], True, TAB + '\t', "method_run")
             label = ''
 
 def main():
@@ -693,7 +713,7 @@ def main():
                 # Skip the comment
                 code = re.sub(re.compile(r'/\*.*?\*/', re.S), ' ', code)
                 is_to_py = False
-                if len(sys.argv) > 3 and sys.argv[2] == "-to_py":
+                if len(sys.argv) == 3 and sys.argv[2] == "-to_py":
                     is_to_py = True
                 cantonese_run(code, is_to_py)
         else:
