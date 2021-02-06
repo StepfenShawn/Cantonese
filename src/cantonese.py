@@ -49,7 +49,7 @@ keyword = {
 build_in_func = {
     "GETTIME"   : "宜家几点",
     "RANDOM"    : "求其啦",
-    "SLEEP"     : "训",
+    "SLEEP"     : "瞓",
     "APPEND"    : "加啲",
     "REMOVE"    : "摞走",
     "GETLEN"    : "嘅长度",
@@ -158,7 +158,7 @@ def cantonese_token(code):
     string = r'(?P<string>\"([^\\\"]|\\.)*\")'
     expr = r'(?P<expr>[|](.*?)[|])'
     callfunc = r'(?P<callfunc>[&](.*?)[)])'
-    build_in_funcs = r'(?P<build_in_funcs>(宜家几点){1}|(求其啦){1}|(训){1}|(加啲){1}|(摞走){1}|(嘅长度){1}|(阵先){1}|' \
+    build_in_funcs = r'(?P<build_in_funcs>(宜家几点){1}|(求其啦){1}|(瞓){1}|(加啲){1}|(摞走){1}|(嘅长度){1}|(阵先){1}|' \
                      r'(畀你){1})|(散水){1}'
     patterns = re.compile('|'.join([keywords, ID, num, op, string, expr, callfunc, build_in_funcs]))
     for match in re.finditer(patterns, code):
