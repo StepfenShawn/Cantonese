@@ -1,12 +1,12 @@
 /*
     Cantonese实现阶乘
 */
-$factorial |n| 要做咩:
-    如果 |n == 0| 嘅话 -> {
+$factorial |项数| 要做咩:
+    如果 |项数 系 0| 嘅话 -> {
         返转头 1
     }
     唔系嘅话 -> {
-        返转头 |factorial(n - 1) * n|
+        返转头 |factorial(项数 - 1) * 项数|
     }
 搞掂
 

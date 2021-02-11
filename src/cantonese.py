@@ -1,144 +1,57 @@
 import re
 import sys
 
-keyword = {
-    "PRINT"     : "畀我睇下",
-    "ENDPRINT"  : "点样先",
-    "ASSIGN"    : "讲嘢",
-    "EXIT"      : "同我躝",
-    "IS"        : "系",
-    "ISNOT"     : "唔系",
-    "IF"        : "如果",
-    "THEN"      : "嘅话",
-    "DO"        : "->",
-    "BEGIN"     : "{",
-    "END"       : "}",
-    "TRUE"      : "啱",
-    "FALSE"     : "唔啱",
-    "NONE"      : "冇",
-    "WHILEDO"   : "落操场玩跑步",
-    "WHILE"     : "玩到",
-    "WHILEEND"  : "为止",
-    "CALL"      : "用下",
-    "IMPORT"    : "使下",
-    "IN"        : "喺",
-    "FUNCEND"   : "搞掂",
-    "FUNCBEGIN" : "要做咩",
-    "AND"       : "同埋",
-    "OR"        : "定",
-    "RETURN"    : "返转头",
-    "TRY"       : "执嘢",
-    "EXCEPT"    : "揾到",
-    "FINALLY"   : "执手尾",
-    "RAISE"     : "掟个",
-    "ENDRAISE"  : "来睇下",
-    "TURTLEBEGIN" : "老作一下",
-    "ASSERT"    : "谂下",
-    "GETTYPE"   : "起底",
-    "FROM"      : "从",
-    "TO"        : "行到",
-    "ENDFOR"    : "行晒",
-    "CLASS"     : "咩系",
-    "EXTEND"    : "佢个老豆叫",
-    "METHOD"    : "佢识得",
-    "CLASSEND"  : "明白未啊",
-    "CMD"       : "落Order",
-    "PASS"      : "咩都唔做"
-}
+def cantonese_token(code):
+    keywords = r'(?P<keywords>(畀我睇下){1}|(点样先){1}|(收工){1}|(喺){1}|(定){1}|(老作一下){1}|(起底){1}|' \
+               r'(讲嘢){1}|(唔系){1}|(系){1})|(如果){1}|(嘅话){1}|(->){1}|({){1}|(}){1}|(同埋){1}|(咩都唔做){1}|' \
+               r'(落操场玩跑步){1}|(\$){1}|(用下){1}|(使下){1}|(要做咩){1}|(搞掂){1}|(就){1}|(谂下){1}|(佢嘅){1}|' \
+               r'(玩到){1}|(为止){1}|(返转头){1}|(执嘢){1}|(揾到){1}|(执手尾){1}|(掟个){1}|(来睇下){1}|' \
+               r'(从){1}|(行到){1}|(行晒){1}|(咩系){1}|(佢个老豆叫){1}|(佢识得){1}|(明白未啊){1}|(落Order){1}|' \
+               r'(拍住上){1}|(係){1}|(比唔上){1}|(或者){1}|(辛苦晒啦){1}|(同我躝)|(唔啱){1}|(啱){1}|(冇){1}'
+    kw_get_code = re.findall(re.compile(r'[(](.*?)[)]', re.S), keywords[13 :])
+    keywords_gen_code = ["print", "endprint", "exit", "in", "or", "turtle_begin", "gettype", 
+                         "assign", "is not", "is", "if", "then", "do", "begin", "end", "and", "pass",     
+                         "while_do", "$", "call", "import", "funcbegin", "funcend", "is", "assert", "assign", 
+                         "while", "whi_end", "return", "try", "except", "finally", "raise", "endraise",
+                         "from", "to", "endfor", "class", "extend", "method", "endclass", "cmd", "ass_list", "is",
+                         "<", "or", "exit", "exit", "False", "True", "None"
+            ]
+    num = r'(?P<num>\d+)'
+    ID =  r'(?P<ID>[a-zA-Z_][a-zA-Z_0-9]*)'
+    string = r'(?P<string>\"([^\\\"]|\\.)*\")'
+    expr = r'(?P<expr>[|](.*?)[|])'
+    callfunc = r'(?P<callfunc>[&](.*?)[)])'
+    build_in_funcs = r'(?P<build_in_funcs>(宜家几点){1}|(求其啦){1}|(瞓){1}|(加啲){1}|(摞走){1}|(嘅长度){1}|(阵先){1}|' \
+                     r'(畀你){1}|(散水){1})'
+    bif_get_code = re.findall(re.compile(r'[(](.*?)[)]', re.S), build_in_funcs[19 :])
+    bif_gen_code = ["datetime.datetime.now()", "random.random()", "sleep", "append", "remove", ".__len__()",
+                    "2", "input", "clear"
+    ]
+    patterns = re.compile('|'.join([keywords, ID, num, string, expr, callfunc, build_in_funcs]))
 
-build_in_func = {
-    "GETTIME"   : "宜家几点",
-    "RANDOM"    : "求其啦",
-    "SLEEP"     : "瞓",
-    "APPEND"    : "加啲",
-    "REMOVE"    : "摞走",
-    "GETLEN"    : "嘅长度",
-    "TWO_SECS"  : "阵先",
-    "INPUT"     : "畀你",
-    "CLEAR"     : "散水"
-}
-def trans(code, rep):
-    for r in rep:
-        code = code.replace(r[0], r[1])
-    return code
+    def make_rep(list1, list2):
+        assert len(list1) == len(list2)
+        ret = []
+        for i in range(len(list1)):
+            ret.append([list1[i], list2[i]])
+        return ret
+
+    def trans(lastgroup, code, rep):
+        if lastgroup != 'string' and lastgroup != 'ID':
+            for r in rep:
+                code = code.replace(r[0], r[1])
+        return code
+
+    for match in re.finditer(patterns, code):
+        group = match.group()
+        group = trans(match.lastgroup, group, make_rep(kw_get_code, keywords_gen_code))
+        group = trans(match.lastgroup, group, make_rep(bif_get_code, bif_gen_code))
+        yield [match.lastgroup, group]
     
 def cantonese_run(code, is_to_py):
-    keywords_replace = [
-               # Keywords for cantonese
-               [keyword["PRINT"] , "print"], 
-               [keyword["ENDPRINT"] , "endprint"], 
-               [keyword["EXIT"], "exit"], 
-               [keyword["ASSIGN"], "assign"],
-               ["佢嘅", "assign"], 
-               ["收工", "exit"], 
-               ["辛苦晒啦", "exit"],
-               [keyword["CLASS"], "class"],
-               [keyword["EXTEND"], "extend"],
-               [keyword["METHOD"], "method"],
-               [keyword["CLASSEND"], "endclass"],
-               [keyword["ISNOT"], "is not"],
-               [keyword["IS"], "is"], 
-               [keyword["IF"], "if"], 
-               [keyword["THEN"],"then"], 
-               [keyword["DO"], "do"], 
-               [keyword["BEGIN"], "begin"],
-               [keyword["END"], "end"],
-               [keyword["FUNCBEGIN"], "funcbegin"],
-               [keyword["FUNCEND"], "funcend"], 
-               [keyword["TRUE"], "True"], 
-               [keyword["FALSE"], "False",], 
-               [keyword["NONE"], "None"],
-               [keyword["WHILEDO"], "while_do"], 
-               [keyword["WHILE"], "while"],  
-               [keyword["WHILEEND"], "whi_end"],
-               ["$", "function"],
-               ["就", "is"],
-               ["比唔上", "<"],
-               ["或者", "or"],
-               [keyword["AND"], "and"],
-               [keyword["OR"], "or"],
-               [keyword["CALL"], "call"], 
-               [keyword["IMPORT"], "import"],
-               [keyword["IN"], "in"],
-               [keyword["RETURN"], "return"],
-               [keyword["RAISE"], "raise"],
-               [keyword["ENDRAISE"], "endraise"],
-               [keyword["TURTLEBEGIN"], "turtle_begin"],
-               [keyword["ASSERT"], "assert"],
-               [keyword["GETTYPE"], "gettype"],
-               [keyword["TRY"], "try"],
-               [keyword["EXCEPT"], "except"],
-               [keyword["FINALLY"], "finally"],
-               [keyword["FROM"], "from"],
-               [keyword["TO"], "to"],
-               [keyword["ENDFOR"], "endfor"],
-               [keyword["CMD"], "cmd"],
-               [keyword["PASS"], "pass"]
-            ]
-
-    build_in_func_repl = [
-        [build_in_func["INPUT"], "input"],
-        # Datetime library
-        [build_in_func["GETTIME"], "datetime.datetime.now()"],
-        # Random library
-        [build_in_func["RANDOM"], "random.random()"],
-        # Time library
-        [build_in_func["SLEEP"], "sleep"],
-        [build_in_func["TWO_SECS"], "2"],
-        # List
-        [build_in_func["APPEND"], "append"],
-        [build_in_func["REMOVE"], "remove"],
-        [build_in_func["GETLEN"], ".__len__()"],
-        [build_in_func["CLEAR"], "clear"]
-    ]
-
     tokens = []
     for token in cantonese_token(code):
         tokens.append(token)
-    for i in range(len(tokens)):
-        if tokens[i][0] != 'string':
-            tokens[i][1] = trans(tokens[i][1], keywords_replace)
-            tokens[i][1] = trans(tokens[i][1], build_in_func_repl)
     cantonese_parser = Parser(tokens, [])
     cantonese_parser.parse()
     run(cantonese_parser.Node, True)
@@ -146,25 +59,7 @@ def cantonese_run(code, is_to_py):
         print(TO_PY_CODE)
     else:
         exec(TO_PY_CODE, variable)
-
-def cantonese_token(code):
-    keywords = r'(?P<keywords>(畀我睇下){1}|(点样先){1}|(收工){1}|(喺){1}|(定){1}|(老作一下){1}|(起底){1}|' \
-               r'(讲嘢){1}|(系){1})|(唔系){1}|(如果){1}|(嘅话){1}|(->){1}|({){1}|(}){1}|(同埋){1}|(咩都唔做){1}|' \
-               r'(落操场玩跑步){1}|(\$){1}|(用下){1}|(使下){1}|(要做咩){1}|(搞掂){1}|(就){1}|(谂下){1}|(佢嘅){1}|' \
-               r'(玩到){1}|(为止){1}|(返转头){1}|(执嘢){1}|(揾到){1}|(执手尾){1}|(掟个){1}|(来睇下){1}|' \
-               r'(从){1}|(行到){1}|(行晒){1}|(咩系){1}|(佢个老豆叫){1}|(佢识得){1}|(明白未啊){1}|(落Order){1}'
-    op =  r'(?P<op>\+\+|\+=|\+|--|-=|-|\*=|/=|/|%=|%)'
-    num = r'(?P<num>\d+)'
-    ID =  r'(?P<ID>[a-zA-Z_][a-zA-Z_0-9]*)'
-    string = r'(?P<string>\"([^\\\"]|\\.)*\")'
-    expr = r'(?P<expr>[|](.*?)[|])'
-    callfunc = r'(?P<callfunc>[&](.*?)[)])'
-    build_in_funcs = r'(?P<build_in_funcs>(宜家几点){1}|(求其啦){1}|(瞓){1}|(加啲){1}|(摞走){1}|(嘅长度){1}|(阵先){1}|' \
-                     r'(畀你){1})|(散水){1}'
-    patterns = re.compile('|'.join([keywords, ID, num, op, string, expr, callfunc, build_in_funcs]))
-    for match in re.finditer(patterns, code):
-        yield [match.lastgroup, match.group()]
-
+    
 def node_print_new(Node, arg):
     Node.append(["node_print", arg])
 
@@ -237,6 +132,9 @@ def node_method_new(Node, name, args, stmt):
 
 def node_cmd_new(Node, cmd):
     Node.append(["node_cmd", cmd])
+
+def node_list_new(Node, name, list):
+    Node.append(["node_list", name, list])
 
 class Parser(object):
     def __init__(self, tokens, Node):
@@ -389,7 +287,7 @@ class Parser(object):
                 node_loop_new(self.Node, cond, node_while)
                 self.skip(2) # Skip the "end"
             
-            elif self.match("function"):
+            elif self.match("$"): # Case "function"
                 if self.get(1)[0] == 'expr':
                    func_name = self.get(0)
                    args = self.get_value(self.get(1))
@@ -460,10 +358,17 @@ class Parser(object):
                     Parser(for_stmt, node_for).parse()
                     node_for_new(self.Node, iterating_var, seq, node_for)
 
+                elif self.get(1)[1] == 'do':
+                    list = self.get_value(self.get(-1))
+                    name = self.get_value(self.get(2))
+                    node_list_new(self.Node, name, list)
+                    self.skip(3)
+
                 elif self.get(1)[0] != 'keywords' and self.get(1)[0] != 'call_func':
                     args = self.get_value(self.get(1))
                     node_build_in_func_call_new(self.Node, self.get_value(self.get(-1)), self.get_value(self.get(0)), args)
                     self.skip(2)
+                
                 else:
                     args = "None"
                     node_build_in_func_call_new(self.Node, self.get_value(self.get(-1)), self.get_value(self.get(0)), args)
@@ -490,6 +395,7 @@ class Parser(object):
                 node_try_new(self.Node, node_try)
             
             elif self.match("except"):
+                print("here")
                 _except = self.get_value(self.get(0))
                 self.skip(4) # SKip the "except", "then", "begin", "do"
                 should_end = 1
@@ -661,6 +567,9 @@ def run(Nodes, to_py, TAB = '', label = ''):
         if node[0] == "node_return":
             check(TAB)
             TO_PY_CODE += TAB + "return " + node[1][1] + "\n"
+        if node[0] == "node_list":
+            check(TAB)
+            TO_PY_CODE += TAB + node[1][1] + " = [" + node[2][1] + "]\n"
         if node[0] == "node_raise":
             check(TAB)
             TO_PY_CODE += TAB + "raise " + node[1][1] + "\n"
