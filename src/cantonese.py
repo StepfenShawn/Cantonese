@@ -8,7 +8,7 @@ def cantonese_token(code):
                r'(玩到){1}|(为止){1}|(返转头){1}|(执嘢){1}|(揾到){1}|(执手尾){1}|(掟个){1}|(来睇下){1}|' \
                r'(从){1}|(行到){1}|(行晒){1}|(咩系){1}|(佢个老豆叫){1}|(佢识得){1}|(明白未啊){1}|(落Order){1}|' \
                r'(拍住上){1}|(係){1}|(比唔上){1}|(或者){1}|(辛苦晒啦){1}|(同我躝)|(唔啱){1}|(啱){1}|(冇){1}'
-    kw_get_code = re.findall(re.compile(r'[(](.*?)[)]', re.S), keywords[13 :])
+    kw_get_code = re.findall(re.compile(r'[(](.*?)[)]', re.S), keywords[13 : ])
     keywords_gen_code = ["print", "endprint", "exit", "in", "or", "turtle_begin", "gettype", 
                          "assign", "is not", "is", "if", "then", "do", "begin", "end", "and", "pass",     
                          "while_do", "$", "call", "import", "funcbegin", "funcend", "is", "assert", "assign", 

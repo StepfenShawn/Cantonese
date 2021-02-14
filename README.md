@@ -1,4 +1,5 @@
 # 粤语编程语言
+如果你不会粤语，请看[5分钟学会粤语](doc/cantonese.md)  
 <a href="#0">引言</a>  
 <a href="#1">咋咋淋入门</a>  
 &emsp;&emsp;<a href="#2">Hello World</a>  
