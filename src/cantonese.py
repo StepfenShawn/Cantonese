@@ -7,25 +7,25 @@ def cantonese_token(code):
                r'(落操场玩跑步){1}|(\$){1}|(用下){1}|(使下){1}|(要做咩){1}|(搞掂){1}|(就){1}|(谂下){1}|(佢嘅){1}|' \
                r'(玩到){1}|(为止){1}|(返转头){1}|(执嘢){1}|(揾到){1}|(执手尾){1}|(掟个){1}|(来睇下){1}|' \
                r'(从){1}|(行到){1}|(行晒){1}|(咩系){1}|(佢个老豆叫){1}|(佢识得){1}|(明白未啊){1}|(落Order){1}|' \
-               r'(拍住上){1}|(係){1}|(比唔上){1}|(或者){1}|(辛苦晒啦){1}|(同我躝)|(唔啱){1}|(啱){1}|(冇){1}'
+               r'(拍住上){1}|(係){1}|(比唔上){1}|(或者){1}|(辛苦晒啦){1}|(同我躝)|(唔啱){1}|(啱){1}|(冇){1}|' \
+               r'(有条扑街叫){1}|(顶你){1}|(丢你){1}'
     kw_get_code = re.findall(re.compile(r'[(](.*?)[)]', re.S), keywords[13 : ])
     keywords_gen_code = ["print", "endprint", "exit", "in", "or", "turtle_begin", "gettype", 
                          "assign", "is not", "is", "if", "then", "do", "begin", "end", "and", "pass",     
                          "while_do", "$", "call", "import", "funcbegin", "funcend", "is", "assert", "assign", 
                          "while", "whi_end", "return", "try", "except", "finally", "raise", "endraise",
                          "from", "to", "endfor", "class", "extend", "method", "endclass", "cmd", "ass_list", "is",
-                         "<", "or", "exit", "exit", "False", "True", "None"
+                         "<", "or", "exit", "exit", "False", "True", "None", "stackinit", "push", "pop"
             ]
     num = r'(?P<num>\d+)'
     ID =  r'(?P<ID>[a-zA-Z_][a-zA-Z_0-9]*)'
     string = r'(?P<string>\"([^\\\"]|\\.)*\")'
     expr = r'(?P<expr>[|](.*?)[|])'
     callfunc = r'(?P<callfunc>[&](.*?)[)])'
-    build_in_funcs = r'(?P<build_in_funcs>(宜家几点){1}|(求其啦){1}|(瞓){1}|(加啲){1}|(摞走){1}|(嘅长度){1}|(阵先){1}|' \
+    build_in_funcs = r'(?P<build_in_funcs>(瞓){1}|(加啲){1}|(摞走){1}|(嘅长度){1}|(阵先){1}|' \
                      r'(畀你){1}|(散水){1})'
     bif_get_code = re.findall(re.compile(r'[(](.*?)[)]', re.S), build_in_funcs[19 :])
-    bif_gen_code = ["datetime.datetime.now()", "random.random()", "sleep", "append", "remove", ".__len__()",
-                    "2", "input", "clear"
+    bif_gen_code = ["sleep", "append", "remove", ".__len__()", "2", "input", "clear"
     ]
     patterns = re.compile('|'.join([keywords, ID, num, string, expr, callfunc, build_in_funcs]))
 
@@ -48,6 +48,23 @@ def cantonese_token(code):
         group = trans(match.lastgroup, group, make_rep(bif_get_code, bif_gen_code))
         yield [match.lastgroup, group]
     
+def cantonese_lib_import(name, tab, code):
+    if name == "random":
+        return cantonese_random_init(tab, code)
+    elif name == "datetime":
+        return cantonese_datetime_init(tab, code)
+    else:
+        print("揾唔到你要嘅库: " + name + "! ")
+        raise ImportError
+
+def cantonese_random_init(tab, code):
+    code += tab + "求其啦 = random.random()\n"
+    return code
+
+def cantonese_datetime_init(tab, code):
+    code += tab + "宜家几点 = datetime.datetime.now()\n"
+    return code
+
 def cantonese_run(code, is_to_py):
     tokens = []
     for token in cantonese_token(code):
@@ -136,11 +153,22 @@ def node_cmd_new(Node, cmd):
 def node_list_new(Node, name, list):
     Node.append(["node_list", name, list])
 
+def node_stack_new(Node, name):
+    Node.append(["node_stack", name])
+
 class Parser(object):
     def __init__(self, tokens, Node):
         self.tokens = tokens
         self.pos = 0
         self.Node = Node
+    
+    def syntax_check(self, token, tag):
+        if tag == "value" and self.get(0)[1] == token:
+            return
+        elif tag == "type" and self.get(0)[0] == token:
+            return
+        else:
+            raise "Syntax error!"
 
     def get(self, offset):
         if self.pos + offset >= len(self.tokens):
@@ -395,7 +423,6 @@ class Parser(object):
                 node_try_new(self.Node, node_try)
             
             elif self.match("except"):
-                print("here")
                 _except = self.get_value(self.get(0))
                 self.skip(4) # SKip the "except", "then", "begin", "do"
                 should_end = 1
@@ -481,6 +508,24 @@ class Parser(object):
                 node_cmd_new(self.Node, self.get_value(self.get(0)))
                 self.skip(1)
             
+            elif self.match("stackinit"):
+                node_stack_new(self.Node, self.get_value(self.get(0)))
+                self.skip(1)
+
+            elif self.match("push"):
+                self.syntax_check("do", "value")
+                self.skip(1)
+                self.Node.append(["stack_push", self.get_value(self.get(0)), self.get_value(self.\
+                    get(1))])
+                self.skip(2)
+            
+            elif self.match("pop"):
+                self.syntax_check("do", "value")
+                self.skip(1)
+                self.Node.append(["stack_pop", self.get_value(self.get(0)), self.get_value(self.\
+                    get(1))])
+                self.skip(1)
+
             else:
                 break
 
@@ -501,44 +546,56 @@ def run(Nodes, to_py, TAB = '', label = ''):
         if node[0] == "node_print":
             check(TAB)
             TO_PY_CODE += TAB + "print(" + node[1][1] + ")\n"
+        
         if node[0] == "node_sleep":
             check(TAB)
+            TO_PY_CODE += TAB + "import time\n"
             TO_PY_CODE += TAB + "time.sleep(" + node[1][1] + ")\n"
+        
         if node[0] == "node_import":
             check(TAB)
-            TO_PY_CODE += TAB + "import " + node[1][1] + "\n"
+            TO_PY_CODE += TAB + "import " + node[1][1] + "\n" + \
+            cantonese_lib_import(node[1][1], TAB, TO_PY_CODE) + '\n'
+
         if node[0] == "node_exit":
             check(TAB)
             TO_PY_CODE += TAB + "exit()\n"
+        
         if node[0] == "node_let":
             check(TAB)
-            TO_PY_CODE += TAB + node[1][1] + "=" + node[2][1] + "\n"
+            TO_PY_CODE += TAB + node[1][1] + " = " + node[2][1] + "\n"
+        
         if node[0] == "node_if":
             check(TAB)
             TO_PY_CODE += TAB + "if " + node[1][1] + ":\n"
             run(node[2], True, TAB + '\t', 'if_run')
             label = ''
+        
         if node[0] == "node_elif":
             check(TAB)
             TO_PY_CODE += TAB + "elif " + node[1][1] + ":\n"
             run(node[2], True, TAB + '\t', 'elif_run')
             label = ''
+        
         if node[0] == "node_else":
             check(TAB)
             TO_PY_CODE += TAB + "else:\n"
             run(node[1], True, TAB + '\t', 'else_run')
             label = ''
+        
         if node[0] == "node_loop":
             check(TAB)
             TO_PY_CODE += TAB + "while " + node[1][1] + ":\n"
             run(node[2], True, TAB + '\t', 'whi_run')
             label = ''
+        
         if node[0] == "node_for":
             check(TAB)
             TO_PY_CODE += TAB + "for " + node[1][1] + " in " + "range" + \
                           node[2] + ":\n"
             run(node[3], True, TAB + '\t', "for_run")
             label = ''
+        
         if node[0] == "node_fundef":
             # check if has args
             if node[2] == 'None':
@@ -551,12 +608,15 @@ def run(Nodes, to_py, TAB = '', label = ''):
                 TO_PY_CODE += TAB + "def " + node[1][1] + "(" + node[2][1] + "):\n"
                 run(node[3], True, TAB + '\t', 'func_run')
                 label = ''
+        
         if node[0] == "node_call":
             check(TAB)
             TO_PY_CODE += TAB + node[1][1] + "\n"
+        
         if node[0] == "node_pass":
             check(TAB)
             TO_PY_CODE += TAB + "pass\n"
+        
         if node[0] == "node_bcall":
             check(TAB)
             # check if has args
@@ -564,47 +624,59 @@ def run(Nodes, to_py, TAB = '', label = ''):
                 TO_PY_CODE += TAB + node[1][1] + "." + node[2][1] + "(" + node[3][1] + ")\n"
             else:
                 TO_PY_CODE += TAB + node[1][1] + "." + node[2][1] + "()\n"
+        
         if node[0] == "node_return":
             check(TAB)
             TO_PY_CODE += TAB + "return " + node[1][1] + "\n"
+        
         if node[0] == "node_list":
             check(TAB)
             TO_PY_CODE += TAB + node[1][1] + " = [" + node[2][1] + "]\n"
+        
         if node[0] == "node_raise":
             check(TAB)
             TO_PY_CODE += TAB + "raise " + node[1][1] + "\n"
+        
         if node[0] == "node_cmd":
             check(TAB)
             TO_PY_CODE += TAB + "os.system(" + node[1][1] + ")\n"
+        
         if node[0] == "node_turtle":
             exec(node[1], variable)
+        
         if node[0] == "node_assert":
             check(TAB)
             TO_PY_CODE += TAB + "assert " + node[1][1] + "\n"
+        
         if node[0] == "node_gettype":
             check(TAB)
             TO_PY_CODE += TAB + "print(type(" + node[1][1] + "))\n"
+        
         if node[0] == "node_try":
             check(TAB)
             TO_PY_CODE += TAB + "try:\n"
             run(node[1], True, TAB + '\t', 'try_run')
             label = ''
+        
         if node[0] == "node_except":
             check(TAB)
             TO_PY_CODE += TAB + "except " + node[1][1] + ":\n" 
             run(node[2], True, TAB + '\t', 'except_run')
             label = ''
+        
         if node[0] == "node_finally":
             check(TAB)
             TO_PY_CODE += TAB + "finally:\n"
             run(node[1], True, TAB + '\t', 'finally_run')
             label = ''
+
         if node[0] == "node_class":
             check(TAB)
             TO_PY_CODE += TAB + "class " + node[1][1] + "(" \
                           + node[2][1] + "):\n"
             run(node[3], True, TAB + '\t', 'class_run')
             label = ''
+
         if node[0] == "node_method":
             check(TAB)
             if node[2] == 'None':
@@ -613,6 +685,30 @@ def run(Nodes, to_py, TAB = '', label = ''):
                 TO_PY_CODE += TAB + "def " + node[1][1] + "(self, " + node[2][1] + "):\n"
             run(node[3], True, TAB + '\t', "method_run")
             label = ''
+
+        if node[0] == "node_stack":
+            check(TAB)
+            TO_PY_CODE += TAB + "class stack(object):\n" + \
+                  "\tdef __init__(self):\n" + \
+                  "\t\tself.stack = []\n" + \
+                  "\tdef __str__(self):\n" + \
+                  "\t\treturn 'Stack: ' + str(self.stack)\n" + \
+                  "\tdef push(self, value):\n" + \
+                  "\t\tself.stack.append(value)\n" + \
+                  "\tdef pop(self):\n" + \
+                  "\t\tif self.stack:\n" + \
+                  "\t\t\tself.stack.pop()\n" + \
+                  "\t\telse:\n" + \
+                  "\t\t\traise LookupError('stack 畀你丢空咗!')\n"
+            TO_PY_CODE += TAB + node[1][1] + " = stack()\n"
+
+        if node[0] == "stack_push":
+            check(TAB)
+            TO_PY_CODE += TAB + node[1][1] + ".push(" + node[2][1] +")\n"
+        
+        if node[0] == "stack_pop":
+            check(TAB)
+            TO_PY_CODE += TAB + node[1][1] + ".pop()\n"
 
 def main():
     try:
