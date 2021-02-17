@@ -19,10 +19,11 @@
 &emsp;&emsp;<a href="#15">睇睇时间</a>  
 &emsp;&emsp;<a href="#16">暂停</a>  
 &emsp;&emsp;<a href="#17">嚟个随机数</a>  
-&emsp;&emsp;<a href="#18">海龟画图</a>  
-&emsp;&emsp;<a href="#19">迷宫游戏仔</a>  
-<a href="#20">点样运行?</a>  
-<a href="#21">TODOs</a>  
+&emsp;&emsp;<a href="#18">计算相关系数</a>  
+&emsp;&emsp;<a href="#19">海龟画图</a>  
+&emsp;&emsp;<a href="#20">迷宫游戏仔</a>  
+<a href="#21">点样运行?</a>  
+<a href="#22">TODOs</a>  
 # <a name="0">引言</a>
 粤语编程语言系咩? 佢系一门用粤语嚟同计算机沟通嘅编程语言。  
 喺呢个语言度，计算机可以读明你写嘅粤语。所以话，你可以用粤语嚟操作(虐待)计算机。
@@ -194,7 +195,19 @@ Stack: [1,2]
 ```
 0.15008236307867207
 ```  
-### <a name="18">海龟绘图</a>
+### <a name="18">计算相关系数</a>
+声明两个list, 计算相关系数:  
+```
+使下 math
+|2.165, 1.688, 1.651, 2.229| 拍住上 -> |A|
+|2.060, 1.822, 1.834, 2.799| 拍住上 -> |B|
+畀我睇下 |A同B有几衬| 点样先？
+```
+运行结果:  
+```
+0.8066499427138474
+```
+### <a name="19">海龟绘图</a>
 ```
 老作一下 -> {
     首先: |画个圈(100)|
@@ -205,7 +218,7 @@ Stack: [1,2]
 运行结果:    
 ![turtle_result](img/turtle_etc.jpg)  
 
-### <a name="19">迷宫游戏仔</a>
+### <a name="20">迷宫游戏仔</a>
 [代码](examples/game.cantonese)  
 运行结果:  
 ![game_result](img/game_result.jpg)
@@ -214,7 +227,7 @@ Stack: [1,2]
 [喺呢度](examples/)睇下更多例子.  
 
 
-# <a name="20">点样运行?</a>
+# <a name="21">点样运行?</a>
 Cantonese 语言运行喺 Python 虚拟机上，环境净系支持 Python3，因为噉先符合广东人先进嘅思想!  
 ```shell
 python src/cantonese.py [-文件名]
@@ -232,7 +245,7 @@ python src/cantonese.py examples/helloworld.cantonese -to_py
 print(" Hello World! ")
 exit()
 ```
-# <a name="21">TODOs</a>
+# <a name="22">TODOs</a>
 本项目代码写得很陋(烂)，欢迎各个粤语同埋编程爱好者一齐讨论同贡献！为粤语文化遗产嘅保护贡献出自己嘅一份力量！
 今后要做咩:  
 * 完善语法错误检查

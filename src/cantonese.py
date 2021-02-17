@@ -38,6 +38,10 @@ def cantonese_token(code):
 
     def trans(lastgroup, code, rep):
         if lastgroup != 'string' and lastgroup != 'ID':
+            if lastgroup == 'expr':
+                p = re.match(r'\|(.*)同(.*)有几衬\|', code, re.M|re.I)
+                if p:
+                    code = " corr(" + p.group(1) +", " + p.group(2) + ") "
             for r in rep:
                 code = code.replace(r[0], r[1])
         return code
@@ -53,6 +57,8 @@ def cantonese_lib_import(name, tab, code):
         return cantonese_random_init(tab, code)
     elif name == "datetime":
         return cantonese_datetime_init(tab, code)
+    elif name == "math":
+        return cantonese_math_init(tab, code)
     else:
         return ""
 
@@ -62,6 +68,20 @@ def cantonese_random_init(tab, code):
 
 def cantonese_datetime_init(tab, code):
     code += tab + "宜家几点 = datetime.datetime.now()\n"
+    return code
+
+def cantonese_math_init(tab, code):
+    code += tab + "def corr(a, b):\n" + \
+                  "\tif len(a) == 0 or len(b) == 0:\n" + \
+                  "\t\treturn None\n" + \
+                  "\ta_avg = sum(a)/len(a)\n" + \
+                  "\tb_avg = sum(b)/len(b)\n" + \
+                  "\tcov_ab = sum([(x - a_avg) * (y - b_avg) " + \
+                   "for x, y in zip(a, b)])\n" + \
+                  "\tsq = math.sqrt(sum([(x - a_avg)**2 for x in a])" + \
+                  "* sum([(x - b_avg) ** 2 for x in b]))\n" + \
+                  "\tcorr_factor = cov_ab / sq\n" + \
+                  "\treturn corr_factor\n"
     return code
 
 def cantonese_run(code, is_to_py):
