@@ -1,5 +1,6 @@
 # 粤语编程语言
-如果你不会粤语，请看[5分钟学会粤语](doc/cantonese.md)  
+如果你不会粤语或编程，请看[5分钟边学编程边学粤语](doc/cantonese.md)  
+# 目录
 <a href="#0">引言</a>  
 <a href="#1">咋咋淋入门</a>  
 &emsp;&emsp;<a href="#2">Hello World</a>  
@@ -12,7 +13,7 @@
 &emsp;&emsp;<a href="#9">断言语句</a>  
 &emsp;&emsp;<a href="#10">错误捕捉语句</a>  
 &emsp;&emsp;<a href="#11">调用Python库</a>  
-&emsp;&emsp;<a href="#12">面向对象编程</a> 
+&emsp;&emsp;<a href="#12">面向对象编程</a>  
 &emsp;&emsp;<a href="#13">栈嘅使用</a>  
 <a href="#14">更多例子</a>  
 &emsp;&emsp;<a href="#15">睇睇时间</a>  
@@ -181,7 +182,6 @@ Stack: [1,2]
 ```
 ### <a name="16">暂停</a>
 ```
-使下 time
 瞓阵先 /* 暂停2s */
 瞓 5s /* 暂停5s */
 ```  

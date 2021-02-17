@@ -54,8 +54,7 @@ def cantonese_lib_import(name, tab, code):
     elif name == "datetime":
         return cantonese_datetime_init(tab, code)
     else:
-        print("揾唔到你要嘅库: " + name + "! ")
-        raise ImportError
+        return ""
 
 def cantonese_random_init(tab, code):
     code += tab + "求其啦 = random.random()\n"
