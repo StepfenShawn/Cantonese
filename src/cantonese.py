@@ -19,15 +19,17 @@ def cantonese_token(code):
             ]
     num = r'(?P<num>\d+)'
     ID =  r'(?P<ID>[a-zA-Z_][a-zA-Z_0-9]*)'
+    op = r'(?P<op>(加){1}|(减){1}|(乘){1}|(整除){1}|(除){1}|(余){1})'
+    op_get_code = re.findall(re.compile(r'[(](.*?)[)]', re.S), op[5 : ])
+    op_gen_code = ["+", "-", "*", "//", "/", "%"]
     string = r'(?P<string>\"([^\\\"]|\\.)*\")'
     expr = r'(?P<expr>[|](.*?)[|])'
     callfunc = r'(?P<callfunc>[&](.*?)[)])'
     build_in_funcs = r'(?P<build_in_funcs>(瞓){1}|(加啲){1}|(摞走){1}|(嘅长度){1}|(阵先){1}|' \
                      r'(畀你){1}|(散水){1})'
     bif_get_code = re.findall(re.compile(r'[(](.*?)[)]', re.S), build_in_funcs[19 :])
-    bif_gen_code = ["sleep", "append", "remove", ".__len__()", "2", "input", "clear"
-    ]
-    patterns = re.compile('|'.join([keywords, ID, num, string, expr, callfunc, build_in_funcs]))
+    bif_gen_code = ["sleep", "append", "remove", ".__len__()", "2", "input", "clear"]
+    patterns = re.compile('|'.join([keywords, ID, num, string, expr, callfunc, build_in_funcs, op]))
 
     def make_rep(list1, list2):
         assert len(list1) == len(list2)
@@ -50,6 +52,7 @@ def cantonese_token(code):
         group = match.group()
         group = trans(match.lastgroup, group, make_rep(kw_get_code, keywords_gen_code))
         group = trans(match.lastgroup, group, make_rep(bif_get_code, bif_gen_code))
+        group = trans(match.lastgroup, group, make_rep(op_get_code, op_gen_code))
         yield [match.lastgroup, group]
     
 def cantonese_lib_import(name, tab, code):
