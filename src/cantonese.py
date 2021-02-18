@@ -87,15 +87,33 @@ def cantonese_math_init(tab, code):
                   "\treturn corr_factor\n"
     return code
 
-def cantonese_run(code, is_to_py):
+def cantonese_run(code, is_to_py, is_to_web):
     tokens = []
     for token in cantonese_token(code):
         tokens.append(token)
     cantonese_parser = Parser(tokens, [])
     cantonese_parser.parse()
-    run(cantonese_parser.Node, True)
+    run(cantonese_parser.Node, to_html = is_to_web)
     if is_to_py:
         print(TO_PY_CODE)
+    elif is_to_web:
+        import socket
+        ip_port = ('127.0.0.1', 80)
+        back_log = 10
+        buffer_size = 1024
+        webserver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        webserver.bind(ip_port)
+        webserver.listen(back_log)
+        print("Cantonese Web Starting at 127.0.0.1:80 ...")
+        while True:
+            conn, addr = webserver.accept()
+            recvdata = conn.recv(buffer_size)
+            conn.sendall(bytes("HTTP/1.1 201 OK\r\n\r\n", "utf-8"))
+            conn.sendall(bytes(TO_HTML, "utf-8"))
+            conn.close()
+            if input("input Y to exit:"):
+                print("Cantonese Web exiting...")
+                break
     else:
         exec(TO_PY_CODE, variable)
     
@@ -553,8 +571,9 @@ class Parser(object):
 
 variable = {}
 TO_PY_CODE = ""
+TO_HTML = ""
 # TODO: Build a simple vm for Cantonese  
-def run(Nodes, to_py, TAB = '', label = ''):
+def run(Nodes, TAB = '', label = '', to_html = False):
     def check(tab):
         if label != 'whi_run' and label != 'if_run' and label != 'else_run' and  \
             label != 'elif_run' and label != "func_run" and label != "try_run" and \
@@ -562,12 +581,15 @@ def run(Nodes, to_py, TAB = '', label = ''):
             label != "class_run" and label != "method_run":
             tab = ''
     global TO_PY_CODE
+    global TO_HTML
     if Nodes == None:
         return None
     for node in Nodes:
         if node[0] == "node_print":
             check(TAB)
             TO_PY_CODE += TAB + "print(" + node[1][1] + ")\n"
+            if to_html:
+                TO_HTML += "<h1>" + node[1][1] + "</h1>"
         
         if node[0] == "node_sleep":
             check(TAB)
@@ -590,32 +612,32 @@ def run(Nodes, to_py, TAB = '', label = ''):
         if node[0] == "node_if":
             check(TAB)
             TO_PY_CODE += TAB + "if " + node[1][1] + ":\n"
-            run(node[2], True, TAB + '\t', 'if_run')
+            run(node[2], TAB + '\t', 'if_run')
             label = ''
         
         if node[0] == "node_elif":
             check(TAB)
             TO_PY_CODE += TAB + "elif " + node[1][1] + ":\n"
-            run(node[2], True, TAB + '\t', 'elif_run')
+            run(node[2], TAB + '\t', 'elif_run')
             label = ''
         
         if node[0] == "node_else":
             check(TAB)
             TO_PY_CODE += TAB + "else:\n"
-            run(node[1], True, TAB + '\t', 'else_run')
+            run(node[1], TAB + '\t', 'else_run')
             label = ''
         
         if node[0] == "node_loop":
             check(TAB)
             TO_PY_CODE += TAB + "while " + node[1][1] + ":\n"
-            run(node[2], True, TAB + '\t', 'whi_run')
+            run(node[2], TAB + '\t', 'whi_run')
             label = ''
         
         if node[0] == "node_for":
             check(TAB)
             TO_PY_CODE += TAB + "for " + node[1][1] + " in " + "range" + \
                           node[2] + ":\n"
-            run(node[3], True, TAB + '\t', "for_run")
+            run(node[3], TAB + '\t', "for_run")
             label = ''
         
         if node[0] == "node_fundef":
@@ -623,12 +645,12 @@ def run(Nodes, to_py, TAB = '', label = ''):
             if node[2] == 'None':
                 check(TAB)
                 TO_PY_CODE += TAB + "def " + node[1][1] + "():\n"
-                run(node[3], True, TAB + '\t', 'func_run')
+                run(node[3], TAB + '\t', 'func_run')
                 label = ''
             else:
                 check(TAB)
                 TO_PY_CODE += TAB + "def " + node[1][1] + "(" + node[2][1] + "):\n"
-                run(node[3], True, TAB + '\t', 'func_run')
+                run(node[3], TAB + '\t', 'func_run')
                 label = ''
         
         if node[0] == "node_call":
@@ -677,26 +699,26 @@ def run(Nodes, to_py, TAB = '', label = ''):
         if node[0] == "node_try":
             check(TAB)
             TO_PY_CODE += TAB + "try:\n"
-            run(node[1], True, TAB + '\t', 'try_run')
+            run(node[1], TAB + '\t', 'try_run')
             label = ''
         
         if node[0] == "node_except":
             check(TAB)
             TO_PY_CODE += TAB + "except " + node[1][1] + ":\n" 
-            run(node[2], True, TAB + '\t', 'except_run')
+            run(node[2], TAB + '\t', 'except_run')
             label = ''
         
         if node[0] == "node_finally":
             check(TAB)
             TO_PY_CODE += TAB + "finally:\n"
-            run(node[1], True, TAB + '\t', 'finally_run')
+            run(node[1], TAB + '\t', 'finally_run')
             label = ''
 
         if node[0] == "node_class":
             check(TAB)
             TO_PY_CODE += TAB + "class " + node[1][1] + "(" \
                           + node[2][1] + "):\n"
-            run(node[3], True, TAB + '\t', 'class_run')
+            run(node[3], TAB + '\t', 'class_run')
             label = ''
 
         if node[0] == "node_method":
@@ -705,7 +727,7 @@ def run(Nodes, to_py, TAB = '', label = ''):
                 TO_PY_CODE += TAB + "def " + node[1][1] + "(self):\n"
             else:
                 TO_PY_CODE += TAB + "def " + node[1][1] + "(self, " + node[2][1] + "):\n"
-            run(node[3], True, TAB + '\t', "method_run")
+            run(node[3], TAB + '\t', "method_run")
             label = ''
 
         if node[0] == "node_stack":
@@ -740,9 +762,15 @@ def main():
                 # Skip the comment
                 code = re.sub(re.compile(r'/\*.*?\*/', re.S), ' ', code)
                 is_to_py = False
-                if len(sys.argv) == 3 and sys.argv[2] == "-to_py":
-                    is_to_py = True
-                cantonese_run(code, is_to_py)
+                is_to_py = False
+                if len(sys.argv) == 3:
+                    if sys.argv[2] == "-to_py":
+                        is_to_py = True
+                    elif sys.argv[2] == "-to_web":
+                        is_to_web = True
+                    else:
+                        pass
+                cantonese_run(code, is_to_py, is_to_web)
         else:
             print("你想点啊? (请输入你嘅文件)")
     except FileNotFoundError:
