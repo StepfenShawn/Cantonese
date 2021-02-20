@@ -8,14 +8,14 @@ def cantonese_token(code):
                r'(玩到){1}|(为止){1}|(返转头){1}|(执嘢){1}|(揾到){1}|(执手尾){1}|(掟个){1}|(来睇下){1}|' \
                r'(从){1}|(行到){1}|(行晒){1}|(咩系){1}|(佢个老豆叫){1}|(佢识得){1}|(明白未啊){1}|(落Order){1}|' \
                r'(拍住上){1}|(係){1}|(比唔上){1}|(或者){1}|(辛苦晒啦){1}|(同我躝)|(唔啱){1}|(啱){1}|(冇){1}|' \
-               r'(有条扑街叫){1}|(顶你){1}|(丢你){1}'
+               r'(有条扑街叫){1}|(顶你){1}|(丢你){1}|(嗌){1}|(过嚟估下){1}'
     kw_get_code = re.findall(re.compile(r'[(](.*?)[)]', re.S), keywords[13 : ])
     keywords_gen_code = ["print", "endprint", "exit", "in", "or", "turtle_begin", "gettype", 
                          "assign", "is not", "is", "if", "then", "do", "begin", "end", "and", "pass",     
                          "while_do", "$", "call", "import", "funcbegin", "funcend", "is", "assert", "assign", 
                          "while", "whi_end", "return", "try", "except", "finally", "raise", "endraise",
                          "from", "to", "endfor", "class", "extend", "method", "endclass", "cmd", "ass_list", "is",
-                         "<", "or", "exit", "exit", "False", "True", "None", "stackinit", "push", "pop"
+                         "<", "or", "exit", "exit", "False", "True", "None", "stackinit", "push", "pop", "model", "mod_new"
             ]
     num = r'(?P<num>\d+)'
     ID =  r'(?P<ID>[a-zA-Z_][a-zA-Z_0-9]*)'
@@ -54,68 +54,6 @@ def cantonese_token(code):
         group = trans(match.lastgroup, group, make_rep(bif_get_code, bif_gen_code))
         group = trans(match.lastgroup, group, make_rep(op_get_code, op_gen_code))
         yield [match.lastgroup, group]
-    
-def cantonese_lib_import(name, tab, code):
-    if name == "random":
-        return cantonese_random_init(tab, code)
-    elif name == "datetime":
-        return cantonese_datetime_init(tab, code)
-    elif name == "math":
-        return cantonese_math_init(tab, code)
-    else:
-        return ""
-
-def cantonese_random_init(tab, code):
-    code += tab + "求其啦 = random.random()\n"
-    return code
-
-def cantonese_datetime_init(tab, code):
-    code += tab + "宜家几点 = datetime.datetime.now()\n"
-    return code
-
-def cantonese_math_init(tab, code):
-    code += tab + "def corr(a, b):\n" + \
-                  "\tif len(a) == 0 or len(b) == 0:\n" + \
-                  "\t\treturn None\n" + \
-                  "\ta_avg = sum(a)/len(a)\n" + \
-                  "\tb_avg = sum(b)/len(b)\n" + \
-                  "\tcov_ab = sum([(x - a_avg) * (y - b_avg) " + \
-                   "for x, y in zip(a, b)])\n" + \
-                  "\tsq = math.sqrt(sum([(x - a_avg)**2 for x in a])" + \
-                  "* sum([(x - b_avg) ** 2 for x in b]))\n" + \
-                  "\tcorr_factor = cov_ab / sq\n" + \
-                  "\treturn corr_factor\n"
-    return code
-
-def cantonese_run(code, is_to_py, is_to_web):
-    tokens = []
-    for token in cantonese_token(code):
-        tokens.append(token)
-    cantonese_parser = Parser(tokens, [])
-    cantonese_parser.parse()
-    run(cantonese_parser.Node, to_html = is_to_web)
-    if is_to_py:
-        print(TO_PY_CODE)
-    elif is_to_web:
-        import socket
-        ip_port = ('127.0.0.1', 80)
-        back_log = 10
-        buffer_size = 1024
-        webserver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        webserver.bind(ip_port)
-        webserver.listen(back_log)
-        print("Cantonese Web Starting at 127.0.0.1:80 ...")
-        while True:
-            conn, addr = webserver.accept()
-            recvdata = conn.recv(buffer_size)
-            conn.sendall(bytes("HTTP/1.1 201 OK\r\n\r\n", "utf-8"))
-            conn.sendall(bytes(TO_HTML, "utf-8"))
-            conn.close()
-            if input("input Y to exit:"):
-                print("Cantonese Web exiting...")
-                break
-    else:
-        exec(TO_PY_CODE, variable)
     
 def node_print_new(Node, arg):
     Node.append(["node_print", arg])
@@ -177,6 +115,9 @@ def node_turtle_new(Node, instruction):
 
 def node_assert_new(Node, args):
     Node.append(["node_assert", args])
+
+def node_model_new(Node, model, datatest):
+    Node.append(["node_model", model, datatest])
 
 def node_gettype_new(Node, value):
     Node.append(["node_gettype", value])
@@ -547,6 +488,15 @@ class Parser(object):
             elif self.match("cmd"):
                 node_cmd_new(self.Node, self.get_value(self.get(0)))
                 self.skip(1)
+
+            elif self.match("model"):
+                model = self.get_value(self.get(0))
+                self.skip(1)
+                self.syntax_check("mod_new", "value")
+                self.skip(2)
+                datatest = self.get_value(self.get(0))
+                self.skip(1)
+                node_model_new(self.Node, model, datatest)
             
             elif self.match("stackinit"):
                 node_stack_new(self.Node, self.get_value(self.get(0)))
@@ -753,6 +703,96 @@ def run(Nodes, TAB = '', label = '', to_html = False):
         if node[0] == "stack_pop":
             check(TAB)
             TO_PY_CODE += TAB + node[1][1] + ".pop()\n"
+
+        if node[0] == "node_model":
+            check(TAB)
+            TO_PY_CODE += TAB + cantonese_model_new(node[1][1], node[2][1], \
+                                TAB, TO_PY_CODE)
+
+def cantonese_lib_import(name, tab, code):
+    if name == "random":
+        return cantonese_random_init(tab, code)
+    elif name == "datetime":
+        return cantonese_datetime_init(tab, code)
+    elif name == "math":
+        return cantonese_math_init(tab, code)
+    else:
+        return ""
+
+def cantonese_random_init(tab, code):
+    code += tab + "求其啦 = random.random()\n"
+    return code
+
+def cantonese_datetime_init(tab, code):
+    code += tab + "宜家几点 = datetime.datetime.now()\n"
+    return code
+
+def cantonese_math_init(tab, code):
+    code += tab + "def corr(a, b):\n" + \
+                  "\tif len(a) == 0 or len(b) == 0:\n" + \
+                  "\t\treturn None\n" + \
+                  "\ta_avg = sum(a)/len(a)\n" + \
+                  "\tb_avg = sum(b)/len(b)\n" + \
+                  "\tcov_ab = sum([(x - a_avg) * (y - b_avg) " + \
+                   "for x, y in zip(a, b)])\n" + \
+                  "\tsq = math.sqrt(sum([(x - a_avg)**2 for x in a])" + \
+                  "* sum([(x - b_avg) ** 2 for x in b]))\n" + \
+                  "\tcorr_factor = cov_ab / sq\n" + \
+                  "\treturn corr_factor\n"
+    code += tab + "def KNN(inX, dataSet, labels, k):\n" + \
+                  "\tm, n = len(dataSet), len(dataSet[0])\n" + \
+                  "\tdistances = []\n" + \
+                  "\tfor i in range(m):\n" + \
+                  "\t\tsum = 0\n" + \
+                  "\t\tfor j in range(n):\n" + \
+                  "\t\t\tsum += (inX[j] - dataSet[i][j]) ** 2\n" + \
+                  "\t\tdistances.append(sum ** 0.5)\n" + \
+                  "\tsortDist = sorted(distances)\n" + \
+                  "\tclassCount = {}\n" + \
+                  "\tfor i in range(k):\n" + \
+                  "\t\tvoteLabel = labels[ distances.index(sortDist[i])]\n" + \
+                  "\t\tclassCount[voteLabel] = classCount.get(voteLabel, 0)+1\n" + \
+                  "\tsortedClass = sorted(classCount.items(), key=lambda d:d[1], reverse=True)\n" + \
+                  "\treturn sortedClass[0][0]\n"
+    return code
+
+def cantonese_model_new(model, datatest, tab, code):
+    if model == "KNN":
+        code += tab + "print(KNN(" + datatest +", 数据, 标签, K))"
+    else:
+        raise "揾唔到你嘅模型: " + model + "!"
+        code = ""
+    return code
+
+def cantonese_run(code, is_to_py, is_to_web):
+    tokens = []
+    for token in cantonese_token(code):
+        tokens.append(token)
+    cantonese_parser = Parser(tokens, [])
+    cantonese_parser.parse()
+    run(cantonese_parser.Node, to_html = is_to_web)
+    if is_to_py:
+        print(TO_PY_CODE)
+    elif is_to_web:
+        import socket
+        ip_port = ('127.0.0.1', 80)
+        back_log = 10
+        buffer_size = 1024
+        webserver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        webserver.bind(ip_port)
+        webserver.listen(back_log)
+        print("Cantonese Web Starting at 127.0.0.1:80 ...")
+        while True:
+            conn, addr = webserver.accept()
+            recvdata = conn.recv(buffer_size)
+            conn.sendall(bytes("HTTP/1.1 201 OK\r\n\r\n", "utf-8"))
+            conn.sendall(bytes(TO_HTML, "utf-8"))
+            conn.close()
+            if input("input Y to exit:"):
+                print("Cantonese Web exiting...")
+                break
+    else:
+        exec(TO_PY_CODE, variable)
 
 def main():
     try:

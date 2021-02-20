@@ -19,13 +19,14 @@
 &emsp;&emsp;<a href="#15">睇睇时间</a>  
 &emsp;&emsp;<a href="#16">暂停</a>  
 &emsp;&emsp;<a href="#17">嚟个随机数</a>  
-&emsp;&emsp;<a href="#18">计算相关系数</a>    
-&emsp;&emsp;<a href="#19">海龟画图</a>  
-&emsp;&emsp;<a href="#20">迷宫游戏仔</a>  
-&emsp;&emsp;<a href="#21">各种排序同埋查找算法</a>  
-&emsp;&emsp;<a href="#22">写个网页来睇下?</a>   
-<a href="#23">点样运行?</a>  
-<a href="#24">TODOs</a>  
+&emsp;&emsp;<a href="#18">计算相关系数</a>  
+&emsp;&emsp;<a href="#19">仲可以机器学习?</a>  
+&emsp;&emsp;<a href="#20">海龟画图</a>  
+&emsp;&emsp;<a href="#21">迷宫游戏仔</a>  
+&emsp;&emsp;<a href="#22">各种排序同埋查找算法</a>  
+&emsp;&emsp;<a href="#23">写个网页来睇下?</a>   
+<a href="#24">点样运行?</a>  
+<a href="#25">TODOs</a>  
 # <a name="0">引言</a>
 粤语编程语言系咩? 佢系一门用粤语嚟同计算机沟通嘅编程语言。  
 喺呢个语言度，计算机可以读明你写嘅粤语。所以话，你可以用粤语嚟操作(虐待)计算机。
@@ -83,7 +84,7 @@ $factorial |项数| 要做咩:
         返转头 1
     }
     唔系嘅话 -> {
-        返转头 |factorial(项数 - 1) * 项数|
+        返转头 |factorial(项数 减 1) 乘 项数|
     }
 搞掂
 ```  
@@ -209,7 +210,20 @@ Stack: [1,2]
 ```
 0.8066499427138474
 ```
-### <a name="19">海龟绘图</a>
+### <a name="19">仲可以机器学习?</a>
+实现KNN算法:
+```
+使下 math
+|[5, 1], [4, 0], [1, 3], [0, 4]| 拍住上 -> |数据|
+|'动作片', '动作片', '科幻片', '科幻片'| 拍住上 -> |标签|
+讲嘢: |K| 系 3
+嗌|KNN|过嚟估下 -> |[3, 0]|
+```
+运行结果:
+```
+动作片
+```
+### <a name="20">海龟绘图</a>
 ```
 老作一下 -> {
     首先: |画个圈(100)|
@@ -220,12 +234,12 @@ Stack: [1,2]
 运行结果:    
 ![turtle_result](img/turtle_etc.jpg)  
 
-### <a name="20">迷宫游戏仔</a>
+### <a name="21">迷宫游戏仔</a>
 [代码](examples/game.cantonese)  
 运行结果:  
 ![game_result](img/game_result.jpg)
 
-### <a name="21">各种排序同埋查找算法</a>
+### <a name="22">各种排序同埋查找算法</a>
 * [二分查找](examples/binary_search.cantonese)
 * [线性查找](examples/linear_search.cantonese)
 * [冒泡排序](examples/bubble_sort.cantonese)
@@ -233,7 +247,7 @@ Stack: [1,2]
 
 [喺呢度](examples/)睇下更多例子.  
 
-### <a name="22">写个网页睇下</a>
+### <a name="23">写个网页睇下</a>
 一个简单嘅网页:
 ```
 畀我睇下 |This Page is made by cantonese!| 点样先?
@@ -244,7 +258,7 @@ python src/cantonese.py ../examples/web/hello_web.cantonese -to_web
 ```
 ![web_result](img/web_result.jpg)
 
-# <a name="23">点样运行?</a>
+# <a name="24">点样运行?</a>
 Cantonese 语言运行喺 Python 虚拟机上，环境净系支持 Python3，因为噉先符合广东人先进嘅思想!  
 ```shell
 python src/cantonese.py [-文件名]
@@ -262,7 +276,7 @@ python src/cantonese.py examples/helloworld.cantonese -to_py
 print(" Hello World! ")
 exit()
 ```
-# <a name="24">TODOs</a>
+# <a name="25">TODOs</a>
 本项目代码写得很陋(烂)，欢迎各个粤语同埋编程爱好者一齐讨论同贡献！为粤语文化遗产嘅保护贡献出自己嘅一份力量！
 今后要做咩:  
 * 完善语法错误检查
