@@ -238,9 +238,9 @@ Stack: [1,2]
 ```
 畀我睇下 |This Page is made by cantonese!| 点样先?
 ```
-运行后, 多开`127.0.0.1:80`可查看运行结果:  
+运行后, 打开`127.0.0.1:80`可查看运行结果:  
 ```
-python src/cantonese.py ../examples/web/hello_web.cantonese 
+python src/cantonese.py ../examples/web/hello_web.cantonese -to_web 
 ```
 ![web_result](img/web_result.jpg)
 

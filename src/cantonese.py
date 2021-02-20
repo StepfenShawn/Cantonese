@@ -762,7 +762,7 @@ def main():
                 # Skip the comment
                 code = re.sub(re.compile(r'/\*.*?\*/', re.S), ' ', code)
                 is_to_py = False
-                is_to_py = False
+                is_to_web = False
                 if len(sys.argv) == 3:
                     if sys.argv[2] == "-to_py":
                         is_to_py = True
