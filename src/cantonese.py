@@ -19,9 +19,9 @@ def cantonese_token(code):
             ]
     num = r'(?P<num>\d+)'
     ID =  r'(?P<ID>[a-zA-Z_][a-zA-Z_0-9]*)'
-    op = r'(?P<op>(加){1}|(减){1}|(乘){1}|(整除){1}|(除){1}|(余){1})'
+    op = r'(?P<op>(相加){1}|(加){1}|(减){1}|(乘){1}|(整除){1}|(除){1}|(余){1})'
     op_get_code = re.findall(re.compile(r'[(](.*?)[)]', re.S), op[5 : ])
-    op_gen_code = ["+", "-", "*", "//", "/", "%"]
+    op_gen_code = ["Matrix.matrix_addition", "+", "-", "*", "//", "/", "%"]
     string = r'(?P<string>\"([^\\\"]|\\.)*\")'
     expr = r'(?P<expr>[|](.*?)[|])'
     callfunc = r'(?P<callfunc>[&](.*?)[)])'
@@ -754,6 +754,46 @@ def cantonese_math_init(tab, code):
                   "\t\tclassCount[voteLabel] = classCount.get(voteLabel, 0)+1\n" + \
                   "\tsortedClass = sorted(classCount.items(), key=lambda d:d[1], reverse=True)\n" + \
                   "\treturn sortedClass[0][0]\n"
+    code += tab + "class Matrix(object):\n" + \
+	              "\tdef __init__(self, list_a):\n" + \
+		          "\t\tassert isinstance(list_a, list)\n" + \
+		          "\t\tself.matrix = list_a\n" + \
+		          "\t\tself.shape = (len(list_a), len(list_a[0]))\n" + \
+		          "\t\tself.row = self.shape[0]\n" + \
+		          "\t\tself.column = self.shape[1]\n" + \
+	              "\tdef build_zero_value_matrix(self, shape):\n" + \
+		          "\t\tzero_value_mat = []\n" + \
+		          "\t\tfor i in range(shape[0]):\n" + \
+			      "\t\t\tzero_value_mat.append([])\n" + \
+			      "\t\t\tfor j in range(shape[1]):\n" + \
+				  "\t\t\t\tzero_value_mat[i].append(0)\n" + \
+		          "\t\tzero_value_matrix = Matrix(zero_value_mat)\n" + \
+		          "\t\treturn zero_value_matrix\n" + \
+	              "\tdef matrix_addition(self, the_second_mat):\n" + \
+		          "\t\tassert isinstance(the_second_mat, Matrix)\n" + \
+		          "\t\tassert the_second_mat.shape == self.shape\n" + \
+		          "\t\tresult_mat = self.build_zero_value_matrix(self.shape)\n" + \
+		          "\t\tfor i in range(self.row):\n" + \
+			      "\t\t\tfor j in range(self.column):\n" + \
+				  "\t\t\t\tresult_mat.matrix[i][j] = self.matrix[i][j] + " + \
+                  "the_second_mat.matrix[i][j]\n" + \
+		          "\t\treturn result_mat\n" + \
+	              "\tdef matrix_multiplication(self, the_second_mat):\n" + \
+		          "\t\tassert isinstance(the_second_mat, Matrix)\n" + \
+		          "\t\tassert self.shape[1] == the_second_mat.shape[0]\n" + \
+		          "\t\tshape = (self.shape[0], the_second_mat.shape[1])\n" + \
+		          "\t\tresult_mat = self.build_zero_value_matrix(shape)\n" + \
+		          "\t\tfor i in range(self.shape[0]):\n" + \
+			      "\t\t\tfor j in range(the_second_mat.shape[1]):\n" + \
+				  "\t\t\t\tnumber = 0\n" + \
+				  "\t\t\t\tfor k in range(self.shape[1]):\n" + \
+				  "\t\t\t\t\tnumber += self.matrix[i][k] * the_second_mat.matrix[k][j]\n" + \
+				  "\t\t\t\tresult_mat.matrix[i][j] = number\n" + \
+		          "\t\treturn result_mat\n" + \
+                  "\tdef __str__(self):\n" + \
+                  "\t\treturn 'Matrix: ' + str(self.matrix)\n" + \
+                  "矩阵 = Matrix\n" + \
+                  "点积 = Matrix.matrix_multiplication\n"
     return code
 
 def cantonese_model_new(model, datatest, tab, code):

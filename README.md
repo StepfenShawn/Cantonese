@@ -245,8 +245,6 @@ Stack: [1,2]
 * [冒泡排序](examples/bubble_sort.cantonese)
 * [插入排序](examples/insert_sort.cantonese)
 
-[喺呢度](examples/)睇下更多例子.  
-
 ### <a name="23">写个网页睇下</a>
 一个简单嘅网页:
 ```
@@ -257,6 +255,8 @@ Stack: [1,2]
 python src/cantonese.py ../examples/web/hello_web.cantonese -to_web 
 ```
 ![web_result](img/web_result.jpg)
+
+[喺呢度](examples/)睇下更多例子.  
 
 # <a name="24">点样运行?</a>
 Cantonese 语言运行喺 Python 虚拟机上，环境净系支持 Python3，因为噉先符合广东人先进嘅思想!  
