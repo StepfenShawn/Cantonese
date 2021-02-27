@@ -1,6 +1,14 @@
+"""
+    Created at 2021/1/16 16:23
+    Last update at 2021/2/27 12:01
+    The interpret for Cantoese    
+"""
 import re
 import sys
 
+"""
+    Get the Cantonese Token List
+"""
 def cantonese_token(code):
     keywords = r'(?P<keywords>(畀我睇下){1}|(点样先){1}|(收工){1}|(喺){1}|(定){1}|(老作一下){1}|(起底){1}|' \
                r'(讲嘢){1}|(唔系){1}|(系){1})|(如果){1}|(嘅话){1}|(->){1}|({){1}|(}){1}|(同埋){1}|(咩都唔做){1}|' \
@@ -21,7 +29,7 @@ def cantonese_token(code):
     ID =  r'(?P<ID>[a-zA-Z_][a-zA-Z_0-9]*)'
     op = r'(?P<op>(相加){1}|(加){1}|(减){1}|(乘){1}|(整除){1}|(除){1}|(余){1})'
     op_get_code = re.findall(re.compile(r'[(](.*?)[)]', re.S), op[5 : ])
-    op_gen_code = ["Matrix.matrix_addition", "+", "-", "*", "//", "/", "%"]
+    op_gen_code = ["矩阵.matrix_addition", "+", "-", "*", "//", "/", "%"]
     string = r'(?P<string>\"([^\\\"]|\\.)*\")'
     expr = r'(?P<expr>[|](.*?)[|])'
     callfunc = r'(?P<callfunc>[&](.*?)[)])'
@@ -54,7 +62,11 @@ def cantonese_token(code):
         group = trans(match.lastgroup, group, make_rep(bif_get_code, bif_gen_code))
         group = trans(match.lastgroup, group, make_rep(op_get_code, op_gen_code))
         yield [match.lastgroup, group]
-    
+
+"""
+    AST node for the Token List
+"""
+
 def node_print_new(Node, arg):
     Node.append(["node_print", arg])
 
@@ -137,6 +149,9 @@ def node_list_new(Node, name, list):
 def node_stack_new(Node, name):
     Node.append(["node_stack", name])
 
+"""
+    Parser for cantonese Token List
+"""
 class Parser(object):
     def __init__(self, tokens, Node):
         self.tokens = tokens
@@ -522,7 +537,7 @@ class Parser(object):
 variable = {}
 TO_PY_CODE = ""
 TO_HTML = ""
-# TODO: Build a simple vm for Cantonese  
+ 
 def run(Nodes, TAB = '', label = '', to_html = False):
     def check(tab):
         if label != 'whi_run' and label != 'if_run' and label != 'else_run' and  \
@@ -708,14 +723,17 @@ def run(Nodes, TAB = '', label = '', to_html = False):
             check(TAB)
             TO_PY_CODE += TAB + cantonese_model_new(node[1][1], node[2][1], \
                                 TAB, TO_PY_CODE)
-
+"""
+    Built-in library for Cantonese
+"""
 def cantonese_lib_import(name, tab, code):
     if name == "random":
         return cantonese_random_init(tab, code)
     elif name == "datetime":
         return cantonese_datetime_init(tab, code)
     elif name == "math":
-        return cantonese_math_init(tab, code)
+        cantonese_math_init()
+        return ""
     else:
         return ""
 
@@ -727,74 +745,84 @@ def cantonese_datetime_init(tab, code):
     code += tab + "宜家几点 = datetime.datetime.now()\n"
     return code
 
-def cantonese_math_init(tab, code):
-    code += tab + "def corr(a, b):\n" + \
-                  "\tif len(a) == 0 or len(b) == 0:\n" + \
-                  "\t\treturn None\n" + \
-                  "\ta_avg = sum(a)/len(a)\n" + \
-                  "\tb_avg = sum(b)/len(b)\n" + \
-                  "\tcov_ab = sum([(x - a_avg) * (y - b_avg) " + \
-                   "for x, y in zip(a, b)])\n" + \
-                  "\tsq = math.sqrt(sum([(x - a_avg)**2 for x in a])" + \
-                  "* sum([(x - b_avg) ** 2 for x in b]))\n" + \
-                  "\tcorr_factor = cov_ab / sq\n" + \
-                  "\treturn corr_factor\n"
-    code += tab + "def KNN(inX, dataSet, labels, k):\n" + \
-                  "\tm, n = len(dataSet), len(dataSet[0])\n" + \
-                  "\tdistances = []\n" + \
-                  "\tfor i in range(m):\n" + \
-                  "\t\tsum = 0\n" + \
-                  "\t\tfor j in range(n):\n" + \
-                  "\t\t\tsum += (inX[j] - dataSet[i][j]) ** 2\n" + \
-                  "\t\tdistances.append(sum ** 0.5)\n" + \
-                  "\tsortDist = sorted(distances)\n" + \
-                  "\tclassCount = {}\n" + \
-                  "\tfor i in range(k):\n" + \
-                  "\t\tvoteLabel = labels[ distances.index(sortDist[i])]\n" + \
-                  "\t\tclassCount[voteLabel] = classCount.get(voteLabel, 0)+1\n" + \
-                  "\tsortedClass = sorted(classCount.items(), key=lambda d:d[1], reverse=True)\n" + \
-                  "\treturn sortedClass[0][0]\n"
-    code += tab + "class Matrix(object):\n" + \
-	              "\tdef __init__(self, list_a):\n" + \
-		          "\t\tassert isinstance(list_a, list)\n" + \
-		          "\t\tself.matrix = list_a\n" + \
-		          "\t\tself.shape = (len(list_a), len(list_a[0]))\n" + \
-		          "\t\tself.row = self.shape[0]\n" + \
-		          "\t\tself.column = self.shape[1]\n" + \
-	              "\tdef build_zero_value_matrix(self, shape):\n" + \
-		          "\t\tzero_value_mat = []\n" + \
-		          "\t\tfor i in range(shape[0]):\n" + \
-			      "\t\t\tzero_value_mat.append([])\n" + \
-			      "\t\t\tfor j in range(shape[1]):\n" + \
-				  "\t\t\t\tzero_value_mat[i].append(0)\n" + \
-		          "\t\tzero_value_matrix = Matrix(zero_value_mat)\n" + \
-		          "\t\treturn zero_value_matrix\n" + \
-	              "\tdef matrix_addition(self, the_second_mat):\n" + \
-		          "\t\tassert isinstance(the_second_mat, Matrix)\n" + \
-		          "\t\tassert the_second_mat.shape == self.shape\n" + \
-		          "\t\tresult_mat = self.build_zero_value_matrix(self.shape)\n" + \
-		          "\t\tfor i in range(self.row):\n" + \
-			      "\t\t\tfor j in range(self.column):\n" + \
-				  "\t\t\t\tresult_mat.matrix[i][j] = self.matrix[i][j] + " + \
-                  "the_second_mat.matrix[i][j]\n" + \
-		          "\t\treturn result_mat\n" + \
-	              "\tdef matrix_multiplication(self, the_second_mat):\n" + \
-		          "\t\tassert isinstance(the_second_mat, Matrix)\n" + \
-		          "\t\tassert self.shape[1] == the_second_mat.shape[0]\n" + \
-		          "\t\tshape = (self.shape[0], the_second_mat.shape[1])\n" + \
-		          "\t\tresult_mat = self.build_zero_value_matrix(shape)\n" + \
-		          "\t\tfor i in range(self.shape[0]):\n" + \
-			      "\t\t\tfor j in range(the_second_mat.shape[1]):\n" + \
-				  "\t\t\t\tnumber = 0\n" + \
-				  "\t\t\t\tfor k in range(self.shape[1]):\n" + \
-				  "\t\t\t\t\tnumber += self.matrix[i][k] * the_second_mat.matrix[k][j]\n" + \
-				  "\t\t\t\tresult_mat.matrix[i][j] = number\n" + \
-		          "\t\treturn result_mat\n" + \
-                  "\tdef __str__(self):\n" + \
-                  "\t\treturn 'Matrix: ' + str(self.matrix)\n" + \
-                  "矩阵 = Matrix\n" + \
-                  "点积 = Matrix.matrix_multiplication\n"
-    return code
+def cantonese_func_def(func_name, func):
+    variable[func_name] = func
+
+def cantonese_math_init():
+    import math
+    class Matrix(object):
+        def __init__(self, list_a):
+            assert isinstance(list_a, list)
+            self.matrix = list_a
+            self.shape = (len(list_a), len(list_a[0]))
+            self.row = self.shape[0]
+            self.column = self.shape[1]
+        
+        def __str__(self):
+            return 'Matrix: ' + str(self.matrix)
+
+        def build_zero_value_matrix(self, shape):
+            zero_value_mat = []
+            for i in range(shape[0]):
+                zero_value_mat.append([])
+                for j in range(shape[1]):
+                    zero_value_mat[i].append(0)
+            zero_value_matrix = Matrix(zero_value_mat)
+            return zero_value_matrix
+
+        def matrix_addition(self, the_second_mat):
+            assert isinstance(the_second_mat, Matrix)
+            assert the_second_mat.shape == self.shape
+            result_mat = self.build_zero_value_matrix(self.shape)
+            for i in range(self.row):
+                for j in range(self.column):
+                    result_mat.matrix[i][j] = self.matrix[i][j] + the_second_mat.matrix[i][j]
+            return result_mat
+
+        def matrix_multiplication(self, the_second_mat):
+            assert isinstance(the_second_mat, Matrix)
+            assert self.shape[1] == the_second_mat.shape[0]
+            shape = (self.shape[0], the_second_mat.shape[1])
+            result_mat = self.build_zero_value_matrix(shape)
+            for i in range(self.shape[0]):
+                for j in range(the_second_mat.shape[1]):
+                    number = 0
+                    for k in range(self.shape[1]):
+                        number += self.matrix[i][k] * the_second_mat.matrix[k][j]
+                    result_mat.matrix[i][j] = number
+            return result_mat
+    
+    def corr(a, b):
+        if len(a) == 0 or len(b) == 0:
+            return None
+        a_avg = sum(a)/len(a)
+        b_avg = sum(b)/len(b)
+        cov_ab = sum([(x - a_avg) * (y - b_avg) for x, y in zip(a, b)])
+        sq = math.sqrt(sum([(x - a_avg)**2 for x in a]) *  \
+        sum([(x - b_avg) ** 2 for x in b]))
+        corr_factor = cov_ab / sq
+        return corr_factor
+
+    def KNN(inX, dataSet, labels, k):
+        m, n = len(dataSet), len(dataSet[0])
+        distances = []
+        for i in range(m):
+            sum = 0
+            for j in range(n):
+                sum += (inX[j] - dataSet[i][j]) ** 2
+            distances.append(sum ** 0.5)
+        sortDist = sorted(distances)
+        classCount = {}
+        for i in range(k):
+            voteLabel = labels[distances.index(sortDist[i])]
+            classCount[voteLabel] = classCount.get(voteLabel, 0) + 1
+        sortedClass = sorted(classCount.items(), key=lambda d:d[1], reverse=True)
+        return sortedClass[0][0]
+
+    cantonese_func_def("KNN", KNN)
+    cantonese_func_def("corr", corr)
+    cantonese_func_def("矩阵", Matrix)
+    cantonese_func_def("点积", Matrix.matrix_multiplication)
 
 def cantonese_model_new(model, datatest, tab, code):
     if model == "KNN":
