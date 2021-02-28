@@ -1,6 +1,6 @@
 """
     Created at 2021/1/16 16:23
-    Last update at 2021/2/27 12:01
+    Last update at 2021/2/28 13:31
     The interpret for Cantoese    
 """
 import re
@@ -9,7 +9,7 @@ import sys
 """
     Get the Cantonese Token List
 """
-def cantonese_token(code):
+def cantonese_token(code : str) -> list:
     keywords = r'(?P<keywords>(畀我睇下){1}|(点样先){1}|(收工){1}|(喺){1}|(定){1}|(老作一下){1}|(起底){1}|' \
                r'(讲嘢){1}|(唔系){1}|(系){1})|(如果){1}|(嘅话){1}|(->){1}|({){1}|(}){1}|(同埋){1}|(咩都唔做){1}|' \
                r'(落操场玩跑步){1}|(\$){1}|(用下){1}|(使下){1}|(要做咩){1}|(搞掂){1}|(就){1}|(谂下){1}|(佢嘅){1}|' \
@@ -39,14 +39,14 @@ def cantonese_token(code):
     bif_gen_code = ["sleep", "append", "remove", ".__len__()", "2", "input", "clear"]
     patterns = re.compile('|'.join([keywords, ID, num, string, expr, callfunc, build_in_funcs, op]))
 
-    def make_rep(list1, list2):
+    def make_rep(list1 : list, list2 : list) -> list:
         assert len(list1) == len(list2)
         ret = []
         for i in range(len(list1)):
             ret.append([list1[i], list2[i]])
         return ret
 
-    def trans(lastgroup, code, rep):
+    def trans(lastgroup : str, code : str, rep : str) -> str:
         if lastgroup != 'string' and lastgroup != 'ID':
             if lastgroup == 'expr':
                 p = re.match(r'\|(.*)同(.*)有几衬\|', code, re.M|re.I)
@@ -66,87 +66,205 @@ def cantonese_token(code):
 """
     AST node for the Token List
 """
-
-def node_print_new(Node, arg):
+def node_print_new(Node : list, arg) -> None:
+    """
+        Node_print
+            |
+           arg
+    """
     Node.append(["node_print", arg])
 
-def node_sleep_new(Node, arg):
+def node_sleep_new(Node : list, arg) -> None:
+    """
+        Node_sleep
+            |
+           arg
+    """
     Node.append(["node_sleep", arg])
 
-def node_exit_new(Node):
+def node_exit_new(Node : list) -> None:
+    """
+        Node_exit
+            |
+           arg
+    """
     Node.append(["node_exit"])
 
-def node_let_new(Node, key ,value):
+def node_let_new(Node : list, key ,value) -> None:
+    """
+        Node_let
+          /  \
+        key   value
+    """
     Node.append(["node_let", key, value])
 
-def node_if_new(Node, cond, stmt):
+def node_if_new(Node : list, cond, stmt) -> None:
+    """
+        Node_if
+          /  \
+        cond  stmt
+    """
     Node.append(["node_if", cond, stmt])
 
-def node_elif_new(Node, cond, stmt):
+def node_elif_new(Node : list, cond, stmt) -> None:
+    """
+        Node_elif
+          /  \
+        cond  stmt
+    """
     Node.append(["node_elif", cond, stmt])
 
-def node_else_new(Node, stmt):
+def node_else_new(Node : list, stmt) -> None:
+    """
+        Node_else
+            |
+           stmt
+    """
     Node.append(["node_else", stmt])
 
-def node_loop_new(Node, cond, stmt):
+def node_loop_new(Node : list, cond, stmt) -> None:
+    """
+        Node_loop
+          /  \
+        cond  stmt
+    """
     Node.append(["node_loop", cond, stmt])
 
-def node_func_new(Node, func_name, args, body):
+def node_func_new(Node : list, func_name, args, body) -> None:
+    """
+        Node_fundef
+         /  |  \
+       name args body
+    """
     Node.append(["node_fundef", func_name, args, body])
 
-# TODO: Add args
-def node_call_new(Node, func_name):
+def node_call_new(Node : list, func_name) -> None:
+    """
+        Node_call
+            |
+           name
+    """
     Node.append(["node_call", func_name])
 
-def node_build_in_func_call_new(Node, var, func_name, args):
+def node_build_in_func_call_new(Node : list, var, func_name, args) -> None:
+    """
+        Node_bcall
+          /  \
+        name  args
+    """
     Node.append(["node_bcall", var, func_name, args])
 
-def node_import_new(Node, name):
+def node_import_new(Node : list, name) -> None:
+    """
+        Node_import
+            |
+           name
+    """
     Node.append(["node_import", name])
 
-def node_return_new(Node, v):
+def node_return_new(Node : list, v) -> None:
+    """
+        Node_return
+            |
+          value
+    """
     Node.append(["node_return", v])
 
-def node_try_new(Node, try_part):
+def node_try_new(Node : list, try_part) -> None:
+    """
+        Node_try
+           |
+          stmt
+    """
     Node.append(["node_try", try_part])
 
-def node_except_new(Node, _except, except_part):
+def node_except_new(Node : list, _except, except_part) -> None:
+    """
+        Node_except
+          /  \
+     exception  stmt
+    """
     Node.append(["node_except", _except, except_part])
 
-def node_finally_new(Node, finally_part):
+def node_finally_new(Node : list, finally_part) -> None:
+    """
+        Node_finally
+            |
+           stmt
+    """
     Node.append(["node_finally", finally_part])
 
-def node_raise_new(Node, execption):
+def node_raise_new(Node : list, execption) -> None:
+    """
+        Node_raise
+            |
+          exception
+    """
     Node.append(["node_raise", execption])
 
-def node_for_new(Node, iterating_var, sequence, stmt_part):
+def node_for_new(Node : list, iterating_var, sequence, stmt_part) -> None:
+    """
+        Node_for
+         /  |  \
+        iter seq stmt
+    """
     Node.append(["node_for", iterating_var, sequence, stmt_part])
 
-def node_turtle_new(Node, instruction):
+def node_turtle_new(Node : list, instruction) -> None:
     Node.append(["node_turtle", instruction])
 
-def node_assert_new(Node, args):
+def node_assert_new(Node : list, args) -> None:
     Node.append(["node_assert", args])
 
-def node_model_new(Node, model, datatest):
+def node_model_new(Node : list, model, datatest) -> None:
+    """
+        Node_model
+          /  \
+         model dataset
+    """
     Node.append(["node_model", model, datatest])
 
-def node_gettype_new(Node, value):
+def node_gettype_new(Node : list, value) -> None:
     Node.append(["node_gettype", value])
 
-def node_class_new(Node, name, extend, method):
+def node_class_new(Node : list, name, extend, method) -> None:
+    """
+        Node_class
+          / | \
+        name extend method
+    """
     Node.append(["node_class", name, extend, method])
 
-def node_method_new(Node, name, args, stmt):
+def node_method_new(Node : list, name, args, stmt) -> None:
+    """
+        Node_method
+         / | \
+        name args stmt
+    """
     Node.append(["node_method", name, args, stmt])
 
-def node_cmd_new(Node, cmd):
+def node_cmd_new(Node : list, cmd) -> None:
+    """
+        Node_cmd
+            |
+          conmmand
+    """
     Node.append(["node_cmd", cmd])
 
-def node_list_new(Node, name, list):
+def node_list_new(Node : list, name, list) -> None:
+    """
+        Node_list
+          /  \
+        name list
+    """
     Node.append(["node_list", name, list])
 
-def node_stack_new(Node, name):
+def node_stack_new(Node : list, name) -> None:
+    """
+        Node_stack
+            |
+           name
+    """
     Node.append(["node_stack", name])
 
 """
@@ -563,8 +681,8 @@ def run(Nodes, TAB = '', label = '', to_html = False):
         
         if node[0] == "node_import":
             check(TAB)
-            TO_PY_CODE += TAB + "import " + node[1][1] + "\n" + \
-            cantonese_lib_import(node[1][1], TAB, TO_PY_CODE) + '\n'
+            TO_PY_CODE += TAB + "import " + node[1][1] + "\n"
+            cantonese_lib_import(node[1][1])
 
         if node[0] == "node_exit":
             check(TAB)
@@ -726,24 +844,23 @@ def run(Nodes, TAB = '', label = '', to_html = False):
 """
     Built-in library for Cantonese
 """
-def cantonese_lib_import(name, tab, code):
+def cantonese_lib_import(name):
     if name == "random":
-        return cantonese_random_init(tab, code)
+        cantonese_random_init()
     elif name == "datetime":
-        return cantonese_datetime_init(tab, code)
+        cantonese_datetime_init()
     elif name == "math":
         cantonese_math_init()
-        return ""
     else:
-        return ""
+        return
 
-def cantonese_random_init(tab, code):
-    code += tab + "求其啦 = random.random()\n"
-    return code
+def cantonese_random_init():
+    import random
+    cantonese_func_def("求其啦", random.random())
 
-def cantonese_datetime_init(tab, code):
-    code += tab + "宜家几点 = datetime.datetime.now()\n"
-    return code
+def cantonese_datetime_init():
+    import datetime
+    cantonese_func_def("宜家几点", datetime.datetime.now())
 
 def cantonese_func_def(func_name, func):
     variable[func_name] = func
@@ -816,7 +933,7 @@ def cantonese_math_init():
         for i in range(k):
             voteLabel = labels[distances.index(sortDist[i])]
             classCount[voteLabel] = classCount.get(voteLabel, 0) + 1
-        sortedClass = sorted(classCount.items(), key=lambda d:d[1], reverse=True)
+        sortedClass = sorted(classCount.items(), key = lambda d : d[1], reverse = True)
         return sortedClass[0][0]
 
     cantonese_func_def("KNN", KNN)
