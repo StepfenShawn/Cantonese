@@ -1,6 +1,6 @@
 """
     Created at 2021/1/16 16:23
-    Last update at 2021/3/14 12:21
+    Last update at 2021/3/14 17:12
     The interpret for Cantoese    
 """
 import re
@@ -919,8 +919,7 @@ def cantonese_math_init():
         a_avg = sum(a)/len(a)
         b_avg = sum(b)/len(b)
         cov_ab = sum([(x - a_avg) * (y - b_avg) for x, y in zip(a, b)])
-        sq = math.sqrt(sum([(x - a_avg)**2 for x in a]) *  \
-        sum([(x - b_avg) ** 2 for x in b]))
+        sq = math.sqrt(sum([(x - a_avg) ** 2 for x in a]) * sum([(x - b_avg) ** 2 for x in b]))
         corr_factor = cov_ab / sq
         return corr_factor
 
@@ -939,17 +938,36 @@ def cantonese_math_init():
             classCount[voteLabel] = classCount.get(voteLabel, 0) + 1
         sortedClass = sorted(classCount.items(), key = lambda d : d[1], reverse = True)
         return sortedClass[0][0]
+    
+    def l_reg(testX, X, Y):
+        a = b = mxy = sum_x = sum_y = lxy = xiSubSqr = 0.0
+        for i in range(len(X)):
+            sum_x += X[i]
+            sum_y += Y[i]
+        x_ave = sum_x / len(X)
+        y_ave = sum_y / len(X)
+        for i in range(len(X)):
+            lxy += (X[i] - x_ave) * (Y[i] - y_ave)
+            xiSubSqr += (X[i] - x_ave) * (X[i] - x_ave)
+        b = lxy / xiSubSqr
+        a = y_ave - b * x_ave
+        print("Linear function is:")
+        print("y=" + str(b) + "x+"+ str(a))
+        return b * testX + a
 
     cantonese_func_def("KNN", KNN)
+    cantonese_func_def("l_reg", l_reg)
     cantonese_func_def("corr", corr)
     cantonese_func_def("矩阵", Matrix)
     cantonese_func_def("点积", Matrix.matrix_multiplication)
 
 def cantonese_model_new(model, datatest, tab, code):
     if model == "KNN":
-        code += tab + "print(KNN(" + datatest +", 数据, 标签, K))"
+        code += tab + "print(KNN(" + datatest + ", 数据, 标签, K))"
+    if model == "L_REG":
+        code += tab + "print(l_reg(" + datatest + ", X, Y))"
     else:
-        raise "揾唔到你嘅模型: " + model + "!"
+        print("揾唔到你嘅模型: " + model + "!")
         code = ""
     return code
 
