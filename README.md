@@ -107,15 +107,17 @@ $get_max |数字1, 数字2| 要做咩:
 ```
 掟个 |ImportError| 来睇下?
 ```
+运行结果:
+```
+濑嘢: ImportError()!
+```
 ### <a name="9">断言语句</a>
 ```
 谂下: |1 + 1 == 3| ?
 ```  
 运行结果:  
 ```
-Traceback (most recent call last):
-    ......
-AssertionError
+濑嘢: AssertionError()!
 ```
 ### <a name="10">错误捕捉语句</a>
 try-except-finally:  

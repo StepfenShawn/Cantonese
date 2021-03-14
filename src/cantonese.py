@@ -1,6 +1,6 @@
 """
     Created at 2021/1/16 16:23
-    Last update at 2021/2/28 13:31
+    Last update at 2021/3/14 12:21
     The interpret for Cantoese    
 """
 import re
@@ -247,7 +247,7 @@ def node_cmd_new(Node : list, cmd) -> None:
     """
         Node_cmd
             |
-          conmmand
+        conmmand
     """
     Node.append(["node_cmd", cmd])
 
@@ -815,18 +815,7 @@ def run(Nodes, TAB = '', label = '', to_html = False):
 
         if node[0] == "node_stack":
             check(TAB)
-            TO_PY_CODE += TAB + "class stack(object):\n" + \
-                  "\tdef __init__(self):\n" + \
-                  "\t\tself.stack = []\n" + \
-                  "\tdef __str__(self):\n" + \
-                  "\t\treturn 'Stack: ' + str(self.stack)\n" + \
-                  "\tdef push(self, value):\n" + \
-                  "\t\tself.stack.append(value)\n" + \
-                  "\tdef pop(self):\n" + \
-                  "\t\tif self.stack:\n" + \
-                  "\t\t\tself.stack.pop()\n" + \
-                  "\t\telse:\n" + \
-                  "\t\t\traise LookupError('stack 畀你丢空咗!')\n"
+            cantonese_stack_init()
             TO_PY_CODE += TAB + node[1][1] + " = stack()\n"
 
         if node[0] == "stack_push":
@@ -861,6 +850,21 @@ def cantonese_random_init():
 def cantonese_datetime_init():
     import datetime
     cantonese_func_def("宜家几点", datetime.datetime.now())
+
+def cantonese_stack_init():
+    class _stack(object):
+        def __init__(self):
+            self.stack = []
+        def __str__(self):
+            return 'Stack: ' + str(self.stack)
+        def push(self, value):
+            self.stack.append(value)
+        def pop(self):
+            if self.stack:
+                self.stack.pop()
+            else:
+                raise LookupError('stack 畀你丢空咗!')
+    cantonese_func_def("stack", _stack)
 
 def cantonese_func_def(func_name, func):
     variable[func_name] = func
@@ -977,7 +981,11 @@ def cantonese_run(code, is_to_py, is_to_web):
                 print("Cantonese Web exiting...")
                 break
     else:
-        exec(TO_PY_CODE, variable)
+        import traceback
+        try:
+            exec(TO_PY_CODE, variable)
+        except Exception as e:
+            print("濑嘢: " + repr(e) + "!")
 
 def main():
     try:
