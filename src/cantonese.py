@@ -1,6 +1,6 @@
 """
     Created at 2021/1/16 16:23
-    Last update at 2021/3/14 17:12
+    Last update at 2021/3/20 10:01
     The interpret for Cantoese    
 """
 import re
@@ -11,18 +11,18 @@ import sys
 """
 def cantonese_token(code : str) -> list:
     keywords = r'(?P<keywords>(畀我睇下){1}|(点样先){1}|(收工){1}|(喺){1}|(定){1}|(老作一下){1}|(起底){1}|' \
-               r'(讲嘢){1}|(唔系){1}|(系){1})|(如果){1}|(嘅话){1}|(->){1}|({){1}|(}){1}|(同埋){1}|(咩都唔做){1}|' \
+               r'(讲嘢){1}|(咩系){1}|(唔系){1}|(系){1})|(如果){1}|(嘅话){1}|(->){1}|({){1}|(}){1}|(同埋){1}|(咩都唔做){1}|' \
                r'(落操场玩跑步){1}|(\$){1}|(用下){1}|(使下){1}|(要做咩){1}|(搞掂){1}|(就){1}|(谂下){1}|(佢嘅){1}|' \
                r'(玩到){1}|(为止){1}|(返转头){1}|(执嘢){1}|(揾到){1}|(执手尾){1}|(掟个){1}|(来睇下){1}|' \
-               r'(从){1}|(行到){1}|(行晒){1}|(咩系){1}|(佢个老豆叫){1}|(佢识得){1}|(明白未啊){1}|(落Order){1}|' \
+               r'(从){1}|(行到){1}|(行晒){1}|(佢个老豆叫){1}|(佢识得){1}|(明白未啊){1}|(落Order){1}|' \
                r'(拍住上){1}|(係){1}|(比唔上){1}|(或者){1}|(辛苦晒啦){1}|(同我躝)|(唔啱){1}|(啱){1}|(冇){1}|' \
                r'(有条扑街叫){1}|(顶你){1}|(丢你){1}|(嗌){1}|(过嚟估下){1}'
     kw_get_code = re.findall(re.compile(r'[(](.*?)[)]', re.S), keywords[13 : ])
     keywords_gen_code = ["print", "endprint", "exit", "in", "or", "turtle_begin", "gettype", 
-                         "assign", "is not", "is", "if", "then", "do", "begin", "end", "and", "pass",     
+                         "assign", "class", "is not", "is", "if", "then", "do", "begin", "end", "and", "pass",     
                          "while_do", "$", "call", "import", "funcbegin", "funcend", "is", "assert", "assign", 
                          "while", "whi_end", "return", "try", "except", "finally", "raise", "endraise",
-                         "from", "to", "endfor", "class", "extend", "method", "endclass", "cmd", "ass_list", "is",
+                         "from", "to", "endfor", "extend", "method", "endclass", "cmd", "ass_list", "is",
                          "<", "or", "exit", "exit", "False", "True", "None", "stackinit", "push", "pop", "model", "mod_new"
             ]
     num = r'(?P<num>\d+)'
@@ -55,7 +55,6 @@ def cantonese_token(code : str) -> list:
             for r in rep:
                 code = code.replace(r[0], r[1])
         return code
-
     for match in re.finditer(patterns, code):
         group = match.group()
         group = trans(match.lastgroup, group, make_rep(kw_get_code, keywords_gen_code))
@@ -456,12 +455,10 @@ class Parser(object):
             
             elif self.match("turtle_begin"):
                 self.skip(2) # Skip the "do", "begin"
-                turtle_inst = "from turtle import * \n"
+                turtle_inst = []
                 while self.tokens[self.pos][1] != "end":
-                    turtle_inst += str(self.get_value(self.tokens[self.pos])[1]) + '\n'
+                    turtle_inst.append(self.get_value(self.tokens[self.pos])[1])
                     self.pos += 1
-                turtle_inst = turtle_inst.replace("画个圈", "circle").replace("写隻字", "write").\
-                    replace("听我支笛", "exitonclick")
                 node_turtle_new(self.Node, turtle_inst)
                 self.skip(1)
             
@@ -769,7 +766,10 @@ def run(Nodes, TAB = '', label = '', to_html = False):
             TO_PY_CODE += TAB + "os.system(" + node[1][1] + ")\n"
         
         if node[0] == "node_turtle":
-            exec(node[1], variable)
+            check(TAB)
+            cantonese_turtle_init()
+            for ins in node[1]:
+                TO_PY_CODE += TAB + ins + "\n"
         
         if node[0] == "node_assert":
             check(TAB)
@@ -833,7 +833,7 @@ def run(Nodes, TAB = '', label = '', to_html = False):
 """
     Built-in library for Cantonese
 """
-def cantonese_lib_import(name):
+def cantonese_lib_import(name : str) -> None:
     if name == "random":
         cantonese_random_init()
     elif name == "datetime":
@@ -843,15 +843,21 @@ def cantonese_lib_import(name):
     else:
         return
 
-def cantonese_random_init():
+def cantonese_random_init() -> None:
     import random
     cantonese_func_def("求其啦", random.random())
 
-def cantonese_datetime_init():
+def cantonese_datetime_init() -> None:
     import datetime
     cantonese_func_def("宜家几点", datetime.datetime.now())
 
-def cantonese_stack_init():
+def cantonese_turtle_init() -> None:
+    import turtle
+    cantonese_func_def("画个圈", turtle.circle)
+    cantonese_func_def("写隻字", turtle.write)
+    cantonese_func_def("听我支笛", turtle.exitonclick)
+
+def cantonese_stack_init() -> None:
     class _stack(object):
         def __init__(self):
             self.stack = []
@@ -866,7 +872,7 @@ def cantonese_stack_init():
                 raise LookupError('stack 畀你丢空咗!')
     cantonese_func_def("stack", _stack)
 
-def cantonese_func_def(func_name, func):
+def cantonese_func_def(func_name : str, func) -> None:
     variable[func_name] = func
 
 def cantonese_math_init():
