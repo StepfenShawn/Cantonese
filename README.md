@@ -1,3 +1,4 @@
+![logo](img/logo.jpg)  
 # 粤语编程语言
 如果你不会粤语或编程，请看[5分钟边学编程边学粤语](doc/cantonese.md)  
 # 目录
