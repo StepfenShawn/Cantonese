@@ -16,14 +16,15 @@ def cantonese_token(code : str) -> list:
                r'(玩到){1}|(为止){1}|(返转头){1}|(执嘢){1}|(揾到){1}|(执手尾){1}|(掟个){1}|(来睇下){1}|' \
                r'(从){1}|(行到){1}|(行晒){1}|(佢个老豆叫){1}|(佢识得){1}|(明白未啊){1}|(落Order){1}|' \
                r'(拍住上){1}|(係){1}|(比唔上){1}|(或者){1}|(辛苦晒啦){1}|(同我躝)|(唔啱){1}|(啱){1}|(冇){1}|' \
-               r'(有条扑街叫){1}|(顶你){1}|(丢你){1}|(嗌){1}|(过嚟估下){1}'
+               r'(有条扑街叫){1}|(顶你){1}|(丢你){1}|(嗌){1}|(过嚟估下){1}|(佢有啲咩){1}|(自己嘅){1}'
     kw_get_code = re.findall(re.compile(r'[(](.*?)[)]', re.S), keywords[13 : ])
     keywords_gen_code = ["print", "endprint", "exit", "in", "or", "turtle_begin", "gettype", 
                          "assign", "class", "is not", "is", "if", "then", "do", "begin", "end", "and", "pass",     
                          "while_do", "$", "call", "import", "funcbegin", "funcend", "is", "assert", "assign", 
                          "while", "whi_end", "return", "try", "except", "finally", "raise", "endraise",
                          "from", "to", "endfor", "extend", "method", "endclass", "cmd", "ass_list", "is",
-                         "<", "or", "exit", "exit", "False", "True", "None", "stackinit", "push", "pop", "model", "mod_new"
+                         "<", "or", "exit", "exit", "False", "True", "None", "stackinit", "push", "pop", "model", 
+                         "mod_new", "class_init", "self."
             ]
     num = r'(?P<num>\d+)'
     ID =  r'(?P<ID>[a-zA-Z_][a-zA-Z_0-9]*)'
@@ -233,6 +234,9 @@ def node_class_new(Node : list, name, extend, method) -> None:
         name extend method
     """
     Node.append(["node_class", name, extend, method])
+
+def node_attribute_new(Node : list, attr_list) -> None:
+    Node.append(["node_attr", attr_list])
 
 def node_method_new(Node : list, name, args, stmt) -> None:
     """
@@ -595,6 +599,12 @@ class Parser(object):
                 Parser(class_stmt, node_class).parse()
                 self.skip(1) # Skip the "end"
                 node_class_new(self.Node, class_name, extend, node_class)
+
+            elif self.match("class_init"):
+                self.skip(1)
+                attr_lst = self.get_value(self.get(0))
+                self.skip(1)
+                node_attribute_new(self.Node, attr_lst)
             
             elif self.match("method"):
                 method_name = self.get_value(self.get(0))
@@ -803,6 +813,13 @@ def run(Nodes, TAB = '', label = '', to_html = False):
                           + node[2][1] + "):\n"
             run(node[3], TAB + '\t', 'class_run')
             label = ''
+
+        if node[0] == "node_attr":
+            check(TAB)
+            TO_PY_CODE += TAB + "def __init__(self, " + node[1][1] + "):\n"
+            attr_lst = node[1][1].replace(" ", "").split(',')
+            for i in attr_lst:
+                TO_PY_CODE += TAB + '\t' + "self." + i + " = " + i + "\n"
 
         if node[0] == "node_method":
             check(TAB)
