@@ -10,7 +10,7 @@ import datetime
 starttime = datetime.datetime.now()
 file_list = []
 # Get all the file names under examples
-for f in glob.glob(os.path.join('..\examples', '*.cantonese')):
+for f in glob.glob(os.path.join('..\examples\*', '*.cantonese')):
 	file_list.append(f)
 
 i = 0

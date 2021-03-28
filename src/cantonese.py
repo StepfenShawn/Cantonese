@@ -1,7 +1,7 @@
 """
     Created at 2021/1/16 16:23
     Last update at 2021/3/20 10:01
-    The interpret for Cantoese    
+    The interpret for Cantonese    
 """
 import re
 import sys
@@ -28,9 +28,11 @@ def cantonese_token(code : str) -> list:
             ]
     num = r'(?P<num>\d+)'
     ID =  r'(?P<ID>[a-zA-Z_][a-zA-Z_0-9]*)'
-    op = r'(?P<op>(相加){1}|(加){1}|(减){1}|(乘){1}|(整除){1}|(除){1}|(余){1})'
+    op = r'(?P<op>(相加){1}|(加){1}|(减){1}|(乘){1}|(整除){1}|(除){1}|(余){1}|(异或){1}|(取反){1}|(左移){1}|(右移){1}'\
+         r'(与){1}|(或){1})'
     op_get_code = re.findall(re.compile(r'[(](.*?)[)]', re.S), op[5 : ])
-    op_gen_code = ["矩阵.matrix_addition", "+", "-", "*", "//", "/", "%"]
+    op_gen_code = ["矩阵.matrix_addition", "+", "-", "*", "//", "/", "%", "^", "~", "<<", ">>",
+            "&", "|"]
     string = r'(?P<string>\"([^\\\"]|\\.)*\")'
     expr = r'(?P<expr>[|](.*?)[|])'
     callfunc = r'(?P<callfunc>[&](.*?)[)])'
@@ -357,7 +359,7 @@ class Parser(object):
                         if if_case_end != if_should_end:
                             stmt_if.append(self.tokens[self.pos])
                         self.pos += 1
-                    elif self.get(0)[1] == "elif":
+                    elif self.get(0)[1] == "or" and self.get(1)[1] == "is":
                         if_should_end += 1
                         stmt_if.append(self.tokens[self.pos])
                         self.pos += 1
@@ -384,7 +386,7 @@ class Parser(object):
                         if elif_case_end != elif_should_end:
                             stmt_elif.append(self.tokens[self.pos])
                         self.pos += 1
-                    elif self.get(0)[1] == "elif":
+                    elif self.get(0)[1] == "or" and self.get(1)[1] == "is":
                         elif_should_end += 1
                         stmt_elif.append(self.tokens[self.pos])
                         self.pos += 1
@@ -410,7 +412,7 @@ class Parser(object):
                         if else_case_end != else_should_end:
                             stmt_else.append(self.tokens[self.pos])
                         self.pos += 1
-                    elif self.get(0)[1] == "elif":
+                    elif self.get(0)[1] == "or" and self.get(1)[1] == "is":
                         else_should_end += 1
                         stmt_else.append(self.tokens[self.pos])
                         self.pos += 1
@@ -629,11 +631,11 @@ class Parser(object):
                         method_should_end += 1
                         method_stmt.append(self.tokens[self.pos])    
                         self.pos += 1
-                    elif self.get(0)[1] == "elif":
+                    elif self.get(0)[1] == "or" and self.get(1)[1] == "is":
                         method_should_end += 1
                         method_stmt.append(self.tokens[self.pos])    
                         self.pos += 1
-                    elif self.get(0)[1] == "else":
+                    elif self.get(0)[1] == "is not":
                         method_should_end += 1
                         method_stmt.append(self.tokens[self.pos])    
                         self.pos += 1

@@ -251,15 +251,15 @@ y=0.530960991635149x+189.75347155122432
 ![turtle_result](img/turtle_etc.jpg)  
 
 ### <a name="21">迷宫游戏仔</a>
-[代码](examples/game.cantonese)  
+[代码](examples/games/game.cantonese)  
 运行结果:  
 ![game_result](img/game_result.jpg)
 
 ### <a name="22">各种排序同埋查找算法</a>
-* [二分查找](examples/binary_search.cantonese)
-* [线性查找](examples/linear_search.cantonese)
-* [冒泡排序](examples/bubble_sort.cantonese)
-* [插入排序](examples/insert_sort.cantonese)
+* [二分查找](examples/algorithms/binary_search.cantonese)
+* [线性查找](examples/algorithms/linear_search.cantonese)
+* [冒泡排序](examples/algorithms/bubble_sort.cantonese)
+* [插入排序](examples/algorithms/insert_sort.cantonese)
 
 ### <a name="23">写个网页睇下</a>
 一个简单嘅网页:
