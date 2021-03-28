@@ -500,22 +500,21 @@ class Parser(object):
                             self.pos += 1
                     Parser(for_stmt, node_for).parse()
                     node_for_new(self.Node, iterating_var, seq, node_for)
-
-                elif self.get(1)[1] == 'do':
-                    list = self.get_value(self.get(-1))
-                    name = self.get_value(self.get(2))
-                    node_list_new(self.Node, name, list)
-                    self.skip(3)
-
-                elif self.get(1)[0] != 'keywords' and self.get(1)[0] != 'call_func':
-                    args = self.get_value(self.get(1))
-                    node_build_in_func_call_new(self.Node, self.get_value(self.get(-1)), self.get_value(self.get(0)), args)
-                    self.skip(2)
-                
-                else:
-                    args = "None"
-                    node_build_in_func_call_new(self.Node, self.get_value(self.get(-1)), self.get_value(self.get(0)), args)
+                if self.get(0)[1] == "ass_list":
                     self.skip(1)
+                    list = self.get_value(self.get(-2))
+                    name = self.get_value(self.get(1))
+                    node_list_new(self.Node, name, list)
+                    self.skip(2)
+                    
+                if self.get(0)[1] == 'do':
+                    self.skip(1)
+                    id = self.get_value(self.get(-2))
+                    args = self.get_value(self.get(1))
+                    func = self.get_value(self.get(0))
+                    node_build_in_func_call_new(self.Node, id, func, args)
+                    self.skip(2)
+
 
             elif self.match("return"):
                 node_return_new(self.Node, self.get_value(self.get(0)))
@@ -618,11 +617,30 @@ class Parser(object):
                 self.skip(2) # Skip the "do", "begin"
                 method_stmt = []
                 node_method = []
-                while self.tokens[self.pos][1] != "end" and self.pos < len(self.tokens):
-                    method_stmt.append(self.tokens[self.pos])
-                    self.pos += 1
+                method_should_end = 1
+                method_case_end = 0
+                while method_case_end != method_should_end and self.pos < len(self.tokens):
+                    if self.get(0)[1] == "end":
+                        method_case_end += 1
+                        if method_case_end != method_should_end:
+                            method_stmt.append(self.tokens[self.pos])    
+                        self.pos += 1
+                    elif self.get(0)[1] == "if":
+                        method_should_end += 1
+                        method_stmt.append(self.tokens[self.pos])    
+                        self.pos += 1
+                    elif self.get(0)[1] == "elif":
+                        method_should_end += 1
+                        method_stmt.append(self.tokens[self.pos])    
+                        self.pos += 1
+                    elif self.get(0)[1] == "else":
+                        method_should_end += 1
+                        method_stmt.append(self.tokens[self.pos])    
+                        self.pos += 1
+                    else:
+                        method_stmt.append(self.tokens[self.pos])
+                        self.pos += 1
                 Parser(method_stmt, node_method).parse()
-                self.skip(1) # Skip the "end"
                 node_method_new(self.Node, method_name, args, node_method)
             
             elif self.match("cmd"):
