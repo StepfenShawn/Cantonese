@@ -1,6 +1,4 @@
-/*
-    Cantonese Web 版
-    python src/cantonese.py ../examples/web_hello.cantonese -to_web
-    See the result in 127.0.0.1:80
-*/
-畀我睇下 |This Page is made by cantonese!| 点样先?
+老作一下 {
+    写标题 => [ "我嘅第一个网页" ]
+    写隻字 => [ "Hello World" ]
+}

@@ -5,6 +5,7 @@
 """
 import re
 import sys
+import io
 
 """
     Get the Cantonese Token List
@@ -681,9 +682,8 @@ class Parser(object):
 
 variable = {}
 TO_PY_CODE = ""
-TO_HTML = ""
  
-def run(Nodes, TAB = '', label = '', to_html = False):
+def run(Nodes, TAB = '', label = ''):
     def check(tab):
         if label != 'whi_run' and label != 'if_run' and label != 'else_run' and  \
             label != 'elif_run' and label != "func_run" and label != "try_run" and \
@@ -691,16 +691,13 @@ def run(Nodes, TAB = '', label = '', to_html = False):
             label != "class_run" and label != "method_run":
             tab = ''
     global TO_PY_CODE
-    global TO_HTML
     if Nodes == None:
         return None
     for node in Nodes:
         if node[0] == "node_print":
             check(TAB)
             TO_PY_CODE += TAB + "print(" + node[1][1] + ")\n"
-            if to_html:
-                TO_HTML += "<h1>" + node[1][1] + "</h1>"
-        
+            
         if node[0] == "node_sleep":
             check(TAB)
             TO_PY_CODE += TAB + "import time\n"
@@ -904,10 +901,12 @@ def cantonese_stack_init() -> None:
             self.stack.append(value)
         def pop(self):
             if self.stack:
-                self.stack.pop()
+                return self.stack.pop()
             else:
                 raise LookupError('stack 畀你丢空咗!')
     cantonese_func_def("stack", _stack)
+    cantonese_func_def("我丢", _stack.pop)
+    cantonese_func_def("我顶", _stack.push)
 
 def cantonese_func_def(func_name : str, func) -> None:
     variable[func_name] = func
@@ -1014,39 +1013,155 @@ def cantonese_model_new(model, datatest, tab, code):
         code = ""
     return code
 
-def cantonese_run(code, is_to_py, is_to_web):
+def cantonese_run(code : str, is_to_py : bool) -> None:
     tokens = []
     for token in cantonese_token(code):
         tokens.append(token)
     cantonese_parser = Parser(tokens, [])
     cantonese_parser.parse()
-    run(cantonese_parser.Node, to_html = is_to_web)
+    run(cantonese_parser.Node)
     if is_to_py:
         print(TO_PY_CODE)
-    elif is_to_web:
-        import socket
-        ip_port = ('127.0.0.1', 80)
-        back_log = 10
-        buffer_size = 1024
-        webserver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        webserver.bind(ip_port)
-        webserver.listen(back_log)
-        print("Cantonese Web Starting at 127.0.0.1:80 ...")
-        while True:
-            conn, addr = webserver.accept()
-            recvdata = conn.recv(buffer_size)
-            conn.sendall(bytes("HTTP/1.1 201 OK\r\n\r\n", "utf-8"))
-            conn.sendall(bytes(TO_HTML, "utf-8"))
-            conn.close()
-            if input("input Y to exit:"):
-                print("Cantonese Web exiting...")
-                break
     else:
         import traceback
         try:
             exec(TO_PY_CODE, variable)
         except Exception as e:
             print("濑嘢: " + repr(e) + "!")
+
+class WebParser(object):
+    def __init__(self, tokens, Node) -> None:
+        self.tokens = tokens
+        self.pos = 0
+        self.Node = Node
+
+    def get(self, offset) -> list:
+        if self.pos + offset >= len(self.tokens):
+            return ["", ""]
+        return self.tokens[self.pos + offset]
+        
+    def match(self, name : str) -> bool:
+        if self.get(0)[1] == name:
+            return True
+        return False
+    
+    def match_type(self, name : str) -> bool:
+        if self.get(0)[0] == name:
+            return True
+        return False
+    
+    def check(self, a, b) -> None:
+        if a == b:
+            return
+        raise LookupError("Error Token:" + str(b))
+
+    def skip(self, offset) -> None:
+            self.pos += offset
+    
+    def run(self, Nodes : list) -> None:
+        for node in Nodes:
+            if node[0] == "node_call":
+                web_call_new(node[1][0], node[1][1])
+
+    def parse(self) -> None:
+        while True:
+            if self.match("老作一下"):
+                self.skip(1)
+                self.check(self.get(0)[1], "{")
+                self.skip(1)
+                stmt = []
+                node_main = []
+                while self.tokens[self.pos][1] != "}":
+                    stmt.append(self.tokens[self.pos])
+                    self.pos += 1
+                self.skip(1)
+                WebParser(stmt, node_main).parse()
+                self.Node = node_main
+                self.run(self.Node)
+            elif self.match_type("id"):
+                name = self.get(0)[1]
+                self.skip(1)
+                self.check(self.get(0)[1], "=>")
+                self.skip(1)
+                self.check(self.get(0)[1], "[")
+                self.skip(1)
+                args = []
+                while self.tokens[self.pos][1] != "]":
+                    args.append(self.tokens[self.pos][1])
+                    self.pos += 1
+                self.skip(1)
+                web_ast_new(self.Node, "node_call", [name, args])
+            else:
+                break
+
+def web_ast_new(Node : list, type : str, ctx : list) -> None:
+    Node.append([type, ctx])
+
+sym = {}
+TO_HTML = "<html>\n"
+
+def title(args : list) -> None:
+    global TO_HTML
+    t_beg, t_end = "<title>", "</title>\n"
+    TO_HTML += t_beg + args[0] + t_end
+
+def h(args : list) -> None:
+    global TO_HTML
+    h_beg, h_end = "<h1>", "</h1>\n"
+    TO_HTML += h_beg + args[0] + h_end
+
+def sym_init() -> None:
+    global sym
+    sym['写标题'] = title
+    sym['写隻字'] = h
+
+def head_init() -> None:
+    global TO_HTML
+    TO_HTML += "<head>\n"
+    TO_HTML += "<meta charset=\"utf-8\" />\n"
+    TO_HTML += "</head>\n"
+
+def web_init() -> None:
+    global TO_HTML
+    sym_init()
+    head_init()
+
+
+def web_call_new(func : str, args_list : list) -> None:
+    sym[func](args_list)
+        
+def cantonese_web_run(code : str) -> None:
+    global TO_HTML
+    keywords = r'(?P<keywords>(老作一下){1}|({){1}|(}){1}|(=>){1}|(\[){1}|(\]){1})'
+    num = r'(?P<num>\d+)'
+    string = r'(?P<string>\"([^\\\"]|\\.)*\")'
+    func = r'(?P<id>[\u4e00-\u9fa5]+)'
+    patterns = re.compile('|'.join([keywords, string, num, func]))
+    tokens = []
+    for match in re.finditer(patterns, code):
+        tokens.append([match.lastgroup, match.group()])
+    web_init()
+    WebParser(tokens, []).parse()
+    TO_HTML += "</html>"
+    print(TO_HTML)
+    import socket
+    ip_port = ('127.0.0.1', 80)
+    back_log = 10
+    buffer_size = 1024
+    webserver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    webserver.bind(ip_port)
+    webserver.listen(back_log)
+    print("Cantonese Web Starting at 127.0.0.1:80 ...")
+    while True:
+        conn, addr = webserver.accept()
+        recvdata = conn.recv(buffer_size)
+        conn.sendall(bytes("HTTP/1.1 201 OK\r\n\r\n", "utf-8"))
+        conn.sendall(bytes(TO_HTML, "utf-8"))
+        conn.close()
+        if input("input Y to exit:"):
+            print("Cantonese Web exiting...")
+            break
+    exit(0)
 
 def main():
     try:
@@ -1056,15 +1171,12 @@ def main():
                 # Skip the comment
                 code = re.sub(re.compile(r'/\*.*?\*/', re.S), ' ', code)
                 is_to_py = False
-                is_to_web = False
                 if len(sys.argv) == 3:
                     if sys.argv[2] == "-to_py":
                         is_to_py = True
-                    elif sys.argv[2] == "-to_web":
-                        is_to_web = True
-                    else:
-                        pass
-                cantonese_run(code, is_to_py, is_to_web)
+                    if sys.argv[2] == "-to_web":
+                        cantonese_web_run(code)
+                cantonese_run(code, is_to_py)
         else:
             print("你想点啊? (请输入你嘅文件)")
     except FileNotFoundError:
