@@ -1062,7 +1062,9 @@ class WebParser(object):
         for node in Nodes:
             if node[0] == "node_call":
                 web_call_new(node[1][0], node[1][1])
-
+            if node[0] == "node_css":
+                style_def(node[1][0], node[1][1], node[1][2])
+        
     def parse(self) -> None:
         while True:
             if self.match("老作一下"):
@@ -1079,41 +1081,93 @@ class WebParser(object):
                 self.Node = node_main
                 self.run(self.Node)
             elif self.match_type("id"):
-                name = self.get(0)[1]
+                if self.get(1)[0] == "keywords" and self.get(1)[1] == "要点画":
+                    id = self.get(0)[1]
+                    self.skip(2)
+                    style_stmt = []
+                    node_style = []
+                    while self.tokens[self.pos][1] != "搞掂":
+                        style_stmt.append(self.tokens[self.pos])
+                        self.pos += 1
+                    self.skip(1)
+                    self.cantonese_css_parser(style_stmt, id)
+                else:
+                    name = self.get(0)[1]
+                    self.skip(1)
+                    self.check(self.get(0)[1], "=>")
+                    self.skip(1)
+                    self.check(self.get(0)[1], "[")
+                    self.skip(1)
+                    args = []
+                    while self.tokens[self.pos][1] != "]":
+                        args.append(self.tokens[self.pos][1])
+                        self.pos += 1
+                    self.skip(1)
+                    web_ast_new(self.Node, "node_call", [name, args])
+            else:
+                break
+
+    def cantonese_css_parser(self, stmt : list, id : str) -> None:
+        cssParser(stmt, []).parse(id)
+
+class cssParser(WebParser):
+    def parse(self, id : str) -> None:
+        while True:
+            if self.match_type("id"):
+                key = self.get(0)[1]
                 self.skip(1)
-                self.check(self.get(0)[1], "=>")
+                self.check(self.get(0)[1], "系")
                 self.skip(1)
                 self.check(self.get(0)[1], "[")
                 self.skip(1)
-                args = []
+                value = []
                 while self.tokens[self.pos][1] != "]":
-                    args.append(self.tokens[self.pos][1])
+                    value.append(self.tokens[self.pos][1])
                     self.pos += 1
                 self.skip(1)
-                web_ast_new(self.Node, "node_call", [name, args])
+                web_ast_new(self.Node, "node_css", [id, key, value])
             else:
                 break
+        self.run(self.Node)
 
 def web_ast_new(Node : list, type : str, ctx : list) -> None:
     Node.append([type, ctx])
 
+def get_str(s : str) -> str:
+    return eval("str(" + s + ")")
+
 sym = {}
+style_attr = {}
+style_value_attr = {}
+
 TO_HTML = "<html>\n"
 
 def title(args : list) -> None:
     global TO_HTML
     t_beg, t_end = "<title>", "</title>\n"
-    TO_HTML += t_beg + args[0] + t_end
+    TO_HTML += t_beg + get_str(args[0]) + t_end
 
 def h(args : list) -> None:
     global TO_HTML
     h_beg, h_end = "<h1>", "</h1>\n"
-    TO_HTML += h_beg + args[0] + h_end
+    TO_HTML += h_beg + get_str(args[0]) + h_end
+
+def img(args : list) -> None:
+    global TO_HTML
+    i_beg, i_end = "<img src = ", ">\n"
+    TO_HTML += i_beg + eval("str(" + args[0] + ")") + i_end
 
 def sym_init() -> None:
     global sym
+    global style_attr
+
     sym['写标题'] = title
     sym['写隻字'] = h
+    sym['睇下'] = img
+
+    style_attr['颜色'] = "color"
+
+    style_value_attr['红色'] = "red"
 
 def head_init() -> None:
     global TO_HTML
@@ -1126,23 +1180,52 @@ def web_init() -> None:
     sym_init()
     head_init()
 
+def web_end() -> None:
+    global TO_HTML
+    TO_HTML += "</html>"
+
+style_sym = {}
+
+def style_def(id : str, key : str, value : list) -> None:
+    global style_sym
+    if id not in style_sym:
+        style_sym[id] = [[key, value]]
+        return
+    style_sym[id].append([key, value])
+    
+def style_build(value : list) -> None:
+    s = ""
+    for item in value:
+        s += style_attr[item[0]] + ":" + style_value_attr[get_str(item[1][0])] + "\n"
+    return s
+
+def style_exec(sym : dict) -> None:
+    global TO_HTML
+    gen = ""
+    s_beg, s_end = "\n<style type=\"text/css\">\n", "</style>\n"
+    for key, value in sym.items():
+        gen += key + "{\n" + style_build(value) + "}\n"
+    TO_HTML += s_beg + gen + s_end  
 
 def web_call_new(func : str, args_list : list) -> None:
     sym[func](args_list)
         
 def cantonese_web_run(code : str) -> None:
     global TO_HTML
-    keywords = r'(?P<keywords>(老作一下){1}|({){1}|(}){1}|(=>){1}|(\[){1}|(\]){1})'
+    keywords = r'(?P<keywords>(老作一下){1}|({){1}|(}){1}|(=>){1}|(\[){1}|(\]){1}|(要点画){1}|(搞掂){1}|' \
+               r'(系){1})'
     num = r'(?P<num>\d+)'
     string = r'(?P<string>\"([^\\\"]|\\.)*\")'
-    func = r'(?P<id>[\u4e00-\u9fa5]+)'
-    patterns = re.compile('|'.join([keywords, string, num, func]))
+    id = r'(?P<id>([\u4e00-\u9fa5]+){1}|([a-zA-Z_][a-zA-Z_0-9]*){1})'
+    patterns = re.compile('|'.join([keywords, string, num, id]))
     tokens = []
     for match in re.finditer(patterns, code):
         tokens.append([match.lastgroup, match.group()])
     web_init()
     WebParser(tokens, []).parse()
-    TO_HTML += "</html>"
+    web_end()
+    if style_sym != {}:
+        style_exec(style_sym)
     print(TO_HTML)
     import socket
     ip_port = ('127.0.0.1', 80)
