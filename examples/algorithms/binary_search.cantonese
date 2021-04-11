@@ -21,5 +21,5 @@ $binarySearch |数组, 数字| 要做咩:
     返转头 唔啱
 搞掂
 
-用下 |binarySearch([2, 3, 4, 10, 40], 10)|
-用下 |binarySearch([2, 3, 4, 10, 40], 6)|
+binarySearch 下 -> |[2, 3, 4, 10, 40], 10|
+binarySearch 下 -> |[2, 3, 4, 10, 40], 6|

@@ -157,8 +157,8 @@ try-except-finally:
 ```  
 调用类中嘅方法:  
 ```
-用下 |duck().游水()|
-用下 |duck().睡觉()|
+|duck()| -> |游水|: ||
+|duck()| -> |睡觉|: ||
 ```
 运行结果:  
 ```
@@ -288,12 +288,25 @@ python src/cantonese.py [文件名] -to_py
 ```
 例如:  
 ```
-python src/cantonese.py examples/helloworld.cantonese -to_py
+python src/cantonese.py examples/basic/helloworld.cantonese -to_py
 ```
 运行嘅结果系:  
 ```
 print(" Hello World! ")
 exit()
+```
+生成`HTML`:  
+```shell
+python src/cantonese.py examples/web/web_hello.cantonese -to_web -complie
+```
+```html
+<html>
+<head>
+<meta charset="utf-8" />
+</head>
+<title>我嘅第一个网页</title>
+<h1>Hello World</h1>
+</html>
 ```
 # <a name="25">TODOs</a>
 本项目代码写得很陋(烂)，欢迎各个粤语同埋编程爱好者一齐讨论同贡献！为粤语文化遗产嘅保护贡献出自己嘅一份力量！

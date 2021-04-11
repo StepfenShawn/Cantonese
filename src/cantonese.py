@@ -6,6 +6,7 @@
 import re
 import sys
 import io
+import os
 
 """
     Get the Cantonese Token List
@@ -17,7 +18,7 @@ def cantonese_token(code : str) -> list:
                r'(玩到){1}|(为止){1}|(返转头){1}|(执嘢){1}|(揾到){1}|(执手尾){1}|(掟个){1}|(来睇下){1}|' \
                r'(从){1}|(行到){1}|(行晒){1}|(佢个老豆叫){1}|(佢识得){1}|(明白未啊){1}|(落Order){1}|' \
                r'(拍住上){1}|(係){1}|(比唔上){1}|(或者){1}|(辛苦晒啦){1}|(同我躝)|(唔啱){1}|(啱){1}|(冇){1}|' \
-               r'(有条扑街叫){1}|(顶你){1}|(丢你){1}|(嗌){1}|(过嚟估下){1}|(佢有啲咩){1}|(自己嘅){1}'
+               r'(有条扑街叫){1}|(顶你){1}|(丢你){1}|(嗌){1}|(过嚟估下){1}|(佢有啲咩){1}|(自己嘅){1}|(下){1}'
     kw_get_code = re.findall(re.compile(r'[(](.*?)[)]', re.S), keywords[13 : ])
     keywords_gen_code = ["print", "endprint", "exit", "in", "or", "turtle_begin", "gettype", 
                          "assign", "class", "is not", "is", "if", "then", "do", "begin", "end", "and", "pass",     
@@ -25,7 +26,7 @@ def cantonese_token(code : str) -> list:
                          "while", "whi_end", "return", "try", "except", "finally", "raise", "endraise",
                          "from", "to", "endfor", "extend", "method", "endclass", "cmd", "ass_list", "is",
                          "<", "or", "exit", "exit", "False", "True", "None", "stackinit", "push", "pop", "model", 
-                         "mod_new", "class_init", "self."
+                         "mod_new", "class_init", "self.", "call_begin"
             ]
     num = r'(?P<num>\d+)'
     ID =  r'(?P<ID>[a-zA-Z_][a-zA-Z_0-9]*)'
@@ -517,7 +518,13 @@ class Parser(object):
                     func = self.get_value(self.get(0))
                     node_build_in_func_call_new(self.Node, id, func, args)
                     self.skip(2)
-
+                if self.get(0)[1] == 'call_begin':
+                    func_name = self.get_value(self.get(-1))
+                    self.skip(2)
+                    args = self.get_value(self.get(0))
+                    cons = ['expr', func_name[1] + '(' + args[1] + ')']
+                    node_call_new(self.Node, cons)
+                    self.skip(1)
 
             elif self.match("return"):
                 node_return_new(self.Node, self.get_value(self.get(0)))
@@ -874,6 +881,8 @@ def cantonese_lib_import(name : str) -> None:
         cantonese_datetime_init()
     elif name == "math":
         cantonese_math_init()
+    elif name == "smtplib":
+        cantonese_smtplib_init()
     else:
         return
 
@@ -890,6 +899,17 @@ def cantonese_turtle_init() -> None:
     cantonese_func_def("画个圈", turtle.circle)
     cantonese_func_def("写隻字", turtle.write)
     cantonese_func_def("听我支笛", turtle.exitonclick)
+
+def cantonese_smtplib_init() -> None:
+    import smtplib
+    def send(sender : str, receivers : str,  message : str, 
+             smtpObj = smtplib.SMTP('localhost')) -> None:
+        try:
+            smtpObj.sendmail(sender, receivers, message)         
+            print("Successfully sent email!")
+        except SMTPException:
+            print("Error: unable to send email")
+    cantonese_func_def("send份邮件", send)
 
 def cantonese_stack_init() -> None:
     class _stack(object):
@@ -1166,8 +1186,14 @@ def sym_init() -> None:
     sym['睇下'] = img
 
     style_attr['颜色'] = "color"
+    style_attr['背景颜色'] = "background-color"
+    style_attr['对齐方式'] = "text-align"
 
     style_value_attr['红色'] = "red"
+    style_value_attr['黄色'] = "yellow"
+    style_value_attr['白色'] = "white"
+    style_value_attr['黑色'] = "black"
+    style_value_attr['居中'] = "center"
 
 def head_init() -> None:
     global TO_HTML
@@ -1196,7 +1222,14 @@ def style_def(id : str, key : str, value : list) -> None:
 def style_build(value : list) -> None:
     s = ""
     for item in value:
-        s += style_attr[item[0]] + ":" + style_value_attr[get_str(item[1][0])] + "\n"
+        if get_str(item[1][0]) not in style_value_attr.keys() and item[0] in style_attr.keys():
+            s += style_attr[item[0]] + " : " + get_str(item[1][0]) + "\n"
+        elif get_str(item[1][0]) not in style_value_attr.keys() and item[0] not in style_attr.keys():
+            s += item[0] + " : " + get_str(item[1][0]) + "\n"
+        elif get_str(item[1][0]) in style_value_attr.keys() and item[0] not in style_attr.keys():
+            s += item[0] + " : " + style_value_attr[get_str(item[1][0])] + "\n"
+        else:
+            s += style_attr[item[0]] + " : " + style_value_attr[get_str(item[1][0])] + "\n"
     return s
 
 def style_exec(sym : dict) -> None:
@@ -1208,12 +1241,18 @@ def style_exec(sym : dict) -> None:
     TO_HTML += s_beg + gen + s_end  
 
 def web_call_new(func : str, args_list : list) -> None:
-    sym[func](args_list)
-        
-def cantonese_web_run(code : str) -> None:
+    if func in sym:
+        sym[func](args_list)
+    else:
+        func(args_list)
+
+def get_html_file(name : str) -> str:
+    return name[ : len(name) - len('cantonese')] + 'html'
+
+def cantonese_web_run(code : str, file_name : str, open_serv = True) -> None:
     global TO_HTML
     keywords = r'(?P<keywords>(老作一下){1}|({){1}|(}){1}|(=>){1}|(\[){1}|(\]){1}|(要点画){1}|(搞掂){1}|' \
-               r'(系){1})'
+               r'(系){1}|(用下){1}|(->){1})'
     num = r'(?P<num>\d+)'
     string = r'(?P<string>\"([^\\\"]|\\.)*\")'
     id = r'(?P<id>([\u4e00-\u9fa5]+){1}|([a-zA-Z_][a-zA-Z_0-9]*){1})'
@@ -1227,23 +1266,27 @@ def cantonese_web_run(code : str) -> None:
     if style_sym != {}:
         style_exec(style_sym)
     print(TO_HTML)
-    import socket
-    ip_port = ('127.0.0.1', 80)
-    back_log = 10
-    buffer_size = 1024
-    webserver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    webserver.bind(ip_port)
-    webserver.listen(back_log)
-    print("Cantonese Web Starting at 127.0.0.1:80 ...")
-    while True:
-        conn, addr = webserver.accept()
-        recvdata = conn.recv(buffer_size)
-        conn.sendall(bytes("HTTP/1.1 201 OK\r\n\r\n", "utf-8"))
-        conn.sendall(bytes(TO_HTML, "utf-8"))
-        conn.close()
-        if input("input Y to exit:"):
-            print("Cantonese Web exiting...")
-            break
+    if open_serv:
+        import socket
+        ip_port = ('127.0.0.1', 80)
+        back_log = 10
+        buffer_size = 1024
+        webserver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        webserver.bind(ip_port)
+        webserver.listen(back_log)
+        print("Cantonese Web Starting at 127.0.0.1:80 ...")
+        while True:
+            conn, addr = webserver.accept()
+            recvdata = conn.recv(buffer_size)
+            conn.sendall(bytes("HTTP/1.1 201 OK\r\n\r\n", "utf-8"))
+            conn.sendall(bytes(TO_HTML, "utf-8"))
+            conn.close()
+            if input("input Y to exit:"):
+                print("Cantonese Web exiting...")
+                break
+    else:
+        f = open(get_html_file(file_name), 'w', encoding = 'utf-8')
+        f.write(TO_HTML)
     exit(0)
 
 def main():
@@ -1254,11 +1297,14 @@ def main():
                 # Skip the comment
                 code = re.sub(re.compile(r'/\*.*?\*/', re.S), ' ', code)
                 is_to_py = False
-                if len(sys.argv) == 3:
+                if len(sys.argv) >= 3:
                     if sys.argv[2] == "-to_py":
                         is_to_py = True
                     if sys.argv[2] == "-to_web":
-                        cantonese_web_run(code)
+                        if len(sys.argv) > 3 and sys.argv[3] == "-complie":
+                            cantonese_web_run(code, sys.argv[1], False)
+                        else:
+                            cantonese_web_run(code, sys.argv[1])
                 cantonese_run(code, is_to_py)
         else:
             print("你想点啊? (请输入你嘅文件)")

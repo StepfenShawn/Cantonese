@@ -34,7 +34,7 @@ $Display 要做咩:
     行晒
 搞掂
 
-用下 |Display()|
+|Display| 下 -> ||
 
 $Clear 要做咩:
     落Order: "cls"

@@ -12,5 +12,5 @@ $linear_search |数组, 要揾嘅| 要做咩:
     返转头 唔啱
 搞掂
 
-用下 |linear_search(['A', 'B', 'C', 'D', 'E'], 'D')|
-用下 |linear_search(['A', 'B', 'C', 'D', 'E'], 'F')|
+linear_search 下 -> |['A', 'B', 'C', 'D', 'E'], 'D'|
+linear_search 下 -> |['A', 'B', 'C', 'D', 'E'], 'F'|
