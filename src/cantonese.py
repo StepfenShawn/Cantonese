@@ -1,6 +1,6 @@
 """
     Created at 2021/1/16 16:23
-    Last update at 2021/3/20 10:01
+    Last update at 2021/4/17 23:26
     The interpret for Cantonese    
 """
 import re
@@ -690,7 +690,7 @@ class Parser(object):
 variable = {}
 TO_PY_CODE = ""
  
-def run(Nodes, TAB = '', label = ''):
+def run(Nodes : list, TAB = '', label = '') -> None:
     def check(tab):
         if label != 'whi_run' and label != 'if_run' and label != 'else_run' and  \
             label != 'elif_run' and label != "func_run" and label != "try_run" and \
@@ -871,6 +871,7 @@ def run(Nodes, TAB = '', label = ''):
             check(TAB)
             TO_PY_CODE += TAB + cantonese_model_new(node[1][1], node[2][1], \
                                 TAB, TO_PY_CODE)
+
 """
     Built-in library for Cantonese
 """
@@ -883,16 +884,94 @@ def cantonese_lib_import(name : str) -> None:
         cantonese_math_init()
     elif name == "smtplib":
         cantonese_smtplib_init()
+    elif name == "xml":
+        cantonese_xml_init()
+    elif name == "csv":
+        cantonese_csv_init()
     else:
         return
 
+def cantonese_lib_init() -> None:
+    def cantonese_open(file, 模式 = 'r', 解码 = None):
+        return open(file, mode = 模式, encoding = 解码)
+
+    def cantonese_close(file) -> None:
+        file.close()
+
+    def out_name(file) -> None:
+        print(file.name)
+
+    def out_ctx(file, size = None) -> None:
+        if size == None:
+            print(file.read())
+            return
+        print(file.read(size))
+
+    def get_name(file) -> str:
+        return file.name
+
+    def cantonese_read(file, size = None) -> str:
+        if size == None:
+            return file.read()
+        return file.read(size)
+    
+    cantonese_func_def("开份文件", cantonese_open)
+    cantonese_func_def("关咗佢", cantonese_close)
+    cantonese_func_def("睇睇文件名", out_name)
+    cantonese_func_def("睇睇有咩", out_ctx)
+    cantonese_func_def("文件名", get_name)
+    cantonese_func_def("读取", cantonese_read)
+
+def cantonese_csv_init() -> None:
+    import csv
+
+    def out_csv_read(file):
+        for i in csv.reader(file):
+            print(i)
+    
+    def get_csv(file):
+        ret = []
+        for i in csv.reader(file):
+            ret.append(i)
+        return i
+
+    cantonese_func_def("睇睇csv有咩", out_csv_read)
+    cantonese_func_def("读取csv", get_csv)
+
 def cantonese_random_init() -> None:
     import random
-    cantonese_func_def("求其啦", random.random())
+    cantonese_func_def("求其啦", random.random)
+    cantonese_func_def("求其int下啦", random.randint)
 
 def cantonese_datetime_init() -> None:
     import datetime
-    cantonese_func_def("宜家几点", datetime.datetime.now())
+    cantonese_func_def("宜家几点", datetime.datetime.now)
+
+def cantonese_xml_init() -> None:
+    from xml.dom.minidom import parse
+    import xml.dom.minidom
+    
+    def make_dom(file) -> None:
+        return xml.dom.minidom.parse(file).documentElement
+
+    def has_attr(docelm, attr) -> bool:
+        return docelm.hasAttribute(attr)
+
+    def get_attr(docelm, attr):
+        print(docelm.getAttribute(attr))
+    
+    def getElementsByTag(docelm, tag : str, out = None, ctx = None):
+        if out == 1:
+            print(docelm.getElementsByTagName(tag))
+        if ctx != None:
+            print(ctx + docelm.getElementsByTagName(tag)[0].childNodes[0].data)
+        return docelm.getElementsByTagName(tag)
+
+    cantonese_func_def("整樖Dom树", make_dom)
+    cantonese_func_def("Dom有嘢", has_attr)
+    cantonese_func_def("睇Dom有咩", get_attr)
+    cantonese_func_def("用Tag揾", getElementsByTag)
+    cantonese_func_def("用Tag揾嘅", getElementsByTag)
 
 def cantonese_turtle_init() -> None:
     import turtle
@@ -978,8 +1057,8 @@ def cantonese_math_init():
     def corr(a, b):
         if len(a) == 0 or len(b) == 0:
             return None
-        a_avg = sum(a)/len(a)
-        b_avg = sum(b)/len(b)
+        a_avg = sum(a) / len(a)
+        b_avg = sum(b) / len(b)
         cov_ab = sum([(x - a_avg) * (y - b_avg) for x, y in zip(a, b)])
         sq = math.sqrt(sum([(x - a_avg) ** 2 for x in a]) * sum([(x - b_avg) ** 2 for x in b]))
         corr_factor = cov_ab / sq
@@ -1023,7 +1102,7 @@ def cantonese_math_init():
     cantonese_func_def("矩阵", Matrix)
     cantonese_func_def("点积", Matrix.matrix_multiplication)
 
-def cantonese_model_new(model, datatest, tab, code):
+def cantonese_model_new(model, datatest, tab, code) -> str:
     if model == "KNN":
         code += tab + "print(KNN(" + datatest + ", 数据, 标签, K))"
     if model == "L_REG":
@@ -1040,6 +1119,7 @@ def cantonese_run(code : str, is_to_py : bool) -> None:
     cantonese_parser = Parser(tokens, [])
     cantonese_parser.parse()
     run(cantonese_parser.Node)
+    cantonese_lib_init()
     if is_to_py:
         print(TO_PY_CODE)
     else:
@@ -1050,12 +1130,12 @@ def cantonese_run(code : str, is_to_py : bool) -> None:
             print("濑嘢: " + repr(e) + "!")
 
 class WebParser(object):
-    def __init__(self, tokens, Node) -> None:
+    def __init__(self, tokens : list, Node : list) -> None:
         self.tokens = tokens
         self.pos = 0
         self.Node = Node
 
-    def get(self, offset) -> list:
+    def get(self, offset : int) -> list:
         if self.pos + offset >= len(self.tokens):
             return ["", ""]
         return self.tokens[self.pos + offset]
@@ -1184,6 +1264,7 @@ def sym_init() -> None:
     sym['写标题'] = title
     sym['写隻字'] = h
     sym['睇下'] = img
+    sym['画表格'] = table
 
     style_attr['颜色'] = "color"
     style_attr['背景颜色'] = "background-color"
@@ -1193,7 +1274,9 @@ def sym_init() -> None:
     style_value_attr['黄色'] = "yellow"
     style_value_attr['白色'] = "white"
     style_value_attr['黑色'] = "black"
-    style_value_attr['居中'] = "center"
+    style_value_attr['绿色'] = "green"
+    style_value_attr['蓝色'] = "blue"
+    style_value_attr['居中'] = "centre"
 
 def head_init() -> None:
     global TO_HTML
@@ -1263,9 +1346,11 @@ def cantonese_web_run(code : str, file_name : str, open_serv = True) -> None:
     web_init()
     WebParser(tokens, []).parse()
     web_end()
+    
     if style_sym != {}:
         style_exec(style_sym)
     print(TO_HTML)
+
     if open_serv:
         import socket
         ip_port = ('127.0.0.1', 80)
@@ -1284,6 +1369,7 @@ def cantonese_web_run(code : str, file_name : str, open_serv = True) -> None:
             if input("input Y to exit:"):
                 print("Cantonese Web exiting...")
                 break
+    
     else:
         f = open(get_html_file(file_name), 'w', encoding = 'utf-8')
         f.write(TO_HTML)

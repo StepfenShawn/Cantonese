@@ -1,0 +1,22 @@
+/*
+ * Cantonese 读取xml文件
+ */
+使下 xml
+讲嘢: |Dom| 系 &整樖Dom树("../examples/lib_sample/movies.xml")
+如果 |Dom有嘢(Dom, "shelf")| 嘅话 -> {
+    |睇Dom有咩| 下 -> |Dom, "shelf"|
+}
+畀我睇下 |Dom| 点样先?
+|用Tag揾| 下 -> |Dom, "movie", 1|
+
+讲嘢: |数据| 系 |用Tag揾(Dom, "movie")|
+
+i 从 0 行到 |数据 嘅长度|
+    如果 |Dom有嘢(Dom, "title")| 嘅话 -> {
+        |睇Dom有咩| 下 -> |Dom, "title"|
+    }
+    |用Tag揾| 下 -> |Dom, "type", 0, "type有啲咩:"|
+    |用Tag揾| 下 -> |Dom, "format", 0, "format有啲咩:"|
+    |用Tag揾| 下 -> |Dom, "rating", 0, "rating有啲咩:"|
+    |用Tag揾| 下 -> |Dom, "description", 0, "description有啲咩:"|
+行晒

@@ -181,7 +181,7 @@ Stack: [1,2]
 ### <a name="15">显示当前时间</a>
 ```
 使下 datetime
-畀我睇下 |宜家几点| 点样先？
+畀我睇下 |宜家几点()| 点样先？
 ```
 运行结果:  
 ```
@@ -195,7 +195,7 @@ Stack: [1,2]
 ### <a name="17">嚟个随机数</a>
 ```
 使下 random
-讲嘢: |A| 就 |求其啦|
+讲嘢: |A| 就 |求其啦()|
 ```
 运行结果:  
 ```
@@ -283,7 +283,7 @@ Cantonese 语言运行喺 Python 虚拟机上，环境净系支持 Python3，因
 python src/cantonese.py [-文件名]
 ```
 将 Cantonese 转化成 Python:  
-```
+```shell
 python src/cantonese.py [文件名] -to_py
 ```
 例如:  

@@ -51,7 +51,6 @@ coverage.xml
  
 # Django stuff:
 *.log
-*.xml
  
 # Sphinx documentation
 docs/_build/
@@ -62,3 +61,6 @@ target/
 *local_settings.py
 .idea/*
 media/*
+
+# Vscode
+.vscode/
