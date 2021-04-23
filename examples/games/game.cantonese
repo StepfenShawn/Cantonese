@@ -34,7 +34,7 @@ $Display 要做咩:
     行晒
 搞掂
 
-|Display| 下 -> ||
+Display 下 -> ||
 
 $Clear 要做咩:
     落Order: "cls"
@@ -56,8 +56,8 @@ $GameBegin 要做咩:
                 讲嘢: |x| 系 |x + 1|
                 讲嘢: |地图[x][y]| 系 "O"
             }
-            用下 |Clear()|
-            用下 |Display()|
+            Clear 下 -> ||
+            Display 下 -> ||
         }
 
         定系 |命令 系 "d"| 嘅话 -> {
@@ -66,8 +66,8 @@ $GameBegin 要做咩:
                 讲嘢: |y| 系 |y + 1|
                 讲嘢: |地图[x][y]| 系 "O"
             }
-            用下 |Clear()|
-            用下 |Display()|
+            Clear 下 -> ||
+            Display 下 -> ||
         }
 
         定系 |命令 系 "w"| 嘅话 -> {
@@ -76,8 +76,8 @@ $GameBegin 要做咩:
                 讲嘢: |x| 系 |x - 1|
                 讲嘢: |地图[x][y]| 系 "O"
             }
-            用下 |Clear()|
-            用下 |Display()|
+            Clear 下 -> ||
+            Display 下 -> ||
         }
 
         定系 |命令 系 "a"| 嘅话 -> {
@@ -86,8 +86,8 @@ $GameBegin 要做咩:
                 讲嘢: |y| 系 |y - 1|
                 讲嘢: |地图[x][y]| 系 "O"
             }
-            用下 |Clear()|
-            用下 |Display()|
+            Clear 下 -> ||
+            Display 下 -> ||
         }
 
         定系 |命令 系 "q"| 嘅话 -> {
@@ -104,4 +104,4 @@ $GameBegin 要做咩:
 
 搞掂
 
-用下 |GameBegin()|
+GameBegin 下 -> ||

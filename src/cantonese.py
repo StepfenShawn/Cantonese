@@ -1,6 +1,6 @@
 """
     Created at 2021/1/16 16:23
-    Last update at 2021/4/17 23:26
+    Last update at 2021/4/23 22:27
     The interpret for Cantonese    
 """
 import re
@@ -690,7 +690,7 @@ class Parser(object):
 variable = {}
 TO_PY_CODE = ""
  
-def run(Nodes : list, TAB = '', label = '') -> None:
+def run(Nodes : list, TAB = '', label = '', path = '') -> None:
     def check(tab):
         if label != 'whi_run' and label != 'if_run' and label != 'else_run' and  \
             label != 'elif_run' and label != "func_run" and label != "try_run" and \
@@ -712,8 +712,10 @@ def run(Nodes : list, TAB = '', label = '') -> None:
         
         if node[0] == "node_import":
             check(TAB)
-            TO_PY_CODE += TAB + "import " + node[1][1] + "\n"
-            cantonese_lib_import(node[1][1])
+            if cantonese_lib_import(node[1][1]) != "Not found":
+                TO_PY_CODE += TAB + "import " + node[1][1] + "\n"
+            else:
+                cantonese_lib_run(node[1][1], path)
 
         if node[0] == "node_exit":
             check(TAB)
@@ -888,8 +890,10 @@ def cantonese_lib_import(name : str) -> None:
         cantonese_xml_init()
     elif name == "csv":
         cantonese_csv_init()
+    elif name == "os":
+        pass
     else:
-        return
+        return "Not found"
 
 def cantonese_lib_init() -> None:
     def cantonese_open(file, 模式 = 'r', 解码 = None):
@@ -1112,13 +1116,26 @@ def cantonese_model_new(model, datatest, tab, code) -> str:
         code = ""
     return code
 
-def cantonese_run(code : str, is_to_py : bool) -> None:
+def cantonese_lib_run(lib_name : str, path : str) -> None:
+    pa = os.path.dirname(path) # Return the last file Path
+    tokens = []
+    code = ""
+    for dirpath,dirnames,files in os.walk(pa):
+        if lib_name + '.cantonese' in files:
+            code = open(pa + '/' + lib_name + '.cantonese', encoding = 'utf-8').read()
+    for token in cantonese_token(code):
+        tokens.append(token)
+    cantonese_parser = Parser(tokens, [])
+    cantonese_parser.parse()
+    run(cantonese_parser.Node, path = path)
+
+def cantonese_run(code : str, is_to_py : bool, file : str) -> None:
     tokens = []
     for token in cantonese_token(code):
         tokens.append(token)
     cantonese_parser = Parser(tokens, [])
     cantonese_parser.parse()
-    run(cantonese_parser.Node)
+    run(cantonese_parser.Node, path = file)
     cantonese_lib_init()
     if is_to_py:
         print(TO_PY_CODE)
@@ -1391,7 +1408,7 @@ def main():
                             cantonese_web_run(code, sys.argv[1], False)
                         else:
                             cantonese_web_run(code, sys.argv[1])
-                cantonese_run(code, is_to_py)
+                cantonese_run(code, is_to_py, sys.argv[1])
         else:
             print("你想点啊? (请输入你嘅文件)")
     except FileNotFoundError:
