@@ -892,6 +892,10 @@ def cantonese_lib_import(name : str) -> None:
         cantonese_csv_init()
     elif name == "os":
         pass
+    elif name == "re":
+        cantonese_re_init()
+    elif name == "urllib":
+        cantonese_urllib_init()
     else:
         return "Not found"
 
@@ -1115,6 +1119,27 @@ def cantonese_model_new(model, datatest, tab, code) -> str:
         print("揾唔到你嘅模型: " + model + "!")
         code = ""
     return code
+
+def cantonese_re_init() -> None:
+    def can_re_match(pattern, string, flags = 0):
+        return re.match(pattern, string, flags)
+    
+    def can_re_match_out(pattern, string, flags = 0) -> None:
+        print(re.match(pattern, string, flags).span())
+
+    cantonese_func_def("衬", can_re_match_out)
+    cantonese_func_def("衬唔衬", can_re_match)
+
+def cantonese_urllib_init() -> None:
+    import urllib.request
+    def can_urlopen_out(url) -> None:
+        print(urllib.request.urlopen(url).read())
+
+    def can_urlopen(url):
+        return urllib.request.urlopen(url)
+
+    cantonese_func_def("睇网页", can_urlopen_out)
+    cantonese_func_def("揾网页", can_urlopen)
 
 def cantonese_lib_run(lib_name : str, path : str) -> None:
     pa = os.path.dirname(path) # Return the last file Path
@@ -1395,6 +1420,15 @@ def cantonese_web_run(code : str, file_name : str, open_serv = True) -> None:
 def main():
     try:
         if len(sys.argv) > 1:
+            """
+                install the cantonese library
+            """
+            if sys.argv[1] == '-install':
+                import urllib.request
+                print("Installing ... ")
+                urllib.request.urlretrieve(sys.argv[2], sys.argv[3])
+                print("Successful installed!")
+                exit()
             with open(sys.argv[1], encoding = "utf-8") as f:
                 code = f.read()
                 # Skip the comment
