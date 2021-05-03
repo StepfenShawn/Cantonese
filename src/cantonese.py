@@ -18,7 +18,7 @@ def cantonese_token(code : str) -> list:
                r'(玩到){1}|(为止){1}|(返转头){1}|(执嘢){1}|(揾到){1}|(执手尾){1}|(掟个){1}|(来睇下){1}|' \
                r'(从){1}|(行到){1}|(行晒){1}|(佢个老豆叫){1}|(佢识得){1}|(明白未啊){1}|(落Order){1}|' \
                r'(拍住上){1}|(係){1}|(比唔上){1}|(或者){1}|(辛苦晒啦){1}|(同我躝)|(唔啱){1}|(啱){1}|(冇){1}|' \
-               r'(有条扑街叫){1}|(顶你){1}|(丢你){1}|(嗌){1}|(过嚟估下){1}|(佢有啲咩){1}|(自己嘅){1}|(下){1}'
+               r'(有条扑街叫){1}|(顶你){1}|(丢你){1}|(嗌){1}|(过嚟估下){1}|(佢有啲咩){1}|(自己嘅){1}|(下){1}|(\@){1}'
     kw_get_code = re.findall(re.compile(r'[(](.*?)[)]', re.S), keywords[13 : ])
     keywords_gen_code = ["print", "endprint", "exit", "in", "or", "turtle_begin", "gettype", 
                          "assign", "class", "is not", "is", "if", "then", "do", "begin", "end", "and", "pass",     
@@ -26,7 +26,7 @@ def cantonese_token(code : str) -> list:
                          "while", "whi_end", "return", "try", "except", "finally", "raise", "endraise",
                          "from", "to", "endfor", "extend", "method", "endclass", "cmd", "ass_list", "is",
                          "<", "or", "exit", "exit", "False", "True", "None", "stackinit", "push", "pop", "model", 
-                         "mod_new", "class_init", "self.", "call_begin"
+                         "mod_new", "class_init", "self.", "call_begin", "get_value"
             ]
     num = r'(?P<num>\d+)'
     ID =  r'(?P<ID>[a-zA-Z_][a-zA-Z_0-9]*)'
@@ -523,8 +523,13 @@ class Parser(object):
                     self.skip(2)
                     args = self.get_value(self.get(0))
                     cons = ['expr', func_name[1] + '(' + args[1] + ')']
-                    node_call_new(self.Node, cons)
                     self.skip(1)
+                    if self.get(0)[1] == "@":
+                        self.skip(1)
+                        v = self.get_value(self.get(0))
+                        node_let_new(self.Node, v, cons)
+                    else:
+                        node_call_new(self.Node, cons)
 
             elif self.match("return"):
                 node_return_new(self.Node, self.get_value(self.get(0)))
@@ -712,10 +717,10 @@ def run(Nodes : list, TAB = '', label = '', path = '') -> None:
         
         if node[0] == "node_import":
             check(TAB)
-            if cantonese_lib_import(node[1][1]) != "Not found":
-                TO_PY_CODE += TAB + "import " + node[1][1] + "\n"
-            else:
+            if cantonese_lib_import(node[1][1]) == "Not found":
                 cantonese_lib_run(node[1][1], path)
+            else:
+                TO_PY_CODE += TAB + "import " + node[1][1] + "\n"
 
         if node[0] == "node_exit":
             check(TAB)
@@ -896,6 +901,8 @@ def cantonese_lib_import(name : str) -> None:
         cantonese_re_init()
     elif name == "urllib":
         cantonese_urllib_init()
+    elif name == "kivy":
+        cantonese_kivy_init()
     else:
         return "Not found"
 
@@ -1121,10 +1128,10 @@ def cantonese_model_new(model, datatest, tab, code) -> str:
     return code
 
 def cantonese_re_init() -> None:
-    def can_re_match(pattern, string, flags = 0):
+    def can_re_match(pattern : str, string : str, flags = 0):
         return re.match(pattern, string, flags)
     
-    def can_re_match_out(pattern, string, flags = 0) -> None:
+    def can_re_match_out(pattern : str, string : str, flags = 0) -> None:
         print(re.match(pattern, string, flags).span())
 
     cantonese_func_def("衬", can_re_match_out)
@@ -1132,22 +1139,51 @@ def cantonese_re_init() -> None:
 
 def cantonese_urllib_init() -> None:
     import urllib.request
-    def can_urlopen_out(url) -> None:
+    def can_urlopen_out(url : str) -> None:
         print(urllib.request.urlopen(url).read())
 
-    def can_urlopen(url):
+    def can_urlopen(url : str):
         return urllib.request.urlopen(url)
 
     cantonese_func_def("睇网页", can_urlopen_out)
     cantonese_func_def("揾网页", can_urlopen)
 
+def cantonese_kivy_init() -> None:
+    from kivy.app import App
+    from kivy.uix.label import Label
+    from kivy.uix.button import Button
+    from kivy.uix.boxlayout import BoxLayout
+
+    class MainApp(App):
+        pass
+
+    def app_show(ctx) -> None:
+        return Label(text = ctx)
+
+    def app_run(app_main, build_func) -> None:
+        print("The app is running ...")
+        def build(self):
+            return build_func()
+        app_main.build = build
+        app_main().run()
+
+    cantonese_func_def("App", App)
+    cantonese_func_def("Label", Label)
+    cantonese_func_def("Button", Button)
+    cantonese_func_def("App运行", app_run)
+    cantonese_func_def("同我show", app_show)
+
 def cantonese_lib_run(lib_name : str, path : str) -> None:
     pa = os.path.dirname(path) # Return the last file Path
     tokens = []
     code = ""
+    found = False
     for dirpath,dirnames,files in os.walk(pa):
         if lib_name + '.cantonese' in files:
             code = open(pa + '/' + lib_name + '.cantonese', encoding = 'utf-8').read()
+            found = True
+    if found == False:
+        raise ImportError(lib_name + '.cantonese not found.') 
     for token in cantonese_token(code):
         tokens.append(token)
     cantonese_parser = Parser(tokens, [])
