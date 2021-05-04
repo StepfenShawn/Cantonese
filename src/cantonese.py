@@ -438,7 +438,7 @@ class Parser(object):
             
             elif self.match("$"): # Case "function"
                 if self.get(1)[0] == 'expr':
-                   func_name = self.get(0)
+                   func_name = self.get_value(self.get(0))
                    args = self.get_value(self.get(1))
                    self.skip(3)
                    func_stmt = []
@@ -750,7 +750,7 @@ def run(Nodes : list, TAB = '', label = '', path = '') -> None:
         
         if node[0] == "node_loop":
             check(TAB)
-            TO_PY_CODE += TAB + "while " + node[1][1] + ":\n"
+            TO_PY_CODE += TAB + "while " + "not (" + node[1][1] + "):\n"
             run(node[2], TAB + '\t', 'whi_run')
             label = ''
         
@@ -903,6 +903,8 @@ def cantonese_lib_import(name : str) -> None:
         cantonese_urllib_init()
     elif name == "kivy":
         cantonese_kivy_init()
+    elif name == "pygame":
+        cantonese_pygame_init()
     else:
         return "Not found"
 
@@ -1154,11 +1156,9 @@ def cantonese_kivy_init() -> None:
     from kivy.uix.button import Button
     from kivy.uix.boxlayout import BoxLayout
 
-    class MainApp(App):
-        pass
-
-    def app_show(ctx) -> None:
-        return Label(text = ctx)
+    def app_show(ctx, 宽 = (.5, .5), 
+        高 = {"center_x": .5, "center_y": .5}) -> None:
+        return Label(text = ctx, size_hint = 宽, pos_hint = 高)
 
     def app_run(app_main, build_func) -> None:
         print("The app is running ...")
@@ -1167,11 +1167,72 @@ def cantonese_kivy_init() -> None:
         app_main.build = build
         app_main().run()
 
+    def app_button(ctx, 宽 = (.5, .5), 
+        高 = {"center_x": .5, "center_y": .5}) -> None:
+        return Button(text = ctx, size_hint = 宽, pos_hint = 高)
+
+    def app_layout(types, 布局 = "", 方向 = 'vertical', 间距 = 15, 内边距 = 10):
+        if 布局 ==  "":
+            if types == "Box":
+                return BoxLayout(orientation = 方向, 
+                spacing = 间距, padding = 内边距)
+        else:
+            for i in types.stack:
+                布局.add_widget(i)
+    
+    def button_bind(btn, func) -> None:
+        btn.bind(on_press = func)
+
     cantonese_func_def("App", App)
     cantonese_func_def("Label", Label)
     cantonese_func_def("Button", Button)
     cantonese_func_def("App运行", app_run)
     cantonese_func_def("同我show", app_show)
+    cantonese_func_def("开掣", app_button)
+    cantonese_func_def("老作", app_layout)
+    cantonese_func_def("睇实佢", button_bind)
+
+def cantonese_pygame_init() -> None:
+    import pygame
+    pygame.init()
+
+    def pygame_setmode(size):
+        return pygame.display.set_mode(size)
+
+    def pygame_imgload(path):
+        return pygame.image.load(path)
+
+    def pygame_move(object, speed):
+        return object.move(speed)
+
+    def object_rect(object):
+        return object.get_rect()
+
+    def draw(屏幕, 颜色, obj, obj_where) -> None:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: 
+                sys.exit()
+        屏幕.fill(颜色)
+        屏幕.blit(obj, obj_where)
+        pygame.time.delay(2)
+        pygame.display.flip()
+
+    def direction(obj, dir):
+        if dir == "左边" or dir == "left":
+            return obj.left
+        if dir == "右边" or dir == "right":
+            return obj.right
+        if dir == "上边" or dir == "top":
+            return obj.top
+        if dir == "call_begin边" or dir == "bottom":
+            return obj.bottom
+
+    cantonese_func_def("屏幕老作", pygame_setmode)
+    cantonese_func_def("图片老作", pygame_imgload)
+    cantonese_func_def("玩跑步", pygame_move)
+    cantonese_func_def("in边", object_rect)
+    cantonese_func_def("上画", draw)
+    cantonese_func_def("揾位", direction)
 
 def cantonese_lib_run(lib_name : str, path : str) -> None:
     pa = os.path.dirname(path) # Return the last file Path
