@@ -1191,7 +1191,7 @@ def cantonese_socket_init() -> None:
     def s_new():
         return socket.socket() 
 
-    def s_connect(s, host = socket.gethostname(), port):
+    def s_connect(s, port, host = socket.gethostname()):
         s.connect((host, port))
         return s
     
