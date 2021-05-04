@@ -901,6 +901,10 @@ def cantonese_lib_import(name : str) -> None:
         cantonese_re_init()
     elif name == "urllib":
         cantonese_urllib_init()
+    elif name == "requests":
+        cantonese_requests_init()
+    elif name == "socket":
+        cantonese_socket_init()
     elif name == "kivy":
         cantonese_kivy_init()
     elif name == "pygame":
@@ -938,6 +942,27 @@ def cantonese_lib_init() -> None:
     cantonese_func_def("睇睇有咩", out_ctx)
     cantonese_func_def("文件名", get_name)
     cantonese_func_def("读取", cantonese_read)
+
+    def get_list_end(lst : list):
+        return lst[-1]
+
+    def get_list_beg(lst : list):
+        return lst[0]
+
+    def where(lst : list, index : int):
+        return lst[index]
+    
+    def lst_insert(lst : list, index : int, obj) -> None:
+        lst.insert(index, obj)
+
+    def list_get(lst : list, index : int):
+        return lst[index]
+
+    cantonese_func_def("最尾", get_list_end)
+    cantonese_func_def("身位", where)
+    cantonese_func_def("挜位", lst_insert)
+    cantonese_func_def("排头位", get_list_beg)
+    cantonese_func_def("摞位", list_get)
 
 def cantonese_csv_init() -> None:
     import csv
@@ -1150,6 +1175,37 @@ def cantonese_urllib_init() -> None:
     cantonese_func_def("睇网页", can_urlopen_out)
     cantonese_func_def("揾网页", can_urlopen)
 
+def cantonese_requests_init() -> None:
+    import requests
+
+    def req_get(url : str):
+        res = requests.get(url)
+        res.encoding = 'utf-8'
+        return res.text
+
+    cantonese_func_def("𠯠求", req_get)
+
+def cantonese_socket_init() -> None:
+    import socket
+
+    def s_new():
+        return socket.socket() 
+
+    def s_connect(s, host = socket.gethostname(), port):
+        s.connect((host, port))
+        return s
+    
+    def s_recv(s, i : int):
+        return s.recv(i)
+    
+    def s_close(s) -> None:
+        s.close()
+
+    cantonese_func_def("倾偈", s_connect)
+    cantonese_func_def("收风", s_recv)
+    cantonese_func_def("通电话", s_new)
+    cantonese_func_def("收线", s_close)
+
 def cantonese_kivy_init() -> None:
     from kivy.app import App
     from kivy.uix.label import Label
@@ -1208,11 +1264,18 @@ def cantonese_pygame_init() -> None:
     def object_rect(object):
         return object.get_rect()
 
-    def draw(屏幕, 颜色, obj, obj_where) -> None:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT: 
-                sys.exit()
-        屏幕.fill(颜色)
+    def draw(屏幕, obj, obj_where, event = "", 颜色 = "") -> None:
+        if event == "":
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT: 
+                    sys.exit()
+        else:
+            for event in pygame.event.get():
+                for my_ev in event.stack:
+                    if event.type == my_ev[0]:
+                        my_ev[1]()
+        if 颜色 != "":
+            屏幕.fill(颜色)
         屏幕.blit(obj, obj_where)
         pygame.time.delay(2)
         pygame.display.flip()
@@ -1233,6 +1296,8 @@ def cantonese_pygame_init() -> None:
     cantonese_func_def("in边", object_rect)
     cantonese_func_def("上画", draw)
     cantonese_func_def("揾位", direction)
+    cantonese_func_def("画公仔", pygame.sprite.Sprite.__init__)
+    cantonese_func_def("公仔", pygame.sprite.Sprite)
 
 def cantonese_lib_run(lib_name : str, path : str) -> None:
     pa = os.path.dirname(path) # Return the last file Path
