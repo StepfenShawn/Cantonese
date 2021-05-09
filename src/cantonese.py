@@ -1596,11 +1596,12 @@ def main():
                 # Skip the comment
                 code = re.sub(re.compile(r'/\*.*?\*/', re.S), ' ', code)
                 is_to_py = False
+                # TODO: Use argparse library
                 if len(sys.argv) >= 3:
-                    if sys.argv[2] == "-to_py":
+                    if sys.argv[2] == "-to_py" or sys.argv[2] == "-讲翻py":
                         is_to_py = True
-                    if sys.argv[2] == "-to_web":
-                        if len(sys.argv) > 3 and sys.argv[3] == "-complie":
+                    if sys.argv[2] == "-to_web" or sys.argv[2] == "-倾偈":
+                        if len(sys.argv) > 3 and (sys.argv[3] == "-compile" or sys.argv[3] == "-讲白啲"):
                             cantonese_web_run(code, sys.argv[1], False)
                         else:
                             cantonese_web_run(code, sys.argv[1])

@@ -320,7 +320,7 @@ exit()
 ```
 生成`HTML`:  
 ```shell
-python src/cantonese.py examples/web/web_hello.cantonese -to_web -complie
+python src/cantonese.py examples/web/web_hello.cantonese -to_web -compile
 ```
 ```html
 <html>
