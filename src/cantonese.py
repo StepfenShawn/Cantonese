@@ -1407,6 +1407,10 @@ class WebParser(object):
                         args.append(self.tokens[self.pos][1])
                         self.pos += 1
                     self.skip(1)
+                    if self.match('$'): # case 'style_with'
+                        style_id = self.get(1)[1]
+                        self.skip(2)
+                        args.append(style_id)
                     web_ast_new(self.Node, "node_call", [name, args])
             else:
                 break
@@ -1448,13 +1452,24 @@ TO_HTML = "<html>\n"
 
 def title(args : list) -> None:
     global TO_HTML
-    t_beg, t_end = "<title>", "</title>\n"
-    TO_HTML += t_beg + get_str(args[0]) + t_end
+    if len(args) == 1:
+        t_beg, t_end = "<title>", "</title>\n"
+        TO_HTML += t_beg + get_str(args[0]) + t_end
+    if len(args) >= 2:
+        style = args[-1]
+        t_beg, t_end = "<title id = \"" + style + "\">", "</title>\n"
+        TO_HTML += t_beg + get_str(args[0]) + t_end
+
 
 def h(args : list) -> None:
     global TO_HTML
-    h_beg, h_end = "<h1>", "</h1>\n"
-    TO_HTML += h_beg + get_str(args[0]) + h_end
+    if len(args) == 1:
+        h_beg, h_end = "<h1>", "</h1>\n"
+        TO_HTML += h_beg + get_str(args[0]) + h_end
+    if len(args) >= 2:
+        style = args[-1]
+        t_beg, t_end = "<h1 id = \"" + style + "\">", "</h1>\n"
+        TO_HTML += t_beg + get_str(args[0]) + t_end
 
 def img(args : list) -> None:
     global TO_HTML
@@ -1468,7 +1483,7 @@ def sym_init() -> None:
     sym['写标题'] = title
     sym['写隻字'] = h
     sym['睇下'] = img
-    sym['画表格'] = table
+    #sym['画表格'] = table
 
     style_attr['颜色'] = "color"
     style_attr['背景颜色'] = "background-color"
@@ -1524,7 +1539,7 @@ def style_exec(sym : dict) -> None:
     gen = ""
     s_beg, s_end = "\n<style type=\"text/css\">\n", "</style>\n"
     for key, value in sym.items():
-        gen += key + "{\n" + style_build(value) + "}\n"
+        gen += "#" +  key + "{\n" + style_build(value) + "}\n"
     TO_HTML += s_beg + gen + s_end  
 
 def web_call_new(func : str, args_list : list) -> None:
@@ -1539,7 +1554,7 @@ def get_html_file(name : str) -> str:
 def cantonese_web_run(code : str, file_name : str, open_serv = True) -> None:
     global TO_HTML
     keywords = r'(?P<keywords>(老作一下){1}|({){1}|(}){1}|(=>){1}|(\[){1}|(\]){1}|(要点画){1}|(搞掂){1}|' \
-               r'(系){1}|(用下){1}|(->){1})'
+               r'(系){1}|(用下){1}|(->){1}|(\$){1})'
     num = r'(?P<num>\d+)'
     string = r'(?P<string>\"([^\\\"]|\\.)*\")'
     id = r'(?P<id>([\u4e00-\u9fa5]+){1}|([a-zA-Z_][a-zA-Z_0-9]*){1})'
