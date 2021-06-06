@@ -1,6 +1,6 @@
 """
     Created at 2021/1/16 16:23
-    Last update at 2021/4/23 22:27
+    Last update at 2021/6/6 9:11
     The interpret for Cantonese    
 """
 import re
@@ -909,6 +909,8 @@ def cantonese_lib_import(name : str) -> None:
         cantonese_kivy_init()
     elif name == "pygame":
         cantonese_pygame_init()
+    elif name == "json":
+        cantonese_json_init()
     else:
         return "Not found"
 
@@ -949,7 +951,13 @@ def cantonese_lib_init() -> None:
     def get_list_beg(lst : list):
         return lst[0]
 
-    def where(lst : list, index : int):
+    def where(lst : list, index : int, index2 = None, index3 = None, index4 = None):
+        if index2 != None and index3 == None and index4 == None:
+            return lst[index][index2]
+        if index3 != None and index2 != None and index4 == None:
+            return lst[index][index2][index3]
+        if index4 != None and index2 != None and index3 != None:
+            return lst[index][index2][index3][index4]
         return lst[index]
     
     def lst_insert(lst : list, index : int, obj) -> None:
@@ -963,6 +971,18 @@ def cantonese_lib_init() -> None:
     cantonese_func_def("挜位", lst_insert)
     cantonese_func_def("排头位", get_list_beg)
     cantonese_func_def("摞位", list_get)
+
+def cantonese_json_init() -> None:
+    import json
+
+    def json_load(text):
+        return json.loads(text)
+
+    def show_json_load(text):
+        print(json.loads(text))
+    
+    cantonese_func_def("睇下json", show_json_load)
+    cantonese_func_def("读取json", json_load)
 
 def cantonese_csv_init() -> None:
     import csv
@@ -1179,7 +1199,11 @@ def cantonese_requests_init() -> None:
     import requests
 
     def req_get(url : str):
-        res = requests.get(url)
+        headers = {
+            'user-agent':
+    'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Mobile Safari/537.36' \
+        }
+        res = requests.get(url, headers)
         res.encoding = 'utf-8'
         return res.text
 
@@ -1365,7 +1389,7 @@ class WebParser(object):
     def run(self, Nodes : list) -> None:
         for node in Nodes:
             if node[0] == "node_call":
-                web_call_new(node[1][0], node[1][1])
+                web_call_new(node[1][0], node[1][1], node[2])
             if node[0] == "node_css":
                 style_def(node[1][0], node[1][1], node[1][2])
         
@@ -1407,11 +1431,13 @@ class WebParser(object):
                         args.append(self.tokens[self.pos][1])
                         self.pos += 1
                     self.skip(1)
+                    with_style = False
                     if self.match('$'): # case 'style_with'
                         style_id = self.get(1)[1]
                         self.skip(2)
                         args.append(style_id)
-                    web_ast_new(self.Node, "node_call", [name, args])
+                        with_style = True
+                    web_ast_new(self.Node, "node_call", [name, args], with_style)
             else:
                 break
 
@@ -1438,8 +1464,8 @@ class cssParser(WebParser):
                 break
         self.run(self.Node)
 
-def web_ast_new(Node : list, type : str, ctx : list) -> None:
-    Node.append([type, ctx])
+def web_ast_new(Node : list, type : str, ctx : list, with_style = True) -> None:
+    Node.append([type, ctx, with_style])
 
 def get_str(s : str) -> str:
     return eval("str(" + s + ")")
@@ -1450,25 +1476,26 @@ style_value_attr = {}
 
 TO_HTML = "<html>\n"
 
-def title(args : list) -> None:
+def title(args : list, with_style : bool) -> None:
     global TO_HTML
     if len(args) == 1:
         t_beg, t_end = "<title>", "</title>\n"
         TO_HTML += t_beg + get_str(args[0]) + t_end
     if len(args) >= 2:
-        style = args[-1]
+        style = args.pop() if with_style else ""
         t_beg, t_end = "<title id = \"" + style + "\">", "</title>\n"
         TO_HTML += t_beg + get_str(args[0]) + t_end
 
 
-def h(args : list) -> None:
+def h(args : list, with_style : bool) -> None:
     global TO_HTML
     if len(args) == 1:
         h_beg, h_end = "<h1>", "</h1>\n"
         TO_HTML += h_beg + get_str(args[0]) + h_end
     if len(args) >= 2:
-        style = args[-1]
-        t_beg, t_end = "<h1 id = \"" + style + "\">", "</h1>\n"
+        style = args.pop() if with_style else ""
+        size = "" if len(args) == 1 else args[1]
+        t_beg, t_end = "<h" + size + " id = \"" + style + "\">", "</h" + size + ">\n"
         TO_HTML += t_beg + get_str(args[0]) + t_end
 
 def img(args : list) -> None:
@@ -1540,13 +1567,13 @@ def style_exec(sym : dict) -> None:
     s_beg, s_end = "\n<style type=\"text/css\">\n", "</style>\n"
     for key, value in sym.items():
         gen += "#" +  key + "{\n" + style_build(value) + "}\n"
-    TO_HTML += s_beg + gen + s_end  
+    TO_HTML += s_beg + gen + s_end
 
-def web_call_new(func : str, args_list : list) -> None:
+def web_call_new(func : str, args_list : list, with_style = False) -> None:
     if func in sym:
-        sym[func](args_list)
+        sym[func](args_list, with_style)
     else:
-        func(args_list)
+        func(args_list, with_style)
 
 def get_html_file(name : str) -> str:
     return name[ : len(name) - len('cantonese')] + 'html'
