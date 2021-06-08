@@ -8,6 +8,8 @@ import sys
 import io
 import os
 
+from pygame.constants import KEYDOWN
+
 """
     Get the Cantonese Token List
 """
@@ -16,7 +18,7 @@ def cantonese_token(code : str) -> list:
                r'(讲嘢){1}|(咩系){1}|(唔系){1}|(系){1})|(如果){1}|(嘅话){1}|(->){1}|({){1}|(}){1}|(同埋){1}|(咩都唔做){1}|' \
                r'(落操场玩跑步){1}|(\$){1}|(用下){1}|(使下){1}|(要做咩){1}|(搞掂){1}|(就){1}|(谂下){1}|(佢嘅){1}|' \
                r'(玩到){1}|(为止){1}|(返转头){1}|(执嘢){1}|(揾到){1}|(执手尾){1}|(掟个){1}|(来睇下){1}|' \
-               r'(从){1}|(行到){1}|(行晒){1}|(佢个老豆叫){1}|(佢识得){1}|(明白未啊){1}|(落Order){1}|' \
+               r'(从){1}|(行到){1}|(行晒){1}|(佢个老豆叫){1}|(佢识得){1}|(明白未啊){1}|(落Order){1}|(饮茶先啦){1}|' \
                r'(拍住上){1}|(係){1}|(比唔上){1}|(或者){1}|(辛苦晒啦){1}|(同我躝)|(唔啱){1}|(啱){1}|(冇){1}|' \
                r'(有条扑街叫){1}|(顶你){1}|(丢你){1}|(嗌){1}|(过嚟估下){1}|(佢有啲咩){1}|(自己嘅){1}|(下){1}|(\@){1}'
     kw_get_code = re.findall(re.compile(r'[(](.*?)[)]', re.S), keywords[13 : ])
@@ -24,7 +26,7 @@ def cantonese_token(code : str) -> list:
                          "assign", "class", "is not", "is", "if", "then", "do", "begin", "end", "and", "pass",     
                          "while_do", "$", "call", "import", "funcbegin", "funcend", "is", "assert", "assign", 
                          "while", "whi_end", "return", "try", "except", "finally", "raise", "endraise",
-                         "from", "to", "endfor", "extend", "method", "endclass", "cmd", "ass_list", "is",
+                         "from", "to", "endfor", "extend", "method", "endclass", "cmd", "break", "ass_list", "is",
                          "<", "or", "exit", "exit", "False", "True", "None", "stackinit", "push", "pop", "model", 
                          "mod_new", "class_init", "self.", "call_begin", "get_value"
             ]
@@ -85,6 +87,9 @@ def node_sleep_new(Node : list, arg) -> None:
            arg
     """
     Node.append(["node_sleep", arg])
+
+def node_break_new(Node : list) -> None:
+    Node.append(["node_break"])
 
 def node_exit_new(Node : list) -> None:
     """
@@ -450,7 +455,7 @@ class Parser(object):
                    node_func_new(self.Node, func_name, args, node_func)
                    self.skip(1) # Skip the funcend
                 else:
-                    func_name = self.get(0)
+                    func_name = self.get_value(self.get(0))
                     self.skip(2) # Skip the funcbegin
                     func_stmt = []
                     while self.tokens[self.pos][1] != "funcend":
@@ -598,6 +603,9 @@ class Parser(object):
             
             elif self.match("pass"):
                 self.Node.append(["node_pass"])
+            
+            elif self.match("break"):
+                node_break_new(self.Node)
             
             elif self.match("class"):
                 class_name = self.get_value(self.get(0))
@@ -777,6 +785,10 @@ def run(Nodes : list, TAB = '', label = '', path = '') -> None:
         if node[0] == "node_call":
             check(TAB)
             TO_PY_CODE += TAB + node[1][1] + "\n"
+
+        if node[0] == "node_break":
+            check(TAB)
+            TO_PY_CODE += TAB + "break\n"
         
         if node[0] == "node_pass":
             check(TAB)
@@ -1274,9 +1286,13 @@ def cantonese_kivy_init() -> None:
 
 def cantonese_pygame_init() -> None:
     import pygame
+
     pygame.init()
 
-    def pygame_setmode(size):
+    def pygame_setmode(size, caption = ""):
+        if caption != "":
+            pygame.display.set_caption(caption)
+            return pygame.display.set_mode(size)
         return pygame.display.set_mode(size)
 
     def pygame_imgload(path):
@@ -1288,19 +1304,31 @@ def cantonese_pygame_init() -> None:
     def object_rect(object):
         return object.get_rect()
 
-    def draw(屏幕, obj, obj_where, event = "", 颜色 = "") -> None:
+    def pygame_color(color):
+        return pygame.Color(color)
+
+    def pygame_key(e):
+        return e.key
+
+    def draw(屏幕, obj = "", obj_where = "", event = "", 颜色 = "") -> None:
         if event == "":
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: 
                     sys.exit()
         else:
-            for event in pygame.event.get():
+            event_map = {
+                "KEYDOWN" : KEYDOWN
+            }
+            for events in pygame.event.get():
                 for my_ev in event.stack:
-                    if event.type == my_ev[0]:
-                        my_ev[1]()
+                    if events.type == event_map[my_ev[0]]:
+                        my_ev[1](events)
+                    if events.type == pygame.QUIT: 
+                        sys.exit()
         if 颜色 != "":
             屏幕.fill(颜色)
-        屏幕.blit(obj, obj_where)
+        if obj != "" and obj_where != "":
+            屏幕.blit(obj, obj_where)
         pygame.time.delay(2)
         pygame.display.flip()
 
@@ -1322,6 +1350,8 @@ def cantonese_pygame_init() -> None:
     cantonese_func_def("揾位", direction)
     cantonese_func_def("画公仔", pygame.sprite.Sprite.__init__)
     cantonese_func_def("公仔", pygame.sprite.Sprite)
+    cantonese_func_def("校色", pygame_color)
+    cantonese_func_def("摞掣", pygame_key)
 
 def cantonese_lib_run(lib_name : str, path : str) -> None:
     pa = os.path.dirname(path) # Return the last file Path
