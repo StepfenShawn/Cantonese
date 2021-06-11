@@ -5,7 +5,7 @@
     佢识得 |showButton| -> {
         /* Use BoxLayout */
         |老作| 下 -> "Box" @ |布局|
-        有条扑街叫 |组件|
+        有条仆街叫 |组件|
         |i| 从 0 行到 7
             |开掣| 下 -> |"This is the button " + str(i) | @ |按钮|
             |睇实佢| 下 -> |按钮, 自己嘅 揿掣|
