@@ -336,6 +336,8 @@ python src/cantonese.py examples/web/web_hello.cantonese -to_web -compile
 <h1>Hello World</h1>
 </html>
 ```
+Vscode插件:https://github.com/Cantonese-community/vscode-cantonese  
+
 # <a name="26">TODOs</a>
 本项目代码写得很陋(烂)，欢迎各个粤语同埋编程爱好者一齐讨论同贡献！为粤语文化遗产嘅保护贡献出自己嘅一份力量！
 今后要做咩:  

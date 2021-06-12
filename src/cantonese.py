@@ -8,7 +8,6 @@ import sys
 import io
 import os
 
-from pygame.constants import KEYDOWN
 
 """
     Get the Cantonese Token List
@@ -1286,6 +1285,7 @@ def cantonese_kivy_init() -> None:
 
 def cantonese_pygame_init() -> None:
     import pygame
+    from pygame.constants import KEYDOWN
 
     pygame.init()
 
