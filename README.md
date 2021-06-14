@@ -336,6 +336,10 @@ python src/cantonese.py examples/web/web_hello.cantonese -to_web -compile
 <h1>Hello World</h1>
 </html>
 ```
+用繁体字运行:
+```
+python src/cantonese.py [文件名] -use_tr
+```  
 Vscode插件:https://github.com/Cantonese-community/vscode-cantonese  
 
 # <a name="26">TODOs</a>
