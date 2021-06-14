@@ -7,19 +7,13 @@ import re
 import sys
 import io
 import os
+import argparse
 
 
 """
     Get the Cantonese Token List
 """
-def cantonese_token(code : str) -> list:
-    keywords = r'(?P<keywords>(畀我睇下){1}|(点样先){1}|(收工){1}|(喺){1}|(定){1}|(老作一下){1}|(起底){1}|' \
-               r'(讲嘢){1}|(咩系){1}|(唔系){1}|(系){1})|(如果){1}|(嘅话){1}|(->){1}|({){1}|(}){1}|(同埋){1}|(咩都唔做){1}|' \
-               r'(落操场玩跑步){1}|(\$){1}|(用下){1}|(使下){1}|(要做咩){1}|(搞掂){1}|(就){1}|(谂下){1}|(佢嘅){1}|' \
-               r'(玩到){1}|(为止){1}|(返转头){1}|(执嘢){1}|(揾到){1}|(执手尾){1}|(掟个){1}|(来睇下){1}|' \
-               r'(从){1}|(行到){1}|(行晒){1}|(佢个老豆叫){1}|(佢识得){1}|(明白未啊){1}|(落Order){1}|(饮茶先啦){1}|' \
-               r'(拍住上){1}|(係){1}|(比唔上){1}|(或者){1}|(辛苦晒啦){1}|(同我躝)|(唔啱){1}|(啱){1}|(冇){1}|' \
-               r'(有条仆街叫){1}|(顶你){1}|(丢你){1}|(嗌){1}|(过嚟估下){1}|(佢有啲咩){1}|(自己嘅){1}|(下){1}|(\@){1}'
+def cantonese_token(code : str, keywords : str) -> list:
     kw_get_code = re.findall(re.compile(r'[(](.*?)[)]', re.S), keywords[13 : ])
     keywords_gen_code = ["print", "endprint", "exit", "in", "or", "turtle_begin", "gettype", 
                          "assign", "class", "is not", "is", "if", "then", "do", "begin", "end", "and", "pass",     
@@ -701,6 +695,7 @@ class Parser(object):
 
 variable = {}
 TO_PY_CODE = ""
+use_tradition = False # 是否使用繁体
  
 def run(Nodes : list, TAB = '', label = '', path = '') -> None:
     def check(tab):
@@ -710,6 +705,7 @@ def run(Nodes : list, TAB = '', label = '', path = '') -> None:
             label != "class_run" and label != "method_run":
             tab = ''
     global TO_PY_CODE
+    global use_traditon
     if Nodes == None:
         return None
     for node in Nodes:
@@ -725,7 +721,7 @@ def run(Nodes : list, TAB = '', label = '', path = '') -> None:
         if node[0] == "node_import":
             check(TAB)
             if cantonese_lib_import(node[1][1]) == "Not found":
-                cantonese_lib_run(node[1][1], path)
+                cantonese_lib_run(node[1][1], path, use_tradition)
             else:
                 TO_PY_CODE += TAB + "import " + node[1][1] + "\n"
 
@@ -1353,7 +1349,7 @@ def cantonese_pygame_init() -> None:
     cantonese_func_def("校色", pygame_color)
     cantonese_func_def("摞掣", pygame_key)
 
-def cantonese_lib_run(lib_name : str, path : str) -> None:
+def cantonese_lib_run(lib_name : str, path : str, use_tradition : bool) -> None:
     pa = os.path.dirname(path) # Return the last file Path
     tokens = []
     code = ""
@@ -1363,17 +1359,40 @@ def cantonese_lib_run(lib_name : str, path : str) -> None:
             code = open(pa + '/' + lib_name + '.cantonese', encoding = 'utf-8').read()
             found = True
     if found == False:
-        raise ImportError(lib_name + '.cantonese not found.') 
-    for token in cantonese_token(code):
-        tokens.append(token)
+        raise ImportError(lib_name + '.cantonese not found.')
+    if use_tradition:
+        for token in cantonese_token(code, traditional_keywords):
+            tokens.append(token)
+    else:
+        for token in cantonese_token(code, keywords):
+            tokens.append(token)
     cantonese_parser = Parser(tokens, [])
     cantonese_parser.parse()
     run(cantonese_parser.Node, path = path)
 
-def cantonese_run(code : str, is_to_py : bool, file : str) -> None:
+keywords = r'(?P<keywords>(畀我睇下){1}|(点样先){1}|(收工){1}|(喺){1}|(定){1}|(老作一下){1}|(起底){1}|' \
+        r'(讲嘢){1}|(咩系){1}|(唔系){1}|(系){1})|(如果){1}|(嘅话){1}|(->){1}|({){1}|(}){1}|(同埋){1}|(咩都唔做){1}|' \
+        r'(落操场玩跑步){1}|(\$){1}|(用下){1}|(使下){1}|(要做咩){1}|(搞掂){1}|(就){1}|(谂下){1}|(佢嘅){1}|' \
+        r'(玩到){1}|(为止){1}|(返转头){1}|(执嘢){1}|(揾到){1}|(执手尾){1}|(掟个){1}|(来睇下){1}|' \
+        r'(从){1}|(行到){1}|(行晒){1}|(佢个老豆叫){1}|(佢识得){1}|(明白未啊){1}|(落Order){1}|(饮茶先啦){1}|' \
+        r'(拍住上){1}|(係){1}|(比唔上){1}|(或者){1}|(辛苦晒啦){1}|(同我躝)|(唔啱){1}|(啱){1}|(冇){1}|' \
+        r'(有条仆街叫){1}|(顶你){1}|(丢你){1}|(嗌){1}|(过嚟估下){1}|(佢有啲咩){1}|(自己嘅){1}|(下){1}|(\@){1}'
+traditional_keywords = r'(?P<keywords>(畀我睇下){1}|(點樣先){1}|(收工){1}|(喺){1}|(定){1}|(老作一下){1}|(起底){1}|' \
+        r'(講嘢){1}|(咩系){1}|(唔系){1}|(系){1})|(如果){1}|(嘅話){1}|(->){1}|({){1}|(}){1}|(同埋){1}|(咩都唔做){1}|' \
+        r'(落操場玩跑步){1}|(\$){1}|(用下){1}|(使下){1}|(要做咩){1}|(搞掂){1}|(就){1}|(谂下){1}|(佢嘅){1}|' \
+        r'(玩到){1}|(爲止){1}|(返轉頭){1}|(執嘢){1}|(揾到){1}|(執手尾){1}|(掟個){1}|(來睇下){1}|' \
+        r'(從){1}|(行到){1}|(行曬){1}|(佢個老豆叫){1}|(佢識得){1}|(明白未啊){1}|(落Order){1}|(飲茶先啦){1}|' \
+        r'(拍住上){1}|(係){1}|(比唔上){1}|(或者){1}|(辛苦曬啦){1}|(同我躝)|(唔啱){1}|(啱){1}|(冇){1}|' \
+        r'(有條仆街叫){1}|(頂你){1}|(丟你){1}|(嗌){1}|(過嚟估下){1}|(佢有啲咩){1}|(自己嘅){1}|(下){1}|(\@){1}'
+
+def cantonese_run(code : str, is_to_py : bool, file : str, use_tradtion : bool) -> None:
     tokens = []
-    for token in cantonese_token(code):
-        tokens.append(token)
+    if use_tradtion:
+        for token in cantonese_token(code, traditional_keywords):
+            tokens.append(token)
+    else:
+        for token in cantonese_token(code, keywords):
+            tokens.append(token)
     cantonese_parser = Parser(tokens, [])
     cantonese_parser.parse()
     run(cantonese_parser.Node, path = file)
@@ -1652,36 +1671,42 @@ def cantonese_web_run(code : str, file_name : str, open_serv = True) -> None:
     exit(0)
 
 def main():
+    arg_parser = argparse.ArgumentParser()
+    arg_parser.add_argument("file")
+    arg_parser.add_argument("-to_py", action = "store_true")
+    arg_parser.add_argument("-讲翻py", action = "store_true")
+    arg_parser.add_argument("-to_web", action = "store_true")
+    arg_parser.add_argument("-倾偈", action = "store_true")
+    arg_parser.add_argument("-compile", action = "store_true")
+    arg_parser.add_argument("-讲白啲", action = "store_true")
+    arg_parser.add_argument("-use_tr", action = "store_true")
+    arg_parser.add_argument("-install", action = "store_true")
+    args = arg_parser.parse_args()
+    global use_tradition
     try:
-        if len(sys.argv) > 1:
-            """
-                install the cantonese library
-            """
-            if sys.argv[1] == '-install':
+        with open(args.file, encoding = "utf-8") as f:
+            code = f.read()
+            # Skip the comment
+            code = re.sub(re.compile(r'/\*.*?\*/', re.S), ' ', code)
+            is_to_py = False
+            if args.to_py or args.讲翻py:
+                is_to_py = True
+            if args.use_tr:
+                use_tradition = True
+            if args.install:
                 import urllib.request
                 print("Installing ... ")
-                urllib.request.urlretrieve(sys.argv[2], sys.argv[3])
+                # TODO: Insatll the cantonese library
+                #urllib.request.urlretrieve()
                 print("Successful installed!")
                 exit()
-            with open(sys.argv[1], encoding = "utf-8") as f:
-                code = f.read()
-                # Skip the comment
-                code = re.sub(re.compile(r'/\*.*?\*/', re.S), ' ', code)
-                is_to_py = False
-                # TODO: Use argparse library
-                if len(sys.argv) >= 3:
-                    if sys.argv[2] == "-to_py" or sys.argv[2] == "-讲翻py":
-                        is_to_py = True
-                    if sys.argv[2] == "-to_web" or sys.argv[2] == "-倾偈":
-                        if len(sys.argv) > 3 and (sys.argv[3] == "-compile" or sys.argv[3] == "-讲白啲"):
-                            cantonese_web_run(code, sys.argv[1], False)
-                        else:
-                            cantonese_web_run(code, sys.argv[1])
-                cantonese_run(code, is_to_py, sys.argv[1])
-        else:
-            print("你想点啊? (请输入你嘅文件)")
+            if args.to_web or args.倾偈:
+                if args.compile or args.讲白啲:
+                    cantonese_web_run(code, args.file, False)
+                else:
+                    cantonese_web_run(code, args.file, True)
+            cantonese_run(code, is_to_py, args.file, use_tradition)
     except FileNotFoundError:
         print("揾唔到你嘅文件 :(")
-
 if __name__ == '__main__':
     main()
