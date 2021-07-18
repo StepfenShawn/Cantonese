@@ -1,0 +1,22 @@
+import vm
+
+if __name__ == '__main__':
+    CantoneseState = vm.CanState("")
+    CantoneseState.push_boolean(True)
+    CantoneseState.print_stack()
+    CantoneseState.push_integer(10)
+    CantoneseState.print_stack()
+    CantoneseState.push_null()
+    CantoneseState.print_stack()
+    CantoneseState.push_string("Hello World")
+    CantoneseState.print_stack()
+    CantoneseState.push_value(-4)
+    CantoneseState.print_stack()
+    CantoneseState.replace(3)
+    CantoneseState.print_stack()
+    CantoneseState.set_top(6)
+    CantoneseState.print_stack()
+    CantoneseState.remove(-3)
+    CantoneseState.print_stack()
+    CantoneseState.set_top(-5)
+    CantoneseState.print_stack()
