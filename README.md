@@ -347,4 +347,4 @@ Vscode插件:https://github.com/Cantonese-community/vscode-cantonese
 今后要做咩:  
 * 完善语法错误检查
 * 加多啲语句
-* 编写编辑器插件
+* 开发自己嘅虚拟机
