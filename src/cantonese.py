@@ -1,7 +1,7 @@
 """
     Created at 2021/1/16 16:23
     Last update at 2021/6/6 9:11
-    The interpret for Cantonese    
+    The interpreter for Cantonese    
 """
 import re
 import sys
