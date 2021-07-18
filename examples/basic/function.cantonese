@@ -1,0 +1,20 @@
+/*
+    函数语句示例
+*/
+$SayHello 要做咩:
+    畀我睇下 "Hello" 点样先？
+搞掂
+
+用下 |SayHello()|
+
+$SayFuck 要做咩:
+    畀我睇下 "SayFuck" 点样先？
+搞掂
+
+用下 |SayFuck()|
+
+$output |string| 要做咩:
+    畀我睇下 |string| 点样先？
+搞掂
+
+|output| 下 -> "Hello"

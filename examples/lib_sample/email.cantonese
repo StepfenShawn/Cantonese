@@ -1,0 +1,11 @@
+/*
+ * Cantonese 实现发送邮件
+ */
+
+使下 smtplib
+
+讲嘢 |发送者| 系 "3480145301@qq.com"
+讲嘢 |接收者| 系 "m18824909883@163.com"
+讲嘢 |信息| 系 "Send from Cantonese"
+
+/* Developing...  */

@@ -1,6 +1,7 @@
 """
     Test script for cantonese examples
 """
+
 import io
 import os
 import glob
@@ -9,8 +10,9 @@ import datetime
 starttime = datetime.datetime.now()
 file_list = []
 # Get all the file names under examples
-for f in glob.glob(os.path.join('..\examples', '*.cantonese')):
-    file_list.append(f)
+for f in glob.glob(os.path.join('..\examples\*', '*.cantonese')):
+	file_list.append(f)
+
 i = 0
 print("==============START TEST================")
 while i < len(file_list):
