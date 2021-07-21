@@ -7,6 +7,23 @@
 from enum import Enum, unique
 from collections import namedtuple
 
+@unique
+class OpCode(Enum):
+    OP_LOAD_CONST = 0
+    OP_POP_TOP = 1
+    OP_PRINT_ITEM = 2
+
+class Instruction(object):
+    def __init__(self, opcode, args) -> None:
+        self.opcode = opcode
+        self.args = args
+
+    def get_opcode(self):
+        return self.opcode
+
+    def get_args(self):
+        return self.args
+
 class Arithmetic(object):
     def mul(a, b):
         return a * b
@@ -60,7 +77,7 @@ BINARY_OPERATORS = {
     'POWER':    pow,           # a ** b 
     'MULTIPLY': Arithmetic.mul,  # a * b
     'DIVIDE':   Arithmetic.div,  # a / b
-    'FLOOR_DIVIDE': Arithmetic.floordiv,  # a // b
+    'FLOOR_DIVIDE': Arithmetic.fdiv,  # a // b
     'MODULO':   Arithmetic.mod,           # a % b
     'ADD':      Arithmetic.add,           # a + b
     'SUBTRACT': Arithmetic.sub,           # a - b
@@ -81,39 +98,40 @@ UNARY_OPERATORS = {
 }
 
 class Code(object):
-    def __init__(self):
-        co_argcount = None
-        co_nlocals = None
-        co_stacksize = None
-        co_flags = None
-        co_code = None 
-        co_consts = None
-        co_names = None
-        co_varnames = None 
-        co_freevars = None 
-        co_cellvars = None
-        co_filename = None
-        co_name = None
-        co_firstlineno = None
-        co_lnotab = None
-        version = None
-        mtime = None
+    def __init__(self) -> None:
+        self.co_argcount = None
+        self.co_nlocals = None
+        self.co_stacksize = None
+        self.co_flags = None
+        self.co_code = None 
+        self.co_consts = None
+        self.co_names = None
+        self.co_varnames = None 
+        self.co_freevars = None 
+        self.co_cellvars = None
+        self.co_filename = None
+        self.co_name = None
+        self.co_firstlineno = None
+        self.co_lnotab = None
+        self.ins_lst = []
+        self.version = None
+        self.mtime = None
 
-class ConState(object):
-    def __init__(self, code, out) -> None:
+class CanState(object):
+    def __init__(self, code_obj) -> None:
         self.code_obj = code_obj
-        self.out = out
-
-    def parse(self):
-       return code_obj.get_op_name(), code_obj.get_arg()
 
     def op_run(self, opname, arg):
-        op_func = getattr(self, 'OP_' + opname, None)
+        op_func = getattr(self, opname, None)
         if not op_func:
             print("OpCode {} not defined".format(opname))
             return
         else:
             return op_func(arg) if arg != None else op_func()
+
+    def parse(self, i):
+        return self.code_obj.ins_lst[i].get_opcode(), \
+               self.code_obj.ins_lst[i].get_args()
 
     def _run(self) -> None:
         thread_state = ThreadState()
@@ -122,9 +140,11 @@ class ConState(object):
                                  _globals = {},
                                  _locals = {})
         self.object.lasti += 1
-        while True:
-            opname, arg = self.parse()
+        pc = 0
+        while pc < len(self.code_obj.ins_lst):
+            opname, arg = self.parse(pc)
             ret = self.op_run(opname, arg)
+            pc += 1
             if ret:
                 print("return value:{}\n".format(ret))
                 break
@@ -139,7 +159,7 @@ class ConState(object):
         return self.object.stack[-1]
 
     def set_top(self, value) -> None:
-        return self.object.stack[-1] = value
+        self.object.stack[-1] = value
 
     def push(self, value) -> None:
         self.object.stack.append(value)
@@ -159,7 +179,7 @@ class ConState(object):
         val = self.top()
         self.set_top(UNARY_OPERATORS[op](value))
 
-     def binaryOperator(self, op):
+    def binaryOperator(self, op):
         x, y = self.popn(2)
         self.push(BINARY_OPERATORS[op](x, y))
 
@@ -183,7 +203,7 @@ class ConState(object):
 
     def OP_PRINT_ITEM(self):
         value = self.pop()
-        self.out(value)
+        print(value)
 
 class CanObject(object):
     def __init__(self, thread_state, _code, _globals, _locals) -> None:

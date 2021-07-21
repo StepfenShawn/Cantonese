@@ -8,6 +8,7 @@ import sys
 import os
 import argparse
 from 濑嘢 import 濑啲咩嘢
+from stack_vm import *
 
 """
     Get the Cantonese Token List
@@ -1384,9 +1385,9 @@ traditional_keywords = r'(?P<keywords>(畀我睇下){1}|(點樣先){1}|(收工){
         r'(拍住上){1}|(係){1}|(比唔上){1}|(或者){1}|(辛苦曬啦){1}|(同我躝)|(唔啱){1}|(啱){1}|(冇){1}|' \
         r'(有條仆街叫){1}|(頂你){1}|(丟你){1}|(嗌){1}|(過嚟估下){1}|(佢有啲咩){1}|(自己嘅){1}|(下){1}|(\@){1}'
 
-def cantonese_run(code : str, is_to_py : bool, file : str, use_tradtion : bool) -> None:
+def cantonese_run(code : str, is_to_py : bool, file : str, use_tradition : bool) -> None:
     tokens = []
-    if use_tradtion:
+    if use_tradition:
         for token in cantonese_token(code, traditional_keywords):
             tokens.append(token)
     else:
@@ -1404,6 +1405,34 @@ def cantonese_run(code : str, is_to_py : bool, file : str, use_tradtion : bool) 
             exec(TO_PY_CODE, variable)
         except Exception as e:
             print("濑嘢！" + "\n".join(濑啲咩嘢(e)))
+
+def cantonese_run_with_vm(code : str, file : bool, use_tradition : bool) -> None:
+    tokens = []
+    if use_tradition:
+        for token in cantonese_token(code, traditional_keywords):
+            tokens.append(token)
+    else:
+        for token in cantonese_token(code, keywords):
+            tokens.append(token)
+    cantonese_parser = Parser(tokens, [])
+    cantonese_parser.parse()
+    run_with_vm(cantonese_parser.Node, path = file)
+
+def run_with_vm(Nodes : list, path = '') -> None:
+    gen_op_code = []
+    co_consts = {}
+    i = 0
+    for node in Nodes:
+        if node[0] == 'node_print':
+            co_consts[i] = node[1][1]
+            gen_op_code.append(Instruction("OP_LOAD_CONST", 0))
+            gen_op_code.append(Instruction("OP_PRINT_ITEM", None))
+            i += 1
+    code = Code()
+    code.ins_lst = gen_op_code
+    code.co_consts = co_consts
+    cs = CanState(code)
+    cs._run()
 
 class WebParser(object):
     def __init__(self, tokens : list, Node : list) -> None:
@@ -1680,6 +1709,7 @@ def main():
     arg_parser.add_argument("-讲白啲", action = "store_true")
     arg_parser.add_argument("-use_tr", action = "store_true")
     arg_parser.add_argument("-install", action = "store_true")
+    arg_parser.add_argument("-stack_vm", action = "store_true")
     args = arg_parser.parse_args()
     global use_tradition
     try:
@@ -1704,6 +1734,9 @@ def main():
                     cantonese_web_run(code, args.file, False)
                 else:
                     cantonese_web_run(code, args.file, True)
+            if args.stack_vm:
+                cantonese_run_with_vm(code, args.file, use_tradition)
+                exit(1)
             cantonese_run(code, is_to_py, args.file, use_tradition)
     except FileNotFoundError:
         print("揾唔到你嘅文件 :(")
