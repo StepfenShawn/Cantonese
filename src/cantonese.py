@@ -7,7 +7,7 @@ import re
 import sys
 import os
 import argparse
-
+from 反馈信息 import 报错信息
 
 """
     Get the Cantonese Token List
@@ -1403,7 +1403,7 @@ def cantonese_run(code : str, is_to_py : bool, file : str, use_tradtion : bool) 
         try:
             exec(TO_PY_CODE, variable)
         except Exception as e:
-            print("濑嘢: " + repr(e) + "!")
+            print("濑嘢！" + "\n".join(报错信息(e)))
 
 class WebParser(object):
     def __init__(self, tokens : list, Node : list) -> None:
