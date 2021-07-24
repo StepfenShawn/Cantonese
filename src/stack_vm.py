@@ -14,7 +14,8 @@ class OpCode(Enum):
     OP_PRINT_ITEM = 2
 
 class Instruction(object):
-    def __init__(self, opcode, args) -> None:
+    def __init__(self, index, opcode, args) -> None:
+        self.index = index
         self.opcode = opcode
         self.args = args
 
@@ -23,6 +24,16 @@ class Instruction(object):
 
     def get_args(self):
         return self.args
+
+    def get_idx(self):
+        return self.index
+
+    def set_args(self, args):
+        self.args = args
+
+    def __str__(self) -> str:
+        return str(self.index) + ' ' + self.opcode + ' ' + \
+            str(self.args)
 
 class Arithmetic(object):
     def mul(a, b):
@@ -97,6 +108,12 @@ UNARY_OPERATORS = {
     'INVERT':   Arithmetic.invert,  # ~ a
 }
 
+class CanBlock(object):
+    def __init__(self, _type, handler, level) -> None:
+        self.type = _type
+        self.handler = handler
+        self.level = level
+
 class Code(object):
     def __init__(self) -> None:
         self.co_argcount = None
@@ -121,6 +138,11 @@ class CanState(object):
     def __init__(self, code_obj) -> None:
         self.code_obj = code_obj
 
+    CASE_ERROR = 0x0002
+    CASE_RAISE = 0x0004
+    CASE_RETURN = 0x0008
+    CASE_BREAK = 0x0010
+
     def op_run(self, opname, arg):
         op_func = getattr(self, opname, None)
         if not op_func:
@@ -129,9 +151,10 @@ class CanState(object):
         else:
             return op_func(arg) if arg != None else op_func()
 
-    def parse(self, i):
-        return self.code_obj.ins_lst[i].get_opcode(), \
-               self.code_obj.ins_lst[i].get_args()
+    def parse(self):
+        co_code = self.code_obj.ins_lst[self.object.lasti]
+        self.object.lasti += 1
+        return co_code.get_opcode(), co_code.get_args()
 
     def _run(self) -> None:
         thread_state = ThreadState()
@@ -140,11 +163,9 @@ class CanState(object):
                                  _globals = {},
                                  _locals = {})
         self.object.lasti += 1
-        pc = 0
-        while pc < len(self.code_obj.ins_lst):
-            opname, arg = self.parse(pc)
+        while True:
+            opname, arg = self.parse()
             ret = self.op_run(opname, arg)
-            pc += 1
             if ret:
                 print("return value:{}\n".format(ret))
                 break
@@ -175,9 +196,15 @@ class CanState(object):
         else:
             return []
 
+    def jumpto(self, value):
+        self.object.lasti = value
+
+    def jumpby(self, value):
+        self.object.lasti += value
+
     def unaryOperator(self, op):
         val = self.top()
-        self.set_top(UNARY_OPERATORS[op](value))
+        self.set_top(UNARY_OPERATORS[op](val))
 
     def binaryOperator(self, op):
         x, y = self.popn(2)
@@ -198,12 +225,49 @@ class CanState(object):
         self.push(self.top())
 
     def OP_LOAD_CONST(self, index):
-        value = self.get_const(index)
-        self.push(value)
+        val = self.get_const(index)[1]
+        self.push(eval(val, self.object._globals, self.object._locals))
+
+    def OP_LOAD_NAME(self, index):
+        name = self.get_name(index)
+        obj = self.object
+        if name in obj._locals:
+            val = obj._locals[name]
+        elif name in obj._globals:
+            val = obj._globals[name]
+        elif name in obj._builtins[name]:
+            val = obj._builtins[name]
+        else:
+            raise NameError("name %s is not defined.".format(name))
+        self.push(val)
+
+    def OP_NEW_NAME(self, index):
+        name  = self.get_name(index)
+        val = self.pop()
+        self.object._locals[name] = val
 
     def OP_PRINT_ITEM(self):
-        value = self.pop()
-        print(value)
+        val = self.pop()
+        print(val)
+
+    def OP_RETURN(self):
+        return "0"
+
+    def OP_POP_JMP_IF_FALSE(self, idx):
+        val = self.pop()
+        if not val:
+            self.jumpto(idx)
+        
+    def OP_POP_JMP_IF_TRUE(self, idx):
+        val = self.pop()
+        if val:
+            self.jumpto(idx)
+    
+    def OP_END(self):
+        pass
+
+    def JMP_FORWARD(self, addr):
+        self.jumpby(addr)
 
 class CanObject(object):
     def __init__(self, thread_state, _code, _globals, _locals) -> None:

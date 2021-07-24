@@ -1385,7 +1385,10 @@ traditional_keywords = r'(?P<keywords>(畀我睇下){1}|(點樣先){1}|(收工){
         r'(拍住上){1}|(係){1}|(比唔上){1}|(或者){1}|(辛苦曬啦){1}|(同我躝)|(唔啱){1}|(啱){1}|(冇){1}|' \
         r'(有條仆街叫){1}|(頂你){1}|(丟你){1}|(嗌){1}|(過嚟估下){1}|(佢有啲咩){1}|(自己嘅){1}|(下){1}|(\@){1}'
 
+dump_ast = False
+
 def cantonese_run(code : str, is_to_py : bool, file : str, use_tradition : bool) -> None:
+    global dump_ast
     tokens = []
     if use_tradition:
         for token in cantonese_token(code, traditional_keywords):
@@ -1395,6 +1398,8 @@ def cantonese_run(code : str, is_to_py : bool, file : str, use_tradition : bool)
             tokens.append(token)
     cantonese_parser = Parser(tokens, [])
     cantonese_parser.parse()
+    if dump_ast:
+        print(cantonese_parser.Node)
     run(cantonese_parser.Node, path = file)
     cantonese_lib_init()
     if is_to_py:
@@ -1406,6 +1411,8 @@ def cantonese_run(code : str, is_to_py : bool, file : str, use_tradition : bool)
         except Exception as e:
             print("濑嘢！" + "\n".join(濑啲咩嘢(e)))
 
+ins_idx = 0 # 指令索引
+debug = False
 def cantonese_run_with_vm(code : str, file : bool, use_tradition : bool) -> None:
     tokens = []
     if use_tradition:
@@ -1416,23 +1423,66 @@ def cantonese_run_with_vm(code : str, file : bool, use_tradition : bool) -> None
             tokens.append(token)
     cantonese_parser = Parser(tokens, [])
     cantonese_parser.parse()
-    run_with_vm(cantonese_parser.Node, path = file)
-
-def run_with_vm(Nodes : list, path = '') -> None:
+    if dump_ast:
+        print(cantonese_parser.Node)
     gen_op_code = []
     co_consts = {}
-    i = 0
-    for node in Nodes:
-        if node[0] == 'node_print':
-            co_consts[i] = node[1][1]
-            gen_op_code.append(Instruction("OP_LOAD_CONST", 0))
-            gen_op_code.append(Instruction("OP_PRINT_ITEM", None))
-            i += 1
+    co_names = {}
+    cansts_idx = 0
+    name_idx = 0
+    run_with_vm(cantonese_parser.Node, gen_op_code, co_consts, 
+                co_names, cansts_idx, name_idx, True, path = file)
     code = Code()
     code.ins_lst = gen_op_code
+    if debug:
+        for j in gen_op_code:
+            print(j)
     code.co_consts = co_consts
+    code.co_names = co_names
     cs = CanState(code)
     cs._run()
+
+def run_with_vm(Nodes : list, gen_op_code, co_consts,
+            co_names, cansts_idx, name_idx, end, path = '') -> None:
+    global ins_idx
+    for node in Nodes:
+        if node[0] == 'node_print':
+            co_consts[cansts_idx] = node[1]
+            ins_idx += 1
+            gen_op_code.append(Instruction(ins_idx, "OP_LOAD_CONST", cansts_idx))
+            ins_idx += 1
+            gen_op_code.append(Instruction(ins_idx, "OP_PRINT_ITEM", None))
+            cansts_idx += 1
+        elif node[0] == 'node_let':
+            co_names[name_idx] = node[1][1]
+            co_consts[cansts_idx] = node[2]
+            ins_idx += 1
+            gen_op_code.append(Instruction(ins_idx, "OP_LOAD_CONST", cansts_idx))
+            ins_idx += 1
+            cansts_idx += 1
+            gen_op_code.append(Instruction(ins_idx, "OP_NEW_NAME", name_idx))
+            name_idx += 1
+        elif node[0] == 'node_pass':
+            ins_idx += 1
+            gen_op_code.append(Instruction(ins_idx, "OP_NOP", None))
+        elif node[0] == 'node_if':
+            co_consts[cansts_idx] = node[1]
+            ins_idx += 1
+            gen_op_code.append(Instruction(ins_idx, "OP_LOAD_CONST", cansts_idx))
+            cansts_idx += 1
+            # 先将要跳转的地址设置为None
+            ins_idx += 1
+            start_idx = ins_idx
+            gen_op_code.append(Instruction(ins_idx, "OP_POP_JMP_IF_FALSE", None))
+            run_with_vm(node[2], gen_op_code, co_consts, co_names, cansts_idx,
+                        name_idx, False, path)
+            gen_op_code[start_idx - 1].set_args(ins_idx)
+        else:
+            pass
+    if end:
+        ins_idx += 1
+        gen_op_code.append(Instruction(ins_idx, "OP_RETURN", None)) # 结尾指令
+
 
 class WebParser(object):
     def __init__(self, tokens : list, Node : list) -> None:
@@ -1710,8 +1760,14 @@ def main():
     arg_parser.add_argument("-use_tr", action = "store_true")
     arg_parser.add_argument("-install", action = "store_true")
     arg_parser.add_argument("-stack_vm", action = "store_true")
+    arg_parser.add_argument("-ast", action = "store_true")
+    arg_parser.add_argument("-debug", action = "store_true")
     args = arg_parser.parse_args()
+
     global use_tradition
+    global dump_ast
+    global debug
+
     try:
         with open(args.file, encoding = "utf-8") as f:
             code = f.read()
@@ -1734,6 +1790,10 @@ def main():
                     cantonese_web_run(code, args.file, False)
                 else:
                     cantonese_web_run(code, args.file, True)
+            if args.ast:
+                dump_ast = True
+            if args.debug:
+                debug = True
             if args.stack_vm:
                 cantonese_run_with_vm(code, args.file, use_tradition)
                 exit(1)
