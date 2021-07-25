@@ -13,55 +13,349 @@ from stack_vm import *
 """
     Get the Cantonese Token List
 """
-def cantonese_token(code : str, keywords : str) -> list:
-    kw_get_code = re.findall(re.compile(r'[(](.*?)[)]', re.S), keywords[13 : ])
-    keywords_gen_code = ["print", "endprint", "exit", "in", "or", "turtle_begin", "gettype", 
-                         "assign", "class", "is not", "is", "if", "then", "do", "begin", "end", "and", "pass",     
-                         "while_do", "$", "call", "import", "funcbegin", "funcend", "is", "assert", "assign", 
-                         "while", "whi_end", "return", "try", "except", "finally", "raise", "endraise",
-                         "from", "to", "endfor", "extend", "method", "endclass", "cmd", "break", "ass_list", "is",
-                         "<", "or", "exit", "exit", "False", "True", "None", "stackinit", "push", "pop", "model", 
-                         "mod_new", "class_init", "self.", "call_begin", "get_value"
-            ]
-    num = r'(?P<num>\d+)'
-    ID =  r'(?P<ID>[a-zA-Z_][a-zA-Z_0-9]*)'
-    op = r'(?P<op>(相加){1}|(加){1}|(减){1}|(乘){1}|(整除){1}|(除){1}|(余){1}|(异或){1}|(取反){1}|(左移){1}|(右移){1}'\
-         r'(与){1}|(或){1})'
-    op_get_code = re.findall(re.compile(r'[(](.*?)[)]', re.S), op[5 : ])
-    op_gen_code = ["矩阵.matrix_addition", "+", "-", "*", "//", "/", "%", "^", "~", "<<", ">>",
-            "&", "|"]
-    string = r'(?P<string>\"([^\\\"]|\\.)*\")'
-    expr = r'(?P<expr>[|](.*?)[|])'
-    callfunc = r'(?P<callfunc>[&](.*?)[)])'
-    build_in_funcs = r'(?P<build_in_funcs>(瞓){1}|(加啲){1}|(摞走){1}|(嘅长度){1}|(阵先){1}|' \
-                     r'(畀你){1}|(散水){1})'
-    bif_get_code = re.findall(re.compile(r'[(](.*?)[)]', re.S), build_in_funcs[19 :])
-    bif_gen_code = ["sleep", "append", "remove", ".__len__()", "2", "input", "clear"]
-    patterns = re.compile('|'.join([keywords, ID, num, string, expr, callfunc, build_in_funcs, op]))
 
-    def make_rep(list1 : list, list2 : list) -> list:
+kw_print = "畀我睇下"
+kw_endprint = "点样先"
+kw_exit = "收工"
+kw_in = "喺"
+kw_elif = "定系"
+kw_turtle_beg = "老作一下"
+kw_type = "起底"
+kw_assign = "讲嘢"
+kw_class_def = "咩系"
+kw_else_or_not = "唔系"
+kw_is = "系"
+kw_if = "如果"
+kw_then = "嘅话"
+kw_do = "->"
+kw_begin = "{"
+kw_end = "}"
+kw_pass = "咩都唔做"
+kw_while_do = "落操场玩跑步"
+kw_function = "$"
+kw_call = "用下"
+kw_import = "使下"
+kw_func_begin = "要做咩"
+kw_func_end = "搞掂"
+kw_is_2 = "就"
+kw_assert = "谂下"
+kw_class_assign = "佢嘅"
+kw_while = "玩到"
+kw_whi_end = "为止"
+kw_return = "还数"
+kw_try = "执嘢"
+kw_except = "揾到"
+kw_finally = "执手尾"
+kw_raise = "掟个"
+kw_raise_end = "来睇下"
+kw_from = "从"
+kw_to = "行到"
+kw_endfor = "行晒"
+kw_extend = "佢个老豆叫"
+kw_method = "佢识得"
+kw_endclass = "明白未啊"
+kw_cmd = "落Order"
+kw_break = "饮茶先啦"
+kw_lst_assign = "拍住上"
+kw_is_3 = "係"
+kw_exit_1 = "辛苦晒啦"
+kw_exit_2 = "同我躝"
+kw_false = "唔啱"
+kw_true = "啱"
+kw_none = "冇"
+kw_stackinit = "有条仆街叫"
+kw_push = "顶你"
+kw_pop = "丢你"
+kw_model = "嗌"
+kw_mod_new = "过嚟估下"
+kw_class_init = "佢有啲咩"
+kw_self = "自己嘅"
+kw_call_begin = "下"
+kw_get_value = "@" 
+
+keywords = (
+    kw_print,
+    kw_endprint,
+    kw_exit,
+    kw_in,
+    kw_elif,
+    kw_turtle_beg,
+    kw_type,
+    kw_assign,
+    kw_class_def,
+    kw_else_or_not,
+    kw_is,
+    kw_if,
+    kw_then,
+    kw_do,
+    kw_begin,
+    kw_end,
+    kw_pass,
+    kw_while_do,
+    kw_function,
+    kw_call,
+    kw_import,
+    kw_func_begin,
+    kw_func_end,
+    kw_is_2,
+    kw_assert,
+    kw_class_assign,
+    kw_while,
+    kw_whi_end,
+    kw_return,
+    kw_try,
+    kw_except,
+    kw_finally,
+    kw_raise,
+    kw_raise_end,
+    kw_from,
+    kw_to,
+    kw_endfor,
+    kw_extend,
+    kw_method,
+    kw_endclass,
+    kw_cmd,
+    kw_break,
+    kw_lst_assign,
+    kw_is_3,
+    kw_exit_1,
+    kw_exit_2,
+    kw_false,
+    kw_true,
+    kw_none,
+    kw_stackinit,
+    kw_push,
+    kw_pop,
+    kw_model,
+    kw_mod_new,
+    kw_class_init,
+    kw_self,
+    kw_call_begin,
+    kw_get_value
+)
+
+class lexer(object):
+    def __init__(self, code, keywords):
+        self.code = code
+        self.keywords = keywords
+        self.line = 1
+        self.re_new_line = re.compile(r"\r\n|\n\r|\n|\r")
+        self.re_number = r"^0[xX][0-9a-fA-F]*(\.[0-9a-fA-F]*)?([pP][+\-]?[0-9]+)?|^[0-9]*(\.[0-9]*)?([eE][+\-]?[0-9]+)?"
+        self.re_id = r"^[_\d\w]+|^[\u4e00-\u9fa5]+"
+        self.re_str = r"(?s)(^'(\\\\|\\'|\\\n|\\z\s*|[^'\n])*')|(^\"(\\\\|\\\"|\\\n|\\z\s*|[^\"\n])*\")"
+        self.re_expr = r"[|](.*?)[|]"
+        self.re_callfunc = r"[&](.*?)[)]"
+        self.op = r'(?P<op>(相加){1}|(加){1}|(减){1}|(乘){1}|(整除){1}|(除){1}|(余){1}|(异或){1}|(取反){1}|(左移){1}|(右移){1}'\
+        r'(与){1}(或者){1}|(或){1}|(系){1})|(同埋){1}|(自己嘅){1}|(比唔上){1}|(喺){1}'
+        self.op_get_code = re.findall(re.compile(r'[(](.*?)[)]', re.S), self.op[5 : ])
+        self.op_gen_code = ["矩阵.matrix_addition", "+", "-", "*", "//", "/", "%", "^", "~", "<<", ">>",
+            "&", "or", "|", "==", "and", "self.", '<', 'in']
+        self.build_in_funcs = r'(?P<build_in_funcs>(瞓){1}|(加啲){1}|(摞走){1}|(嘅长度){1}|(阵先){1}|' \
+                     r'(畀你){1}|(散水){1})'
+        self.bif_get_code = re.findall(re.compile(r'[(](.*?)[)]', re.S), self.build_in_funcs[19 :])
+        self.bif_gen_code = ["sleep", "append", "remove", ".__len__()", "2", "input", "clear"]
+    
+    def make_rep(self, list1 : list, list2 : list) -> list:
         assert len(list1) == len(list2)
         ret = []
         for i in range(len(list1)):
             ret.append([list1[i], list2[i]])
         return ret
 
-    def trans(lastgroup : str, code : str, rep : str) -> str:
-        if lastgroup != 'string' and lastgroup != 'ID':
-            if lastgroup == 'expr':
-                p = re.match(r'\|(.*)同(.*)有几衬\|', code, re.M|re.I)
-                if p:
-                    code = " corr(" + p.group(1) +", " + p.group(2) + ") "
-            for r in rep:
-                code = code.replace(r[0], r[1])
+    def trans(self, code : str, rep : str) -> str:
+        p = re.match(r'\|(.*)同(.*)有几衬\|', code, re.M|re.I)
+        if p:
+            code = " corr(" + p.group(1) +", " + p.group(2) + ") "
+        for r in rep:
+            code = code.replace(r[0], r[1])
         return code
-    for match in re.finditer(patterns, code):
-        group = match.group()
-        group = trans(match.lastgroup, group, make_rep(kw_get_code, keywords_gen_code))
-        group = trans(match.lastgroup, group, make_rep(bif_get_code, bif_gen_code))
-        group = trans(match.lastgroup, group, make_rep(op_get_code, op_gen_code))
-        yield [match.lastgroup, group]
 
+    def next(self, n):
+        self.code = self.code[n:]
+
+    def check(self, s):
+        return self.code.startswith(s)
+
+    @staticmethod
+    def is_white_space(c):
+        return c in ('\t', '\n', '\v', '\f', '\r', ' ')
+
+    @staticmethod
+    def is_new_line(c):
+        return c in ('\r', '\n')
+
+    @staticmethod
+    def isChinese(word):
+        for ch in word:
+            if '\u4e00' <= ch <= '\u9fff':
+                return True
+        return False
+
+
+    def skip_space(self):
+        while len(self.code) > 0:
+            if self.check('\r\n') or self.check('\n\r'):
+                self.next(2)
+                self.line += 1
+            elif self.is_new_line(self.code[0]):
+                self.next(1)
+                self.line += 1
+            elif self.check('?') or self.check(':') or self.check('：') or self.check('？'):
+                self.next(1)
+            elif self.is_white_space(self.code[0]):
+                self.next(1)
+            else:
+                break
+
+    def scan(self, pattern):
+        m = re.match(pattern, self.code)
+        if m:
+            token = m.group()
+            self.next(len(token))
+            return token
+    
+    def scan_identifier(self):
+        return self.scan(self.re_id)
+
+    def scan_expr(self):
+        return self.scan(self.re_expr)
+
+    def scan_number(self):
+        return self.scan(self.re_number)
+
+    def scan_callfunc(self):
+        return self.scan(self.re_callfunc)
+
+    def scan_short_string(self):
+        m = re.match(self.re_str, self.code)
+        if m:
+            s = m.group()
+            self.next(len(s))
+            return s
+        self.error('unfinished string')
+        return ''
+
+    def error(self, f, *args):
+        err = f.format(*args)
+        err = '{0}: {1}'.format(self.line, err)
+        raise Exception(err)
+
+    def get_token(self):
+        self.skip_space()
+        if len(self.code) == 0:
+            return [self.line, ['EOF', 'EOF']]
+
+        c = self.code[0]
+        
+        if c == '&':
+            token = self.scan_callfunc() + ')'
+            token = self.trans(token, self.make_rep(self.bif_get_code, self.bif_gen_code))
+            return [self.line, ['expr', token]]
+
+        if c == '|':
+           token = self.scan_expr()
+           token = self.trans(token, self.make_rep(self.bif_get_code, self.bif_gen_code))
+           token = self.trans(token, self.make_rep(self.op_get_code, self.op_gen_code))
+           return [self.line, ['expr', token]]
+
+        if c == '-':
+            if self.check('->'):
+                self.next(2)
+                return [self.line, ['keyword', '->']]
+        
+        if c == '$':
+            self.next(1)
+            return [self.line, ['keyword', '$']]
+
+        if c == '@':
+            self.next(1)
+            return [self.line, ['keyword', '@']]
+        
+        if c == '{':
+            self.next(1)
+            return [self.line, ['keyword', '{']]
+        
+        if c == '}':
+            self.next(1)
+            return [self.line, ['keyword', '}']]            
+
+        if self.isChinese(c) or c == '_' or c.isalpha():
+            token = self.scan_identifier()
+            if token in self.keywords:
+                return [self.line, ['keywords', token]]
+            return [self.line, ['identifier', token]]
+        
+        if c in ('\'', '"'):
+            return [self.line, ['string', self.scan_short_string()]]
+        
+        if c == '.' or c.isdigit():
+            token = self.scan_number()
+            return [self.line, ['num', token]]
+
+        self.error("睇唔明嘅Token: " + c)
+
+    def escape(self, s):
+        ret = ''
+        while len(s) > 0:
+            if s[0] != '\\':
+                ret += s[0]
+                s = s[1:]
+                continue
+
+            if len(s) == 1:
+                self.error('unfinished string')
+
+            if s[1] == 'a':
+                ret += '\a'
+                s = s[2:]
+                continue
+            elif s[1] == 'b':
+                ret += '\b'
+                s = s[2:]
+                continue
+            elif s[1] == 'f':
+                ret += '\f'
+                s = s[2:]
+                continue
+            elif s[1] == 'n' or s[1] == '\n':
+                ret += '\n'
+                s = s[2:]
+                continue
+            elif s[1] == 'r':
+                ret += '\r'
+                s = s[2:]
+                continue
+            elif s[1] == 't':
+                ret += '\t'
+                s = s[2:]
+                continue
+            elif s[1] == 'v':
+                ret += '\v'
+                s = s[2:]
+                continue
+            elif s[1] == '"':
+                ret += '"'
+                s = s[2:]
+                continue
+            elif s[1] == '\'':
+                ret += '\''
+                s = s[2:]
+                continue
+            elif s[1] == '\\':
+                ret += '\\'
+                s = s[2:]
+                continue
+
+def cantonese_token(code : str, keywords : str) -> list:
+    lex = lexer(code, keywords)
+    tokens = []
+    while True:
+        token = lex.get_token()
+        tokens.append(token)
+        if token[1] == ['EOF', 'EOF']:
+            break
+    return tokens
+    
 """
     AST node for the Token List
 """
@@ -292,7 +586,7 @@ class Parser(object):
     def get(self, offset):
         if self.pos + offset >= len(self.tokens):
             return ["", ""]
-        return self.tokens[self.pos + offset]
+        return self.tokens[self.pos + offset][1]
     
     def get_value(self, token):
         if token[0] == 'expr':
@@ -304,7 +598,7 @@ class Parser(object):
         return token
 
     def last(self, offset):
-        return self.tokens[self.pos - offset]
+        return self.tokens[self.pos - offset][1]
     
     def skip(self, offset):
         self.pos += offset
@@ -326,7 +620,7 @@ class Parser(object):
     # TODO: Add error check
     def parse(self):
         while True:
-            if self.match("print"):
+            if self.match(kw_print):
                 node_print_new(self.Node, self.get_value(self.get(0)))
                 self.skip(2) # Skip the args and end_print
 
@@ -334,15 +628,21 @@ class Parser(object):
                 node_sleep_new(self.Node, self.get(0))
                 self.skip(1)
 
-            elif self.match("exit"):
+            elif self.match(kw_exit) or self.match(kw_exit_1) or self.match(kw_exit_2):
                 node_exit_new(self.Node)
                 self.skip(1)
 
-            elif self.match("assign") and self.get(1)[1] == 'is':
+            elif self.match(kw_class_assign) and (self.get(1)[1] == kw_is or self.get(1)[1] == kw_is_2 or \
+                                            self.get(1)[1] == kw_is_3):
+                node_let_new(self.Node, self.get_value(self.get(0)), self.get_value(self.get(2)))
+                self.skip(3)
+
+            elif self.match(kw_assign) and (self.get(1)[1] == kw_is or self.get(1)[1] == kw_is_2 or \
+                                            self.get(1)[1] == kw_is_3):
                 node_let_new(self.Node, self.get_value(self.get(0)), self.get_value(self.get(2)))
                 self.skip(3)
             
-            elif self.match("if"):
+            elif self.match(kw_if):
                 cond = self.get_value(self.get(0))
                 self.skip(4) # Skip the "then", "do", "begin"
                 if_case_end = 0 # The times of case "end"
@@ -350,16 +650,16 @@ class Parser(object):
                 node_if = []
                 stmt_if = []
                 while if_case_end != if_should_end and self.pos < len(self.tokens):
-                    if self.get(0)[1] == "if":
+                    if self.get(0)[1] == kw_if:
                         if_should_end += 1
                         stmt_if.append(self.tokens[self.pos])
                         self.pos += 1
-                    elif self.get(0)[1] == "end":
+                    elif self.get(0)[1] == kw_end:
                         if_case_end += 1
                         if if_case_end != if_should_end:
                             stmt_if.append(self.tokens[self.pos])
                         self.pos += 1
-                    elif self.get(0)[1] == "or" and self.get(1)[1] == "is":
+                    elif self.get(0)[1] == kw_elif:
                         if_should_end += 1
                         stmt_if.append(self.tokens[self.pos])
                         self.pos += 1
@@ -369,7 +669,7 @@ class Parser(object):
                 Parser(stmt_if, node_if).parse()
                 node_if_new(self.Node, cond, node_if)
             
-            elif self.match("or") and self.match("is"): # case "定系" elif
+            elif self.match(kw_elif): # case "定系" elif
                 cond = self.get_value(self.get(0))
                 self.skip(4) # Skip the "then", "do", "begin"
                 elif_case_end = 0 # The times of case "end"
@@ -377,16 +677,16 @@ class Parser(object):
                 node_elif = []
                 stmt_elif = []
                 while elif_case_end != elif_should_end and self.pos < len(self.tokens):
-                    if self.get(0)[1] == "if":
+                    if self.get(0)[1] == kw_if:
                         elif_should_end += 1
                         stmt_elif.append(self.tokens[self.pos])
                         self.pos += 1
-                    elif self.get(0)[1] == "end":
+                    elif self.get(0)[1] == kw_end:
                         elif_case_end += 1
                         if elif_case_end != elif_should_end:
                             stmt_elif.append(self.tokens[self.pos])
                         self.pos += 1
-                    elif self.get(0)[1] == "or" and self.get(1)[1] == "is":
+                    elif self.get(0)[1] == kw_elif:
                         elif_should_end += 1
                         stmt_elif.append(self.tokens[self.pos])
                         self.pos += 1
@@ -396,23 +696,23 @@ class Parser(object):
                 Parser(stmt_elif, node_elif).parse()
                 node_elif_new(self.Node, cond, node_elif)
 
-            elif self.match("is not"): # case "唔系" else
+            elif self.match(kw_else_or_not): # case "唔系" else
                 self.skip(3) # Skip the "then", "do", "begin"
                 else_case_end = 0 # The times of case "end"
                 else_should_end = 1
                 node_else = []
                 stmt_else = []
                 while else_case_end != else_should_end and self.pos < len(self.tokens):
-                    if self.get(0)[1] == "if":
+                    if self.get(0)[1] == kw_if:
                         else_should_end += 1
                         stmt_else.append(self.tokens[self.pos])
                         self.pos += 1
-                    elif self.get(0)[1] == "end":
+                    elif self.get(0)[1] == kw_end:
                         else_case_end += 1
                         if else_case_end != else_should_end:
                             stmt_else.append(self.tokens[self.pos])
                         self.pos += 1
-                    elif self.get(0)[1] == "or" and self.get(1)[1] == "is":
+                    elif self.get(0)[1] == kw_elif:
                         else_should_end += 1
                         stmt_else.append(self.tokens[self.pos])
                         self.pos += 1
@@ -422,9 +722,9 @@ class Parser(object):
                 Parser(stmt_else, node_else).parse()
                 node_else_new(self.Node, node_else)
 
-            elif self.match("while_do"):
+            elif self.match(kw_while_do):
                 stmt = []
-                while self.tokens[self.pos][1] != "while":
+                while self.tokens[self.pos][1][1] != kw_while:
                     stmt.append(self.tokens[self.pos])
                     self.pos += 1
                 node_while = []
@@ -434,13 +734,13 @@ class Parser(object):
                 node_loop_new(self.Node, cond, node_while)
                 self.skip(2) # Skip the "end"
             
-            elif self.match("$"): # Case "function"
+            elif self.match(kw_function): # Case "function"
                 if self.get(1)[0] == 'expr':
                    func_name = self.get_value(self.get(0))
                    args = self.get_value(self.get(1))
                    self.skip(3)
                    func_stmt = []
-                   while self.tokens[self.pos][1] != "funcend":
+                   while self.tokens[self.pos][1][1] != kw_func_end:
                        func_stmt.append(self.tokens[self.pos])
                        self.pos += 1
                    node_func = []
@@ -451,7 +751,7 @@ class Parser(object):
                     func_name = self.get_value(self.get(0))
                     self.skip(2) # Skip the funcbegin
                     func_stmt = []
-                    while self.tokens[self.pos][1] != "funcend":
+                    while self.tokens[self.pos][1][1] != kw_func_end:
                         func_stmt.append(self.tokens[self.pos])
                         self.pos += 1
                     node_func = []
@@ -459,25 +759,28 @@ class Parser(object):
                     node_func_new(self.Node, func_name, "None", node_func)
                     self.skip(1) # Skip the funcend
             
-            elif self.match("turtle_begin"):
+            elif self.match(kw_turtle_beg):
                 self.skip(2) # Skip the "do", "begin"
                 turtle_inst = []
-                while self.tokens[self.pos][1] != "end":
-                    turtle_inst.append(self.get_value(self.tokens[self.pos])[1])
+                while self.tokens[self.pos][1][1] != kw_end:
+                    if self.tokens[self.pos][1][0] == 'identifier':
+                        pass
+                    else:
+                        turtle_inst.append(self.get_value(self.tokens[self.pos][1])[1])
                     self.pos += 1
                 node_turtle_new(self.Node, turtle_inst)
                 self.skip(1)
             
-            elif self.match("call"):
+            elif self.match(kw_call):
                 node_call_new(self.Node, self.get_value(self.get(0)))
                 self.skip(1)
             
-            elif self.match("import"):
+            elif self.match(kw_import):
                 node_import_new(self.Node, self.get_value(self.get(0)))
                 self.skip(1)
             
-            elif self.match_type("expr") or self.match_type("ID"):
-                if self.match("from"):
+            elif self.match_type("expr") or self.match_type("identifier"):
+                if self.match(kw_from):
                     iterating_var = self.get_value(self.get(-2))
                     seq = "(" + str(self.get_value(self.get(0))[1]) + "," \
                           + str(self.get_value(self.get(2))[1]) + ")"
@@ -487,12 +790,12 @@ class Parser(object):
                     for_case_end = 0
                     for_should_end = 1
                     while for_should_end != for_case_end and self.pos < len(self.tokens):
-                        if (self.get(0)[0] == "expr" or self.get(0)[0] == "ID") \
-                             and self.get(1)[1] == "from":
+                        if (self.get(0)[0] == "expr" or self.get(0)[0] == "identifier") \
+                             and self.get(1)[1] == kw_from:
                             for_should_end += 1
                             for_stmt.append(self.tokens[self.pos])
                             self.pos += 1
-                        elif self.get(0)[1] == "endfor":
+                        elif self.get(0)[1] == kw_endfor:
                             for_case_end += 1
                             if for_case_end != for_should_end:
                                 for_stmt.append(self.tokens[self.pos])
@@ -502,45 +805,45 @@ class Parser(object):
                             self.pos += 1
                     Parser(for_stmt, node_for).parse()
                     node_for_new(self.Node, iterating_var, seq, node_for)
-                if self.get(0)[1] == "ass_list":
+                if self.get(0)[1] == kw_lst_assign:
                     self.skip(1)
                     list = self.get_value(self.get(-2))
                     name = self.get_value(self.get(1))
                     node_list_new(self.Node, name, list)
                     self.skip(2)
                     
-                if self.get(0)[1] == 'do':
+                if self.get(0)[1] == kw_do:
                     self.skip(1)
                     id = self.get_value(self.get(-2))
                     args = self.get_value(self.get(1))
                     func = self.get_value(self.get(0))
                     node_build_in_func_call_new(self.Node, id, func, args)
                     self.skip(2)
-                if self.get(0)[1] == 'call_begin':
+                if self.get(0)[1] == kw_call_begin:
                     func_name = self.get_value(self.get(-1))
                     self.skip(2)
                     args = self.get_value(self.get(0))
                     cons = ['expr', func_name[1] + '(' + args[1] + ')']
                     self.skip(1)
-                    if self.get(0)[1] == "@":
+                    if self.get(0)[1] == kw_get_value:
                         self.skip(1)
                         v = self.get_value(self.get(0))
                         node_let_new(self.Node, v, cons)
                     else:
                         node_call_new(self.Node, cons)
 
-            elif self.match("return"):
+            elif self.match(kw_return):
                 node_return_new(self.Node, self.get_value(self.get(0)))
                 self.skip(1)
             
-            elif self.match("try"):
+            elif self.match(kw_try):
                 self.skip(2) # SKip the "begin, do"
                 should_end = 1
                 case_end = 0
                 node_try = []
                 stmt_try = []
                 while case_end != should_end and self.pos < len(self.tokens):
-                    if self.get(0)[1] == "end":
+                    if self.get(0)[1] == kw_end:
                         case_end += 1
                         self.pos += 1
                     else:
@@ -549,7 +852,7 @@ class Parser(object):
                 Parser(stmt_try, node_try).parse()
                 node_try_new(self.Node, node_try)
             
-            elif self.match("except"):
+            elif self.match(kw_except):
                 _except = self.get_value(self.get(0))
                 self.skip(4) # SKip the "except", "then", "begin", "do"
                 should_end = 1
@@ -557,7 +860,7 @@ class Parser(object):
                 node_except = []
                 stmt_except = []
                 while case_end != should_end and self.pos < len(self.tokens):
-                    if self.get(0)[1] == "end":
+                    if self.get(0)[1] == kw_end:
                         case_end += 1
                         self.pos += 1
                     else:
@@ -566,14 +869,14 @@ class Parser(object):
                 Parser(stmt_except, node_except).parse()
                 node_except_new(self.Node, _except , node_except)
 
-            elif self.match("finally"):
+            elif self.match(kw_finally):
                 self.skip(2) # Skip the "begin", "do"
                 should_end = 1
                 case_end = 0
                 node_finally = []
                 stmt_finally = []
                 while case_end != should_end and self.pos < len(self.tokens):
-                    if self.get(0)[1] == "end":
+                    if self.get(0)[1] == kw_end:
                         case_end += 1
                         self.pos += 1
                     else:
@@ -582,46 +885,46 @@ class Parser(object):
                 Parser(stmt_finally, node_finally).parse()
                 node_finally_new(self.Node, node_finally)
 
-            elif self.match("assert"):
+            elif self.match(kw_assert):
                 node_assert_new(self.Node, self.get_value(self.get(0)))
                 self.skip(1)
             
-            elif self.match("raise"):
+            elif self.match(kw_raise):
                 node_raise_new(self.Node, self.get_value(self.get(0)))
                 self.skip(2)
             
-            elif self.match("gettype"):
+            elif self.match(kw_type):
                 node_gettype_new(self.Node, self.get_value(self.get(0)))
                 self.skip(1)
             
-            elif self.match("pass"):
+            elif self.match(kw_pass):
                 self.Node.append(["node_pass"])
             
-            elif self.match("break"):
+            elif self.match(kw_break):
                 node_break_new(self.Node)
             
-            elif self.match("class"):
+            elif self.match(kw_class_def):
                 class_name = self.get_value(self.get(0))
                 self.skip(1)
-                if self.match("extend"):
+                if self.match(kw_extend):
                     extend = self.get_value(self.get(0))
                     self.skip(1)
                 class_stmt = []
                 node_class = []
-                while self.tokens[self.pos][1] != "endclass":
+                while self.tokens[self.pos][1][1] != kw_endclass:
                     class_stmt.append(self.tokens[self.pos])
                     self.pos += 1
                 Parser(class_stmt, node_class).parse()
                 self.skip(1) # Skip the "end"
                 node_class_new(self.Node, class_name, extend, node_class)
 
-            elif self.match("class_init"):
+            elif self.match(kw_class_init):
                 self.skip(1)
                 attr_lst = self.get_value(self.get(0))
                 self.skip(1)
                 node_attribute_new(self.Node, attr_lst)
             
-            elif self.match("method"):
+            elif self.match(kw_method):
                 method_name = self.get_value(self.get(0))
                 self.skip(1)
                 # Check if has args
@@ -636,20 +939,20 @@ class Parser(object):
                 method_should_end = 1
                 method_case_end = 0
                 while method_case_end != method_should_end and self.pos < len(self.tokens):
-                    if self.get(0)[1] == "end":
+                    if self.get(0)[1] == kw_end:
                         method_case_end += 1
                         if method_case_end != method_should_end:
                             method_stmt.append(self.tokens[self.pos])    
                         self.pos += 1
-                    elif self.get(0)[1] == "if":
+                    elif self.get(0)[1] == kw_if:
                         method_should_end += 1
                         method_stmt.append(self.tokens[self.pos])    
                         self.pos += 1
-                    elif self.get(0)[1] == "or" and self.get(1)[1] == "is":
+                    elif self.get(0)[1] == kw_elif:
                         method_should_end += 1
                         method_stmt.append(self.tokens[self.pos])    
                         self.pos += 1
-                    elif self.get(0)[1] == "is not":
+                    elif self.get(0)[1] == kw_else_or_not:
                         method_should_end += 1
                         method_stmt.append(self.tokens[self.pos])    
                         self.pos += 1
@@ -659,32 +962,32 @@ class Parser(object):
                 Parser(method_stmt, node_method).parse()
                 node_method_new(self.Node, method_name, args, node_method)
             
-            elif self.match("cmd"):
+            elif self.match(kw_cmd):
                 node_cmd_new(self.Node, self.get_value(self.get(0)))
                 self.skip(1)
 
-            elif self.match("model"):
+            elif self.match(kw_model):
                 model = self.get_value(self.get(0))
                 self.skip(1)
-                self.syntax_check("mod_new", "value")
+                self.syntax_check(kw_mod_new, "value")
                 self.skip(2)
                 datatest = self.get_value(self.get(0))
                 self.skip(1)
                 node_model_new(self.Node, model, datatest)
             
-            elif self.match("stackinit"):
+            elif self.match(kw_stackinit):
                 node_stack_new(self.Node, self.get_value(self.get(0)))
                 self.skip(1)
 
-            elif self.match("push"):
-                self.syntax_check("do", "value")
+            elif self.match(kw_push):
+                self.syntax_check(kw_do, "value")
                 self.skip(1)
                 self.Node.append(["stack_push", self.get_value(self.get(0)), self.get_value(self.\
                     get(1))])
                 self.skip(2)
             
-            elif self.match("pop"):
-                self.syntax_check("do", "value")
+            elif self.match(kw_pop):
+                self.syntax_check(kw_do, "value")
                 self.skip(1)
                 self.Node.append(["stack_pop", self.get_value(self.get(0)), self.get_value(self.\
                     get(1))])
@@ -979,6 +1282,9 @@ def cantonese_lib_init() -> None:
     cantonese_func_def("排头位", get_list_beg)
     cantonese_func_def("摞位", list_get)
 
+    cantonese_func_def("唔啱", False)
+    cantonese_func_def("啱", True)
+
 def cantonese_json_init() -> None:
     import json
 
@@ -1174,7 +1480,7 @@ def cantonese_math_init():
 def cantonese_model_new(model, datatest, tab, code) -> str:
     if model == "KNN":
         code += tab + "print(KNN(" + datatest + ", 数据, 标签, K))"
-    if model == "L_REG":
+    elif model == "L_REG":
         code += tab + "print(l_reg(" + datatest + ", X, Y))"
     else:
         print("揾唔到你嘅模型: " + model + "!")
@@ -1335,7 +1641,7 @@ def cantonese_pygame_init() -> None:
             return obj.right
         if dir == "上边" or dir == "top":
             return obj.top
-        if dir == "call_begin边" or dir == "bottom":
+        if dir == "下边" or dir == "bottom":
             return obj.bottom
 
     cantonese_func_def("屏幕老作", pygame_setmode)
@@ -1357,6 +1663,7 @@ def cantonese_lib_run(lib_name : str, path : str, use_tradition : bool) -> None:
     for dirpath,dirnames,files in os.walk(pa):
         if lib_name + '.cantonese' in files:
             code = open(pa + '/' + lib_name + '.cantonese', encoding = 'utf-8').read()
+            code = re.sub(re.compile(r'/\*.*?\*/', re.S), ' ', code)
             found = True
     if found == False:
         raise ImportError(lib_name + '.cantonese not found.')
@@ -1370,32 +1677,12 @@ def cantonese_lib_run(lib_name : str, path : str, use_tradition : bool) -> None:
     cantonese_parser.parse()
     run(cantonese_parser.Node, path = path)
 
-keywords = r'(?P<keywords>(畀我睇下){1}|(点样先){1}|(收工){1}|(喺){1}|(定){1}|(老作一下){1}|(起底){1}|' \
-        r'(讲嘢){1}|(咩系){1}|(唔系){1}|(系){1})|(如果){1}|(嘅话){1}|(->){1}|({){1}|(}){1}|(同埋){1}|(咩都唔做){1}|' \
-        r'(落操场玩跑步){1}|(\$){1}|(用下){1}|(使下){1}|(要做咩){1}|(搞掂){1}|(就){1}|(谂下){1}|(佢嘅){1}|' \
-        r'(玩到){1}|(为止){1}|(还数){1}|(执嘢){1}|(揾到){1}|(执手尾){1}|(掟个){1}|(来睇下){1}|' \
-        r'(从){1}|(行到){1}|(行晒){1}|(佢个老豆叫){1}|(佢识得){1}|(明白未啊){1}|(落Order){1}|(饮茶先啦){1}|' \
-        r'(拍住上){1}|(係){1}|(比唔上){1}|(或者){1}|(辛苦晒啦){1}|(同我躝)|(唔啱){1}|(啱){1}|(冇){1}|' \
-        r'(有条仆街叫){1}|(顶你){1}|(丢你){1}|(嗌){1}|(过嚟估下){1}|(佢有啲咩){1}|(自己嘅){1}|(下){1}|(\@){1}'
-traditional_keywords = r'(?P<keywords>(畀我睇下){1}|(點樣先){1}|(收工){1}|(喺){1}|(定){1}|(老作一下){1}|(起底){1}|' \
-        r'(講嘢){1}|(咩系){1}|(唔系){1}|(系){1})|(如果){1}|(嘅話){1}|(->){1}|({){1}|(}){1}|(同埋){1}|(咩都唔做){1}|' \
-        r'(落操場玩跑步){1}|(\$){1}|(用下){1}|(使下){1}|(要做咩){1}|(搞掂){1}|(就){1}|(谂下){1}|(佢嘅){1}|' \
-        r'(玩到){1}|(爲止){1}|(返轉頭){1}|(執嘢){1}|(揾到){1}|(執手尾){1}|(掟個){1}|(來睇下){1}|' \
-        r'(從){1}|(行到){1}|(行曬){1}|(佢個老豆叫){1}|(佢識得){1}|(明白未啊){1}|(落Order){1}|(飲茶先啦){1}|' \
-        r'(拍住上){1}|(係){1}|(比唔上){1}|(或者){1}|(辛苦曬啦){1}|(同我躝)|(唔啱){1}|(啱){1}|(冇){1}|' \
-        r'(有條仆街叫){1}|(頂你){1}|(丟你){1}|(嗌){1}|(過嚟估下){1}|(佢有啲咩){1}|(自己嘅){1}|(下){1}|(\@){1}'
-
 dump_ast = False
+traditional_keywords = "" # TODO
 
 def cantonese_run(code : str, is_to_py : bool, file : str, use_tradition : bool) -> None:
     global dump_ast
-    tokens = []
-    if use_tradition:
-        for token in cantonese_token(code, traditional_keywords):
-            tokens.append(token)
-    else:
-        for token in cantonese_token(code, keywords):
-            tokens.append(token)
+    tokens = cantonese_token(code, keywords)
     cantonese_parser = Parser(tokens, [])
     cantonese_parser.parse()
     if dump_ast:

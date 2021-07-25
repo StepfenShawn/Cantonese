@@ -11,11 +11,11 @@ starttime = datetime.datetime.now()
 file_list = []
 # Get all the file names under examples
 for f in glob.glob(os.path.join('..\examples\*', '*.cantonese')):
-	file_list.append(f)
+    file_list.append(f)
 
 i = 0
 print("==============START TEST================")
-while i < len(file_list):
+while i < len(file_list) - 3:
     print("Running:" + file_list[i] +  "......")
     os.system("python cantonese.py " + file_list[i])
     print("End")

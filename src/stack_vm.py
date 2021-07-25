@@ -202,6 +202,16 @@ class CanState(object):
     def jumpby(self, value):
         self.object.lasti += value
 
+    def stack_level(self):
+        return len(self.object.stack)
+
+    def set_block(self, object, b_type, b_handler, b_level):
+        block = CanBlock(b_type, b_handler, b_level)
+        object.block_stack.append(block)
+
+    def pop_block(self, object):
+       return object.block_stack.pop() 
+
     def unaryOperator(self, op):
         val = self.top()
         self.set_top(UNARY_OPERATORS[op](val))
@@ -266,8 +276,31 @@ class CanState(object):
     def OP_END(self):
         pass
 
-    def JMP_FORWARD(self, addr):
+    def OP_JMP_FORWARD(self, addr):
         self.jumpby(addr)
+
+    def OP_SETUP_LOOP(self, dest):
+        self.set_block(self.object, 'loop', self.object.lasti + dest, self.stack_level())
+
+    def OP_GET_ITER(self):
+        val = self.top()
+        val_iter = iter(val)
+        if val_iter:
+            self.set_top(val_iter)
+        else:
+            self.pop()
+
+    def OP_FOR_ITER(self, dest):  
+        it = self.top()
+        try:
+            val = next(it)
+            self.push(val)
+        except StopIteration:
+            self.pop()
+            self.jumpby(dest)
+
+    def OP_JMP_ABSOLUTE(self, dest):
+        self.jumpto(dest)
 
 class CanObject(object):
     def __init__(self, thread_state, _code, _globals, _locals) -> None:
@@ -278,6 +311,7 @@ class CanObject(object):
         self._builtins = None
         self.stack = []
         self.lasti = -1
+        self.block_stack = []
 
         if self.last_stack == None:
             self._builtins = __builtins__
