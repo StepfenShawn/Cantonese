@@ -3,6 +3,7 @@
     Last update at 2021/6/6 9:11
     The interpreter for Cantonese    
 """
+import cmd
 import re
 import sys
 import os
@@ -2035,9 +2036,23 @@ def cantonese_web_run(code : str, file_name : str, open_serv = True) -> None:
         f.write(TO_HTML)
     exit(0)
 
+
+class 交互(cmd.Cmd):
+    def __init__(self):
+        super().__init__()
+        self.prompt = '> '
+
+    def default(self, 行):
+        if 行 is not None:
+            cantonese_run(行, False, '【标准输入】', False)
+
+
+def 开始交互():
+    交互().cmdloop("早晨！")
+
 def main():
     arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument("file")
+    arg_parser.add_argument("file", nargs='?', default="")
     arg_parser.add_argument("-to_py", action = "store_true")
     arg_parser.add_argument("-讲翻py", action = "store_true")
     arg_parser.add_argument("-to_web", action = "store_true")
@@ -2054,6 +2069,9 @@ def main():
     global use_tradition
     global dump_ast
     global debug
+
+    if not args.file:
+        sys.exit(开始交互())
 
     try:
         with open(args.file, encoding = "utf-8") as f:
