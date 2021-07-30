@@ -257,7 +257,7 @@ You will get:
 ![turtle_result](img/turtle_etc.jpg)  
 
 ### <a name="21">Maze game </a>
-[代码](examples/games/game.cantonese)  
+[Code](examples/games/game.cantonese)  
 You will get:  
 ![game_result](img/game_result.jpg)
 
