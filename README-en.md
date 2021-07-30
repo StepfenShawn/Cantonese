@@ -1,6 +1,6 @@
 ![logo](img/logo.jpg)  
 # The Cantonese programming language
-If you don't know Cantonese or programming, please see [learn Cantonese while learning programming in 5 minutes]((doc/cantonese.md))
+If you don't know Cantonese or programming, please see [learn Cantonese while learning programming in 5 minutes](doc/cantonese.md)
 # Introduction
 <a href="#0">What is Cantonese?</a>  
 <a href="#1">Quick Start</a>  
