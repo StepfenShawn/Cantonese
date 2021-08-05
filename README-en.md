@@ -29,8 +29,8 @@ If you don't know Cantonese or programming, please see [learn Cantonese while le
 &emsp;&emsp;<a href="#24">Develop an app in Cantonese</a>   
 <a href="#25">How to run?</a>  
 <a href="#26">TODOs</a>  
-# <a name="0">What is Cantonese?</a>
-What is the cantonese programming language? It is a programming language that communicates with computers in Cantonese.    
+# <a name="0">What is Cantonese programming language?</a>
+What is the cantonese programming language? It is a programming language that communicates with computers in [Cantonese](https://en.wikipedia.org/wiki/Cantonese).      
 The computer can read the Cantonese you write and you can operate (abuse) the computer in Cantonese.
 
 # <a name="1">Quick Start</a>
