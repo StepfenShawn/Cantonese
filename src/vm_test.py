@@ -24,12 +24,15 @@ def test_register_vm() -> None:
 
 def test_stack_vm() -> None:
     ins = [
-        s_vm.Instruction("OP_LOAD_CONST", 0),
-        s_vm.Instruction("OP_PRINT_ITEM", None)
+        s_vm.Instruction(1, "OP_LOAD_NAME", 0),
+        s_vm.Instruction(2, "OP_LOAD_CONST", 0),
+        s_vm.Instruction(3, "OP_CALL_FUNCTION", 1),
+        s_vm.Instruction(4, "OP_RETURN", 0)
     ]
     code = s_vm.Code()
     code.ins_lst = ins
-    code.co_consts = {0 : 'Hello World'}
+    code.co_consts = {0 : ['string', ' " Hello World " ']}
+    code.co_names = {0 : 'print'}
     cs = s_vm.CanState(code)
     cs._run()
 

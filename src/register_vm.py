@@ -805,7 +805,6 @@ class CanState(object):
         elif op == CmpOp.GE:
             return Compare.ge(a, b)
 
-    # 虚拟机内部循环
     # loop {计算PC, 取指令, 读指令}
     def get_pc(self) -> int:
         return self.pc

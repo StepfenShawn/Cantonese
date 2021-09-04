@@ -15,126 +15,6 @@ from stack_vm import *
     Get the Cantonese Token List
 """
 
-kw_print = "畀我睇下"
-kw_endprint = "点样先"
-kw_exit = "收工"
-kw_in = "喺"
-kw_elif = "定系"
-kw_turtle_beg = "老作一下"
-kw_type = "起底"
-kw_assign = "讲嘢"
-kw_class_def = "咩系"
-kw_else_or_not = "唔系"
-kw_is = "系"
-kw_if = "如果"
-kw_then = "嘅话"
-kw_do = "->"
-kw_begin = "{"
-kw_end = "}"
-kw_pass = "咩都唔做"
-kw_while_do = "落操场玩跑步"
-kw_function = "$"
-kw_call = "用下"
-kw_import = "使下"
-kw_func_begin = "要做咩"
-kw_func_end = "搞掂"
-kw_is_2 = "就"
-kw_assert = "谂下"
-kw_class_assign = "佢嘅"
-kw_while = "玩到"
-kw_whi_end = "为止"
-kw_return = "还数"
-kw_try = "执嘢"
-kw_except = "揾到"
-kw_finally = "执手尾"
-kw_raise = "掟个"
-kw_raise_end = "来睇下"
-kw_from = "从"
-kw_to = "行到"
-kw_endfor = "行晒"
-kw_extend = "佢个老豆叫"
-kw_method = "佢识得"
-kw_endclass = "明白未啊"
-kw_cmd = "落Order"
-kw_break = "饮茶先啦"
-kw_lst_assign = "拍住上"
-kw_is_3 = "係"
-kw_exit_1 = "辛苦晒啦"
-kw_exit_2 = "同我躝"
-kw_false = "唔啱"
-kw_true = "啱"
-kw_none = "冇"
-kw_stackinit = "有条仆街叫"
-kw_push = "顶你"
-kw_pop = "丢你"
-kw_model = "嗌"
-kw_mod_new = "过嚟估下"
-kw_class_init = "佢有啲咩"
-kw_self = "自己嘅"
-kw_call_begin = "下"
-kw_get_value = "@" 
-
-keywords = (
-    kw_print,
-    kw_endprint,
-    kw_exit,
-    kw_in,
-    kw_elif,
-    kw_turtle_beg,
-    kw_type,
-    kw_assign,
-    kw_class_def,
-    kw_else_or_not,
-    kw_is,
-    kw_if,
-    kw_then,
-    kw_do,
-    kw_begin,
-    kw_end,
-    kw_pass,
-    kw_while_do,
-    kw_function,
-    kw_call,
-    kw_import,
-    kw_func_begin,
-    kw_func_end,
-    kw_is_2,
-    kw_assert,
-    kw_class_assign,
-    kw_while,
-    kw_whi_end,
-    kw_return,
-    kw_try,
-    kw_except,
-    kw_finally,
-    kw_raise,
-    kw_raise_end,
-    kw_from,
-    kw_to,
-    kw_endfor,
-    kw_extend,
-    kw_method,
-    kw_endclass,
-    kw_cmd,
-    kw_break,
-    kw_lst_assign,
-    kw_is_3,
-    kw_exit_1,
-    kw_exit_2,
-    kw_false,
-    kw_true,
-    kw_none,
-    kw_stackinit,
-    kw_push,
-    kw_pop,
-    kw_model,
-    kw_mod_new,
-    kw_class_init,
-    kw_self,
-    kw_call_begin,
-    kw_get_value
-)
-
 class lexer(object):
     def __init__(self, code, keywords):
         self.code = code
@@ -1678,12 +1558,197 @@ def cantonese_lib_run(lib_name : str, path : str, use_tradition : bool) -> None:
     cantonese_parser.parse()
     run(cantonese_parser.Node, path = path)
 
+
+kw_print = "畀我睇下"
+kw_endprint = "点样先"
+kw_exit = "收工"
+kw_in = "喺"
+kw_elif = "定系"
+kw_turtle_beg = "老作一下"
+kw_type = "起底"
+kw_assign = "讲嘢"
+kw_class_def = "咩系"
+kw_else_or_not = "唔系"
+kw_is = "系"
+kw_if = "如果"
+kw_then = "嘅话"
+kw_do = "->"
+kw_begin = "{"
+kw_end = "}"
+kw_pass = "咩都唔做"
+kw_while_do = "落操场玩跑步"
+kw_function = "$"
+kw_call = "用下"
+kw_import = "使下"
+kw_func_begin = "要做咩"
+kw_func_end = "搞掂"
+kw_is_2 = "就"
+kw_assert = "谂下"
+kw_class_assign = "佢嘅"
+kw_while = "玩到"
+kw_whi_end = "为止"
+kw_return = "还数"
+kw_try = "执嘢"
+kw_except = "揾到"
+kw_finally = "执手尾"
+kw_raise = "掟个"
+kw_raise_end = "来睇下"
+kw_from = "从"
+kw_to = "行到"
+kw_endfor = "行晒"
+kw_extend = "佢个老豆叫"
+kw_method = "佢识得"
+kw_endclass = "明白未啊"
+kw_cmd = "落Order"
+kw_break = "饮茶先啦"
+kw_lst_assign = "拍住上"
+kw_is_3 = "係"
+kw_exit_1 = "辛苦晒啦"
+kw_exit_2 = "同我躝"
+kw_false = "唔啱"
+kw_true = "啱"
+kw_none = "冇"
+kw_stackinit = "有条仆街叫"
+kw_push = "顶你"
+kw_pop = "丢你"
+kw_model = "嗌"
+kw_mod_new = "过嚟估下"
+kw_class_init = "佢有啲咩"
+kw_self = "自己嘅"
+kw_call_begin = "下"
+kw_get_value = "@" 
+
+keywords = (
+    kw_print,
+    kw_endprint,
+    kw_exit,
+    kw_in,
+    kw_elif,
+    kw_turtle_beg,
+    kw_type,
+    kw_assign,
+    kw_class_def,
+    kw_else_or_not,
+    kw_is,
+    kw_if,
+    kw_then,
+    kw_do,
+    kw_begin,
+    kw_end,
+    kw_pass,
+    kw_while_do,
+    kw_function,
+    kw_call,
+    kw_import,
+    kw_func_begin,
+    kw_func_end,
+    kw_is_2,
+    kw_assert,
+    kw_class_assign,
+    kw_while,
+    kw_whi_end,
+    kw_return,
+    kw_try,
+    kw_except,
+    kw_finally,
+    kw_raise,
+    kw_raise_end,
+    kw_from,
+    kw_to,
+    kw_endfor,
+    kw_extend,
+    kw_method,
+    kw_endclass,
+    kw_cmd,
+    kw_break,
+    kw_lst_assign,
+    kw_is_3,
+    kw_exit_1,
+    kw_exit_2,
+    kw_false,
+    kw_true,
+    kw_none,
+    kw_stackinit,
+    kw_push,
+    kw_pop,
+    kw_model,
+    kw_mod_new,
+    kw_class_init,
+    kw_self,
+    kw_call_begin,
+    kw_get_value
+)
+
+keywords = (
+    kw_print,
+    kw_endprint,
+    kw_exit,
+    kw_in,
+    kw_elif,
+    kw_turtle_beg,
+    kw_type,
+    kw_assign,
+    kw_class_def,
+    kw_else_or_not,
+    kw_is,
+    kw_if,
+    kw_then,
+    kw_do,
+    kw_begin,
+    kw_end,
+    kw_pass,
+    kw_while_do,
+    kw_function,
+    kw_call,
+    kw_import,
+    kw_func_begin,
+    kw_func_end,
+    kw_is_2,
+    kw_assert,
+    kw_class_assign,
+    kw_while,
+    kw_whi_end,
+    kw_return,
+    kw_try,
+    kw_except,
+    kw_finally,
+    kw_raise,
+    kw_raise_end,
+    kw_from,
+    kw_to,
+    kw_endfor,
+    kw_extend,
+    kw_method,
+    kw_endclass,
+    kw_cmd,
+    kw_break,
+    kw_lst_assign,
+    kw_is_3,
+    kw_exit_1,
+    kw_exit_2,
+    kw_false,
+    kw_true,
+    kw_none,
+    kw_stackinit,
+    kw_push,
+    kw_pop,
+    kw_model,
+    kw_mod_new,
+    kw_class_init,
+    kw_self,
+    kw_call_begin,
+    kw_get_value
+)
+
 dump_ast = False
 traditional_keywords = "" # TODO
 
 def cantonese_run(code : str, is_to_py : bool, file : str, use_tradition : bool) -> None:
     global dump_ast
-    tokens = cantonese_token(code, keywords)
+    if use_tradition:
+        tokens = cantonese_token(code, tr_keywords)
+    else:
+        tokens = cantonese_token(code, keywords)
     cantonese_parser = Parser(tokens, [])
     cantonese_parser.parse()
     if dump_ast:
@@ -1692,6 +1757,9 @@ def cantonese_run(code : str, is_to_py : bool, file : str, use_tradition : bool)
     cantonese_lib_init()
     if is_to_py:
         print(TO_PY_CODE)
+    if debug:
+        import dis
+        print(dis.dis(TO_PY_CODE))
     else:
         import traceback
         try:
@@ -1699,8 +1767,162 @@ def cantonese_run(code : str, is_to_py : bool, file : str, use_tradition : bool)
         except Exception as e:
             print("濑嘢！" + "\n".join(濑啲咩嘢(e)))
 
+class AST(object):
+    def __init__(self, Nodes) -> None:
+        self.Nodes = Nodes
+
+    def next(self, n) -> None:
+        self.Nodes = self.Nodes[n : ]
+
+    def current(self):
+        if len(self.Nodes) == 0:
+            return [""]
+        return self.Nodes[0]
+
+    def check(self, node, v) -> bool:
+        return node[0] == v
+
+    def run_if(self):
+        elif_part = [[], [], []]
+        else_part = [[], []]
+        if self.current()[0] == 'node_elif':
+            elif_part = self.current()
+            self.next(1)
+        elif self.current()[0] == 'node_else':
+            else_part = self.current()
+            self.next(1)
+        return elif_part, else_part
+
+    def get_node(self) -> list:
+        
+        if len(self.Nodes) == 0:
+            return "NODE_END"
+
+        node = self.Nodes[0]
+        
+        if node[0] == 'node_print':
+            self.next(1)
+            return PrintStmt(node[1])
+
+        if node[0] == 'node_let':
+            self.next(1)
+            return AssignStmt(node[1][1], node[2])
+
+        if node[0] == 'node_exit':
+            self.next(1)
+            return ExitStmt()
+
+        if node[0] == 'node_pass':
+            self.next(1)
+            return PassStmt()
+
+        if node[0] == 'node_if':
+            self.next(1)
+            elif_part, else_part = self.run_if()
+            return IfStmt([node[1], node[2]], [elif_part[1], elif_part[2]], \
+                         [else_part[1]])
+
+        if node[0] == 'node_call':
+            self.next(1)
+            return
+
+        if node[0] == 'node_for':
+            self.next(1)
+            return ForStmt(node[1], node[2], node[3])
+
+        if node[0] == 'node_gettype':
+            self.next(1)
+            return TypeStmt(node[1])
+
+        if node[0] == 'node_loop':
+            self.next(1)
+            return WhileStmt(node[1], node[2])
+
+        if node[0] == 'node_break':
+            self.next(1)
+            return BreakStmt()
+
+        raise Exception("睇唔明嘅Node: " + str(node))
+
+def make_stmt(Nodes : list, stmts : list) -> list:
+    ast = AST(Nodes)
+    # Get stmt from AST
+    while True:
+        stmt = ast.get_node()
+        if stmt == "NODE_END":
+            break
+        stmts.append(stmt)
+    return stmts
+
+class PrintStmt(object):
+    def __init__(self, expr) -> None:
+        self.expr = expr
+        self.type = "PrintStmt"
+
+    def __str__(self):
+        ret = "print_stmt: " + self.expr
+
+class AssignStmt(object):
+    def __init__(self, key, value) -> None:
+        self.key = key
+        self.value = value
+        self.type = "AssignStmt"
+    
+class PassStmt(object):
+    def __init__(self):
+        self.type = "PassStmt"
+
+class ExitStmt(object):
+    def __init__(self):
+        self.type = "ExitStmt"
+
+    def __str__(self):
+        return "exit_stmt"
+
+class TypeStmt(object):
+    def __init__(self, var):
+        self.type = "TypeStmt"
+        self.var = var
+
+class IfStmt(object):
+    def __init__(self, if_stmt, elif_stmt, else_stmt) -> None:
+        self.if_stmt = if_stmt
+        self.elif_stmt = elif_stmt
+        self.else_stmt = else_stmt
+        self.type = "IfStmt"
+
+    def __str__(self):
+        ret = "if_stmt:" + str(self.if_stmt) + \
+              "elif_stmt:" + str(self.elif_stmt) + \
+              "else_stmt: " + str(self.else_stmt)
+        return ret
+
+class ForStmt(object):
+    def __init__(self, _iter, seq, stmt) -> None:
+        self._iter = _iter
+        self.seq = seq
+        self.stmt = stmt
+        self.type = "ForStmt"
+
+class WhileStmt(object):
+    def __init__(self, cond, stmt) -> None:
+        self.cond = cond
+        self.stmt = stmt
+        self.type = "WhileStmt"
+
+class BreakStmt(object):
+    def __init__(self):
+        self.type = "BreakStmt"
+
+class CallStmt(object):
+    def __init__(self, func, args) -> None:
+        self.type = "CallStmt"
+
 ins_idx = 0 # 指令索引
+cansts_idx = 0
+name_idx = 0
 debug = False
+
 def cantonese_run_with_vm(code : str, file : bool, use_tradition : bool) -> None:
     tokens = []
     if use_tradition:
@@ -1714,59 +1936,102 @@ def cantonese_run_with_vm(code : str, file : bool, use_tradition : bool) -> None
     if dump_ast:
         print(cantonese_parser.Node)
     gen_op_code = []
-    co_consts = {}
-    co_names = {}
-    cansts_idx = 0
-    name_idx = 0
-    run_with_vm(cantonese_parser.Node, gen_op_code, co_consts, 
-                co_names, cansts_idx, name_idx, True, path = file)
+    stmt = make_stmt(cantonese_parser.Node, [])
+    run_with_vm(stmt, gen_op_code, True, path = file)
     code = Code()
     code.ins_lst = gen_op_code
     if debug:
         for j in gen_op_code:
             print(j)
-    code.co_consts = co_consts
-    code.co_names = co_names
     cs = CanState(code)
     cs._run()
-
-def run_with_vm(Nodes : list, gen_op_code, co_consts,
-            co_names, cansts_idx, name_idx, end, path = '') -> None:
+    
+def run_with_vm(stmts : list, gen_op_code, end, path = '') -> None:
+    
     global ins_idx
-    for node in Nodes:
-        if node[0] == 'node_print':
-            co_consts[cansts_idx] = node[1]
+
+    for stmt in stmts:
+        if stmt.type == "PrintStmt":
             ins_idx += 1
-            gen_op_code.append(Instruction(ins_idx, "OP_LOAD_CONST", cansts_idx))
+            gen_op_code.append(Instruction(ins_idx, "OP_LOAD_CONST", stmt.expr))
             ins_idx += 1
             gen_op_code.append(Instruction(ins_idx, "OP_PRINT_ITEM", None))
-            cansts_idx += 1
-        elif node[0] == 'node_let':
-            co_names[name_idx] = node[1][1]
-            co_consts[cansts_idx] = node[2]
+        
+        if stmt.type == "AssignStmt":
             ins_idx += 1
-            gen_op_code.append(Instruction(ins_idx, "OP_LOAD_CONST", cansts_idx))
+            gen_op_code.append(Instruction(ins_idx, "OP_LOAD_CONST", stmt.value))
             ins_idx += 1
-            cansts_idx += 1
-            gen_op_code.append(Instruction(ins_idx, "OP_NEW_NAME", name_idx))
-            name_idx += 1
-        elif node[0] == 'node_pass':
+            gen_op_code.append(Instruction(ins_idx, "OP_NEW_NAME", stmt.key))
+
+        if stmt.type == "PassStmt":
             ins_idx += 1
             gen_op_code.append(Instruction(ins_idx, "OP_NOP", None))
-        elif node[0] == 'node_if':
-            co_consts[cansts_idx] = node[1]
+
+        if stmt.type == "IfStmt":
             ins_idx += 1
-            gen_op_code.append(Instruction(ins_idx, "OP_LOAD_CONST", cansts_idx))
-            cansts_idx += 1
+            gen_op_code.append(Instruction(ins_idx, "OP_LOAD_CONST", stmt.if_stmt[0]))
+            s = make_stmt(stmt.if_stmt[1], [])
             # 先将要跳转的地址设置为None
             ins_idx += 1
             start_idx = ins_idx
             gen_op_code.append(Instruction(ins_idx, "OP_POP_JMP_IF_FALSE", None))
-            run_with_vm(node[2], gen_op_code, co_consts, co_names, cansts_idx,
-                        name_idx, False, path)
-            gen_op_code[start_idx - 1].set_args(ins_idx)
-        else:
+            run_with_vm(s, gen_op_code, False, path)
+            
+            # TODO: need test elif stmt
+            if stmt.elif_stmt != [[], []]:
+                gen_op_code[start_idx - 1].set_args(ins_idx + 1)
+                ins_idx += 1
+                jmp_start_idx = ins_idx
+                gen_op_code.append(Instruction(ins_idx, "OP_JMP_FORWARD", None))
+                ins_idx += 1
+                gen_op_code.append(Instruction(ins_idx, "OP_LOAD_CONST",  stmt.elif_stmt[0]))
+                s = make_stmt(stmt.elif_stmt[1], [])
+                ins_idx += 1
+                start_idx = ins_idx
+                gen_op_code.append(Instruction(ins_idx, "OP_POP_JMP_IF_FALSE", None))
+                run_with_vm(s, gen_op_code, False, path)
+                gen_op_code[jmp_start_idx - 1].set_args(ins_idx - jmp_start_idx)
+
+            elif stmt.else_stmt != [[]]:
+                gen_op_code[start_idx - 1].set_args(ins_idx + 1)
+                ins_idx += 1
+                s = make_stmt(stmt.else_stmt[0], [])
+                jmp_start_idx = ins_idx
+                gen_op_code.append(Instruction(ins_idx, "OP_JMP_FORWARD", None))
+                run_with_vm(s, gen_op_code, False, path)
+                gen_op_code[jmp_start_idx - 1].set_args(ins_idx - jmp_start_idx)
+
+            else:
+                gen_op_code[start_idx - 1].set_args(ins_idx)
+        
+        if stmt.type == "ForStmt":
             pass
+
+        if stmt.type == "TypeStmt":
+            ins_idx += 1
+            gen_op_code.append(Instruction(ins_idx, "OP_LOAD_CONST", stmt.var))
+            ins_idx += 1
+            gen_op_code.append(Instruction(ins_idx, "OP_CALL_FUNC", "type"))
+            
+
+        if stmt.type == "WhileStmt":
+            current_idx = ins_idx
+            ins_idx += 1
+            gen_op_code.append(Instruction(ins_idx, "OP_LOAD_CONST", stmt.cond))
+            s = make_stmt(stmt.stmt, [])
+            ins_idx += 1
+            start_idx = ins_idx
+            gen_op_code.append(Instruction(ins_idx, "OP_POP_JMP_IF_TRUE", None))
+            run_with_vm(s, gen_op_code, False, path)
+            ins_idx += 1
+            gen_op_code.append(Instruction(ins_idx, "OP_JMP_ABSOLUTE", current_idx))
+            gen_op_code[start_idx - 1].set_args(ins_idx)
+
+        if stmt.type == "BreakStmt":
+            ins_idx += 1
+            # TODO: implement the break stmt
+            gen_op_code.append(Instruction(ins_idx, "OP_BREAK_LOOP", None))
+
     if end:
         ins_idx += 1
         gen_op_code.append(Instruction(ins_idx, "OP_RETURN", None)) # 结尾指令
@@ -2042,9 +2307,9 @@ class 交互(cmd.Cmd):
         super().__init__()
         self.prompt = '> '
 
-    def default(self, 行):
-        if 行 is not None:
-            cantonese_run(行, False, '【标准输入】', False)
+    def default(self, code):
+        if code is not None:
+            cantonese_run(code, False, '【标准输入】', False)
 
 
 def 开始交互():
@@ -2052,7 +2317,7 @@ def 开始交互():
 
 def main():
     arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument("file", nargs='?', default="")
+    arg_parser.add_argument("file", nargs = '?', default = "")
     arg_parser.add_argument("-to_py", action = "store_true")
     arg_parser.add_argument("-讲翻py", action = "store_true")
     arg_parser.add_argument("-to_web", action = "store_true")

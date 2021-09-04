@@ -307,11 +307,20 @@ pip install kivy
 [喺呢度](examples/)睇下更多例子.  
 
 # <a name="25">点样运行?</a>
-Cantonese 语言运行喺 Python 虚拟机上，环境净系支持 Python3，因为噉先符合广东人先进嘅思想!  
+Cantonese 可以用多种方式运行, 用自己嘅虚拟机, 或者翻译成python同html都得!
+使用虚拟机执行(仅支持部分语句):   
+```shell
+python src/cantonese.py [-文件名] -stack_vm
+```
+查看生产的指令:  
+```
+python src/cantonese.py [-文件名] -stack_vm -debug
+```
+用Python虚拟机运行(环境净系支持 Python3，因为噉先符合广东人先进嘅思想!):   
 ```shell
 python src/cantonese.py [-文件名]
 ```
-将 Cantonese 转化成 Python:  
+将 Cantonese 转化成 Python:
 ```shell
 python src/cantonese.py [文件名] -to_py
 ```
@@ -348,4 +357,4 @@ Vscode插件:https://github.com/Cantonese-community/vscode-cantonese
 今后要做咩:  
 * 完善语法错误检查
 * 加多啲语句
-* 开发自己嘅虚拟机
+* 完善自己嘅虚拟机

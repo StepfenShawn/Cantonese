@@ -347,4 +347,4 @@ All cantonese or programming lovers are welcome to discuss and contribute togeth
 TODOs:   
 * Improve and perfect the syntax error checking
 * Add more statements
-* Develop own virtual machine
+* Improve own virtual machine

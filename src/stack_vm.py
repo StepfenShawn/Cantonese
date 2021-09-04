@@ -7,6 +7,8 @@
 from enum import Enum, unique
 from collections import namedtuple
 
+import env
+
 @unique
 class OpCode(Enum):
     OP_LOAD_CONST = 0
@@ -119,24 +121,21 @@ class Code(object):
         self.co_argcount = None
         self.co_nlocals = None
         self.co_stacksize = None
-        self.co_flags = None
         self.co_code = None 
         self.co_consts = None
         self.co_names = None
         self.co_varnames = None 
-        self.co_freevars = None 
-        self.co_cellvars = None
         self.co_filename = None
         self.co_name = None
         self.co_firstlineno = None
         self.co_lnotab = None
         self.ins_lst = []
         self.version = None
-        self.mtime = None
 
 class CanState(object):
     def __init__(self, code_obj) -> None:
         self.code_obj = code_obj
+        self.ThreadState = ThreadState()
 
     CASE_ERROR = 0x0002
     CASE_RAISE = 0x0004
@@ -157,19 +156,24 @@ class CanState(object):
         return co_code.get_opcode(), co_code.get_args()
 
     def _run(self) -> None:
-        thread_state = ThreadState()
-        self.object = CanObject(thread_state = thread_state,
+        self.object = CanObject(thread_state = self.ThreadState,
                                  _code = self.code_obj,
-                                 _globals = {},
+                                 _globals = {"唔啱" : False, "啱" : True},
                                  _locals = {})
         self.object.lasti += 1
         while True:
             opname, arg = self.parse()
             ret = self.op_run(opname, arg)
-            if ret:
+            if ret == "0":
                 print("return value:{}\n".format(ret))
                 break
-
+            elif ret == self.CASE_BREAK:
+                break
+            # TODO
+            elif ret == self.CASE_ERROR:
+                pass
+            else:
+                pass
     def get_const(self, index : int):
         return self.object._code.co_consts[index]
 
@@ -184,6 +188,10 @@ class CanState(object):
 
     def push(self, value) -> None:
         self.object.stack.append(value)
+
+    def push_object(self, obj) -> None:
+        self.objects.append(self.object)
+        self.object = obj
 
     def pop(self):
         return self.object.stack.pop()
@@ -232,27 +240,27 @@ class CanState(object):
         pass
     
     def OP_PUSH_TOP(self):
-        self.push(self.top())
+        self.push(self.get_top())
 
-    def OP_LOAD_CONST(self, index):
-        val = self.get_const(index)[1]
-        self.push(eval(val, self.object._globals, self.object._locals))
+    def OP_LOAD_CONST(self, val):
+        self.push(eval(val[1], self.object._globals, self.object._locals))
 
-    def OP_LOAD_NAME(self, index):
-        name = self.get_name(index)
+    def OP_LOAD_NAME(self, name):
         obj = self.object
         if name in obj._locals:
             val = obj._locals[name]
         elif name in obj._globals:
             val = obj._globals[name]
-        elif name in obj._builtins[name]:
+        elif name in obj._builtins:
             val = obj._builtins[name]
         else:
-            raise NameError("name %s is not defined.".format(name))
+            raise NameError("name %s is not defined.".foramt(name))
         self.push(val)
 
-    def OP_NEW_NAME(self, index):
-        name  = self.get_name(index)
+    def OP_LOAD_BUITIN_FUNC(self, _func):
+        self.push(_func)
+
+    def OP_NEW_NAME(self, name):
         val = self.pop()
         self.object._locals[name] = val
 
@@ -283,7 +291,7 @@ class CanState(object):
         self.set_block(self.object, 'loop', self.object.lasti + dest, self.stack_level())
 
     def OP_GET_ITER(self):
-        val = self.top()
+        val = self.get_top()
         val_iter = iter(val)
         if val_iter:
             self.set_top(val_iter)
@@ -302,6 +310,38 @@ class CanState(object):
     def OP_JMP_ABSOLUTE(self, dest):
         self.jumpto(dest)
 
+    def OP_SETUP_LIST(self, num):
+        ret = []
+        for i in range(num):
+            ret.insert(0, self.pop())
+        self.push(ret)
+
+    def OP_SETUP_LOOP(self, dest) -> None:
+        self.set_block(self.object, 'loop', self.object.lasti + dest, self.stack_level)
+
+    def OP_SETUP_FINALLY(self, dest) -> None:
+        self.set_block(self.object, 'finally', self.object.lasti + dest, self.stack_level)
+
+    def OP_SETUP_EXCEPT(self, dest) -> None:
+        self.set_block(self.object, 'except', self.object.lasti + dest, self.stack_level)
+
+    def OP_POP_BLOCK(self):
+        block = self.pop_block(self.object)
+        while self.stack_level() > block.b_level:
+            self.pop()
+
+    def OP_BREAK_LOOP(self):
+        return self.CASE_BREAK
+
+    def OP_CALL_FUNC(self, func):
+        arg = self.popn(env.Env._env[func][1])
+        x = env.Env._env[func][0](arg)
+        self.push(x)
+
+    def OP_FOR_LOOP(self, _iter, _from, _to, _code):
+        for _iter[1] in range(_from, _to):
+            self.eval_object(_code)
+
 class CanObject(object):
     def __init__(self, thread_state, _code, _globals, _locals) -> None:
         self.last_stack = thread_state.stack
@@ -317,6 +357,18 @@ class CanObject(object):
             self._builtins = __builtins__
         else:
             self._builtins = self.last_stack._builtins
+
+class Function(object):
+    def __init__(self, code, arg_default):
+        self.func_code = code
+        self.globals = globals
+        self.arg_default = arg_default
+        # self.closure = closure
+        # self.vm = vm
+
+        # TODO: 支持闭包
+        # if closure:
+        #    pass
 
 class ThreadState(object):
     def __init__(self):
