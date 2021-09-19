@@ -1679,69 +1679,127 @@ keywords = (
     kw_get_value
 )
 
-keywords = (
-    kw_print,
-    kw_endprint,
-    kw_exit,
-    kw_in,
-    kw_elif,
-    kw_turtle_beg,
-    kw_type,
-    kw_assign,
-    kw_class_def,
-    kw_else_or_not,
-    kw_is,
-    kw_if,
-    kw_then,
-    kw_do,
-    kw_begin,
-    kw_end,
-    kw_pass,
-    kw_while_do,
-    kw_function,
-    kw_call,
-    kw_import,
-    kw_func_begin,
-    kw_func_end,
-    kw_is_2,
-    kw_assert,
-    kw_class_assign,
-    kw_while,
-    kw_whi_end,
-    kw_return,
-    kw_try,
-    kw_except,
-    kw_finally,
-    kw_raise,
-    kw_raise_end,
-    kw_from,
-    kw_to,
-    kw_endfor,
-    kw_extend,
-    kw_method,
-    kw_endclass,
-    kw_cmd,
-    kw_break,
-    kw_lst_assign,
-    kw_is_3,
-    kw_exit_1,
-    kw_exit_2,
-    kw_false,
-    kw_true,
-    kw_none,
-    kw_stackinit,
-    kw_push,
-    kw_pop,
-    kw_model,
-    kw_mod_new,
-    kw_class_init,
-    kw_self,
-    kw_call_begin,
-    kw_get_value
+tr_kw_print = "畀我睇下"
+tr_kw_endprint = "點樣先"
+tr_kw_exit = "收工"
+tr_kw_in = "喺"
+tr_kw_elif = "定系"
+tr_kw_turtle_beg = "老作一下"
+tr_kw_type = "起底"
+tr_kw_assign = "講嘢"
+tr_kw_class_def = "咩系"
+tr_kw_else_or_not = "唔系"
+tr_kw_is = "系"
+tr_kw_if = "如果"
+tr_kw_then = "嘅話"
+tr_kw_do = "->"
+tr_kw_begin = "{"
+tr_kw_end = "}"
+tr_kw_pass = "咩都唔做"
+tr_kw_while_do = "落操場玩跑步"
+tr_kw_function = "$"
+tr_kw_call = "用下"
+tr_kw_import = "使下"
+tr_kw_func_begin = "要做咩"
+tr_kw_func_end = "搞掂"
+tr_kw_is_2 = "就"
+tr_kw_assert = "諗下"
+tr_kw_class_assign = "佢嘅"
+tr_kw_while = "玩到"
+tr_kw_whi_end = "為止"
+tr_kw_return = "還數"
+tr_kw_try = "執嘢"
+tr_kw_except = "揾到"
+tr_kw_finally = "執手尾"
+tr_kw_raise = "掟個"
+tr_kw_raise_end = "來睇下"
+tr_kw_from = "從"
+tr_kw_to = "行到"
+tr_kw_endfor = "行曬"
+tr_kw_extend = "佢個老豆叫"
+tr_kw_method = "佢識得"
+tr_kw_endclass = "明白未啊"
+tr_kw_cmd = "落Order"
+tr_kw_break = "飲茶先啦"
+tr_kw_lst_assign = "拍住上"
+tr_kw_is_3 = "係"
+tr_kw_exit_1 = "辛苦曬啦"
+tr_kw_exit_2 = "同我躝"
+tr_kw_false = "唔啱"
+tr_kw_true = "啱"
+tr_kw_none = "冇"
+tr_kw_stackinit = "有條仆街叫"
+tr_kw_push = "頂你"
+tr_kw_pop = "丟你"
+tr_kw_model = "嗌"
+tr_kw_mod_new = "過嚟估下"
+tr_kw_class_init = "佢有啲咩"
+tr_kw_self = "自己嘅"
+tr_kw_call_begin = "下"
+tr_kw_get_value = "@" 
+
+traditional_keywords = (
+    tr_kw_print,
+    tr_kw_endprint,
+    tr_kw_exit,
+    tr_kw_in,
+    tr_kw_elif,
+    tr_kw_turtle_beg,
+    tr_kw_type,
+    tr_kw_assign,
+    tr_kw_class_def,
+    tr_kw_else_or_not,
+    tr_kw_is,
+    tr_kw_if,
+    tr_kw_then,
+    tr_kw_do,
+    tr_kw_begin,
+    tr_kw_end,
+    tr_kw_pass,
+    tr_kw_while_do,
+    tr_kw_function,
+    tr_kw_call,
+    tr_kw_import,
+    tr_kw_func_begin,
+    tr_kw_func_end,
+    tr_kw_is_2,
+    tr_kw_assert,
+    tr_kw_class_assign,
+    tr_kw_while,
+    tr_kw_whi_end,
+    tr_kw_return,
+    tr_kw_try,
+    tr_kw_except,
+    tr_kw_finally,
+    tr_kw_raise,
+    tr_kw_raise_end,
+    tr_kw_from,
+    tr_kw_to,
+    tr_kw_endfor,
+    tr_kw_extend,
+    tr_kw_method,
+    tr_kw_endclass,
+    tr_kw_cmd,
+    tr_kw_break,
+    tr_kw_lst_assign,
+    tr_kw_is_3,
+    tr_kw_exit_1,
+    tr_kw_exit_2,
+    tr_kw_false,
+    tr_kw_true,
+    tr_kw_none,
+    tr_kw_stackinit,
+    tr_kw_push,
+    tr_kw_pop,
+    tr_kw_model,
+    tr_kw_mod_new,
+    tr_kw_class_init,
+    tr_kw_self,
+    tr_kw_call_begin,
+    tr_kw_get_value
 )
 
 dump_ast = False
-traditional_keywords = "" # TODO
 
 def cantonese_run(code : str, is_to_py : bool, file : str, use_tradition : bool) -> None:
     global dump_ast
@@ -1793,6 +1851,19 @@ class AST(object):
             self.next(1)
         return elif_part, else_part
 
+    def run_except(self):
+        # ["node_except", _except, except_part]
+        except_part = [[], [], []]
+        finally_part = [[], []]
+        if self.current()[0] == 'node_except':
+            except_part = self.current()
+            self.next(1)
+        elif self.current()[0] == 'node_finally':
+            except_part = self.current()
+            self.next(1)
+        return except_part. finally_part
+
+
     def get_node(self) -> list:
         
         if len(self.Nodes) == 0:
@@ -1822,6 +1893,12 @@ class AST(object):
             return IfStmt([node[1], node[2]], [elif_part[1], elif_part[2]], \
                          [else_part[1]])
 
+        if node[0] == 'node_try':
+            self.next(1)
+            except_part, finally_part = self.run_except()
+            return ExceptStmt([node[1]], [except_part[1], except_part[2]], \
+                            [finally_part[1]])
+
         if node[0] == 'node_call':
             self.next(1)
             return
@@ -1841,6 +1918,11 @@ class AST(object):
         if node[0] == 'node_break':
             self.next(1)
             return BreakStmt()
+
+        if node[0] == 'node_raise':
+            self.next(1)
+            return RaiseStmt(node[1])
+        
 
         raise Exception("睇唔明嘅Node: " + str(node))
 
@@ -1917,6 +1999,18 @@ class BreakStmt(object):
 class CallStmt(object):
     def __init__(self, func, args) -> None:
         self.type = "CallStmt"
+
+class ExceptStmt(object):
+    def __init__(self, try_part, except_part, finally_part) -> None:
+        self.type = "ExceptStmt"
+        self.try_part = try_part
+        self.except_part = except_part
+        self.finally_part = finally_part
+
+class RaiseStmt(object):
+    def __init__(self, exception) -> None:
+        self.type = "RaiseStmt"
+        self.exception = exception
 
 ins_idx = 0 # 指令索引
 cansts_idx = 0
@@ -2031,6 +2125,10 @@ def run_with_vm(stmts : list, gen_op_code, end, path = '') -> None:
             ins_idx += 1
             # TODO: implement the break stmt
             gen_op_code.append(Instruction(ins_idx, "OP_BREAK_LOOP", None))
+
+        if stmt.type == "RaiseStmt":
+            ins_idx += 1
+            gen_op_code.append(Instruction(ins_idx, "OP_RAISE", eval(stmt.exception[1])))
 
     if end:
         ins_idx += 1

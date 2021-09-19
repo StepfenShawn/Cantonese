@@ -6,6 +6,7 @@
 # 施工中... 请戴好安全帽
 from enum import Enum, unique
 from collections import namedtuple
+import six
 
 import env
 
@@ -136,6 +137,7 @@ class CanState(object):
     def __init__(self, code_obj) -> None:
         self.code_obj = code_obj
         self.ThreadState = ThreadState()
+        self.objs = []
 
     CASE_ERROR = 0x0002
     CASE_RAISE = 0x0004
@@ -167,13 +169,11 @@ class CanState(object):
             if ret == "0":
                 print("return value:{}\n".format(ret))
                 break
-            elif ret == self.CASE_BREAK:
+            if isinstance(ret, int) and  ret == self.CASE_BREAK:
                 break
-            # TODO
-            elif ret == self.CASE_ERROR:
-                pass
-            else:
-                pass
+            if isinstance(ret, list) and ret[0] == self.CASE_ERROR:
+                raise ret[1]
+
     def get_const(self, index : int):
         return self.object._code.co_consts[index]
 
@@ -256,7 +256,7 @@ class CanState(object):
         else:
             raise NameError("name %s is not defined.".foramt(name))
         self.push(val)
-
+        
     def OP_LOAD_BUITIN_FUNC(self, _func):
         self.push(_func)
 
@@ -341,6 +341,9 @@ class CanState(object):
     def OP_FOR_LOOP(self, _iter, _from, _to, _code):
         for _iter[1] in range(_from, _to):
             self.eval_object(_code)
+
+    def OP_RAISE(self, Error):
+        return [self.CASE_ERROR, Error]
 
 class CanObject(object):
     def __init__(self, thread_state, _code, _globals, _locals) -> None:
