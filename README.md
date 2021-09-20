@@ -2,6 +2,10 @@
 ### Read this in other languages: [English](README-en.md)  
 # 粤语编程语言
 如果你不会粤语或编程，请看[5分钟边学编程边学粤语](doc/cantonese.md)  
+# 如何安装?
+```
+pip install Cantonese
+```
 # 目录
 <a href="#0">引言</a>  
 <a href="#1">咋咋淋入门</a>  
@@ -310,23 +314,23 @@ pip install kivy
 Cantonese 可以用多种方式运行, 用自己嘅虚拟机, 或者翻译成python同html都得!
 使用虚拟机执行(仅支持部分语句):   
 ```shell
-python src/cantonese.py [-文件名] -stack_vm
+Cantonese [-文件名] -stack_vm
 ```
 查看生产的指令:  
 ```
-python src/cantonese.py [-文件名] -stack_vm -debug
+Cantonese [-文件名] -stack_vm -debug
 ```
 用Python虚拟机运行(环境净系支持 Python3，因为噉先符合广东人先进嘅思想!):   
 ```shell
-python src/cantonese.py [-文件名]
+Cantonese [-文件名]
 ```
 将 Cantonese 转化成 Python:
 ```shell
-python src/cantonese.py [文件名] -to_py
+Cantonese [文件名] -to_py
 ```
 例如:  
 ```
-python src/cantonese.py examples/basic/helloworld.cantonese -to_py
+Cantonese examples/basic/helloworld.cantonese -to_py
 ```
 运行嘅结果系:  
 ```
@@ -335,7 +339,7 @@ exit()
 ```
 生成`HTML`:  
 ```shell
-python src/cantonese.py examples/web/web_hello.cantonese -to_web -compile
+Cantonese examples/web/web_hello.cantonese -to_web -compile
 ```
 ```html
 <html>
@@ -348,7 +352,7 @@ python src/cantonese.py examples/web/web_hello.cantonese -to_web -compile
 ```
 用繁体字运行:
 ```
-python src/cantonese.py [文件名] -use_tr
+Cantonese [文件名] -use_tr
 ```  
 Vscode插件:https://github.com/Cantonese-community/vscode-cantonese  
 

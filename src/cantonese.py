@@ -8,8 +8,8 @@ import re
 import sys
 import os
 import argparse
-from 濑嘢 import 濑啲咩嘢
-from stack_vm import *
+from src.濑嘢 import 濑啲咩嘢
+from src.stack_vm import *
 
 """
     Get the Cantonese Token List
