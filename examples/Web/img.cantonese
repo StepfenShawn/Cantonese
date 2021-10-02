@@ -1,5 +1,10 @@
+画 要点画
+    要几阔? => ["500px"]
+    要几高? => ["500px"]
+搞掂
+
 老作一下 {
-    写标题 => [ "我嘅第一个网页" ]
-    睇下   => [ "https://gitee.com/mirrors/cantonese/raw/main/img/logo.jpg" ]
-    写隻字 => [ "Powered By Shawn" ]
+    打标题 => [ "我嘅第一个网页" ]
+    睇下   => [ "https://gitee.com/mirrors/cantonese/raw/main/img/logo.jpg" ] $ 画
+    拎笔 => [ "Powered By Shawn" ]
 }

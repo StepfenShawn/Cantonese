@@ -2228,7 +2228,7 @@ class cssParser(WebParser):
             if self.match_type("id"):
                 key = self.get(0)[1]
                 self.skip(1)
-                self.check(self.get(0)[1], "系")
+                self.check(self.get(0)[1], "=>")
                 self.skip(1)
                 self.check(self.get(0)[1], "[")
                 self.skip(1)
@@ -2276,23 +2276,37 @@ def h(args : list, with_style : bool) -> None:
         t_beg, t_end = "<h" + size + " id = \"" + style + "\">", "</h" + size + ">\n"
         TO_HTML += t_beg + get_str(args[0]) + t_end
 
-def img(args : list) -> None:
+def img(args : list, with_style : bool) -> None:
     global TO_HTML
-    i_beg, i_end = "<img src = ", ">\n"
-    TO_HTML += i_beg + eval("str(" + args[0] + ")") + i_end
+    if len(args) == 1:
+        i_beg, i_end = "<img src = ", ">\n"
+        TO_HTML += i_beg + get_str(args[0]) + i_end
+    if len(args) >= 2:
+        style = args.pop() if with_style else ""
+        i_beg, i_end = "<img id = \"" + style + "\" src = ", ">\n"
+        TO_HTML += i_beg + get_str(args[0]) + i_end
+
+def audio(args : list, with_style : bool) -> None:
+    global TO_HTML
+    if len(args) == 1:
+        a_beg, a_end = "<audio src = ", "</audio>\n"
+        TO_HTML += i_beg + get_str(args[0]) + i_end
 
 def sym_init() -> None:
     global sym
     global style_attr
 
-    sym['写标题'] = title
-    sym['写隻字'] = h
+    sym['打标题'] = title
+    sym['拎笔'] = h
     sym['睇下'] = img
-    #sym['画表格'] = table
+    sym['Music'] = audio
+    #sym['画格仔'] = table
 
-    style_attr['颜色'] = "color"
-    style_attr['背景颜色'] = "background-color"
-    style_attr['对齐方式'] = "text-align"
+    style_attr['要咩色'] = "color"
+    style_attr['要咩背景颜色'] = "background-color"
+    style_attr['要点对齐'] = "text-align"
+    style_attr['要几高'] = 'height'
+    style_attr['要几阔'] = 'width'
 
     style_value_attr['红色'] = "red"
     style_value_attr['黄色'] = "yellow"
@@ -2330,13 +2344,13 @@ def style_build(value : list) -> None:
     s = ""
     for item in value:
         if get_str(item[1][0]) not in style_value_attr.keys() and item[0] in style_attr.keys():
-            s += style_attr[item[0]] + " : " + get_str(item[1][0]) + "\n"
+            s += style_attr[item[0]] + " : " + get_str(item[1][0]) + ";\n"
         elif get_str(item[1][0]) not in style_value_attr.keys() and item[0] not in style_attr.keys():
-            s += item[0] + " : " + get_str(item[1][0]) + "\n"
+            s += item[0] + " : " + get_str(item[1][0]) + ";\n"
         elif get_str(item[1][0]) in style_value_attr.keys() and item[0] not in style_attr.keys():
-            s += item[0] + " : " + style_value_attr[get_str(item[1][0])] + "\n"
+            s += item[0] + " : " + style_value_attr[get_str(item[1][0])] + ";\n"
         else:
-            s += style_attr[item[0]] + " : " + style_value_attr[get_str(item[1][0])] + "\n"
+            s += style_attr[item[0]] + " : " + style_value_attr[get_str(item[1][0])] + ";\n"
     return s
 
 def style_exec(sym : dict) -> None:
@@ -2356,21 +2370,84 @@ def web_call_new(func : str, args_list : list, with_style = False) -> None:
 def get_html_file(name : str) -> str:
     return name[ : len(name) - len('cantonese')] + 'html'
 
+class WebLexer(lexer):
+    def __init__(self, code, keywords):
+        super().__init__(code, keywords)
+        self.re_callfunc, self.re_expr, self.op,\
+        self.op_get_code, self.op_gen_code, \
+        self.build_in_funcs, self.bif_get_code, \
+        self.bif_gen_code = "", "", "", "", "", "", "", ""
+    
+    def get_token(self):
+        self.skip_space()
+
+        if len(self.code) == 0:
+            return ['EOF', 'EOF']
+
+        c = self.code[0]
+        if self.isChinese(c) or c == '_' or c.isalpha():
+            token = self.scan_identifier()
+            if token in self.keywords:
+                return ['keywords', token]
+            return ['id', token]
+
+        if c == '=':
+            if self.check("=>"):
+                self.next(2)
+                return ['keywords', "=>"]
+
+        if c in ('\'', '"'):
+            return ['string', self.scan_short_string()]
+        
+        if c == '.' or c.isdigit():
+            token = self.scan_number()
+            return ['num', token]
+
+        if c == '{':
+            self.next(1)
+            return ["keywords", c]
+
+        if c == '}':
+            self.next(1)
+            return ["keywords", c]
+
+        if c == '[':
+            self.next(1)
+            return ["keywords", c]
+
+        if c == ']':
+            self.next(1)
+            return ["keywords", c]
+
+        if c == '$':
+            self.next(1)
+            return ["keywords", c]
+
+        if c == '(':
+            self.next(1)
+            return ["keywords", c]
+        
+        if c == ')':
+            self.next(1)
+            return ["keywords", c]
+
+        self.error("睇唔明嘅Token: " + c)
+
 def cantonese_web_run(code : str, file_name : str, open_serv = True) -> None:
     global TO_HTML
-    keywords = r'(?P<keywords>(老作一下){1}|({){1}|(}){1}|(=>){1}|(\[){1}|(\]){1}|(要点画){1}|(搞掂){1}|' \
-               r'(系){1}|(用下){1}|(->){1}|(\$){1})'
-    num = r'(?P<num>\d+)'
-    string = r'(?P<string>\"([^\\\"]|\\.)*\")'
-    id = r'(?P<id>([\u4e00-\u9fa5]+){1}|([a-zA-Z_][a-zA-Z_0-9]*){1})'
-    patterns = re.compile('|'.join([keywords, string, num, id]))
+    keywords = ("老作一下", "要点画", "搞掂")
+    lex = WebLexer(code, keywords)
     tokens = []
-    for match in re.finditer(patterns, code):
-        tokens.append([match.lastgroup, match.group()])
+    while True:
+        token = lex.get_token()
+        tokens.append(token)
+        if token == ['EOF', 'EOF']:
+            break
+    
     web_init()
     WebParser(tokens, []).parse()
     web_end()
-    
+        
     if style_sym != {}:
         style_exec(style_sym)
     print(TO_HTML)
@@ -2468,5 +2545,6 @@ def main():
             cantonese_run(code, is_to_py, args.file, use_tradition)
     except FileNotFoundError:
         print("揾唔到你嘅文件 :(")
+
 if __name__ == '__main__':
     main()

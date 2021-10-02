@@ -1,6 +1,10 @@
 ![logo](img/logo.jpg)  
 # The Cantonese programming language
 If you don't know Cantonese or programming, please see [learn Cantonese while learning programming in 5 minutes](doc/cantonese.md)
+# Installation
+```
+pip install Cantonese
+```
 # Introduction
 <a href="#0">What is Cantonese?</a>  
 <a href="#1">Quick Start</a>  
@@ -271,8 +275,8 @@ You will get:
 This is a simple web page:
 ```
 老作一下 {
-    写标题 => [ "我嘅第一个网页" ]
-    写隻字 => [ "Hello World" ]
+    打标题 => [ "我嘅第一个网页" ]
+    拎笔 => [ "Hello World" ]
 }
 ```
 After running, open '127.0.0.1:80' to view the running results:  
