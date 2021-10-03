@@ -1242,7 +1242,7 @@ def cantonese_smtplib_init() -> None:
         try:
             smtpObj.sendmail(sender, receivers, message)         
             print("Successfully sent email!")
-        except SMTPException:
+        except Exception:
             print("Error: unable to send email")
     cantonese_func_def("send份邮件", send)
 
@@ -1800,17 +1800,26 @@ traditional_keywords = (
 )
 
 dump_ast = False
+to_js = False
 
 def cantonese_run(code : str, is_to_py : bool, file : str, use_tradition : bool) -> None:
     global dump_ast
     if use_tradition:
-        tokens = cantonese_token(code, tr_keywords)
+        tokens = cantonese_token(code, traditional_keywords)
     else:
         tokens = cantonese_token(code, keywords)
     cantonese_parser = Parser(tokens, [])
     cantonese_parser.parse()
     if dump_ast:
         print(cantonese_parser.Node)
+    if to_js:
+        #from src.Compile import Compile
+        import src.Compile
+        js, fh = src.Compile.Compile(cantonese_parser.Node, "js", file).ret()
+        f = open(fh, 'w', encoding = 'utf-8')
+        f.write(js)
+        exit(1)
+
     run(cantonese_parser.Node, path = file)
     cantonese_lib_init()
     if is_to_py:
@@ -2290,7 +2299,7 @@ def audio(args : list, with_style : bool) -> None:
     global TO_HTML
     if len(args) == 1:
         a_beg, a_end = "<audio src = ", "</audio>\n"
-        TO_HTML += i_beg + get_str(args[0]) + i_end
+        TO_HTML += a_beg + get_str(args[0]) + a_end
 
 def sym_init() -> None:
     global sym
@@ -2476,6 +2485,16 @@ def cantonese_web_run(code : str, file_name : str, open_serv = True) -> None:
         f.write(TO_HTML)
     exit(0)
 
+class AsmLerxer(lexer):
+    def __init__(self, code, keywords):
+        super().__init__(code, keywords)
+        self.op, self.op_get_code, self.op_gen_code, \
+        self.build_in_funcs, self.re_callfunc, self.bif_get_code, \
+        self.bif_gen_code = "", "", "", "", "", "", ""
+
+    def get_token(self):
+        # TODO
+        pass
 
 class 交互(cmd.Cmd):
     def __init__(self):
@@ -2494,6 +2513,7 @@ def main():
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument("file", nargs = '?', default = "")
     arg_parser.add_argument("-to_py", action = "store_true")
+    arg_parser.add_argument("-to_js", action = "store_true")
     arg_parser.add_argument("-讲翻py", action = "store_true")
     arg_parser.add_argument("-to_web", action = "store_true")
     arg_parser.add_argument("-倾偈", action = "store_true")
@@ -2508,6 +2528,7 @@ def main():
 
     global use_tradition
     global dump_ast
+    global to_js
     global debug
 
     if not args.file:
@@ -2542,6 +2563,8 @@ def main():
             if args.stack_vm:
                 cantonese_run_with_vm(code, args.file, use_tradition)
                 exit(1)
+            if args.to_js:
+                to_js = True
             cantonese_run(code, is_to_py, args.file, use_tradition)
     except FileNotFoundError:
         print("揾唔到你嘅文件 :(")

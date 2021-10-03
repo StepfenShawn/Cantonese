@@ -10,5 +10,10 @@ def Cantonesetype(args):
     print(type(var))
     return type(var)
 
+def CantoneseInput(args):
+    assert len(args) == 1
+    return input(args[0])
+
 Env = can_env()
 Env.add(Cantonesetype, "type", 1)
+Env.add(CantoneseInput, "input", 1)

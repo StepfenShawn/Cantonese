@@ -334,8 +334,8 @@ class CanState(object):
         return self.CASE_BREAK
 
     def OP_CALL_FUNC(self, func):
-        arg = self.popn(env.Env._env[func][1])
-        x = env.Env._env[func][0](arg)
+        arg = self.popn(src.env.Env.Env._env[func][1])
+        x = src.env.Env.Env._env[func][0](arg)
         self.push(x)
 
     def OP_FOR_LOOP(self, _iter, _from, _to, _code):

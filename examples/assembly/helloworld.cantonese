@@ -1,0 +1,17 @@
+/* Developing... */
+|数据| 有咩? -> {
+    @msg 係 |db "HelloWorld!!!", 0xA|
+    @msglen 係 ($ - @msg)
+}
+
+|start| 要做咩? -> {
+    [eax] 收数 -> 4
+    [ebx] 收数 -> 1
+    [ecx] 收数 -> |@msg|
+    [edx] 收数 -> |@msglen|
+    仲要等埋 -> 0x80
+    [eax] 收数 -> 1
+    仲要等埋 -> 0x80
+}
+
+|start| 排头位 -> 开工
