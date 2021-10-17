@@ -133,6 +133,12 @@ class Code(object):
         self.ins_lst = []
         self.version = None
 
+class CanThreadPool(object):
+    def __init__(self) -> None:
+        self._break = None
+        self._raise = None
+        self._return = None
+
 class CanState(object):
     def __init__(self, code_obj) -> None:
         self.code_obj = code_obj
@@ -163,13 +169,15 @@ class CanState(object):
                                  _globals = {"唔啱" : False, "啱" : True},
                                  _locals = {})
         self.object.lasti += 1
+        pool = CanThreadPool()
         while True:
             opname, arg = self.parse()
             ret = self.op_run(opname, arg)
             if ret == "0":
                 print("return value:{}\n".format(ret))
                 break
-            if isinstance(ret, int) and  ret == self.CASE_BREAK:
+            if isinstance(ret, int) and ret == self.CASE_BREAK:
+                pool._break = ""
                 break
             if isinstance(ret, list) and ret[0] == self.CASE_ERROR:
                 raise ret[1]

@@ -1,4 +1,4 @@
-class Compile(object):
+class compile(object):
     def __init__(self, ast, target, path) -> None:
         self.ast = ast
         self.target = target
@@ -64,3 +64,16 @@ class Compile(object):
                 self.TO_JS_CODE += "else{"
                 self.run_js(node[1])
                 self.TO_JS_CODE += "}"
+
+            if node[0] == "node_call":
+                self.TO_JS_CODE += node[1][1] + ";\n"
+
+            if node[0] == "node_fundef":
+                if node[2] == 'None':
+                    self.TO_JS_CODE += "function " + node[1][1] + "() {\n"
+                    self.run_js(node[3])
+                    self.TO_JS_CODE += "}\n"
+                else:
+                    self.TO_JS_CODE += "function " + node[1][1] + "(" + node[2][1] + ") {\n"
+                    self.run_js(node[3])
+                    self.TO_JS_CODE += "}\n"
