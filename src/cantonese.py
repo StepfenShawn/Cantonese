@@ -464,9 +464,11 @@ class Parser(object):
         else:
             raise "Syntax error!"
 
-    def get(self, offset):
+    def get(self, offset, get_line = False):
         if self.pos + offset >= len(self.tokens):
             return ["", ""]
+        if get_line:
+            return self.tokens[self.pos + offset][0]
         return self.tokens[self.pos + offset][1]
     
     def get_value(self, token):
@@ -498,13 +500,35 @@ class Parser(object):
         else:
             return False
 
+    def token_type_except(self, t, err):
+        if self.get(0)[0] == t:
+            self.pos += 1
+            return
+        raise err
+
+    def token_except(self, tk, err, skip = False, i = 0):
+        if isinstance(tk, list):
+            for _t in tk:
+                if self.get(i)[1] == _t:
+                    if skip:
+                        self.pos += 1
+                    return
+
+        elif self.get(i)[1] == tk:
+            if skip:
+                self.pos += 1
+            return
+        line = self.get(i, get_line = True)
+        raise Exception("Line " + str(line) + err + "\n 净系揾到: " + self.get(i)[1])
+
     # TODO: Add error check
     def parse(self):
         while True:
             if self.match(kw_print):
                 node_print_new(self.Node, self.get_value(self.get(0)))
-                self.skip(2) # Skip the args and end_print
-
+                self.skip(1) # Skip the args
+                self.token_except(kw_endprint, " : 濑嘢! 揾唔到 '点样先' ", skip = True)
+               
             elif self.match("sleep"):
                 node_sleep_new(self.Node, self.get(0))
                 self.skip(1)
@@ -520,6 +544,7 @@ class Parser(object):
 
             elif self.match(kw_assign) and (self.get(1)[1] == kw_is or self.get(1)[1] == kw_is_2 or \
                                             self.get(1)[1] == kw_is_3):
+                self.token_except(tk = [kw_is, kw_is_2, kw_is_3], i = 1,  err = " : 濑嘢! 揾唔到 '係' " )
                 node_let_new(self.Node, self.get_value(self.get(0)), self.get_value(self.get(2)))
                 self.skip(3)
             
@@ -1800,14 +1825,21 @@ traditional_keywords = (
 )
 
 dump_ast = False
+dump_lex = False
 to_js = False
 
 def cantonese_run(code : str, is_to_py : bool, file : str, use_tradition : bool) -> None:
+    
     global dump_ast
+    global dump_lex
+    
     if use_tradition:
         tokens = cantonese_token(code, traditional_keywords)
     else:
         tokens = cantonese_token(code, keywords)
+    if dump_lex:
+        for token in tokens:
+            print("line " + str(token[0]) + ": " + str(token[1]))
     cantonese_parser = Parser(tokens, [])
     cantonese_parser.parse()
     if dump_ast:
@@ -2731,11 +2763,13 @@ def main():
     arg_parser.add_argument("-install", action = "store_true")
     arg_parser.add_argument("-stack_vm", action = "store_true")
     arg_parser.add_argument("-ast", action = "store_true")
+    arg_parser.add_argument("-lex", action = "store_true")
     arg_parser.add_argument("-debug", action = "store_true")
     args = arg_parser.parse_args()
 
     global use_tradition
     global dump_ast
+    global dump_lex
     global to_js
     global debug
 
@@ -2766,6 +2800,8 @@ def main():
                     cantonese_web_run(code, args.file, True)
             if args.ast:
                 dump_ast = True
+            if args.lex:
+                dump_lex = True
             if args.debug:
                 debug = True
             if args.stack_vm:
