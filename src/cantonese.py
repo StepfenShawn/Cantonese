@@ -500,24 +500,31 @@ class Parser(object):
         else:
             return False
 
-    def token_type_except(self, t, err):
-        if self.get(0)[0] == t:
+    def token_type_except(self, tk, err, skip = False, i = 0):
+        if isinstance(tk, list):
+            if self.get(i)[0] in tk:
+                if skip:
+                    self.pos += 1
+            
+        if self.get(0)[0] == tk:
             self.pos += 1
             return
-        raise err
+        
+        line = self.get(i, get_line = True)
+        raise Exception("Line " + str(line) + err + "\n 你嘅类型係: " + self.get(i)[0])
 
     def token_except(self, tk, err, skip = False, i = 0):
         if isinstance(tk, list):
-            for _t in tk:
-                if self.get(i)[1] == _t:
-                    if skip:
-                        self.pos += 1
-                    return
+            if self.get(i)[1] in tk:
+                if skip:
+                    self.pos += 1
+                return
 
         elif self.get(i)[1] == tk:
             if skip:
                 self.pos += 1
             return
+
         line = self.get(i, get_line = True)
         raise Exception("Line " + str(line) + err + "\n 净系揾到: " + self.get(i)[1])
 
@@ -542,15 +549,17 @@ class Parser(object):
                 node_let_new(self.Node, self.get_value(self.get(0)), self.get_value(self.get(2)))
                 self.skip(3)
 
-            elif self.match(kw_assign) and (self.get(1)[1] == kw_is or self.get(1)[1] == kw_is_2 or \
-                                            self.get(1)[1] == kw_is_3):
+            elif self.match(kw_assign):
                 self.token_except(tk = [kw_is, kw_is_2, kw_is_3], i = 1,  err = " : 濑嘢! 揾唔到 '係' " )
                 node_let_new(self.Node, self.get_value(self.get(0)), self.get_value(self.get(2)))
                 self.skip(3)
             
             elif self.match(kw_if):
                 cond = self.get_value(self.get(0))
-                self.skip(4) # Skip the "then", "do", "begin"
+                self.token_except(tk = kw_then, i = 1, err = " : 濑嘢! 揾唔到 '嘅话' ")
+                self.token_except(tk = kw_do, i = 2, err = " : 濑嘢! 揾唔到 '->' ")
+                self.token_except(tk = kw_begin, i = 3, err = " : 濑嘢! 揾唔到 '{' ")
+                self.skip(4) # Skip the "cond", "then", "do", "begin"
                 if_case_end = 0 # The times of case "end"
                 if_should_end = 1
                 node_if = []
@@ -577,7 +586,10 @@ class Parser(object):
             
             elif self.match(kw_elif): # case "定系" elif
                 cond = self.get_value(self.get(0))
-                self.skip(4) # Skip the "then", "do", "begin"
+                self.token_except(tk = kw_then, i = 1, err = " : 濑嘢! 揾唔到 '嘅话' ")
+                self.token_except(tk = kw_do, i = 2, err = " : 濑嘢! 揾唔到 '->' ")
+                self.token_except(tk = kw_begin, i = 3, err = " : 濑嘢! 揾唔到 '{' ")
+                self.skip(4) # Skip the "cond", "then", "do", "begin"
                 elif_case_end = 0 # The times of case "end"
                 elif_should_end = 1
                 node_elif = []
@@ -603,6 +615,9 @@ class Parser(object):
                 node_elif_new(self.Node, cond, node_elif)
 
             elif self.match(kw_else_or_not): # case "唔系" else
+                self.token_except(tk = kw_then, i = 0, err = " : 濑嘢! 揾唔到 '嘅话' ")
+                self.token_except(tk = kw_do, i = 1, err = " : 濑嘢! 揾唔到 '->' ")
+                self.token_except(tk = kw_begin, i = 2, err = " : 濑嘢! 揾唔到 '{' ")
                 self.skip(3) # Skip the "then", "do", "begin"
                 else_case_end = 0 # The times of case "end"
                 else_should_end = 1
@@ -644,6 +659,7 @@ class Parser(object):
                 if self.get(1)[0] == 'expr':
                    func_name = self.get_value(self.get(0))
                    args = self.get_value(self.get(1))
+                   self.token_except(tk = kw_func_begin, i = 2, err = " : 濑嘢! 揾唔到 '要做咩' ")
                    self.skip(3)
                    func_stmt = []
                    while self.tokens[self.pos][1][1] != kw_func_end:
@@ -653,8 +669,10 @@ class Parser(object):
                    Parser(func_stmt, node_func).parse()
                    node_func_new(self.Node, func_name, args, node_func)
                    self.skip(1) # Skip the funcend
+                
                 else:
                     func_name = self.get_value(self.get(0))
+                    self.token_except(tk = kw_func_begin, i = 1, err = " : 濑嘢! 揾唔到 '要做咩' ")
                     self.skip(2) # Skip the funcbegin
                     func_stmt = []
                     while self.tokens[self.pos][1][1] != kw_func_end:
@@ -725,6 +743,7 @@ class Parser(object):
                     func = self.get_value(self.get(0))
                     node_build_in_func_call_new(self.Node, id, func, args)
                     self.skip(2)
+
                 if self.get(0)[1] == kw_call_begin:
                     func_name = self.get_value(self.get(-1))
                     self.skip(2)
@@ -743,6 +762,8 @@ class Parser(object):
                 self.skip(1)
             
             elif self.match(kw_try):
+                self.token_except(tk = kw_do, i = 0, err = " : 濑嘢! 揾唔到 '->' ")
+                self.token_except(tk = kw_begin, i = 1, err = " : 濑嘢! 揾唔到 '{'")
                 self.skip(2) # SKip the "begin, do"
                 should_end = 1
                 case_end = 0
@@ -760,6 +781,9 @@ class Parser(object):
             
             elif self.match(kw_except):
                 _except = self.get_value(self.get(0))
+                self.token_except(tk = kw_then, i = 1, err = " : 濑嘢! 揾唔到 '嘅话'")
+                self.token_except(tk = kw_do, i = 2, err = " : 濑嘢! 揾唔到 '->'")
+                self.token_except(tk = kw_begin, i = 3, err = " : 濑嘢! 揾唔到 '{'")
                 self.skip(4) # SKip the "except", "then", "begin", "do"
                 should_end = 1
                 case_end = 0
@@ -776,6 +800,8 @@ class Parser(object):
                 node_except_new(self.Node, _except , node_except)
 
             elif self.match(kw_finally):
+                self.token_except(tk = kw_do, i = 0, err =  " : 濑嘢! 揾唔到 '->'")
+                self.token_except(tk = kw_begin, i = 1, err = " : 濑嘢! 揾唔到 '{'")
                 self.skip(2) # Skip the "begin", "do"
                 should_end = 1
                 case_end = 0
@@ -1845,8 +1871,8 @@ def cantonese_run(code : str, is_to_py : bool, file : str, use_tradition : bool)
     if dump_ast:
         print(cantonese_parser.Node)
     if to_js:
-        import Compile
-        js, fh = Compile.compile(cantonese_parser.Node, "js", file).ret()
+        import compile
+        js, fh = compile.Compile(cantonese_parser.Node, "js", file).ret()
         f = open(fh, 'w', encoding = 'utf-8')
         f.write(js)
         exit(1)

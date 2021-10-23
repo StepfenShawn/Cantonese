@@ -1,4 +1,4 @@
-class compile(object):
+class Compile(object):
     def __init__(self, ast, target, path) -> None:
         self.ast = ast
         self.target = target
