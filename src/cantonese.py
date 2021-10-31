@@ -729,13 +729,22 @@ class Parser(object):
                             self.pos += 1
                     Parser(for_stmt, node_for).parse()
                     node_for_new(self.Node, iterating_var, seq, node_for)
+                
                 if self.get(0)[1] == kw_lst_assign:
                     self.skip(1)
                     list = self.get_value(self.get(-2))
                     name = self.get_value(self.get(1))
                     node_list_new(self.Node, name, list)
                     self.skip(2)
-                    
+
+                if self.get(0)[1] == kw_set_assign:
+                    self.skip(1)
+                    list = self.get_value(self.get(-2))
+                    name = self.get_value(self.get(1))
+                    list[1] = "{" + list[1] + "}"
+                    node_let_new(self.Node, name, list)
+                    self.skip(2)
+
                 if self.get(0)[1] == kw_do:
                     self.skip(1)
                     id = self.get_value(self.get(-2))
@@ -1563,6 +1572,7 @@ def cantonese_pygame_init() -> None:
             屏幕.fill(颜色)
         if obj != "" and obj_where != "":
             屏幕.blit(obj, obj_where)
+
         pygame.time.delay(2)
         pygame.display.flip()
 
@@ -1653,6 +1663,7 @@ kw_endclass = "明白未啊"
 kw_cmd = "落Order"
 kw_break = "饮茶先啦"
 kw_lst_assign = "拍住上"
+kw_set_assign = "埋堆"
 kw_is_3 = "係"
 kw_exit_1 = "辛苦晒啦"
 kw_exit_2 = "同我躝"
@@ -1713,6 +1724,7 @@ keywords = (
     kw_cmd,
     kw_break,
     kw_lst_assign,
+    kw_set_assign,
     kw_is_3,
     kw_exit_1,
     kw_exit_2,
@@ -1773,6 +1785,7 @@ tr_kw_endclass = "明白未啊"
 tr_kw_cmd = "落Order"
 tr_kw_break = "飲茶先啦"
 tr_kw_lst_assign = "拍住上"
+tr_kw_set_assign = "埋堆"
 tr_kw_is_3 = "係"
 tr_kw_exit_1 = "辛苦曬啦"
 tr_kw_exit_2 = "同我躝"
@@ -1833,6 +1846,7 @@ traditional_keywords = (
     tr_kw_cmd,
     tr_kw_break,
     tr_kw_lst_assign,
+    tr_kw_set_assign,
     tr_kw_is_3,
     tr_kw_exit_1,
     tr_kw_exit_2,
@@ -1871,8 +1885,8 @@ def cantonese_run(code : str, is_to_py : bool, file : str, use_tradition : bool)
     if dump_ast:
         print(cantonese_parser.Node)
     if to_js:
-        import compile
-        js, fh = compile.Compile(cantonese_parser.Node, "js", file).ret()
+        import Compile
+        js, fh = Compile.Compile(cantonese_parser.Node, "js", file).ret()
         f = open(fh, 'w', encoding = 'utf-8')
         f.write(js)
         exit(1)
@@ -2165,7 +2179,14 @@ def run_with_vm(stmts : list, gen_op_code, end, path = '') -> None:
                 gen_op_code[start_idx - 1].set_args(ins_idx)
         
         if stmt.type == "ForStmt":
-            pass
+            ins_idx += 1
+            gen_op_code.append(Instruction(ins_idx, "OP_LOAD_CONST", 
+                    stmt.seq[stmt.seq.index("(") + 1 : stmt.seq.index(",")]))
+            ins_idx += 1
+            gen_op_code.append(Instruction(ins_idx, "OP_LOAD_CONST", 
+                    stmt.seq[stmt.seq.index(",") + 1 : stmt.seq.index(")")]))
+            ins_idx += 1
+            gen_op_code.append(Instruction(ins_idx, "OP_CALL_FUNC", "range"))
 
         if stmt.type == "TypeStmt":
             ins_idx += 1
@@ -2791,6 +2812,7 @@ def main():
     arg_parser.add_argument("-ast", action = "store_true")
     arg_parser.add_argument("-lex", action = "store_true")
     arg_parser.add_argument("-debug", action = "store_true")
+    arg_parser.add_argument("-v", action = "store_true")
     args = arg_parser.parse_args()
 
     global use_tradition
@@ -2837,6 +2859,8 @@ def main():
                 to_js = True
             if args.to_asm:
                 Cantonese_asm_run(code, args.file)
+            if args.v:
+                print("0.0.7")
             cantonese_run(code, is_to_py, args.file, use_tradition)
     except FileNotFoundError:
         print("揾唔到你嘅文件 :(")
