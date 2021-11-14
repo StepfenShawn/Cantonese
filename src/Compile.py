@@ -39,10 +39,13 @@ class Compile(object):
             if node[0] == "node_print":
                 pass
     
-    def run_js(self, Nodes : list, label = '', path = '') -> None:
+    def run_js(self, Nodes : list, label = '', path = '', in_web = False) -> None:
         for node in Nodes:
             if node[0] == "node_print":
-                self.TO_JS_CODE += "console.log(" + self.eval_expr(node[1][1]) + ");\n"
+                if in_web:
+                    self.TO_JS_CODE += "alert(" + self.eval_expr(node[1][1]) + ");\n"
+                else:
+                    self.TO_JS_CODE += "console.log(" + self.eval_expr(node[1][1]) + ");\n"
             
             if node[0] == "node_exit":
                 self.TO_JS_CODE += "process.exit();\n"

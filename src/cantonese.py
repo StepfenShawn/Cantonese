@@ -447,6 +447,9 @@ def node_stack_new(Node : list, name) -> None:
     """
     Node.append(["node_stack", name])
 
+def node_global_new(Node : list, global_table) -> None:
+    Node.append(["node_global", global_table])
+
 """
     Parser for cantonese Token List
 """
@@ -543,6 +546,11 @@ class Parser(object):
             elif self.match(kw_exit) or self.match(kw_exit_1) or self.match(kw_exit_2):
                 node_exit_new(self.Node)
                 self.skip(1)
+
+            elif self.match(kw_global_set):
+                table = self.get_value(self.get(0))
+                self.skip(1)
+                node_global_new(self.Node, table)
 
             elif self.match(kw_class_assign) and (self.get(1)[1] == kw_is or self.get(1)[1] == kw_is_2 or \
                                             self.get(1)[1] == kw_is_3):
@@ -967,11 +975,15 @@ def run(Nodes : list, TAB = '', label = '', path = '') -> None:
             if cantonese_lib_import(node[1][1]) == "Not found":
                 cantonese_lib_run(node[1][1], path, use_tradition)
             else:
-                TO_PY_CODE += TAB + "import " + node[1][1] + "\n"
+                TO_PY_CODE += TAB + "import " + cantonese_lib_import(node[1][1]) + "\n"
 
         if node[0] == "node_exit":
             check(TAB)
             TO_PY_CODE += TAB + "exit()\n"
+
+        if node[0] == "node_global":
+            check(TAB)
+            TO_PY_CODE += TAB + "global " + node[1][1] + "\n"
         
         if node[0] == "node_let":
             check(TAB)
@@ -1134,34 +1146,47 @@ def run(Nodes : list, TAB = '', label = '', path = '') -> None:
     Built-in library for Cantonese
 """
 def cantonese_lib_import(name : str) -> None:
-    if name == "random":
+    if name == "random" or name == "随机数":
         cantonese_random_init()
-    elif name == "datetime":
+        return "random"
+    elif name == "datetime" or name == "日期":
         cantonese_datetime_init()
-    elif name == "math":
+        return "datetime"
+    elif name == "math" or name == "数学":
         cantonese_math_init()
-    elif name == "smtplib":
+        return "math"
+    elif name == "smtplib" or name == "邮箱":
         cantonese_smtplib_init()
-    elif name == "xml":
+        return "smtplib"
+    elif name == "xml" or name == "xml解析":
         cantonese_xml_init()
-    elif name == "csv":
+        return "xml"
+    elif name == "csv" or name == "csv解析":
         cantonese_csv_init()
-    elif name == "os":
-        pass
+        return "csv"
+    elif name == "os" or name == "系统":
+        return "os"
     elif name == "re":
         cantonese_re_init()
-    elif name == "urllib":
+        return "re"
+    elif name == "urllib" or name == "网页获取":
         cantonese_urllib_init()
-    elif name == "requests":
+        return "urllib"
+    elif name == "requests" or name == "网络请求":
         cantonese_requests_init()
-    elif name == "socket":
+        return "requests"
+    elif name == "socket" or name == "网络连接":
         cantonese_socket_init()
-    elif name == "kivy":
+        return "socket"
+    elif name == "kivy" or name == "手机程式":
         cantonese_kivy_init()
-    elif name == "pygame":
+        return "kivy"
+    elif name == "pygame" or name == "游戏":
         cantonese_pygame_init()
-    elif name == "json":
+        return "pygame"
+    elif name == "json" or name == "json解析":
         cantonese_json_init()
+        return "json"
     else:
         return "Not found"
 
@@ -1586,6 +1611,9 @@ def cantonese_pygame_init() -> None:
         if dir == "下边" or dir == "bottom":
             return obj.bottom
 
+    def time_tick(clock_obj, t):
+        clock_obj.tick(t)
+
     cantonese_func_def("屏幕老作", pygame_setmode)
     cantonese_func_def("图片老作", pygame_imgload)
     cantonese_func_def("玩跑步", pygame_move)
@@ -1594,6 +1622,8 @@ def cantonese_pygame_init() -> None:
     cantonese_func_def("揾位", direction)
     cantonese_func_def("画公仔", pygame.sprite.Sprite.__init__)
     cantonese_func_def("公仔", pygame.sprite.Sprite)
+    cantonese_func_def("计时器", pygame.time.Clock)
+    cantonese_func_def("睇表", time_tick)
     cantonese_func_def("校色", pygame_color)
     cantonese_func_def("摞掣", pygame_key)
 
@@ -1664,6 +1694,7 @@ kw_cmd = "落Order"
 kw_break = "饮茶先啦"
 kw_lst_assign = "拍住上"
 kw_set_assign = "埋堆"
+kw_global_set = "Share下"
 kw_is_3 = "係"
 kw_exit_1 = "辛苦晒啦"
 kw_exit_2 = "同我躝"
@@ -1725,6 +1756,7 @@ keywords = (
     kw_break,
     kw_lst_assign,
     kw_set_assign,
+    kw_global_set,
     kw_is_3,
     kw_exit_1,
     kw_exit_2,
@@ -1786,6 +1818,7 @@ tr_kw_cmd = "落Order"
 tr_kw_break = "飲茶先啦"
 tr_kw_lst_assign = "拍住上"
 tr_kw_set_assign = "埋堆"
+tr_kw_global_set = "Share下"
 tr_kw_is_3 = "係"
 tr_kw_exit_1 = "辛苦曬啦"
 tr_kw_exit_2 = "同我躝"
@@ -1847,6 +1880,7 @@ traditional_keywords = (
     tr_kw_break,
     tr_kw_lst_assign,
     tr_kw_set_assign,
+    tr_kw_global_set,
     tr_kw_is_3,
     tr_kw_exit_1,
     tr_kw_exit_2,
@@ -1885,8 +1919,8 @@ def cantonese_run(code : str, is_to_py : bool, file : str, use_tradition : bool)
     if dump_ast:
         print(cantonese_parser.Node)
     if to_js:
-        import Compile
-        js, fh = Compile.Compile(cantonese_parser.Node, "js", file).ret()
+        import src.Compile
+        js, fh = src.Compile.Compile(cantonese_parser.Node, "js", file).ret()
         f = open(fh, 'w', encoding = 'utf-8')
         f.write(js)
         exit(1)
@@ -2109,6 +2143,8 @@ def cantonese_run_with_vm(code : str, file : bool, use_tradition : bool) -> None
     cantonese_parser.parse()
     if dump_ast:
         print(cantonese_parser.Node)
+    if dump_lex:
+        print(tokens)
     gen_op_code = []
     stmt = make_stmt(cantonese_parser.Node, [])
     run_with_vm(stmt, gen_op_code, True, path = file)
@@ -2120,7 +2156,7 @@ def cantonese_run_with_vm(code : str, file : bool, use_tradition : bool) -> None
     cs = CanState(code)
     cs._run()
     
-def run_with_vm(stmts : list, gen_op_code, end, path = '') -> None:
+def run_with_vm(stmts : list, gen_op_code, end, path = '', state = []) -> None:
     
     global ins_idx
 
@@ -2211,7 +2247,7 @@ def run_with_vm(stmts : list, gen_op_code, end, path = '') -> None:
         if stmt.type == "BreakStmt":
             ins_idx += 1
             # TODO: implement the break stmt
-            gen_op_code.append(Instruction(ins_idx, "OP_BREAK_LOOP", None))
+            gen_op_code.append(Instruction(ins_idx, "OP_JMP_FORWARD", 1))
 
         if stmt.type == "RaiseStmt":
             ins_idx += 1
@@ -2522,7 +2558,7 @@ class WebLexer(lexer):
 
 def cantonese_web_run(code : str, file_name : str, open_serv = True) -> None:
     global TO_HTML
-    keywords = ("老作一下", "要点画", "搞掂")
+    keywords = ("老作一下", "要点画", "搞掂", "执嘢")
     lex = WebLexer(code, keywords)
     tokens = []
     while True:
@@ -2821,6 +2857,10 @@ def main():
     global to_js
     global debug
 
+    if args.v:
+        print("0.0.7")
+        exit(1)
+
     if not args.file:
         sys.exit(开始交互())
 
@@ -2859,11 +2899,9 @@ def main():
                 to_js = True
             if args.to_asm:
                 Cantonese_asm_run(code, args.file)
-            if args.v:
-                print("0.0.7")
             cantonese_run(code, is_to_py, args.file, use_tradition)
     except FileNotFoundError:
-        print("揾唔到你嘅文件 :(")
+        print("濑嘢!: 揾唔到你嘅文件 :(")
 
 if __name__ == '__main__':
     main()

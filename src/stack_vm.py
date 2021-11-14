@@ -111,6 +111,9 @@ UNARY_OPERATORS = {
     'INVERT':   Arithmetic.invert,  # ~ a
 }
 
+class RUNTIME_TYPE():
+    BREAK = 0
+
 class CanBlock(object):
     def __init__(self, _type, handler, level) -> None:
         self.type = _type
