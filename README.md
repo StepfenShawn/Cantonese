@@ -1,65 +1,65 @@
 ![logo](img/logo.jpg)  
 ### Read this in other languages: [English](README-en.md)  
-# 粤语编程语言
-如果你不会粤语或编程，请看[5分钟边学编程边学粤语](doc/cantonese.md)  
-# 如何安装?
+# 粵語編程語言
+如果你唔識粵語或者編程，請睇[5分钟边学编程边学粤语](doc/cantonese.md)  
+# 點樣安裝?
 ```
 pip install Cantonese
 ```
-# 目录
+# 目錄
 <a href="#0">引言</a>  
-<a href="#1">咋咋淋入门</a>  
+<a href="#1">咋咋淋臨入門</a>  
 &emsp;&emsp;<a href="#2">Hello World</a>  
-&emsp;&emsp;<a href="#3">赋值语句 </a>  
-&emsp;&emsp;<a href="#4">睇下变量嘅类型</a>  
-&emsp;&emsp;<a href="#5">循环</a>  
-&emsp;&emsp;<a href="#6">条件语句</a>  
-&emsp;&emsp;<a href="#7">函数</a>  
-&emsp;&emsp;<a href="#8">抛出异常</a>  
-&emsp;&emsp;<a href="#9">断言语句</a>  
-&emsp;&emsp;<a href="#10">错误捕捉语句</a>  
-&emsp;&emsp;<a href="#11">调用Python库</a>  
-&emsp;&emsp;<a href="#12">面向对象编程</a>  
-&emsp;&emsp;<a href="#13">栈嘅使用</a>  
+&emsp;&emsp;<a href="#3">賦值語句 </a>  
+&emsp;&emsp;<a href="#4">睇下變量嘅類型</a>  
+&emsp;&emsp;<a href="#5">循環</a>  
+&emsp;&emsp;<a href="#6">條件語句</a>  
+&emsp;&emsp;<a href="#7">函數</a>  
+&emsp;&emsp;<a href="#8">掟出異常</a>  
+&emsp;&emsp;<a href="#9">斷言語句</a>  
+&emsp;&emsp;<a href="#10">錯誤捕捉語句</a>  
+&emsp;&emsp;<a href="#11">調用 Python 庫</a>  
+&emsp;&emsp;<a href="#12">面向對象編程</a>  
+&emsp;&emsp;<a href="#13">棧嘅使用</a>  
 <a href="#14">更多例子</a>  
-&emsp;&emsp;<a href="#15">睇睇时间</a>  
-&emsp;&emsp;<a href="#16">暂停</a>  
-&emsp;&emsp;<a href="#17">嚟个随机数</a>  
-&emsp;&emsp;<a href="#18">计算相关系数</a>  
-&emsp;&emsp;<a href="#19">仲可以机器学习?</a>  
-&emsp;&emsp;<a href="#20">海龟画图</a>  
-&emsp;&emsp;<a href="#21">迷宫游戏仔</a>  
-&emsp;&emsp;<a href="#22">各种排序同埋查找算法</a>  
-&emsp;&emsp;<a href="#23">写个网页来睇下?</a>   
-&emsp;&emsp;<a href="#24">用粤语开发一个App</a>   
-<a href="#25">点样运行?</a>  
+&emsp;&emsp;<a href="#15">睇下時間</a>  
+&emsp;&emsp;<a href="#16">暫停</a>  
+&emsp;&emsp;<a href="#17">嚟個隨機數</a>  
+&emsp;&emsp;<a href="#18">計相關系數</a>  
+&emsp;&emsp;<a href="#19">仲可以機械學習?</a>  
+&emsp;&emsp;<a href="#20">海龜畫圖</a>  
+&emsp;&emsp;<a href="#21">迷宮遊戲仔</a>  
+&emsp;&emsp;<a href="#22">各種排序同查找算法</a>  
+&emsp;&emsp;<a href="#23">寫個網頁嚟睇下？</a>   
+&emsp;&emsp;<a href="#24">用粵語開發一隻 App</a>   
+<a href="#25">點樣運行?</a>  
 <a href="#26">TODOs</a>  
 # <a name="0">引言</a>
-粤语编程语言系咩? 佢系一门用粤语嚟同计算机沟通嘅编程语言。  
-喺呢个语言度，计算机可以读明你写嘅粤语。所以话，你可以用粤语嚟操作(虐待)计算机。
+粵語編程語言係乜嘢? 佢係一門用粵語嚟同計算機溝通嘅編程語言。  
+喺呢隻语言度，計算機可以讀明你寫嘅粵語。所以話，你可以用粵語嚟操作(虐待)計算機。
 
-# <a name="1">咋咋淋入门</a>
+# <a name="1">咋咋臨入門</a>
 ### <a name="2">Hello World</a>
-用粤语写嘅第一个程序Hello World:  
+用粵語寫嘅第一個程序 Hello World：  
 ```
-畀我睇下 " Hello World! " 点样先?
+畀我睇下 "Hello World!" 點樣先？
 ```
-### <a name="3">赋值语句 </a>
+### <a name="3">賦值語句</a>
 ```
 讲嘢 |A| 系 1
 讲嘢 |B| 系 2
 ```
-### <a name="4">睇下变量嘅类型</a>
+### <a name="4">睇下變量嘅類型</a>
 ```
 讲嘢 |A| 系 1
 起底: |A|
 ```
-运行结果:  
+運行結果：  
 ```
 <class 'int'>
 ```
-### <a name="5">循环</a>
-打印从1到100:  
+### <a name="5">循環</a>
+打印從 1 到 100：  
 ```
 讲嘢: |start| 系 0
 讲嘢: |结束| 系 唔啱
@@ -72,13 +72,13 @@ pip install Cantonese
 玩到 |结束| 为止
 收工
 ```
-当然用`For`循环都得:  
+當然用 `For` 循環都得：  
 ```
 |A| 从 1 行到 100
     畀我睇下 |A| 点样先?
 行晒
 ```
-### <a name="6">条件语句</a>
+### <a name="6">條件語句</a>
 ```
 讲嘢: |A| 系 2
 如果 |A 系 2| 嘅话 -> {
@@ -89,7 +89,7 @@ pip install Cantonese
 }
 ```
 ### <a name="7">函数</a>
-用 Cantonese 实现嘅阶乘:  
+用 Cantonese 實現嘅階乘：  
 ```
 $factorial |项数| 要做咩:
     如果 |项数 系 0| 嘅话 -> {
@@ -100,7 +100,7 @@ $factorial |项数| 要做咩:
     }
 搞掂
 ```  
-返回最大值:  
+返回最大值：  
 ```
 $get_max |数字1, 数字2| 要做咩:
     如果 |数字1 比唔上 数字2| 嘅话 -> {
@@ -111,27 +111,27 @@ $get_max |数字1, 数字2| 要做咩:
     }
 搞掂
 ```
-调用函数:  
+調用函數：  
 ```
 用下 |get_max(23, 17)|
 ```
-### <a name="8">抛出异常</a>
+### <a name="8">掟出異常</a>
 ```
 掟个 |ImportError| 来睇下?
 ```
-运行结果:
+運行結果：
 ```
 濑嘢: ImportError()!
 ```
-### <a name="9">断言语句</a>
+### <a name="9">斷言語句</a>
 ```
 谂下: |1 + 1 == 3| ?
 ```  
-运行结果:  
+運行結果：  
 ```
 濑嘢: AssertionError()!
 ```
-### <a name="10">错误捕捉语句</a>
+### <a name="10">錯誤捕捉語句</a>
 try-except-finally:  
 ```
 执嘢 -> {
@@ -147,13 +147,13 @@ try-except-finally:
     畀我睇下 |A, B| 点样先？
 }
 ``` 
-### <a name="11">调用 Python 库</a>
+### <a name="11">調用 Python 庫</a>
 ```
 使下 os
 使下 math
 ```
-### <a name="12">面向对象编程</a>
-声明对象`duck`, 继承至`object`, 分别有两个方法`游水`同埋`睡觉`, 仲有一个属性`性别`:  
+### <a name="12">面向對象編程</a>
+聲明對象 `duck`，繼承至 `object`，分別有兩個方法 `游水` 同埋 `睡觉` ，仲有一個屬性 `性别`：  
 ```
 咩系 |duck|?
     佢个老豆叫 |object|
@@ -166,17 +166,17 @@ try-except-finally:
     }
 明白未啊?
 ```  
-调用类中嘅方法:  
+調用類中嘅方法：  
 ```
 |duck()| -> |游水|: ||
 |duck()| -> |睡觉|: ||
 ```
-运行结果:  
+運行結果：  
 ```
 Duck is swimming
 Duck is sleeping
 ```
-### <a name="13">栈嘅使用</a>
+### <a name="13">棧嘅使用</a>
 ```
 有条仆街叫 |Deo哥|
 顶你 -> |Deo哥|: 1
@@ -184,48 +184,48 @@ Duck is sleeping
 顶你 -> |Deo哥|: 3
 丢你 -> |Deo哥|
 ```
-运行结果:  
+運行結果：  
 ```
 Stack: [1,2]
 ```
 # <a name="14">更多例子</a>
-### <a name="15">显示当前时间</a>
+### <a name="15">顯示當前時間</a>
 ```
 使下 datetime
 畀我睇下 |宜家几点()| 点样先？
 ```
-运行结果:  
+運行結果：
 ```
 2021-01-17 09:16:20.767191
 ```
-### <a name="16">暂停</a>
+### <a name="16">暫停</a>
 ```
 瞓阵先 /* 暂停2s */
 瞓 5s /* 暂停5s */
 ```  
-### <a name="17">嚟个随机数</a>
+### <a name="17">嚟個隨機數</a>
 ```
 使下 random
 讲嘢: |A| 就 |求其啦()|
 ```
-运行结果:  
+運行結果：  
 ```
 0.15008236307867207
 ```  
-### <a name="18">计算相关系数</a>
-声明两个list, 计算相关系数:  
+### <a name="18">計相關系數</a>
+聲明兩個 list，計相關系數：  
 ```
 使下 math
 |2.165, 1.688, 1.651, 2.229| 拍住上 -> |A|
 |2.060, 1.822, 1.834, 2.799| 拍住上 -> |B|
 畀我睇下 |A同B有几衬| 点样先？
 ```
-运行结果:  
+運行結果：
 ```
 0.8066499427138474
 ```
 ### <a name="19">仲可以机器学习?</a>
-实现KNN算法:
+實現 KNN 算法：
 ```
 使下 math
 |[5, 1], [4, 0], [1, 3], [0, 4]| 拍住上 -> |数据|
@@ -233,24 +233,24 @@ Stack: [1,2]
 讲嘢: |K| 系 3
 嗌 KNN 过嚟估下 -> |[3, 0]|
 ```
-运行结果:
+運行結果：
 ```
 动作片
 ```
-线性回归:
+線性回歸：
 ```
 使下 math
 |300.0 , 400.0 , 400.0 , 550.0 , 720.0 , 850.0 , 900.0 , 950.0| 拍住上 -> |X|
 |300.0 , 350.0 , 490.0 , 500.0 , 600.0 , 610.0 , 700.0 , 660.0| 拍住上 -> |Y|
 嗌 L_REG 过嚟估下 -> |900.0|
 ```
-运行结果:
+運行結果：
 ```
 Linear function is:
 y=0.530960991635149x+189.75347155122432
 667.6183640228585
 ```
-### <a name="20">海龟绘图</a>
+### <a name="20">海龜繪圖</a>
 ```
 老作一下 -> {
     首先: |画个圈(100)|
@@ -258,40 +258,40 @@ y=0.530960991635149x+189.75347155122432
     最尾: |听我支笛()|
 }
 ```  
-运行结果:    
+運行結果：    
 ![turtle_result](img/turtle_etc.jpg)  
 
-### <a name="21">迷宫游戏仔</a>
-[代码](examples/games/game.cantonese)  
-运行结果:  
+### <a name="21">迷宮遊戲仔</a>
+[代碼](examples/games/game.cantonese)  
+運行結果：  
 ![game_result](img/game_result.jpg)
 
-### <a name="22">各种排序同埋查找算法</a>
+### <a name="22">各種排序同查找算法</a>
 * [二分查找](examples/algorithms/binary_search.cantonese)
 * [线性查找](examples/algorithms/linear_search.cantonese)
 * [冒泡排序](examples/algorithms/bubble_sort.cantonese)
 * [插入排序](examples/algorithms/insert_sort.cantonese)
 
-### <a name="23">写个网页睇下</a>
-一个简单嘅网页:
+### <a name="23">寫個網頁睇下</a>
+一個簡單嘅網頁：
 ```
 老作一下 {
     打标题 => [ "我嘅第一个网页" ]
     拎笔 => [ "Hello World" ]
 }
 ```
-运行后, 打开`127.0.0.1:80`可查看运行结果:  
+運行後，打開 `127.0.0.1:80` 就可以睇到運行結果：  
 ```
 python src/cantonese.py ../examples/web/hello_web.cantonese -to_web 
 ```
 ![web_result](img/web_result.jpg)
 
-### <a href="#24">用粤语开发一个App</a>
-首先安装`kivy`:
+### <a href="#24">用粵語開發一隻 App</a>
+首先安裝 `kivy`：
 ```
 pip install kivy
 ```
-第一个App`HelloWord`:  
+第一隻 App `HelloWord`：  
 ```
 使下 kivy
 咩系 HelloApp?
@@ -311,33 +311,33 @@ pip install kivy
 [喺呢度](examples/)睇下更多例子.  
 
 # <a name="25">点样运行?</a>
-Cantonese 可以用多种方式运行, 用自己嘅虚拟机, 或者翻译成python同html都得!
-使用虚拟机执行(仅支持部分语句):   
+Cantonese 可以用多種方式運行，用自己嘅虛擬機，或者翻譯成 Python 同 HTML 都得！
+使用虛擬機執行（僅支援部分語句）：   
 ```shell
 Cantonese [-文件名] -stack_vm
 ```
-查看生产的指令:  
+查睇生產嘅指令：
 ```
 Cantonese [-文件名] -stack_vm -debug
 ```
-用Python虚拟机运行(环境净系支持 Python3，因为噉先符合广东人先进嘅思想!):   
+用 Python 虛擬機運行（環境净係支援 Python3，因为噉先至符合廣東人先進嘅思想！）：
 ```shell
 Cantonese [-文件名]
 ```
-将 Cantonese 转化成 Python:
+將 Cantonese 轉化成 Python：
 ```shell
 Cantonese [文件名] -to_py
 ```
-例如:  
+例如：  
 ```
 Cantonese examples/basic/helloworld.cantonese -to_py
 ```
-运行嘅结果系:  
+運行嘅結果係：  
 ```
 print(" Hello World! ")
 exit()
 ```
-生成`HTML`:  
+生成 HTML：  
 ```shell
 Cantonese examples/web/web_hello.cantonese -to_web -compile
 ```
@@ -350,15 +350,15 @@ Cantonese examples/web/web_hello.cantonese -to_web -compile
 <h1>Hello World</h1>
 </html>
 ```
-用繁体字运行:
+用繁体字运行：
 ```
 Cantonese [文件名] -use_tr
 ```  
-Vscode插件:https://github.com/Cantonese-community/vscode-cantonese  
+Vscode插件：https://github.com/Cantonese-community/vscode-cantonese  
 
 # <a name="26">TODOs</a>
-本项目代码写得很陋(烂)，欢迎各个粤语同埋编程爱好者一齐讨论同贡献！为粤语文化遗产嘅保护贡献出自己嘅一份力量！
-今后要做咩:  
-* 完善语法错误检查
-* 加多啲语句
-* 完善自己嘅虚拟机
+本項目代碼寫得好屎，歡迎各個粵語同埋編程愛好者一齊討論同貢獻！為粵語文化遺產嘅保護貢獻出自己嘅一份力量！
+今後要做咩：
+* 完善語法錯誤檢查
+* 加多啲語句
+* 完善自己嘅虛擬機
