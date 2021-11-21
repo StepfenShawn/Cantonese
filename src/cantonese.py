@@ -552,15 +552,34 @@ class Parser(object):
                 self.skip(1)
                 node_global_new(self.Node, table)
 
-            elif self.match(kw_class_assign) and (self.get(1)[1] == kw_is or self.get(1)[1] == kw_is_2 or \
-                                            self.get(1)[1] == kw_is_3):
-                node_let_new(self.Node, self.get_value(self.get(0)), self.get_value(self.get(2)))
-                self.skip(3)
+            elif self.match(kw_class_assign): 
+                if (self.get(1)[1] == kw_is or self.get(1)[1] == kw_is_2 or self.get(1)[1] == kw_is_3):
+                    node_let_new(self.Node, self.get_value(self.get(0)), self.get_value(self.get(2)))
+                    self.skip(3) 
 
             elif self.match(kw_assign):
-                self.token_except(tk = [kw_is, kw_is_2, kw_is_3], i = 1,  err = " : 濑嘢! 揾唔到 '係' " )
-                node_let_new(self.Node, self.get_value(self.get(0)), self.get_value(self.get(2)))
-                self.skip(3)
+                kw = self.get(0)[1]
+                if kw != kw_do:
+                    self.token_except(tk = [kw_is, kw_is_2, kw_is_3], i = 1,  err = " : 濑嘢! 揾唔到 '係' " )
+                    node_let_new(self.Node, self.get_value(self.get(0)), self.get_value(self.get(2)))
+                    self.skip(3)
+
+                if kw == kw_do:  
+                    self.token_except(tk = [kw_do], err = " : 濑嘢! 揾唔到 '->' ", skip = True)
+                    self.token_except(tk = [kw_begin], err = " : 濑嘢! 揾唔到 '{' ", skip = True)
+                    assign_list = []
+                    while self.tokens[self.pos][1][1] != kw_end:
+                        assign_list.append(self.tokens[self.pos][1])
+                        self.pos += 1
+                    if len(assign_list) % 3 != 0:
+                        raise Exception(" 濑嘢! 唔知你想点? 请检查你嘅赋值语句!!!")
+                    for i in range(0, len(assign_list)):
+                        k = assign_list[i][1]
+                        if k == kw_is or k == kw_is_2 or k == kw_is_3:
+                            node_let_new(self.Node, self.get_value(assign_list[i - 1]),
+                                    self.get_value(assign_list[i + 1]))
+                    self.skip(1)
+
             
             elif self.match(kw_if):
                 cond = self.get_value(self.get(0))
@@ -1283,6 +1302,7 @@ def cantonese_random_init() -> None:
     import random
     cantonese_func_def("求其啦", random.random)
     cantonese_func_def("求其int下啦", random.randint)
+    cantonese_func_def("求其嚟个", random.randrange)
 
 def cantonese_datetime_init() -> None:
     import datetime
@@ -1599,7 +1619,6 @@ def cantonese_pygame_init() -> None:
             屏幕.blit(obj, obj_where)
 
         pygame.time.delay(2)
-        pygame.display.flip()
 
     def direction(obj, dir):
         if dir == "左边" or dir == "left":
@@ -1614,8 +1633,16 @@ def cantonese_pygame_init() -> None:
     def time_tick(clock_obj, t):
         clock_obj.tick(t)
 
+    def pygame_rectload(屏幕, 颜色, X, Y, H = 20, W = 20):
+        pygame.draw.rect(屏幕, 颜色, pygame.Rect(X, Y, H, W))
+
+    def screen_fill(screen, color):
+        screen.fill(color)
+
+
     cantonese_func_def("屏幕老作", pygame_setmode)
     cantonese_func_def("图片老作", pygame_imgload)
+    cantonese_func_def("矩形老作", pygame_rectload)
     cantonese_func_def("玩跑步", pygame_move)
     cantonese_func_def("in边", object_rect)
     cantonese_func_def("上画", draw)
@@ -1625,7 +1652,9 @@ def cantonese_pygame_init() -> None:
     cantonese_func_def("计时器", pygame.time.Clock)
     cantonese_func_def("睇表", time_tick)
     cantonese_func_def("校色", pygame_color)
+    cantonese_func_def("屏幕校色", screen_fill)
     cantonese_func_def("摞掣", pygame_key)
+    cantonese_func_def("刷新", pygame.display.flip)
 
 def cantonese_lib_run(lib_name : str, path : str, use_tradition : bool) -> None:
     pa = os.path.dirname(path) # Return the last file Path
@@ -1975,7 +2004,7 @@ class AST(object):
         elif self.current()[0] == 'node_finally':
             except_part = self.current()
             self.next(1)
-        return except_part. finally_part
+        return except_part.finally_part
 
 
     def get_node(self) -> list:
