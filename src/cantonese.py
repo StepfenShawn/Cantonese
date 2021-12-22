@@ -658,7 +658,7 @@ class Parser(object):
                         elif_should_end += 1
                         stmt_elif.append(self.tokens[self.pos])
                         self.pos += 1
-                     elif self.get(0)[1] == kw_assign:
+                    elif self.get(0)[1] == kw_assign:
                         stmt_if.append(self.tokens[self.pos])
                         self.pos += 1
                         if self.tokens[self.pos][1][1] == kw_do:
@@ -692,7 +692,7 @@ class Parser(object):
                         else_should_end += 1
                         stmt_else.append(self.tokens[self.pos])
                         self.pos += 1
-                     elif self.get(0)[1] == kw_assign:
+                    elif self.get(0)[1] == kw_assign:
                         stmt_if.append(self.tokens[self.pos])
                         self.pos += 1
                         if self.tokens[self.pos][1][1] == kw_do:
@@ -957,6 +957,11 @@ class Parser(object):
                         method_should_end += 1
                         method_stmt.append(self.tokens[self.pos])    
                         self.pos += 1
+                    elif self.get(0)[1] == kw_assign:
+                        method_stmt.append(self.tokens[self.pos])
+                        self.pos += 1
+                        if self.tokens[self.pos][1][1] == kw_do:
+                            method_should_end += 1
                     else:
                         method_stmt.append(self.tokens[self.pos])
                         self.pos += 1
@@ -1611,21 +1616,43 @@ def cantonese_pygame_init() -> None:
     from pygame.constants import KEYDOWN
 
     pygame.init()
+    pygame.mixer.init()
 
     def pygame_setmode(size, caption = ""):
         if caption != "":
             pygame.display.set_caption(caption)
-            return pygame.display.set_mode(size)
-        return pygame.display.set_mode(size)
+            return pygame.display.set_mode(size, 0, 32)
+        return pygame.display.set_mode(size, 0, 32)
 
-    def pygame_imgload(path):
-        return pygame.image.load(path)
+    def pygame_imgload(path, color = ""):
+        img = pygame.image.load(path).convert_alpha()
+        if color != "":
+            img.set_colorkey((color),pygame.RLEACCEL)
+        return img
+
+    def pygame_musicload(path, loop = True, start = 0.0):
+        pygame.mixer.music.load(path)
+        if loop:
+            pygame.mixer.music.play(-1, start)
+        else:
+            pygame.mixer.music.play(1, start)
+
+    def pygame_soundload(path):
+        return pygame.mixer.Sound(path)
+    
+    def pygame_sound_play(sound):
+        sound.play()
+
+    def pygame_sound_stop(sound):
+        sound.stop()
 
     def pygame_move(object, speed):
         return object.move(speed)
 
-    def object_rect(object):
-        return object.get_rect()
+    def object_rect(object, center = ""):
+        if center == "":
+            return object.get_rect()
+        return object.get_rect(center = center)
 
     def pygame_color(color):
         return pygame.Color(color)
@@ -1633,7 +1660,7 @@ def cantonese_pygame_init() -> None:
     def pygame_key(e):
         return e.key
 
-    def draw(屏幕, obj = "", obj_where = "", event = "", 颜色 = "") -> None:
+    def draw(屏幕, obj = "", obj_where = "", event = "", 颜色 = "", 位置 = "") -> None:
         if event == "":
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: 
@@ -1655,6 +1682,17 @@ def cantonese_pygame_init() -> None:
 
         pygame.time.delay(2)
 
+    def exec_event(event):
+        event_map = {
+                "KEYDOWN" : KEYDOWN
+            }
+        for events in pygame.event.get():
+            for my_ev in event.stack:
+                if events.type == event_map[my_ev[0]]:
+                    my_ev[1](events)
+                if events.type == pygame.QUIT: 
+                    sys.exit()
+
     def direction(obj, dir):
         if dir == "左边" or dir == "left":
             return obj.left
@@ -1674,19 +1712,40 @@ def cantonese_pygame_init() -> None:
     def screen_fill(screen, color):
         screen.fill(color)
 
+    def img_show(screen, img, where):
+        screen.blit(img, where)
+
     def sprite_add(group, sprite):
         group.add(sprite)
+
+    def sprite_update(group, ticks):
+        group.update(ticks)
+
+    def sprite_draw(group, screen):
+        group.draw(screen)
+
+    def sprite_kill(sprite):
+        sprite.kill()
 
     cantonese_func_def("屏幕老作", pygame_setmode)
     cantonese_func_def("图片老作", pygame_imgload)
     cantonese_func_def("矩形老作", pygame_rectload)
+    cantonese_func_def("嚟个矩形", pygame.Rect)
+    cantonese_func_def("嚟首music", pygame_musicload)
+    cantonese_func_def("嚟首sound", pygame_soundload)
+    cantonese_func_def("播放", pygame_sound_play)
+    cantonese_func_def("暂停", pygame_sound_stop)
+    cantonese_func_def("画图片", img_show)
     cantonese_func_def("玩跑步", pygame_move)
     cantonese_func_def("in边", object_rect)
     cantonese_func_def("上画", draw)
     cantonese_func_def("揾位", direction)
-    cantonese_func_def("画公仔", pygame.sprite.Sprite.__init__)
+    cantonese_func_def("画公仔", sprite_draw)
+    cantonese_func_def("刷新公仔", sprite_update)
+    cantonese_func_def("摞公仔", sprite_kill)
     cantonese_func_def("公仔", pygame.sprite.Sprite)
     cantonese_func_def("公仔集", pygame.sprite.Group)
+    cantonese_func_def("睇下撞未", pygame.sprite.collide_rect)
     cantonese_func_def("嚟个公仔", sprite_add)
     cantonese_func_def("计时器", pygame.time.Clock)
     cantonese_func_def("睇表", time_tick)
@@ -1694,6 +1753,7 @@ def cantonese_pygame_init() -> None:
     cantonese_func_def("屏幕校色", screen_fill)
     cantonese_func_def("摞掣", pygame_key)
     cantonese_func_def("刷新", pygame.display.flip)
+    cantonese_func_def("事件驱动", exec_event)
 
 def cantonese_lib_run(lib_name : str, path : str, use_tradition : bool) -> None:
     pa = os.path.dirname(path) # Return the last file Path
