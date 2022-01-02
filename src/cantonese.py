@@ -25,6 +25,7 @@ class lexer(object):
         self.re_id = r"^[_\d\w]+|^[\u4e00-\u9fa5]+"
         self.re_str = r"(?s)(^'(\\\\|\\'|\\\n|\\z\s*|[^'\n])*')|(^\"(\\\\|\\\"|\\\n|\\z\s*|[^\"\n])*\")"
         self.re_expr = r"[|](.*?)[|]"
+        self.re_python_expr = r"[~][\S\s]*[#]"
         self.re_callfunc = r"[&](.*?)[)]"
         self.op = r'(?P<op>(相加){1}|(加){1}|(减){1}|(乘){1}|(整除){1}|(除){1}|(余){1}|(异或){1}|(取反){1}|(左移){1}|(右移){1}'\
         r'(与){1}(或者){1}|(或){1}|(系){1})|(同埋){1}|(自己嘅){1}|(比唔上){1}|(喺){1}'
@@ -101,6 +102,9 @@ class lexer(object):
     def scan_expr(self):
         return self.scan(self.re_expr)
 
+    def scan_python_expr(self):
+        return self.scan(self.re_python_expr)
+
     def scan_number(self):
         return self.scan(self.re_number)
 
@@ -138,6 +142,10 @@ class lexer(object):
            token = self.trans(token, self.make_rep(self.bif_get_code, self.bif_gen_code))
            token = self.trans(token, self.make_rep(self.op_get_code, self.op_gen_code))
            return [self.line, ['expr', token]]
+
+        if c == '~':
+            token = self.scan_python_expr()
+            return [self.line, ['py_expr', token]]
 
         if c == '-':
             if self.check('->'):
@@ -347,6 +355,9 @@ def node_return_new(Node : list, v) -> None:
     """
     Node.append(["node_return", v])
 
+def node_py_expr_new(Node : list, expr) -> None:
+    Node.append(["node_py_expr", expr])
+
 def node_try_new(Node : list, try_part) -> None:
     """
         Node_try
@@ -450,6 +461,9 @@ def node_stack_new(Node : list, name) -> None:
 def node_global_new(Node : list, global_table) -> None:
     Node.append(["node_global", global_table])
 
+def node_del_new(Node : list, var) -> None:
+    Node.append(["node_del", var])
+
 """
     Parser for cantonese Token List
 """
@@ -551,6 +565,11 @@ class Parser(object):
                 table = self.get_value(self.get(0))
                 self.skip(1)
                 node_global_new(self.Node, table)
+
+            elif self.match(kw_del):
+                var = self.get_value(self.get(0))
+                self.skip(1)
+                node_del_new(self.Node, var)
 
             elif self.match(kw_class_assign):
                 kw = self.get(0)[1]
@@ -659,7 +678,7 @@ class Parser(object):
                         stmt_elif.append(self.tokens[self.pos])
                         self.pos += 1
                     elif self.get(0)[1] == kw_assign:
-                        stmt_if.append(self.tokens[self.pos])
+                        stmt_elif.append(self.tokens[self.pos])
                         self.pos += 1
                         if self.tokens[self.pos][1][1] == kw_do:
                             elif_should_end += 1
@@ -828,6 +847,10 @@ class Parser(object):
 
             elif self.match(kw_return):
                 node_return_new(self.Node, self.get_value(self.get(0)))
+                self.skip(1)
+
+            elif self.match(kw_get_value):
+                node_py_expr_new(self.Node, self.get_value(self.get(0)))
                 self.skip(1)
             
             elif self.match(kw_try):
@@ -1041,6 +1064,10 @@ def run(Nodes : list, TAB = '', label = '', path = '') -> None:
         if node[0] == "node_global":
             check(TAB)
             TO_PY_CODE += TAB + "global " + node[1][1] + "\n"
+
+        if node[0] == "node_del":
+            check(TAB)
+            TO_PY_CODE += TAB + "del " + node[1][1] + "\n"
         
         if node[0] == "node_let":
             check(TAB)
@@ -1113,6 +1140,10 @@ def run(Nodes : list, TAB = '', label = '', path = '') -> None:
         if node[0] == "node_return":
             check(TAB)
             TO_PY_CODE += TAB + "return " + node[1][1] + "\n"
+
+        if node[0] == "node_py_expr":
+            check(TAB)
+            TO_PY_CODE += TAB + node[1][1][1 : -1] + "\n"
         
         if node[0] == "node_list":
             check(TAB)
@@ -1301,11 +1332,24 @@ def cantonese_lib_init() -> None:
     def list_get(lst : list, index : int):
         return lst[index]
 
+    def lst_range(lst : list, range_lst : list, loss, types = 1, func = None, func_ret = None) -> bool:
+        if types == 2:
+            for i in lst:
+                if i - loss <= range_lst and i + loss >= range_lst:
+                    return True
+
+        else:
+            for i in lst:
+                if i[0] - loss <= range_lst[0] and i[1] + loss >= range_lst[1]:
+                    return True  
+
+
     cantonese_func_def("最尾", get_list_end)
     cantonese_func_def("身位", where)
     cantonese_func_def("挜位", lst_insert)
     cantonese_func_def("排头位", get_list_beg)
     cantonese_func_def("摞位", list_get)
+    cantonese_func_def("check范围", lst_range)
 
     cantonese_func_def("唔啱", False)
     cantonese_func_def("啱", True)
@@ -1622,6 +1666,7 @@ def cantonese_pygame_init() -> None:
 
     pygame.init()
     pygame.mixer.init()
+    pygame.font.init()
 
     def pygame_setmode(size, caption = ""):
         if caption != "":
@@ -1714,6 +1759,27 @@ def cantonese_pygame_init() -> None:
     def pygame_rectload(屏幕, 颜色, X, Y, H = 20, W = 20):
         pygame.draw.rect(屏幕, 颜色, pygame.Rect(X, Y, H, W))
 
+    def pygame_gif_show(屏幕, 序列, pos = (0, 0), delay = 100):
+        for i in 序列:
+            屏幕.blit(i, pos)
+            pygame.time.delay(delay)
+            pygame.display.update()
+
+    def text_objects(text, font, color):
+        textSurface = font.render(text, True, color)
+        return textSurface, textSurface.get_rect()
+
+    def pygame_text_show(screen, text, display_x, display_y,
+                         style = 'freesansbold.ttf', _delay = 100, size = 115,
+                         color = (255,255,255), update = True):
+        largeText = pygame.font.Font(style, size)
+        TextSurf, TextRect = text_objects(text, largeText, color)
+        TextRect.center = (display_x, display_y)
+        screen.blit(TextSurf, TextRect)
+        pygame.time.delay(_delay)
+        if update:
+            pygame.display.update()
+
     def screen_fill(screen, color):
         screen.fill(color)
 
@@ -1733,29 +1799,36 @@ def cantonese_pygame_init() -> None:
         sprite.kill()
 
     def sprite_trace(target, tracer, type = "", speed = 3, speed_y = 16, speed_x = 16):
+        """
         x1, y1 = tracer.x, tracer.y
         x2, y2 = target[0], target[1] # TODO use target.x
         dx = x2 - x1
         dy = y1 - y2
         r = math.sqrt(math.pow(dx,2) + math.pow(dy,2))
+        if r == 0:
+            r = 0.1
         sin = dy / r
         cos = dx / r
         x1 += cos * speed
         y1 -= sin * speed
+        """
         if type == "Linear":
-            if random.randint(0, 4) * random.randint(0,4) < 4:
-                x1 += cos * speed_x
-                y1 = tracer.y
-            else:
-                x1 = tracer.x
-                y1 -= sin * speed_y
-        tracer.x, tracer.y = x1, tracer.y
-
+            dx, dy = target[0] - tracer.x, target[1] - tracer.y
+            dist = math.hypot(dx, dy) + 0.1
+            dx, dy = dx / dist, dy / dist  # Normalize.
+            # Move along this normalized vector towards the player at current speed.
+            """
+            tracer.x += dx * speed
+            tracer.y += dy * speed
+            """
+            return (dx * speed, dy * speed)
 
     cantonese_func_def("屏幕老作", pygame_setmode)
     cantonese_func_def("图片老作", pygame_imgload)
+    cantonese_func_def("动图老作", pygame_gif_show)
     cantonese_func_def("矩形老作", pygame_rectload)
     cantonese_func_def("嚟个矩形", pygame.Rect)
+    cantonese_func_def("写隻字", pygame_text_show)
     cantonese_func_def("嚟首music", pygame_musicload)
     cantonese_func_def("嚟首sound", pygame_soundload)
     cantonese_func_def("播放", pygame_sound_play)
@@ -1775,11 +1848,13 @@ def cantonese_pygame_init() -> None:
     cantonese_func_def("跟踪", sprite_trace)
     cantonese_func_def("计时器", pygame.time.Clock)
     cantonese_func_def("睇表", time_tick)
+    cantonese_func_def("延时", pygame.time.delay)
     cantonese_func_def("校色", pygame_color)
     cantonese_func_def("屏幕校色", screen_fill)
     cantonese_func_def("摞掣", pygame_key)
     cantonese_func_def("刷新", pygame.display.flip)
     cantonese_func_def("事件驱动", exec_event)
+    cantonese_func_def("Say拜拜", pygame.quit)
 
 def cantonese_lib_run(lib_name : str, path : str, use_tradition : bool) -> None:
     pa = os.path.dirname(path) # Return the last file Path
@@ -1864,6 +1939,7 @@ kw_class_init = "佢有啲咩"
 kw_self = "自己嘅"
 kw_call_begin = "下"
 kw_get_value = "@" 
+kw_del = "delete下"
 
 keywords = (
     kw_print,
@@ -1925,7 +2001,8 @@ keywords = (
     kw_class_init,
     kw_self,
     kw_call_begin,
-    kw_get_value
+    kw_get_value,
+    kw_del
 )
 
 tr_kw_print = "畀我睇下"
@@ -1987,7 +2064,8 @@ tr_kw_mod_new = "過嚟估下"
 tr_kw_class_init = "佢有啲咩"
 tr_kw_self = "自己嘅"
 tr_kw_call_begin = "下"
-tr_kw_get_value = "@" 
+tr_kw_get_value = "@"
+tr_kw_del = "揼低"
 
 traditional_keywords = (
     tr_kw_print,
@@ -2049,12 +2127,14 @@ traditional_keywords = (
     tr_kw_class_init,
     tr_kw_self,
     tr_kw_call_begin,
-    tr_kw_get_value
+    tr_kw_get_value,
+    tr_kw_del
 )
 
 dump_ast = False
 dump_lex = False
 to_js = False
+mkfile = False
 
 def cantonese_run(code : str, is_to_py : bool, file : str, use_tradition : bool) -> None:
     
@@ -2083,6 +2163,11 @@ def cantonese_run(code : str, is_to_py : bool, file : str, use_tradition : bool)
     cantonese_lib_init()
     if is_to_py:
         print(TO_PY_CODE)
+    
+    if mkfile:
+        f = open(file[: len(file) - 10] + '.py', 'w', encoding = 'utf-8')
+        f.write(TO_PY_CODE)
+    
     if debug:
         import dis
         print(dis.dis(TO_PY_CODE))
@@ -2983,7 +3068,7 @@ class 交互(cmd.Cmd):
 
 
 def 开始交互():
-    交互().cmdloop("早晨！")
+    交互().cmdloop("早晨!")
 
 def main():
     arg_parser = argparse.ArgumentParser()
@@ -3003,6 +3088,7 @@ def main():
     arg_parser.add_argument("-lex", action = "store_true")
     arg_parser.add_argument("-debug", action = "store_true")
     arg_parser.add_argument("-v", action = "store_true")
+    arg_parser.add_argument("-mkfile", action = "store_true")
     args = arg_parser.parse_args()
 
     global use_tradition
@@ -3010,6 +3096,7 @@ def main():
     global dump_lex
     global to_js
     global debug
+    global mkfile
 
     if args.v:
         print("0.0.7")
@@ -3051,6 +3138,8 @@ def main():
                 exit(1)
             if args.to_js:
                 to_js = True
+            if args.mkfile:
+                mkfile = True
             if args.to_asm:
                 Cantonese_asm_run(code, args.file)
             cantonese_run(code, is_to_py, args.file, use_tradition)
