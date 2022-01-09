@@ -1,6 +1,6 @@
 """
     Created at 2021/1/16 16:23
-    Last update at 2021/6/6 9:11
+    Last update at 2022/1/9 11:32
     The interpreter for Cantonese    
 """
 import cmd
@@ -137,6 +137,10 @@ class lexer(object):
             token = self.trans(token, self.make_rep(self.bif_get_code, self.bif_gen_code))
             return [self.line, ['expr', token]]
 
+        if c == '\\':
+            self.next(1)
+            return [self.line, ['CONNECT', "\\"]]
+
         if c == '|':
            token = self.scan_expr()
            token = self.trans(token, self.make_rep(self.bif_get_code, self.bif_gen_code))
@@ -235,6 +239,25 @@ class lexer(object):
                 s = s[2:]
                 continue
 
+"""
+    Connect the expr or string if case "\" 
+"""
+def handle_connect(tokens : list) -> list:
+    j = 0
+    for i in range(len(tokens)):
+        if tokens[j][1] == ['CONNECT', '\\']:
+            if j >= 1 and j < len(tokens) and ((tokens[j + 1][1][0] == "expr" and tokens[j - 1][1][0] == "expr") or \
+                    (tokens[j + 1][1][0] == "string" and tokens[j - 1][1][0] == "string")) :
+                tokens[j + 1][1][1] = tokens[j - 1][1][1][ : -1] + tokens[j + 1][1][1][ 1 : ]
+                tokens.pop(j)
+                tokens.pop(j - 1)
+                j -= 1
+            else:
+                tokens.pop(j)
+        else:
+            j += 1
+    return tokens
+
 def cantonese_token(code : str, keywords : str) -> list:
     lex = lexer(code, keywords)
     tokens = []
@@ -243,7 +266,7 @@ def cantonese_token(code : str, keywords : str) -> list:
         tokens.append(token)
         if token[1] == ['EOF', 'EOF']:
             break
-    return tokens
+    return handle_connect(tokens)
     
 """
     AST node for the Token List
@@ -1822,12 +1845,50 @@ def cantonese_pygame_init() -> None:
             tracer.y += dy * speed
             """
             return (dx * speed, dy * speed)
+    """
+        display_width : width of the screen
+        display_height : height of the screen
+    """
+
+    class Button(object):
+        def __init__(self, text, color, screen,
+                    display_width = 1200, display_height = 600, 
+                     x = None, y = None, size = 58, **kwargs):
+            font = pygame.font.Font('freesansbold.ttf', size)
+            self.surface = text_objects(text, font, color)[0]
+            self.WIDTH = self.surface.get_width()
+            self.HEIGHT = self.surface.get_height()
+            self.screen = screen
+            self.display_width = display_width
+            self.display_height = display_height
+            self.x = x
+            self.y = y
+
+        def display(self):
+            self.screen.blit(self.surface, (self.x, self.y))
+
+        # For Chinese API
+        def 老作(self):
+            self.screen.blit(self.surface, (self.x, self.y))
+
+        def check_click(self, position):
+            x_match = position[0] > self.x and position[0] < self.x + self.WIDTH
+            y_match = position[1] > self.y and position[1] < self.y + self.HEIGHT
+
+            if x_match and y_match:
+                return True
+            else:
+                return False
+        
+        def 点击(self, position):
+            return self.check_click(position)
 
     cantonese_func_def("屏幕老作", pygame_setmode)
     cantonese_func_def("图片老作", pygame_imgload)
     cantonese_func_def("动图老作", pygame_gif_show)
     cantonese_func_def("矩形老作", pygame_rectload)
     cantonese_func_def("嚟个矩形", pygame.Rect)
+    cantonese_func_def("嚟个按钮", Button)
     cantonese_func_def("写隻字", pygame_text_show)
     cantonese_func_def("嚟首music", pygame_musicload)
     cantonese_func_def("嚟首sound", pygame_soundload)
@@ -1852,6 +1913,7 @@ def cantonese_pygame_init() -> None:
     cantonese_func_def("校色", pygame_color)
     cantonese_func_def("屏幕校色", screen_fill)
     cantonese_func_def("摞掣", pygame_key)
+    cantonese_func_def("check下鼠标", pygame.mouse.get_pos)
     cantonese_func_def("刷新", pygame.display.flip)
     cantonese_func_def("事件驱动", exec_event)
     cantonese_func_def("Say拜拜", pygame.quit)
@@ -3099,7 +3161,7 @@ def main():
     global mkfile
 
     if args.v:
-        print("0.0.7")
+        print("0.0.8")
         exit(1)
 
     if not args.file:
