@@ -1,5 +1,7 @@
 ![logo](img/logo.jpg)  
 ### Read this in other languages: [English](README-en.md)  
+[![pypi](https://img.shields.io/pypi/dm/Cantonese)](https://pypi.org/project/Cantonese/)
+[![pypi](https://img.shields.io/pypi/v/Cantonese)](https://pypi.org/project/Cantonese/)   
 # 粵語編程語言
 如果你唔識粵語或者編程，請睇[5分钟边学编程边学粤语](doc/cantonese.md)  
 # 點樣安裝?
@@ -149,8 +151,8 @@ try-except-finally:
 ``` 
 ### <a name="11">調用 Python 庫</a>
 ```
-使下 os
-使下 math
+使下 python-os
+使下 python-math
 ```
 ### <a name="12">面向對象編程</a>
 聲明對象 `duck`，繼承至 `object`，分別有兩個方法 `游水` 同埋 `睡觉` ，仲有一個屬性 `性别`：  
@@ -205,7 +207,7 @@ Stack: [1,2]
 ```  
 ### <a name="17">嚟個隨機數</a>
 ```
-使下 random
+使下 随机数
 讲嘢: |A| 就 |求其啦()|
 ```
 運行結果：  
