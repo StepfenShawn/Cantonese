@@ -735,7 +735,7 @@ class Parser(object):
                         stmt_else.append(self.tokens[self.pos])
                         self.pos += 1
                     elif self.get(0)[1] == kw_assign:
-                        stmt_if.append(self.tokens[self.pos])
+                        stmt_else.append(self.tokens[self.pos])
                         self.pos += 1
                         if self.tokens[self.pos][1][1] == kw_do:
                             else_should_end += 1
@@ -1920,6 +1920,7 @@ def cantonese_pygame_init() -> None:
     cantonese_func_def("屏幕校色", screen_fill)
     cantonese_func_def("摞掣", pygame_key)
     cantonese_func_def("check下鼠标", pygame.mouse.get_pos)
+    cantonese_func_def("check下点击", pygame.mouse.get_pressed)
     cantonese_func_def("刷新", pygame.display.flip)
     cantonese_func_def("事件驱动", exec_event)
     cantonese_func_def("Say拜拜", pygame.quit)
