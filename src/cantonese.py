@@ -11,6 +11,8 @@ import argparse
 from src.濑嘢 import 濑啲咩嘢
 from src.stack_vm import *
 
+_version_ = "Cantonese 1.0 Copyright (C) 2020-2022 StepfenShawn"
+
 """
     Get the Cantonese Token List
 """
@@ -527,12 +529,18 @@ class Parser(object):
         self.pos += offset
     
     def match(self, name):
-        if self.get(0)[1] == name:
-            self.pos += 1
-            return True
+        if not isinstance(name, list):
+            if self.get(0)[1] == name:
+                self.pos += 1
+                return True
+            else:
+                return False
         else:
+            if self.get(0)[1] in name:
+                    self.pos += 1
+                    return True
             return False
-    
+
     def match_type(self, type):
         if self.get(0)[0] == type:
             self.pos += 1
@@ -571,30 +579,30 @@ class Parser(object):
     # TODO: Add error check
     def parse(self):
         while True:
-            if self.match(kw_print):
+            if self.match([kw_print, tr_kw_print]):
                 node_print_new(self.Node, self.get_value(self.get(0)))
                 self.skip(1) # Skip the args
-                self.token_except(kw_endprint, " : 濑嘢! 揾唔到 '点样先' ", skip = True)
+                self.token_except([kw_endprint, tr_kw_endprint], " : 濑嘢! 揾唔到 '点样先' ", skip = True)
                
             elif self.match("sleep"):
                 node_sleep_new(self.Node, self.get(0))
                 self.skip(1)
 
-            elif self.match(kw_exit) or self.match(kw_exit_1) or self.match(kw_exit_2):
+            elif self.match([kw_exit, kw_exit_1, kw_exit_2]):
                 node_exit_new(self.Node)
                 self.skip(1)
 
-            elif self.match(kw_global_set):
+            elif self.match([kw_global_set, tr_kw_global_set]):
                 table = self.get_value(self.get(0))
                 self.skip(1)
                 node_global_new(self.Node, table)
 
-            elif self.match(kw_del):
+            elif self.match([kw_del, tr_kw_del]):
                 var = self.get_value(self.get(0))
                 self.skip(1)
                 node_del_new(self.Node, var)
 
-            elif self.match(kw_class_assign):
+            elif self.match([kw_class_assign, tr_kw_class_assign]):
                 kw = self.get(0)[1]
                 if kw != kw_do:
                     self.token_except(tk = [kw_is, kw_is_2, kw_is_3], i = 1,  err = " : 濑嘢! 揾唔到 '係' " )
@@ -617,7 +625,7 @@ class Parser(object):
                                     self.get_value(assign_list[i + 1]))
                     self.skip(1)
 
-            elif self.match(kw_assign):
+            elif self.match([kw_assign, tr_kw_assign]):
                 kw = self.get(0)[1]
                 if kw != kw_do:
                     self.token_except(tk = [kw_is, kw_is_2, kw_is_3], i = 1,  err = " : 濑嘢! 揾唔到 '係' " )
@@ -665,7 +673,7 @@ class Parser(object):
                         if_should_end += 1
                         stmt_if.append(self.tokens[self.pos])
                         self.pos += 1
-                    elif self.get(0)[1] == kw_assign:
+                    elif self.get(0)[1] == kw_assign or self.get(0)[1] == tr_kw_assign:
                         stmt_if.append(self.tokens[self.pos])
                         self.pos += 1
                         if self.tokens[self.pos][1][1] == kw_do:
@@ -700,7 +708,7 @@ class Parser(object):
                         elif_should_end += 1
                         stmt_elif.append(self.tokens[self.pos])
                         self.pos += 1
-                    elif self.get(0)[1] == kw_assign:
+                    elif self.get(0)[1] == kw_assign or self.get(0)[1] == tr_kw_assign:
                         stmt_elif.append(self.tokens[self.pos])
                         self.pos += 1
                         if self.tokens[self.pos][1][1] == kw_do:
@@ -734,7 +742,7 @@ class Parser(object):
                         else_should_end += 1
                         stmt_else.append(self.tokens[self.pos])
                         self.pos += 1
-                    elif self.get(0)[1] == kw_assign:
+                    elif self.get(0)[1] == kw_assign  or self.get(0)[1] == tr_kw_assign:
                         stmt_else.append(self.tokens[self.pos])
                         self.pos += 1
                         if self.tokens[self.pos][1][1] == kw_do:
@@ -745,7 +753,7 @@ class Parser(object):
                 Parser(stmt_else, node_else).parse()
                 node_else_new(self.Node, node_else)
 
-            elif self.match(kw_while_do):
+            elif self.match([kw_while_do, tr_kw_while_do]):
                 stmt = []
                 while self.tokens[self.pos][1][1] != kw_while:
                     stmt.append(self.tokens[self.pos])
@@ -806,7 +814,7 @@ class Parser(object):
                 self.skip(1)
             
             elif self.match_type("expr") or self.match_type("identifier"):
-                if self.match(kw_from):
+                if self.match([kw_from, tr_kw_from]):
                     iterating_var = self.get_value(self.get(-2))
                     seq = "(" + str(self.get_value(self.get(0))[1]) + "," \
                           + str(self.get_value(self.get(2))[1]) + ")"
@@ -817,7 +825,7 @@ class Parser(object):
                     for_should_end = 1
                     while for_should_end != for_case_end and self.pos < len(self.tokens):
                         if (self.get(0)[0] == "expr" or self.get(0)[0] == "identifier") \
-                             and self.get(1)[1] == kw_from:
+                             and (self.get(1)[1] == kw_from or self.get(1)[1] == tr_kw_from):
                             for_should_end += 1
                             for_stmt.append(self.tokens[self.pos])
                             self.pos += 1
@@ -868,7 +876,7 @@ class Parser(object):
                     else:
                         node_call_new(self.Node, cons)
 
-            elif self.match(kw_return):
+            elif self.match([kw_return, tr_kw_return]):
                 node_return_new(self.Node, self.get_value(self.get(0)))
                 self.skip(1)
 
@@ -876,7 +884,7 @@ class Parser(object):
                 node_py_expr_new(self.Node, self.get_value(self.get(0)))
                 self.skip(1)
             
-            elif self.match(kw_try):
+            elif self.match([kw_try, tr_kw_try]):
                 self.token_except(tk = kw_do, i = 0, err = " : 濑嘢! 揾唔到 '->' ")
                 self.token_except(tk = kw_begin, i = 1, err = " : 濑嘢! 揾唔到 '{'")
                 self.skip(2) # SKip the "begin, do"
@@ -914,7 +922,7 @@ class Parser(object):
                 Parser(stmt_except, node_except).parse()
                 node_except_new(self.Node, _except , node_except)
 
-            elif self.match(kw_finally):
+            elif self.match([kw_finally, tr_kw_finally]):
                 self.token_except(tk = kw_do, i = 0, err =  " : 濑嘢! 揾唔到 '->'")
                 self.token_except(tk = kw_begin, i = 1, err = " : 濑嘢! 揾唔到 '{'")
                 self.skip(2) # Skip the "begin", "do"
@@ -932,25 +940,25 @@ class Parser(object):
                 Parser(stmt_finally, node_finally).parse()
                 node_finally_new(self.Node, node_finally)
 
-            elif self.match(kw_assert):
+            elif self.match([kw_assert, tr_kw_assert]):
                 node_assert_new(self.Node, self.get_value(self.get(0)))
                 self.skip(1)
             
-            elif self.match(kw_raise):
+            elif self.match([kw_raise, tr_kw_raise]):
                 node_raise_new(self.Node, self.get_value(self.get(0)))
                 self.skip(2)
             
-            elif self.match(kw_type):
+            elif self.match([kw_type, tr_kw_type]):
                 node_gettype_new(self.Node, self.get_value(self.get(0)))
                 self.skip(1)
             
-            elif self.match(kw_pass):
+            elif self.match([kw_pass, tr_kw_pass]):
                 self.Node.append(["node_pass"])
             
-            elif self.match(kw_break):
+            elif self.match([kw_break, tr_kw_break]):
                 node_break_new(self.Node)
             
-            elif self.match(kw_class_def):
+            elif self.match([kw_class_def, tr_kw_class_def]):
                 class_name = self.get_value(self.get(0))
                 self.skip(1)
                 if self.match(kw_extend):
@@ -971,7 +979,7 @@ class Parser(object):
                 self.skip(1)
                 node_attribute_new(self.Node, attr_lst)
             
-            elif self.match(kw_method):
+            elif self.match([kw_method, tr_kw_method]):
                 method_name = self.get_value(self.get(0))
                 self.skip(1)
                 # Check if has args
@@ -1003,7 +1011,7 @@ class Parser(object):
                         method_should_end += 1
                         method_stmt.append(self.tokens[self.pos])    
                         self.pos += 1
-                    elif self.get(0)[1] == kw_assign:
+                    elif self.get(0)[1] == kw_assign  or self.get(0)[1] == tr_kw_assign:
                         method_stmt.append(self.tokens[self.pos])
                         self.pos += 1
                         if self.tokens[self.pos][1][1] == kw_do:
@@ -1031,7 +1039,7 @@ class Parser(object):
                 node_stack_new(self.Node, self.get_value(self.get(0)))
                 self.skip(1)
 
-            elif self.match(kw_push):
+            elif self.match([kw_push, tr_kw_push]):
                 self.syntax_check(kw_do, "value")
                 self.skip(1)
                 self.Node.append(["stack_push", self.get_value(self.get(0)), self.get_value(self.\
@@ -1059,7 +1067,6 @@ def run(Nodes : list, TAB = '', label = '', path = '') -> None:
             label != "class_run" and label != "method_run":
             tab = ''
     global TO_PY_CODE
-    global use_traditon
     if Nodes == None:
         return None
     for node in Nodes:
@@ -1075,7 +1082,7 @@ def run(Nodes : list, TAB = '', label = '', path = '') -> None:
         if node[0] == "node_import":
             check(TAB)
             if cantonese_lib_import(node[1][1]) == "Not found":
-                cantonese_lib_run(node[1][1], path, use_tradition)
+                cantonese_lib_run(node[1][1], path)
             else:
                 TO_PY_CODE += TAB + "import " + cantonese_lib_import(node[1][1]) + "\n"
 
@@ -1925,7 +1932,7 @@ def cantonese_pygame_init() -> None:
     cantonese_func_def("事件驱动", exec_event)
     cantonese_func_def("Say拜拜", pygame.quit)
 
-def cantonese_lib_run(lib_name : str, path : str, use_tradition : bool) -> None:
+def cantonese_lib_run(lib_name : str, path : str) -> None:
     pa = os.path.dirname(path) # Return the last file Path
     tokens = []
     code = ""
@@ -1944,221 +1951,259 @@ def cantonese_lib_run(lib_name : str, path : str, use_tradition : bool) -> None:
     cantonese_parser.parse()
     run(cantonese_parser.Node, path = path)
 
-kw_print, kw_endprint, kw_exit, kw_in, kw_elif, kw_turtle_beg, kw_type, \
-kw_assign, kw_class_def,kw_else_or_not, kw_is, kw_if = "", "", "", "", "", "", "", "", "", "", "", ""
+kw_print = "畀我睇下"
+kw_endprint = "点样先"
+kw_exit = "收工"
+kw_in = "喺"
+kw_elif = "定系"
+kw_turtle_beg = "老作一下"
+kw_type = "起底"
+kw_assign = "讲嘢"
+kw_class_def = "咩系"
+kw_else_or_not = "唔系"
+kw_is = "系"
+kw_if = "如果"
+kw_then = "嘅话"
+kw_do = "->"
+kw_begin = "{"
+kw_end = "}"
+kw_pass = "咩都唔做"
+kw_while_do = "落操场玩跑步"
+kw_function = "$"
+kw_call = "用下"
+kw_import = "使下"
+kw_func_begin = "要做咩"
+kw_func_end = "搞掂"
+kw_is_2 = "就"
+kw_assert = "谂下"
+kw_class_assign = "佢嘅"
+kw_while = "玩到"
+kw_whi_end = "为止"
+kw_return = "还数"
+kw_try = "执嘢"
+kw_except = "揾到"
+kw_finally = "执手尾"
+kw_raise = "掟个"
+kw_raise_end = "来睇下"
+kw_from = "从"
+kw_to = "行到"
+kw_endfor = "行晒"
+kw_extend = "佢个老豆叫"
+kw_method = "佢识得"
+kw_endclass = "明白未啊"
+kw_cmd = "落Order"
+kw_break = "饮茶先啦"
+kw_lst_assign = "拍住上"
+kw_set_assign = "埋堆"
+kw_global_set = "Share下"
+kw_is_3 = "係"
+kw_exit_1 = "辛苦晒啦"
+kw_exit_2 = "同我躝"
+kw_false = "唔啱"
+kw_true = "啱"
+kw_none = "冇"
+kw_stackinit = "有条仆街叫"
+kw_push = "顶你"
+kw_pop = "丢你"
+kw_model = "嗌"
+kw_mod_new = "过嚟估下"
+kw_class_init = "佢有啲咩"
+kw_self = "自己嘅"
+kw_call_begin = "下"
+kw_get_value = "@" 
+kw_del = "delete下"
 
-kw_then, kw_do, kw_begin, kw_end, kw_pass, kw_while_do, kw_function, kw_call, \
-kw_import, kw_func_begin, kw_func_end, kw_is_2, kw_assert = "", "", "", "", "", "", "", "", "", "", "", "", ""
+tr_kw_print = "畀我睇下"
+tr_kw_endprint = "點樣先"
+tr_kw_exit = "收工"
+tr_kw_in = "喺"
+tr_kw_elif = "定系"
+tr_kw_turtle_beg = "老作一下"
+tr_kw_type = "起底"
+tr_kw_assign = "講嘢"
+tr_kw_class_def = "咩系"
+tr_kw_else_or_not = "唔系"
+tr_kw_is = "系"
+tr_kw_if = "如果"
+tr_kw_then = "嘅話"
+tr_kw_do = "->"
+tr_kw_begin = "{"
+tr_kw_end = "}"
+tr_kw_pass = "咩都唔做"
+tr_kw_while_do = "落操場玩跑步"
+tr_kw_function = "$"
+tr_kw_call = "用下"
+tr_kw_import = "使下"
+tr_kw_func_begin = "要做咩"
+tr_kw_func_end = "搞掂"
+tr_kw_is_2 = "就"
+tr_kw_assert = "諗下"
+tr_kw_class_assign = "佢嘅"
+tr_kw_while = "玩到"
+tr_kw_whi_end = "為止"
+tr_kw_return = "還數"
+tr_kw_try = "執嘢"
+tr_kw_except = "揾到"
+tr_kw_finally = "執手尾"
+tr_kw_raise = "掟個"
+tr_kw_raise_end = "來睇下"
+tr_kw_from = "從"
+tr_kw_to = "行到"
+tr_kw_endfor = "行曬"
+tr_kw_extend = "佢個老豆叫"
+tr_kw_method = "佢識得"
+tr_kw_endclass = "明白未啊"
+tr_kw_cmd = "落Order"
+tr_kw_break = "飲茶先啦"
+tr_kw_lst_assign = "拍住上"
+tr_kw_set_assign = "埋堆"
+tr_kw_global_set = "Share下"
+tr_kw_is_3 = "係"
+tr_kw_exit_1 = "辛苦曬啦"
+tr_kw_exit_2 = "同我躝"
+tr_kw_false = "唔啱"
+tr_kw_true = "啱"
+tr_kw_none = "冇"
+tr_kw_stackinit = "有條仆街叫"
+tr_kw_push = "頂你"
+tr_kw_pop = "丟你"
+tr_kw_model = "嗌"
+tr_kw_mod_new = "過嚟估下"
+tr_kw_class_init = "佢有啲咩"
+tr_kw_self = "自己嘅"
+tr_kw_call_begin = "下"
+tr_kw_get_value = "@"
+tr_kw_del = "delete下"
 
-kw_class_assign, kw_while, kw_whi_end, kw_return, kw_try, kw_except, kw_finally, \
-kw_raise, kw_raise_end, kw_from, kw_to, kw_end, kw_endfor, kw_extend = "", "", "", "", "", "", "", "", "", "", "", "", "", ""
-
-kw_method, kw_endclass, kw_cmd, kw_break, kw_lst_assign, kw_set_assign, kw_global_set, kw_is_3, \
-kw_exit_1, kw_exit_2, kw_false, kw_true, kw_none, kw_stackinit, kw_push, kw_pop, kw_model, kw_mod_new, \
-kw_class_init, kw_self, kw_call_begin, kw_get_value, kw_del = "", "", "", "", "", "", "", "", "", "", "" \
-"", "", "", "", "", "", "", "", "", "", "", "", ""
-
-keywords = ""
-
-def keyword_init(use_traditon: bool):
-
-    global kw_print
-    global kw_endprint
-    global kw_exit
-    global kw_in
-    global kw_elif
-    global kw_turtle_beg
-    global kw_type
-    global kw_assign
-    global kw_class_def
-    global kw_else_or_not
-    global kw_is
-    global kw_if
-    global kw_then
-    global kw_do
-    global kw_begin
-    global kw_end
-    global kw_pass
-    global kw_while_do
-    global kw_function
-    global kw_call
-    global kw_import
-    global kw_func_begin
-    global kw_func_end
-    global kw_is_2
-    global kw_assert
-    global kw_class_assign
-    global kw_call_begin
-    global kw_while
-    global kw_whi_end
-    global kw_return
-    global kw_try
-    global kw_except
-    global kw_finally
-    global kw_raise
-    global kw_raise_end
-    global kw_from
-    global kw_to
-    global kw_endfor
-    global kw_extend
-    global kw_method
-    global kw_endclass
-    global kw_cmd
-    global kw_break
-    global kw_lst_assign
-    global kw_set_assign
-    global kw_global_set
-    global kw_is_3
-    global kw_exit_1
-    global kw_exit_2
-    global kw_false
-    global kw_true
-    global kw_none
-    global kw_stackinit
-    global kw_push
-    global kw_pop
-    global kw_model
-    global kw_mod_new
-    global kw_class_init
-    global kw_self
-    global kw_call_begin
-    global kw_get_value
-    global kw_del
-    global keywords
-
-    kw_print = "畀我睇下" if not use_tradition else "畀我睇下"
-    kw_endprint = "点样先" if not use_tradition else "點樣先"
-    kw_exit = "收工" if not use_tradition else "收工"
-    kw_in = "喺"
-    kw_elif = "定系"
-    kw_turtle_beg = "老作一下"
-    kw_type = "起底"
-    kw_assign = "讲嘢" if not use_tradition else "講嘢"
-    kw_class_def = "咩系"
-    kw_else_or_not = "唔系"
-    kw_is = "系"
-    kw_if = "如果"
-    kw_then = "嘅话" if not use_tradition else "嘅話"
-    kw_do = "->"
-    kw_begin = "{"
-    kw_end = "}"
-    kw_pass = "咩都唔做"
-    kw_while_do = "落操场玩跑步" if not use_tradition else "落操場玩跑步"
-    kw_function = "$"
-    kw_call = "用下" 
-    kw_import = "使下"
-    kw_func_begin = "要做咩"
-    kw_func_end = "搞掂"
-    kw_is_2 = "就"
-    kw_assert = "谂下" if not use_tradition else "諗下"
-    kw_class_assign = "佢嘅"
-    kw_while = "玩到"
-    kw_whi_end = "为止" if not use_tradition else "為止"
-    kw_return = "还数" if not use_tradition else "還數"
-    kw_try = "执嘢" if not use_tradition else "執嘢"
-    kw_except = "揾到"
-    kw_finally = "执手尾" if not use_tradition else "執手尾"
-    kw_raise = "掟个" if not use_tradition else "掟個"
-    kw_raise_end = "来睇下" if not use_tradition else "來睇下"
-    kw_from = "从" if not use_tradition else "從"
-    kw_to = "行到"
-    kw_endfor = "行晒" if use_tradition else "行曬"
-    kw_extend = "佢个老豆叫" if not use_tradition else "佢個老豆叫"
-    kw_method = "佢识得" if not use_tradition else "佢識得"
-    kw_endclass = "明白未啊"
-    kw_cmd = "落Order"
-    kw_break = "饮茶先啦"
-    kw_lst_assign = "拍住上"
-    kw_set_assign = "埋堆"
-    kw_global_set = "Share下"
-    kw_is_3 = "係"
-    kw_exit_1 = "辛苦晒啦" if not use_tradition else "辛苦曬啦"
-    kw_exit_2 = "同我躝"
-    kw_false = "唔啱"
-    kw_true = "啱"
-    kw_none = "冇"
-    kw_stackinit = "有条仆街叫" if not use_tradition else "有條仆街叫"
-    kw_push = "顶你" if not use_tradition else "頂你"
-    kw_pop = "丢你"
-    kw_model = "嗌"
-    kw_mod_new = "过嚟估下" if not use_tradition else "過嚟估下"
-    kw_class_init = "佢有啲咩"
-    kw_self = "自己嘅"
-    kw_call_begin = "下"
-    kw_get_value = "@"
-    kw_del = "delete下"
-
-    keywords = (
-        kw_print,
-        kw_endprint,
-        kw_exit,
-        kw_in,
-        kw_elif,
-        kw_turtle_beg,
-        kw_type,
-        kw_assign,
-        kw_class_def,
-        kw_else_or_not,
-        kw_is,
-        kw_if,
-        kw_then,
-        kw_do,
-        kw_begin,
-        kw_end,
-        kw_pass,
-        kw_while_do,
-        kw_function,
-        kw_call,
-        kw_import,
-        kw_func_begin,
-        kw_func_end,
-        kw_is_2,
-        kw_assert,
-        kw_class_assign,
-        kw_while,
-        kw_whi_end,
-        kw_return,
-        kw_try,
-        kw_except,
-        kw_finally,
-        kw_raise,
-        kw_raise_end,
-        kw_from,
-        kw_to,
-        kw_endfor,
-        kw_extend,
-        kw_method,
-        kw_endclass,
-        kw_cmd,
-        kw_break,
-        kw_lst_assign,
-        kw_set_assign,
-        kw_global_set,
-        kw_is_3,
-        kw_exit_1,
-        kw_exit_2,
-        kw_false,
-        kw_true,
-        kw_none,
-        kw_stackinit,
-        kw_push,
-        kw_pop,
-        kw_model,
-        kw_mod_new,
-        kw_class_init,
-        kw_self,
-        kw_call_begin,
-        kw_get_value,
-        kw_del
-    )
-
+keywords = (
+    kw_print,
+    kw_endprint,
+    kw_exit,
+    kw_in,
+    kw_elif,
+    kw_turtle_beg,
+    kw_type,
+    kw_assign,
+    kw_class_def,
+    kw_else_or_not,
+    kw_is,
+    kw_if,
+    kw_then,
+    kw_do,
+    kw_begin,
+    kw_end,
+    kw_pass,
+    kw_while_do,
+    kw_function,
+    kw_call,
+    kw_import,
+    kw_func_begin,
+    kw_func_end,
+    kw_is_2,
+    kw_assert,
+    kw_class_assign,
+    kw_while,
+    kw_whi_end,
+    kw_return,
+    kw_try,
+    kw_except,
+    kw_finally,
+    kw_raise,
+    kw_raise_end,
+    kw_from,
+    kw_to,
+    kw_endfor,
+    kw_extend,
+    kw_method,
+    kw_endclass,
+    kw_cmd,
+    kw_break,
+    kw_lst_assign,
+    kw_set_assign,
+    kw_global_set,
+    kw_is_3,
+    kw_exit_1,
+    kw_exit_2,
+    kw_false,
+    kw_true,
+    kw_none,
+    kw_stackinit,
+    kw_push,
+    kw_pop,
+    kw_model,
+    kw_mod_new,
+    kw_class_init,
+    kw_self,
+    kw_call_begin,
+    kw_get_value,
+    tr_kw_print,
+    tr_kw_endprint,
+    tr_kw_exit,
+    tr_kw_in,
+    tr_kw_elif,
+    tr_kw_turtle_beg,
+    tr_kw_type,
+    tr_kw_assign,
+    tr_kw_class_def,
+    tr_kw_else_or_not,
+    tr_kw_is,
+    tr_kw_if,
+    tr_kw_then,
+    tr_kw_do,
+    tr_kw_begin,
+    tr_kw_end,
+    tr_kw_pass,
+    tr_kw_while_do,
+    tr_kw_function,
+    tr_kw_call,
+    tr_kw_import,
+    tr_kw_func_begin,
+    tr_kw_func_end,
+    tr_kw_is_2,
+    tr_kw_assert,
+    tr_kw_class_assign,
+    tr_kw_while,
+    tr_kw_whi_end,
+    tr_kw_return,
+    tr_kw_try,
+    tr_kw_except,
+    tr_kw_finally,
+    tr_kw_raise,
+    tr_kw_raise_end,
+    tr_kw_from,
+    tr_kw_to,
+    tr_kw_endfor,
+    tr_kw_extend,
+    tr_kw_method,
+    tr_kw_endclass,
+    tr_kw_cmd,
+    tr_kw_break,
+    tr_kw_lst_assign,
+    tr_kw_set_assign,
+    tr_kw_global_set,
+    tr_kw_is_3,
+    tr_kw_exit_1,
+    tr_kw_exit_2,
+    tr_kw_false,
+    tr_kw_true,
+    tr_kw_none,
+    tr_kw_stackinit,
+    tr_kw_push,
+    tr_kw_pop,
+    tr_kw_model,
+    tr_kw_mod_new,
+    tr_kw_class_init,
+    tr_kw_self,
+    tr_kw_call_begin,
+    tr_kw_get_value
+)
 
 dump_ast = False
 dump_lex = False
 to_js = False
 mkfile = False
 
-def cantonese_run(code : str, is_to_py : bool, file : str, use_tradition : bool) -> None:
+def cantonese_run(code : str, is_to_py : bool, file : str) -> None:
     
     global dump_ast
     global dump_lex
@@ -2176,7 +2221,7 @@ def cantonese_run(code : str, is_to_py : bool, file : str, use_tradition : bool)
         js, fh = src.Compile.Compile(cantonese_parser.Node, "js", file).ret()
         f = open(fh, 'w', encoding = 'utf-8')
         f.write(js)
-        exit(1)
+        sys.exit(1)
 
     run(cantonese_parser.Node, path = file)
     cantonese_lib_init()
@@ -2389,14 +2434,10 @@ cansts_idx = 0
 name_idx = 0
 debug = False
 
-def cantonese_run_with_vm(code : str, file : bool, use_tradition : bool) -> None:
+def cantonese_run_with_vm(code : str, file : bool) -> None:
     tokens = []
-    if use_tradition:
-        for token in cantonese_token(code, traditional_keywords):
-            tokens.append(token)
-    else:
-        for token in cantonese_token(code, keywords):
-            tokens.append(token)
+    for token in cantonese_token(code, keywords):
+        tokens.append(token)
     cantonese_parser = Parser(tokens, [])
     cantonese_parser.parse()
     if dump_ast:
@@ -2855,7 +2896,7 @@ def cantonese_web_run(code : str, file_name : str, open_serv = True) -> None:
     else:
         f = open(get_html_file(file_name), 'w', encoding = 'utf-8')
         f.write(TO_HTML)
-    exit(0)
+    sys.exit(0)
 
 class AsmLerxer(lexer):
     def __init__(self, code, keywords, ins):
@@ -3074,7 +3115,7 @@ def Cantonese_asm_run(code : str, file_name : str) -> None:
     AsmParser(tokens, AST).parse()
     AsmParser(tokens, AST).run(AST)
     print(TO_ASM)
-    exit(1)
+    sys.exit(1)
 
 class 交互(cmd.Cmd):
     def __init__(self):
@@ -3082,14 +3123,23 @@ class 交互(cmd.Cmd):
         self.prompt = '> '
 
     def default(self, code):
+        
+        global kw_exit_1
+        global kw_exit_2
+        global kw_exit
+
         if code is not None:
-            cantonese_run(code, False, '【标准输入】', False)
+            if code == kw_exit or code == kw_exit_2 or code == kw_exit_1:
+                sys.exit(1)
+            cantonese_run(code, False, '【标准输入】')
 
 
 def 开始交互():
-    交互().cmdloop("早晨!")
+    global _version_
+    print(_version_)
+    import time
+    交互().cmdloop(str(time.asctime(time.localtime(time.time()))))
 
-use_tradition = False # 是否使用繁体
 def main():
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument("file", nargs = '?', default = "")
@@ -3101,7 +3151,6 @@ def main():
     arg_parser.add_argument("-倾偈", action = "store_true")
     arg_parser.add_argument("-compile", action = "store_true")
     arg_parser.add_argument("-讲白啲", action = "store_true")
-    arg_parser.add_argument("-use_tr", action = "store_true")
     arg_parser.add_argument("-install", action = "store_true")
     arg_parser.add_argument("-stack_vm", action = "store_true")
     arg_parser.add_argument("-ast", action = "store_true")
@@ -3111,16 +3160,16 @@ def main():
     arg_parser.add_argument("-mkfile", action = "store_true")
     args = arg_parser.parse_args()
 
-    global use_tradition
     global dump_ast
     global dump_lex
     global to_js
     global debug
     global mkfile
+    global _version_
 
     if args.v:
-        print("0.0.9")
-        exit(1)
+        print(_version_)
+        sys.exit(1)
 
     if not args.file:
         sys.exit(开始交互())
@@ -3133,16 +3182,13 @@ def main():
             is_to_py = False
             if args.to_py or args.讲翻py:
                 is_to_py = True
-            if args.use_tr:
-                use_tradition = True
-            keyword_init(use_tradition)
             if args.install:
                 import urllib.request
                 print("Installing ... ")
                 # TODO: Insatll the cantonese library
                 #urllib.request.urlretrieve()
                 print("Successful installed!")
-                exit()
+                sys.exit()
             if args.to_web or args.倾偈:
                 if args.compile or args.讲白啲:
                     cantonese_web_run(code, args.file, False)
@@ -3155,15 +3201,15 @@ def main():
             if args.debug:
                 debug = True
             if args.stack_vm:
-                cantonese_run_with_vm(code, args.file, use_tradition)
-                exit(1)
+                cantonese_run_with_vm(code, args.file)
+                sys.exit(1)
             if args.to_js:
                 to_js = True
             if args.mkfile:
                 mkfile = True
             if args.to_asm:
                 Cantonese_asm_run(code, args.file)
-            cantonese_run(code, is_to_py, args.file, use_tradition)
+            cantonese_run(code, is_to_py, args.file)
     except FileNotFoundError:
         print("濑嘢!: 揾唔到你嘅文件 :(")
 

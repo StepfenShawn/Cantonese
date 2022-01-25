@@ -1,4 +1,6 @@
 ![logo](img/logo.jpg)  
+[![pypi](https://img.shields.io/pypi/dm/Cantonese)](https://pypi.org/project/Cantonese/)
+[![pypi](https://img.shields.io/pypi/v/Cantonese)](https://pypi.org/project/Cantonese/) 
 # The Cantonese programming language
 If you don't know Cantonese or programming, please see [learn Cantonese while learning programming in 5 minutes](doc/cantonese.md)
 # Installation

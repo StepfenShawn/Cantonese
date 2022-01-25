@@ -43,6 +43,7 @@ if platform.system() == 'Windows':
     while i < len(file_list) - 3:
         print("Running:" + file_list[i] +  "......")
         #os.system("python ../src/cantonese.py " + file_list[i])
+        # If raise an err try to use "python3 ../src/cantonese.py"
         cmd = "python ../src/cantonese.py " + file_list[i]
         # TODO: Get the output in command and compare with all the expectation
         ret = adb_shell(cmd)

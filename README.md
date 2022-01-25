@@ -39,7 +39,7 @@ pip install Cantonese
 # <a name="0">引言</a>
 粵語編程語言係乜嘢? 佢係一門用粵語嚟同計算機溝通嘅編程語言。  
 喺呢隻语言度，計算機可以讀明你寫嘅粵語。所以話，你可以用粵語嚟操作(虐待)計算機。
-
+#### 所有關鍵字可以使用繁體, 或者簡體同繁體混合
 # <a name="1">咋咋臨入門</a>
 ### <a name="2">Hello World</a>
 用粵語寫嘅第一個程序 Hello World：  
@@ -284,7 +284,7 @@ y=0.530960991635149x+189.75347155122432
 ```
 運行後，打開 `127.0.0.1:80` 就可以睇到運行結果：  
 ```
-python src/cantonese.py ../examples/web/hello_web.cantonese -to_web 
+cantonese examples/web/hello_web.cantonese -to_web 
 ```
 ![web_result](img/web_result.jpg)
 
@@ -316,23 +316,23 @@ pip install kivy
 Cantonese 可以用多種方式運行，用自己嘅虛擬機，或者翻譯成 Python 同 HTML 都得！
 使用虛擬機執行（僅支援部分語句）：   
 ```shell
-Cantonese [-文件名] -stack_vm
+cantonese [-文件名] -stack_vm
 ```
 查睇生產嘅指令：
 ```
-Cantonese [-文件名] -stack_vm -debug
+cantonese [-文件名] -stack_vm -debug
 ```
 用 Python 虛擬機運行（環境净係支援 Python3，因为噉先至符合廣東人先進嘅思想！）：
 ```shell
-Cantonese [-文件名]
+cantonese [-文件名]
 ```
 將 Cantonese 轉化成 Python：
 ```shell
-Cantonese [文件名] -to_py
+cantonese [文件名] -to_py
 ```
 例如：  
 ```
-Cantonese examples/basic/helloworld.cantonese -to_py
+cantonese examples/basic/helloworld.cantonese -to_py
 ```
 運行嘅結果係：  
 ```
@@ -341,7 +341,7 @@ exit()
 ```
 生成 HTML：  
 ```shell
-Cantonese examples/web/web_hello.cantonese -to_web -compile
+cantonese examples/web/web_hello.cantonese -to_web -compile
 ```
 ```html
 <html>
@@ -352,10 +352,6 @@ Cantonese examples/web/web_hello.cantonese -to_web -compile
 <h1>Hello World</h1>
 </html>
 ```
-用繁体字运行：
-```
-Cantonese [文件名] -use_tr
-```  
 Vscode插件：https://github.com/Cantonese-community/vscode-cantonese  
 
 # <a name="26">TODOs</a>
@@ -364,3 +360,5 @@ Vscode插件：https://github.com/Cantonese-community/vscode-cantonese
 * 完善語法錯誤檢查
 * 加多啲語句
 * 完善自己嘅虛擬機
+
+Copyright (C) 2020-2022 StepfenShawn

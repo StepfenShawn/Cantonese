@@ -6,7 +6,6 @@
 # 施工中... 请戴好安全帽
 from enum import Enum, unique
 from collections import namedtuple
-import six
 
 import src.env
 
