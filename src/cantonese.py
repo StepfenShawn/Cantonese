@@ -11,7 +11,7 @@ import argparse
 from src.濑嘢 import 濑啲咩嘢
 from src.stack_vm import *
 
-_version_ = "Cantonese 1.0 Copyright (C) 2020-2022 StepfenShawn"
+_version_ = "Cantonese 1.0.1 Copyright (C) 2020-2022 StepfenShawn"
 
 """
     Get the Cantonese Token List
@@ -2203,10 +2203,12 @@ dump_lex = False
 to_js = False
 mkfile = False
 
-def cantonese_run(code : str, is_to_py : bool, file : str) -> None:
+def cantonese_run(code : str, is_to_py : bool, file : str, 
+                    REPL = False, get_py_code = False) -> None:
     
     global dump_ast
     global dump_lex
+    global TO_PY_CODE
     
     tokens = cantonese_token(code, keywords)
     if dump_lex:
@@ -2225,9 +2227,10 @@ def cantonese_run(code : str, is_to_py : bool, file : str) -> None:
 
     run(cantonese_parser.Node, path = file)
     cantonese_lib_init()
+
     if is_to_py:
         print(TO_PY_CODE)
-    
+
     if mkfile:
         f = open(file[: len(file) - 10] + '.py', 'w', encoding = 'utf-8')
         f.write(TO_PY_CODE)
@@ -2238,6 +2241,11 @@ def cantonese_run(code : str, is_to_py : bool, file : str) -> None:
     else:
         import traceback
         try:
+            c = TO_PY_CODE
+            if REPL:
+                TO_PY_CODE = "" # reset the global variable in REPL mode
+            if get_py_code:
+                return c
             exec(TO_PY_CODE, variable)
         except Exception as e:
             print("濑嘢!" + "\n".join(濑啲咩嘢(e)))
@@ -3122,6 +3130,14 @@ class 交互(cmd.Cmd):
         super().__init__()
         self.prompt = '> '
 
+    def run(self, code):
+        if code in variable.keys():
+            print(variable[code])
+        try:
+            exec(code, variable)
+        except Exception as e:
+            print("濑嘢!" + "\n".join(濑啲咩嘢(e)))
+
     def default(self, code):
         
         global kw_exit_1
@@ -3131,7 +3147,9 @@ class 交互(cmd.Cmd):
         if code is not None:
             if code == kw_exit or code == kw_exit_2 or code == kw_exit_1:
                 sys.exit(1)
-            cantonese_run(code, False, '【标准输入】')
+            c = cantonese_run(code, False, '【标准输入】', 
+                REPL = True, get_py_code = True)
+            self.run(c)
 
 
 def 开始交互():
