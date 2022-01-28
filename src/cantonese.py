@@ -489,6 +489,9 @@ def node_global_new(Node : list, global_table) -> None:
 def node_del_new(Node : list, var) -> None:
     Node.append(["node_del", var])
 
+def node_lambda_new(Node : list, args, ret_value, v) -> None:
+    Node.append(["node_lambda", args, ret_value, v])
+
 """
     Parser for cantonese Token List
 """
@@ -766,7 +769,23 @@ class Parser(object):
                 self.skip(2) # Skip the "end"
             
             elif self.match(kw_function): # Case "function"
-                if self.get(1)[0] == 'expr':
+                if self.get(0)[1] == kw_function:
+                    self.skip(1)
+                    args = self.get_value(self.get(0))
+                    self.skip(1)
+                    self.token_except(tk = kw_do, err = " : 濑嘢! 揾唔到 '->' ")
+                    self.skip(1)
+                    func_ret = self.get_value(self.get(0))
+                    self.skip(1)
+                    if self.get(0)[1] == kw_get_value:
+                        self.skip(1)
+                        k = self.get(0)
+                        self.skip(1)
+                        node_lambda_new(self.Node, args, func_ret, k)
+                    else:
+                        node_lambda_new(self.Node, args, func_ret, None)
+
+                elif self.get(1)[0] == 'expr' or self.get(1)[0] == 'identifier':
                    func_name = self.get_value(self.get(0))
                    args = self.get_value(self.get(1))
                    self.token_except(tk = kw_func_begin, i = 2, err = " : 濑嘢! 揾唔到 '要做咩' ")
@@ -1258,6 +1277,13 @@ def run(Nodes : list, TAB = '', label = '', path = '') -> None:
             check(TAB)
             TO_PY_CODE += TAB + cantonese_model_new(node[1][1], node[2][1], \
                                 TAB, TO_PY_CODE)
+
+        if node[0] == "node_lambda":
+            check(TAB)
+            if node[3] == None:
+                TO_PY_CODE += TAB + "lambda " + node[1][1] + ":" + node[2][1] + "\n"
+            else:
+                TO_PY_CODE += TAB + node[3][1] + "= lambda " + node[1][1] + ":" + node[2][1] + "\n"
 
 """
     Built-in library for Cantonese
