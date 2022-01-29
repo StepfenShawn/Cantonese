@@ -90,6 +90,18 @@ pip install Cantonese
     畀我睇下 "A 唔系 2" 点样先?
 }
 ```
+仲可以用`match`
+```
+讲嘢: 状态 係 404
+match下 状态 -> {
+    撞见 400 -> {
+        畀我睇下 "Bad request" 点样先?
+    }
+    撞见 404 -> {
+        畀我睇下 "Not found" 点样先?
+    }
+}
+```
 ### <a name="7">函数</a>
 用 Cantonese 實現嘅階乘：  
 ```

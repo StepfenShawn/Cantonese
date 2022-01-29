@@ -492,6 +492,12 @@ def node_del_new(Node : list, var) -> None:
 def node_lambda_new(Node : list, args, ret_value, v) -> None:
     Node.append(["node_lambda", args, ret_value, v])
 
+def node_match_new(Node : list, id, stmt_match) -> None:
+    Node.append(["node_match", id, stmt_match])
+
+def node_case_new(Node : list, case_v, case_stmt, v = "") -> None:
+    Node.append(["node_case", case_v, case_stmt, v])
+
 """
     Parser for cantonese Token List
 """
@@ -1041,6 +1047,78 @@ class Parser(object):
                 Parser(method_stmt, node_method).parse()
                 node_method_new(self.Node, method_name, args, node_method)
             
+            elif self.match(kw_match):
+                v = self.get_value(self.get(0))
+                self.token_except(kw_do, i = 1, err = " : 濑嘢: 揾唔到 '->' ")
+                self.token_except(kw_begin, i = 2, err = " : 濑嘢: 揾唔到 '{' ")
+                self.skip(3) # Skip the kw_do, kw_begin
+                stmt_match = []
+                node_match = []
+                match_case_end = 0
+                match_should_end = 1
+                while match_case_end != match_should_end and self.pos < len(self.tokens):
+                    if self.get(0)[1] == kw_case or self.get(0)[1] == tr_kw_case:
+                        match_should_end += 1
+                        stmt_match.append(self.tokens[self.pos])
+                        self.pos += 1
+                    if self.get(0)[1] == kw_if:
+                        match_should_end += 1
+                        stmt_match.append(self.tokens[self.pos])
+                        self.pos += 1
+                    elif self.get(0)[1] == kw_end:
+                        match_case_end += 1
+                        if match_case_end != match_should_end:
+                            stmt_match.append(self.tokens[self.pos])
+                        self.pos += 1
+                    elif self.get(0)[1] == kw_elif:
+                        match_should_end += 1
+                        stmt_match.append(self.tokens[self.pos])
+                        self.pos += 1
+                    elif self.get(0)[1] == kw_assign or self.get(0)[1] == tr_kw_assign:
+                        stmt_match.append(self.tokens[self.pos])
+                        self.pos += 1
+                        if self.tokens[self.pos][1][1] == kw_do:
+                            match_should_end += 1
+                    else:
+                        stmt_match.append(self.tokens[self.pos])
+                        self.pos += 1
+                Parser(stmt_match, node_match).parse()
+                node_match_new(self.Node, v, node_match)
+
+            elif self.match([kw_case, tr_kw_case]):
+                v = self.get_value(self.get(0))
+                self.token_except(kw_do, i = 1, err = " : 濑嘢! 揾唔到 '->' ")
+                self.token_except(kw_begin, i = 2, err = " : 濑嘢! 揾唔到  '{' ")
+                self.skip(3)
+                stmt_case = []
+                node_case = []
+                case_case_end = 0
+                case_should_end = 1
+                while case_case_end != case_should_end and self.pos < len(self.tokens):
+                    if self.get(0)[1] == kw_if:
+                        case_should_end += 1
+                        stmt_case.append(self.tokens[self.pos])
+                        self.pos += 1
+                    elif self.get(0)[1] == kw_end:
+                        case_case_end += 1
+                        if case_case_end != case_should_end:
+                            stmt_case.append(self.tokens[self.pos])
+                        self.pos += 1
+                    elif self.get(0)[1] == kw_elif:
+                        case_should_end += 1
+                        stmt_case.append(self.tokens[self.pos])
+                        self.pos += 1
+                    elif self.get(0)[1] == kw_assign or self.get(0)[1] == tr_kw_assign:
+                        stmt_case.append(self.tokens[self.pos])
+                        self.pos += 1
+                        if self.tokens[self.pos][1][1] == kw_do:
+                            case_should_end += 1
+                    else:
+                        stmt_case.append(self.tokens[self.pos])
+                        self.pos += 1
+                Parser(stmt_case, node_case).parse()
+                node_case_new(self.Node, v, node_case)
+
             elif self.match(kw_cmd):
                 node_cmd_new(self.Node, self.get_value(self.get(0)))
                 self.skip(1)
@@ -1078,7 +1156,7 @@ class Parser(object):
 variable = {}
 TO_PY_CODE = ""
  
-def run(Nodes : list, TAB = '', label = '', path = '') -> None:
+def run(Nodes : list, TAB = '', label = '', path = '', arg = '') -> None:
     def check(tab):
         if label != 'whi_run' and label != 'if_run' and label != 'else_run' and  \
             label != 'elif_run' and label != "func_run" and label != "try_run" and \
@@ -1284,6 +1362,18 @@ def run(Nodes : list, TAB = '', label = '', path = '') -> None:
                 TO_PY_CODE += TAB + "lambda " + node[1][1] + ":" + node[2][1] + "\n"
             else:
                 TO_PY_CODE += TAB + node[3][1] + "= lambda " + node[1][1] + ":" + node[2][1] + "\n"
+
+        if node[0] == "node_match":
+            check(TAB)
+            v = node[1][1]
+            run(node[2], arg = v)
+
+        if node[0] == "node_case":
+            check(TAB)
+            if arg != '':
+                TO_PY_CODE += TAB + "if " + arg + " == " + node[1][1] + ":\n"
+                run(node[2], TAB + '\t', 'if_run')
+
 
 """
     Built-in library for Cantonese
@@ -2038,6 +2128,8 @@ kw_self = "自己嘅"
 kw_call_begin = "下"
 kw_get_value = "@" 
 kw_del = "delete下"
+kw_match = "match下"
+kw_case = "撞见"
 
 tr_kw_print = "畀我睇下"
 tr_kw_endprint = "點樣先"
@@ -2100,6 +2192,8 @@ tr_kw_self = "自己嘅"
 tr_kw_call_begin = "下"
 tr_kw_get_value = "@"
 tr_kw_del = "delete下"
+tr_kw_match = "match下"
+tr_kw_case = "撞見"
 
 keywords = (
     kw_print,
@@ -2162,6 +2256,8 @@ keywords = (
     kw_self,
     kw_call_begin,
     kw_get_value,
+    kw_match,
+    kw_case,
     tr_kw_print,
     tr_kw_endprint,
     tr_kw_exit,
@@ -2221,7 +2317,9 @@ keywords = (
     tr_kw_class_init,
     tr_kw_self,
     tr_kw_call_begin,
-    tr_kw_get_value
+    tr_kw_get_value,
+    tr_kw_match,
+    tr_kw_case
 )
 
 dump_ast = False
