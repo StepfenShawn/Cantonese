@@ -64,3 +64,5 @@ media/*
 
 # Vscode
 .vscode/
+
+*.exe
