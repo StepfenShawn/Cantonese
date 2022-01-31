@@ -153,6 +153,12 @@ namespace cantonese {
             case TokenType::KeywordExit:
                 name = _CAN_C("KeywordExit\n");
                 break;
+            case TokenType::KeywordAssign:
+                name = _CAN_C("KeywordAssign\n");
+                break;
+            case TokenType::KeywordIs:
+                name = _CAN_C("KeywordIs\n");
+                break;
             default:
                 name = _CAN_C("<unkown>\n");
         }
@@ -240,11 +246,11 @@ namespace cantonese {
             case _CAN_C(','):
                 TOKEN(TokenType::Comma, CURRENT_POS, 1, CURRENT_LINE);
                 break;
-            // 可能为注释 或者除号
+            
             case _CAN_C('/'):
                 if (NEXT_CHAR == _CAN_C('/') || NEXT_CHAR == _CAN_C('*')) {
                     SkipComment();
-                    return GetNextToken(); // 跳过之后继续读取一个token
+                    return GetNextToken();
                 } else {
                     TOKEN(TokenType::Div, CURRENT_POS, 1, CURRENT_LINE);
                 }
@@ -261,7 +267,8 @@ namespace cantonese {
                 } else if (CURRENT_CHAR == _CAN_C('"') || CURRENT_CHAR == _CAN_C('\'')) {
                     ParseString();
                 } else {
-                    LEXER_UNKOWNCHAR(CURRENT_CHAR);
+                    //LEXER_UNKOWNCHAR(CURRENT_CHAR);
+                    //wprintf(L"%S\n", &CURRENT_CHAR);
                     NEXT();
                 }
                 return;

@@ -149,6 +149,10 @@ class lexer(object):
            token = self.trans(token, self.make_rep(self.op_get_code, self.op_gen_code))
            return [self.line, ['expr', token]]
 
+        if c == '%':
+            self.next(1)
+            return [self.line, ['keyword', kw_func_end]]
+
         if c == '~':
             token = self.scan_python_expr()
             return [self.line, ['py_expr', token]]
@@ -158,6 +162,11 @@ class lexer(object):
                 self.next(2)
                 return [self.line, ['keyword', '->']]
         
+        if c == '=':
+            if self.check('=>'):
+                self.next(2)
+                return [self.line, ['keyword', kw_func_begin]]
+
         if c == '$':
             self.next(1)
             return [self.line, ['keyword', '$']]
@@ -537,6 +546,18 @@ class Parser(object):
     def skip(self, offset):
         self.pos += offset
     
+    """
+        Support the use of both traditonal and simplified characters
+    """
+    def _match_full(self, tokentype, skip = False) -> bool:
+        current_token = self.get(0)[1]
+        if tokentype == "KW_ENDPRINT":
+            if skip:
+                self.pos += 1
+            return current_token in ['点样先', '點樣先', '点樣先', '點样先']
+    """
+        Try to check the next token, skip if it's matched.
+    """
     def match(self, name):
         if not isinstance(name, list):
             if self.get(0)[1] == name:
@@ -550,6 +571,9 @@ class Parser(object):
                     return True
             return False
 
+    """
+        Try to check the next token's type, skip if it's matched.
+    """
     def match_type(self, type):
         if self.get(0)[0] == type:
             self.pos += 1
@@ -585,14 +609,19 @@ class Parser(object):
         line = self.get(i, get_line = True)
         raise Exception("Line " + str(line) + err + "\n 净系揾到: " + self.get(i)[1])
 
-    # TODO: Add error check
+    def _raise(self, err):
+        line = self.get(0, get_line = True)
+        raise Exception("Line " + str(line) + err + "\n 净系揾到: " + self.get(0)[1])
+
     def parse(self):
         while True:
             if self.match([kw_print, tr_kw_print]):
                 node_print_new(self.Node, self.get_value(self.get(0)))
                 self.skip(1) # Skip the args
-                self.token_except([kw_endprint, tr_kw_endprint], " : 濑嘢! 揾唔到 '点样先' ", skip = True)
-               
+                if self._match_full('KW_ENDPRINT'):
+                    self.skip(1)
+                else:
+                    self._raise( " : 濑嘢! 揾唔到 '点样先' ")
             elif self.match("sleep"):
                 node_sleep_new(self.Node, self.get(0))
                 self.skip(1)

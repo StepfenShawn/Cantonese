@@ -4,7 +4,63 @@
 #include <cstdlib>
 #include <deque>
 #include <map>
+#include <limits.h>
 #include "cantonese.hpp"
+
+#define ALPHABIT	0
+#define DIGITBIT	1
+#define PRINTBIT	2
+#define SPACEBIT	3
+#define XDIGITBIT	4
+#define MASK(B)		(1 << (B))
+
+#define NONA		0x01 // Support utf-8
+
+const unsigned char cani_ctype_[UCHAR_MAX + 2] = {
+  0x00,  /* EOZ */
+  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,	/* 0. */
+  0x00,  0x08,  0x08,  0x08,  0x08,  0x08,  0x00,  0x00,
+  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,	/* 1. */
+  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,
+  0x0c,  0x04,  0x04,  0x04,  0x04,  0x04,  0x04,  0x04,	/* 2. */
+  0x04,  0x04,  0x04,  0x04,  0x04,  0x04,  0x04,  0x04,
+  0x16,  0x16,  0x16,  0x16,  0x16,  0x16,  0x16,  0x16,	/* 3. */
+  0x16,  0x16,  0x04,  0x04,  0x04,  0x04,  0x04,  0x04,
+  0x04,  0x15,  0x15,  0x15,  0x15,  0x15,  0x15,  0x05,	/* 4. */
+  0x05,  0x05,  0x05,  0x05,  0x05,  0x05,  0x05,  0x05,
+  0x05,  0x05,  0x05,  0x05,  0x05,  0x05,  0x05,  0x05,	/* 5. */
+  0x05,  0x05,  0x05,  0x04,  0x04,  0x04,  0x04,  0x05,
+  0x04,  0x15,  0x15,  0x15,  0x15,  0x15,  0x15,  0x05,	/* 6. */
+  0x05,  0x05,  0x05,  0x05,  0x05,  0x05,  0x05,  0x05,
+  0x05,  0x05,  0x05,  0x05,  0x05,  0x05,  0x05,  0x05,	/* 7. */
+  0x05,  0x05,  0x05,  0x04,  0x04,  0x04,  0x04,  0x00,
+  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,	/* 8. */
+  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,
+  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,	/* 9. */
+  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,
+  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,	/* a. */
+  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,
+  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,	/* b. */
+  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,
+  0x00,  0x00,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,	/* c. */
+  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,
+  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,	/* d. */
+  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,
+  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,	/* e. */
+  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,  NONA,
+  NONA,  NONA,  NONA,  NONA,  NONA,  0x00,  0x00,  0x00,	/* f. */
+  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00
+};
+
+#define testprop(c,p)	(cani_ctype_[(c) + 1] & (p))
+#define lislalpha(c)	testprop(c, MASK(ALPHABIT))
+#define lislalnum(c)	testprop(c, (MASK(ALPHABIT) | MASK(DIGITBIT)))
+#define lisdigit(c)	testprop(c, MASK(DIGITBIT))
+#define lisspace(c)	testprop(c, MASK(SPACEBIT))
+#define lisprint(c)	testprop(c, MASK(PRINTBIT))
+#define lisxdigit(c)	testprop(c, MASK(XDIGITBIT))
+
+
 #define NEXT_CHAR mSource[mPosition + 1]
 
 /// Current position
@@ -26,7 +82,7 @@ mCurrentToken.mLine = line; }
 // Get the next position
 #define NEXT() {mPosition++;}
 
-#define LEXER_UNKOWNCHAR(str) std::cout << "濑嘢 : Line " << mLine <<  "唔知" << str << "係咩? " <<std::endl
+#define LEXER_UNKOWNCHAR(str) std::cout << "濑嘢 : Line " << mLine <<  "唔知"; std::cout<< "係咩: "
 
 namespace cantonese {
     inline bool IsNumber(CAN_Char ch);
@@ -156,7 +212,9 @@ namespace cantonese {
          {_CAN_C("起底"), TokenType::KeywordType},
          {_CAN_C("讲嘢"), TokenType::KeywordAssign},
          {_CAN_C("系"), TokenType::KeywordIs},
-         {_CAN_C("嘅话"), TokenType::KeywordThen}
+         {_CAN_C("係"), TokenType::KeywordIs},
+         {_CAN_C("嘅话"), TokenType::KeywordThen},
+         {_CAN_C("掟个"), TokenType::KeywordRaise}
     };
 
     struct Token {
