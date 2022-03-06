@@ -29,8 +29,32 @@ class Compile(object):
     # TODO
     def eval_expr(self, expr):
         return expr
-
+    # TODO
     def run_asm(self, Nodes : list, label = '', path = '') -> None:
+        
+        code_head = """
+        \t.cfi_startproc
+        pushq	%rbp
+        .cfi_def_cfa_offset 16
+        .cfi_offset 6, -16
+        movq	%rsp, %rbp
+        .cfi_def_cfa_register 6
+        """
+        
+        code_footer = """
+        \tmovl\t$0, %eax
+            leave
+        \t.cfi_def_cfa 7, 8
+            ret
+        \t.cfi_endproc
+        .LFE6:
+            .size\tmain, .-main
+            .ident\t"PCC: 1.0.0"
+        """
+
+        LC = 0
+        re = ""
+
         for node in Nodes:
             pass
 

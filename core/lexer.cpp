@@ -37,10 +37,13 @@ namespace cantonese {
                 name = _CAN_C("/\n");
                 break;
             case TokenType::Identifier:
+                name = String(mStart, mLength);
+                break;
             case TokenType::Number:
                 name = String(mStart, mLength);
                 break;
             case TokenType::String:
+                name = String(mStart, mLength);
                 break;
             case TokenType::Dot:
                 name = _CAN_C(".\n");
@@ -260,15 +263,15 @@ namespace cantonese {
                 TOKEN(TokenType::End, CURRENT_POS, 0, CURRENT_LINE);
                 return;
             default:
-                if (IsCodeChar(CURRENT_CHAR)) {
+                if (IsCodeChar(CURRENT_CHAR) || IsAlpha(CURRENT_CHAR)) {
                     ParseIdentifier();
                 } else if (IsNumber(CURRENT_CHAR)) {
                     ParseNumber();
-                } else if (CURRENT_CHAR == _CAN_C('"') || CURRENT_CHAR == _CAN_C('\'')) {
+                } else if (CURRENT_CHAR == _CAN_C('"')) {
                     ParseString();
                 } else {
-                    //LEXER_UNKOWNCHAR(CURRENT_CHAR);
-                    //wprintf(L"%S\n", &CURRENT_CHAR);
+                    LEXER_UNKOWNCHAR(CURRENT_CHAR);
+                    wprintf(L"%S\n", &CURRENT_CHAR);
                     NEXT();
                 }
                 return;
@@ -317,8 +320,16 @@ namespace cantonese {
         } while (IsNumber(CURRENT_CHAR) || CURRENT_CHAR == _CAN_C('.'));
         TOKEN_LENGTH((CAN_UINT32)(CURRENT_POS - TOKEN_START));
     }
+
     void Lexer::ParseString() {
-    
+        TOKEN(TokenType::String, CURRENT_POS, 0, CURRENT_LINE);
+        while (CURRENT_CHAR != _CAN_C('"')) {
+            if (CURRENT_CHAR == L'\n') {
+                CURRENT_LINE++;
+            }
+            NEXT();
+        }
+        TOKEN_LENGTH((CAN_UINT32)(CURRENT_POS - TOKEN_START));
     }
     
     void Lexer::ParseIdentifier() {

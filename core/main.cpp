@@ -62,6 +62,7 @@ void args_parse(std::string str) {
         {
             lexer.Read().dump(wcout);
         } while (lexer.Read().mType != TokenType::End);
+        
         break;
     }
 }
@@ -71,11 +72,27 @@ void _help() {
     std::cout<<info<<std::endl;
 }
 
+static void repl() {
+    char line[1024];
+    for (;;) {
+        wprintf(L">");
+        if (!fgets(line, sizeof(line), stdin)) {
+            wprintf(L"\n");
+            break;
+        }
+    }
+}
+
+
 int main(int argc, char* argv[]) {
     /* Only for mingw */
     /* TODO: test under VS */
     std::setlocale(LC_ALL, ".936");
     std::ios_base::sync_with_stdio(false);
+
+    if (argc == 0) {
+        repl();
+    }
 
     for (int i = 0; i < argc; i++) {
         if (i != 0) {args_parse(argv[i]);}
