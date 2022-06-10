@@ -1764,13 +1764,17 @@ def cantonese_urllib_init() -> None:
 def cantonese_requests_init() -> None:
     import requests
 
-    def req_get(url : str):
+    def req_get(url : str, data = "", json = False):
         headers = {
             'user-agent':
     'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Mobile Safari/537.36' \
         }
+        if data != "":
+            headers.update(data)
         res = requests.get(url, headers)
         res.encoding = 'utf-8'
+        if json:
+            return res.json()
         return res.text
 
     cantonese_func_def("𠯠求", req_get)
