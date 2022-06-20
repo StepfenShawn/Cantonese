@@ -33,13 +33,13 @@ class QDMGraphicsScene(QGraphicsScene):
         super().drawBackground(painter, rect)
 
         # 创建网格
-        left       = int(math.floor(rect.left()))        # -400
-        right     = int(math.ceil(rect.right()))       # 400
-        top       = int(math.floor(rect.top()))       # -300
+        left   = int(math.floor(rect.left()))   # -400
+        right  = int(math.ceil(rect.right()))   # 400
+        top    = int(math.floor(rect.top()))    # -300
         bottom = int(math.ceil(rect.bottom()))  #  300
  
         first_left = left - (left % self.gridSize)    #-400
-        first_top = top - (top % self.gridSize)   #-300
+        first_top  = top - (top % self.gridSize)      #-300
 
         # 计算所有网格
         # 不是100的整数倍的时候加入亮的, 反之加入暗的

@@ -7,7 +7,7 @@ class QDMGraphicsView(QGraphicsView):
         super().__init__(parent)
         self.grScene = grScene
         self.initUI()
-        self.setScene(self.parent)
+        self.setScene(self.grScene)
 
         self.zoomInFactor = 1.25
         self.zoomClamp = False
@@ -48,22 +48,22 @@ class QDMGraphicsView(QGraphicsView):
         else:
             super().mouseReleaseEvent(event)
  
-    # 拖拽功能 - 按下 
+    # 放大功能 - 按下 
     def middleMouseButtonPress(self, event):
         releaseEvent = QMouseEvent(QEvent.MouseButtonRelease, 
                             event.localPos(), event.screenPos(),
-                             Qt.LeftButton, Qt.NoButton, event.modifiers())
+                             Qt.MiddleButton, Qt.NoButton, event.modifiers())
         super().mouseReleaseEvent(releaseEvent)
         # 设置画布拖拽
         self.setDragMode(QGraphicsView.ScrollHandDrag)
         fakeEvent = QMouseEvent(event.type(), event.localPos(), 
                             event.screenPos(),
-                            Qt.LeftButton, event.buttons() | Qt.LeftButton, 
+                            Qt.MiddleButton, event.buttons() | Qt.LeftButton, 
                             event.modifiers())
         super().mousePressEvent(fakeEvent)
  
  
-    # 拖拽功能 - 松开 
+    #  缩小功能 - 松开 
     def middleMouseButtonRelease(self, event):
         fakeEvent = QMouseEvent(event.type(), event.localPos(), 
                               event.screenPos(),

@@ -1,6 +1,5 @@
 import sys
 from PyQt5.QtWidgets import *
-
 from node_editor_wnd import NodeEditorWnd
  
  

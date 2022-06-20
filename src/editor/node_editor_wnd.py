@@ -2,8 +2,9 @@ import typing
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-from requests import patch
 from node_graphics_scene import QDMGraphicsScene
+from node_graphics_view import QDMGraphicsView
+from node import Node
 
 class NodeEditorWnd(QWidget):
     def __init__(self, parent: typing.Optional['QWidget'] = None):
@@ -21,13 +22,11 @@ class NodeEditorWnd(QWidget):
         self.grScene = QDMGraphicsScene()
  
         # 渲染布局
-        self.view = QGraphicsView(self)
-        self.view.setScene(self.grScene)
+        self.view = QDMGraphicsView(self.grScene, self)
         self.layout.addWidget(self.view)
  
         self.setWindowTitle("Cantonese Editor")
         self.show()
-
         self.addDebugContent()
 
     def addDebugContent(self):
@@ -37,6 +36,7 @@ class NodeEditorWnd(QWidget):
 
 
         rect = self.grScene.addRect(-100, -100, 80, 100, outlinePen, greenBrush)
+        rect.setFlag(QGraphicsItem.ItemIsSelectable)
         rect.setFlag(QGraphicsItem.ItemIsMovable)
  
         text = self.grScene.addText("This is my Awesome text!", QFont("Ubuntu"))
