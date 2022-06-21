@@ -32,7 +32,7 @@ class QDMGraphicsView(QGraphicsView):
         if event.button() == Qt.MiddleButton:
             self.middleMouseButtonPress(event)
         elif event.button() == Qt.LeftButton:
-            self.rightMouseButtonPress(event)
+            self.leftMouseButtonPress(event)
         elif event.button() == Qt.RightButton:
             self.rightMouseButtonPress(event)
         else:
@@ -81,9 +81,14 @@ class QDMGraphicsView(QGraphicsView):
         return super().mouseReleaseEvent(event)
  
     def rightMouseButtonPress(self, event):
-        return super().mousePressEvent(event)
+        self.setDragMode(QGraphicsView.ScrollHandDrag)
+        fakeEvent = QMouseEvent(event.type(), event.localPos(),
+                                    event.screenPos(),
+                                    Qt.LeftButton, event.buttons() & ~Qt.LeftButton, event.modifiers())
+        return super().mousePressEvent(fakeEvent)
  
     def rightMouseButtonRelease(self, event):
+        self.setDragMode(QGraphicsView.NoDrag)
         return super().mouseReleaseEvent(event)
  
  

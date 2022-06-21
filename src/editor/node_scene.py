@@ -15,7 +15,7 @@ class Scene():
                                 self.scene_height)
 
     def addNode(self, node) -> None:
-        self.node.append(node)
+        self.nodes.append(node)
 
     def addEdge(self, edge) -> None:
         self.edges.append(edge)
