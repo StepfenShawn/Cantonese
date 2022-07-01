@@ -4,14 +4,14 @@ class Compile(object):
         self.target = target
         self.path = path
         self.TO_JS_CODE = ""
-        self.TO_C_CODE = ""
+        self.TO_CPP_CODE = ""
         self.TO_ASM_CODE = ""
 
         if self.target == "js":
             self.run_js(self.ast)
 
-        if self.target == "c":
-            self.run_c(self.ast)
+        if self.target == "cpp":
+            self.run_cpp(self.ast)
     
         if self.target == "asm":
             self.run_asm(self.ast)
@@ -20,8 +20,8 @@ class Compile(object):
         if self.target == "js":
             return self.TO_JS_CODE, self.path[ : len(self.path) - len('cantonese')] + 'js'
 
-        if self.target == "c":
-            return self.TO_C_CODE, self.path[ : len(self.path) - len('cantonese')] + 'c'
+        if self.target == "cpp":
+            return self.TO_CPP_CODE, self.path[ : len(self.path) - len('cantonese')] + 'cpp'
 
         if self.target == "asm":
             return self.TO_ASM_CODE, self.path[ : len(self.path) - len('cantonese')] + 'S'
@@ -58,10 +58,10 @@ class Compile(object):
         for node in Nodes:
             pass
 
-    def run_c(self, Nodes : list, label = '', path = '') -> None:
+    def run_cpp(self, Nodes : list, label = '', path = '') -> None:
         for node in Nodes:
             if node[0] == "node_print":
-                pass
+                self.TO_C_CODE += "std::cout<<" + self.eval_expr(node[1][1]) + ";\n"
     
     def run_js(self, Nodes : list, label = '', path = '', in_web = False) -> None:
         for node in Nodes:

@@ -28,6 +28,8 @@ class QDMGraphicsNode(QGraphicsItem):
         self.title = self.node.title
 
         # init sockets
+        self.initSocket()
+
 
         # init content
         self.initContent()
@@ -58,6 +60,9 @@ class QDMGraphicsNode(QGraphicsItem):
         self._title = value
         self.title_item.setPlainText(self._title)
 
+
+    def initSocket(self):
+        pass
 
     def initContent(self):
         self.grContent = QGraphicsProxyWidget(self)

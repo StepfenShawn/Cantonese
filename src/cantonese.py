@@ -1,6 +1,5 @@
 """
     Created at 2021/1/16 16:23
-    Last update at 2022/1/9 11:32
     The interpreter for Cantonese    
 """
 import cmd
@@ -2358,6 +2357,7 @@ keywords = (
 dump_ast = False
 dump_lex = False
 to_js = False
+to_cpp = False
 mkfile = False
 
 def cantonese_run(code : str, is_to_py : bool, file : str, 
@@ -3320,6 +3320,7 @@ def main():
     arg_parser.add_argument("file", nargs = '?', default = "")
     arg_parser.add_argument("-to_py", action = "store_true")
     arg_parser.add_argument("-to_js", action = "store_true")
+    arg_parser.add_argument("-to_cpp", action = "store_true")
     arg_parser.add_argument("-to_asm", action = "store_true")
     arg_parser.add_argument("-讲翻py", action = "store_true")
     arg_parser.add_argument("-to_web", action = "store_true")
@@ -3338,6 +3339,7 @@ def main():
     global dump_ast
     global dump_lex
     global to_js
+    global to_cpp
     global debug
     global mkfile
     global _version_
@@ -3380,6 +3382,8 @@ def main():
                 sys.exit(1)
             if args.to_js:
                 to_js = True
+            if args.to_cpp:
+                to_cpp = True
             if args.mkfile:
                 mkfile = True
             if args.to_asm:

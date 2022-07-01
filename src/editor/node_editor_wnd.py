@@ -5,6 +5,8 @@ from PyQt5.QtGui import *
 from node_graphics_view import QDMGraphicsView
 from node import Node
 from node_scene import Scene
+from node_socket import Socket
+
 
 class NodeEditorWnd(QWidget):
     def __init__(self, parent: typing.Optional['QWidget'] = None):
@@ -24,7 +26,7 @@ class NodeEditorWnd(QWidget):
         self.scene = Scene()
         self.grScene = self.scene.grScene
 
-        node = Node(self.scene, "Node1")
+        node = Node(self.scene, "Node1", inputs=[1])
  
         # 渲染布局
         self.view = QDMGraphicsView(self.grScene, self)
