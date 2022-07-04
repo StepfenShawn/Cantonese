@@ -4,7 +4,9 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
-# 网格布局
+"""
+    网格布局
+"""
 class QDMGraphicsScene(QGraphicsScene):
     def __init__(self, scene, parent = None):
         super().__init__(parent)

@@ -2,8 +2,11 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
+"""
+    节点图像类
+"""
 class QDMGraphicsNode(QGraphicsItem):
-    def __init__(self, node, parent=None):
+    def __init__(self, node, parent=None, width = 180, height = 100):
         super().__init__(parent)
         self.node = node
         self.content = self.node.content
@@ -11,8 +14,8 @@ class QDMGraphicsNode(QGraphicsItem):
         self._title_color = Qt.white
         self._title_font = QFont("Ubuntu", 10)
 
-        self.width = 180
-        self.height = 240
+        self.width = width
+        self.height = height
         self.edge_size = 10.0
         self.title_height = 24.0
         self._padding = 4.0
@@ -41,6 +44,7 @@ class QDMGraphicsNode(QGraphicsItem):
         self.setFlag(QGraphicsItem.ItemIsSelectable)
         self.setFlag(QGraphicsItem.ItemIsMovable)
     
+    # 初始化标题
     def initTitle(self):
         self.title_item = QGraphicsTextItem(self)
         self.title_item.setDefaultTextColor(self._title_color)
@@ -61,23 +65,25 @@ class QDMGraphicsNode(QGraphicsItem):
         self.title_item.setPlainText(self._title)
 
 
+    # 初始化套接字
     def initSocket(self):
         pass
 
+    # 初始化内容
     def initContent(self):
         self.grContent = QGraphicsProxyWidget(self)
         self.content.setGeometry(self.edge_size,
             self.title_height + self.edge_size,
-            self.width - 2 * self.edge_size,
-            self.height - 2 * self.edge_size - self.title_height)
+            self.width - 6 * self.edge_size,
+            self.height - 3 * self.edge_size - self.title_height)
         self.grContent.setWidget(self.content)
 
     def boundingRect(self):
         return QRectF(
                 0,
                 0,
-                2 * self.edge_size + self.width,
-                2 * self.edge_size + self.height
+                self.width,
+                self.height
             ).normalized()
     
     def paint(self, painter, QStyleOptionGraphicsItem, widget=None):

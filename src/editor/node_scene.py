@@ -1,5 +1,9 @@
 from node_graphics_scene import QDMGraphicsScene
 
+"""
+    场景类, 管理所有节点
+"""
+
 class Scene():
     def __init__(self) -> None:
         self.nodes = []

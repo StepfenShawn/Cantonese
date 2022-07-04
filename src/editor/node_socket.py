@@ -1,13 +1,19 @@
 from node_graphics_socket import QDMGraphicsSocket
-
-LEFT_TOP = 1
-LEFT_BOTTOM = 2
-RIGHT_TOP = 3
-RIGHT_BOTTOM = 4
+from node_graphics_socket import LEFT_TOP
+from node_graphics_socket import LEFT_BOTTOM
+from node_graphics_socket import RIGHT_TOP
+from node_graphics_socket import RIGHT_BOTTOM
 
 class Socket():
-    def __init__(self, node, index = 0, position = LEFT_TOP):
+    def __init__(self, node, index : int = 0, position : int = LEFT_TOP, socket_type : int = 1):
         self.node = node
         self.index = index
         self.position = position
-        self.grSocket = QDMGraphicsSocket(self.node.grNode)
+        self.socket_type = socket_type
+        self.grSocket = QDMGraphicsSocket(self, position = position)
+        self.grSocket.setPos(*self.node.getSocketPosition(index, position))
+
+    def delete(self):
+        self.grSocket.setParentItem(None)
+        self.node.scene.grScene.removeItem(self.grSocket)
+        del self.grSocket

@@ -1,22 +1,58 @@
+from turtle import position
 from node_graphics_node import QDMGraphicsNode
 from node_content_widgets import QDMNodeContentWidgets
 from node_socket import Socket
+from node_socket import LEFT_TOP
+from node_socket import LEFT_BOTTOM
+from node_socket import RIGHT_TOP
+from node_socket import RIGHT_BOTTOM
 
 
 class Node():
-    def __init__(self, scene, title = "Undefined Node", inputs = [], outputs = []) -> None:
+    def __init__(self, scene, title = "Undefined Node", inputs = [], outputs = [], width = 180, height = 100) -> None:
         self.scene = scene
         self.title = title
         self.content = QDMNodeContentWidgets()
-        self.grNode = QDMGraphicsNode(self)
+        # TODO: define different node type's height and width
+        self.grNode = QDMGraphicsNode(self, width = width, height = height)
         self.scene.grScene.addItem(self.grNode)
         self.scene.addNode(self)
 
+
+        self.socket_spacing = 22
 
         self.inputs = []
         self.outputs = []
         counter = 0
         for item in inputs:
-            socket = Socket(self, index = counter)
+            socket = Socket(self, index = counter, position = LEFT_TOP)
             counter += 1
             self.inputs.append(socket)
+        counter = 0
+        for item in outputs:
+            socket = Socket(self, index = counter, position = RIGHT_TOP)
+            counter += 1
+            self.outputs.append(socket)
+
+    @property
+    def pos(self):
+        return self.grNode.pos()
+
+    def setPos(self, x, y):
+        self.grNode.setPos(x, y)
+
+    def getSocketPosition(self, index, position):
+        if position in (LEFT_TOP, LEFT_BOTTOM):
+            x = 0
+        else:
+            x = self.grNode.width - self.socket_spacing
+        
+        if position in (LEFT_BOTTOM, RIGHT_BOTTOM):
+            # start from bottom
+            y = self.grNode.height - self.grNode.edge_size - \
+                self.grNode._padding - index * self.socket_spacing
+        else:
+            # start form top
+            y = self.grNode.title_height + self.grNode._padding \
+                + self.grNode.edge_size + index * self.socket_spacing
+        return x, y 
