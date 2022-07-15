@@ -8,11 +8,14 @@ from PyQt5.QtGui import *
     网格布局
 """
 class QDMGraphicsScene(QGraphicsScene):
+    itemSelected = pyqtSignal()
+    itemsDeselected = pyqtSignal()
     def __init__(self, scene, parent = None):
         super().__init__(parent)
 
         self.scene = scene
 
+        # settings
         self.gridSize = 20
         self.gridSquares = 5
  

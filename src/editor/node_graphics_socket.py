@@ -7,20 +7,27 @@ LEFT_BOTTOM = 2
 RIGHT_TOP = 3
 RIGHT_BOTTOM = 4
 
+SOCKET_VALUE_TYPE = 1
+SOCKET_LOGIC_TYPE = 2
+
 """
     套接字图像类
 """
 class QDMGraphicsSocket(QGraphicsItem):
-    def __init__(self, socket : 'Socket', parent = None, position : int = LEFT_TOP) -> None:
+    def __init__(self, socket : 'Socket', parent = None, position : int = LEFT_TOP, 
+                    socket_type : int = SOCKET_LOGIC_TYPE) -> None:
         super().__init__(socket.node.grNode)
         self.width = 26
         self.height = 20
-        self.scoket = socket
+        self.socket = socket
         self.isHighlighted = False
         self.position = position
+        self.socket_type = socket_type
         self.initUI()
         self.initAssets()
         self.setAcceptHoverEvents(True) # 设置接受悬停事件
+
+        self.hoverEnter = False
 
     """
         初始化UI
@@ -74,7 +81,10 @@ class QDMGraphicsSocket(QGraphicsItem):
         painter.drawEllipse(-self.radius, -self.radius, 2 * self.radius, 2 * self.radius)
 
     def paint(self, painter, QStyleOptionGraphicsItem, vidget = None):
-        self.drawLogicType(painter)
+        if self.socket_type == SOCKET_LOGIC_TYPE:
+            self.drawLogicType(painter)
+        if self.socket_type == SOCKET_VALUE_TYPE:
+            self.drawValueType(painter)
     
     # 定义边框
     def boundingRect(self):
@@ -89,11 +99,13 @@ class QDMGraphicsSocket(QGraphicsItem):
     def hoverEnterEvent(self, event: 'QGraphicsSceneHoverEvent'):
         """鼠标进入"""
         self.setCursor(Qt.CrossCursor)
+        self.hoverEnter = True
         super().hoverEnterEvent(event)
 
     def hoverLeaveEvent(self, event: 'QGraphicsSceneHoverEvent'):
         """鼠标离开"""
         self.setCursor(Qt.ArrowCursor)
+        self.hoverEnter = False
         super().hoverLeaveEvent(event)
 
     def mousePressEvent(self, event: 'QGraphicsSceneMouseEvent'):

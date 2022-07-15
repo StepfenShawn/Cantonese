@@ -5,7 +5,8 @@ from PyQt5.QtGui import *
 from node_graphics_view import QDMGraphicsView
 from node import Node
 from node_scene import Scene
-from node_socket import Socket
+from node_graphics_socket import SOCKET_VALUE_TYPE
+from node_graphics_socket import SOCKET_LOGIC_TYPE
 
 """
     编辑器主窗口
@@ -29,10 +30,10 @@ class NodeEditorWnd(QWidget):
  
         # 渲染网格
         self.scene = Scene()
-        self.grScene = self.scene.grScene
+        # self.grScene = self.scene.grScene
  
         # 渲染布局
-        self.view = QDMGraphicsView(self.grScene, self)
+        self.view = QDMGraphicsView(self.scene, self)
         self.layout.addWidget(self.view)
  
         self.addNodes()
@@ -41,9 +42,13 @@ class NodeEditorWnd(QWidget):
         self.show()
 
     def addNodes(self):
-        node1 = Node(self.scene, "Add", inputs=[1,2], outputs=[1])
-        node2 = Node(self.scene, "Print", inputs=[1], width=180, height=240)
+        node1 = Node(self.scene, "相加", inputs=[{'type' : SOCKET_LOGIC_TYPE}, {'type' : SOCKET_VALUE_TYPE}, {'type' : SOCKET_VALUE_TYPE}], outputs=[{'type' : SOCKET_LOGIC_TYPE}])
+        node2 = Node(self.scene, "输出", inputs=[{'type' : SOCKET_LOGIC_TYPE}], width = 180, height = 240)
         node2.setPos(-250, -350)
+        node3 = Node(self.scene, "入口", inputs=[], outputs=[{'type' : SOCKET_LOGIC_TYPE}])
+        node3.setPos(100, 100)
+        node4 = Node(self.scene, "1", inputs = [], outputs=[{'type' : SOCKET_VALUE_TYPE}], height = 70)
+        node5 = Node(self.scene, "2", inputs = [], outputs=[{'type' : SOCKET_VALUE_TYPE}], height = 70)
 
     def loadSytlesheet(self, filename):
         print('STYLE loading:', filename)
@@ -51,4 +56,4 @@ class NodeEditorWnd(QWidget):
         file.open(QFile.ReadOnly | QFile.Text)
         stylesheet = file.readAll()
         QApplication.instance().setStyleSheet(str(stylesheet, 
-                                encoding="utf-8"))
+                                encoding = "utf-8"))

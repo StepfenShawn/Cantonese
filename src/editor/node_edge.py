@@ -1,73 +1,51 @@
 from node_graphics_edge import QDMGraphicsEdge
-from node_graphics_edge import QDMGraphicsEdgeDirect
-from node_graphics_edge import QDMGraphicsEdgeBezier
-
-EDGE_TYPE_DIRECT = 1 # 直线
-EDGE_TYPE_BEZIER = 2 # 曲线
+from node_graphics_edge import EDGE_TYPE_DIRECT
+from node_graphics_edge import EDGE_TYPE_BEZIER
+from node_graphics_socket import QDMGraphicsSocket
 
 class Edge():
-    def __init__(self, scene, start_socket = None, end_socket = None, edge_type : int = EDGE_TYPE_DIRECT) -> None:
+    def __init__(self, scene, start_socket : QDMGraphicsSocket = None, 
+                end_socket : QDMGraphicsSocket = None, edge_type : int = EDGE_TYPE_BEZIER) -> None:
         self.scene = scene
-
-        # default init
-        self._start_socket = None
-        self._end_socket = None
 
         self.start_socket = start_socket
         self.end_socket = end_socket
         self.edge_type = edge_type
-        self.grEdge = QDMGraphicsEdge()
-        # self.scene.addEdge(self)
+        self.grEdge = QDMGraphicsEdge(self, type = edge_type)
+        self.scene.addEdge(self.grEdge)
         self.scene.grScene.addItem(self.grEdge)
 
-        @property
-        def start_socket(self):
-            return self._start_coket
+        if self.start_socket is not None:
+            self.update_positions()
 
-        @start_socket.setter
-        def start_socket(self, value):
-            # 如果已经被连接
-            if self._start_socket is not None:
-                self._start_socket.removeEdge(self)
 
-            self._start_socket = value
-            if self.start_scoket is not None:
-                self.start_socket.addEdge(self)
+    def store(self):
+        self.scene.addEdge(self.grEdge)
+        self.scene.grScene.addItem(self.grEdge)
 
-        @property
-        def end_socket(self):
-            return self._end_socket
+    def update_positions(self):
+        source_pos = [None, None]
+        source_pos[0], source_pos[1] = self.start_socket.socket.getSocketPosition()
+        source_pos[0] += self.start_socket.socket.node.grNode.pos().x()
+        source_pos[1] += self.start_socket.socket.node.grNode.pos().y()
+        self.grEdge.set_src(source_pos[0], source_pos[1])
+        if self.end_socket is not None:
+            end_pos = [None, None]
+            end_pos[0], end_pos[1] = self.end_socket.socket.getSocketPosition()
+            end_pos[0] += self.end_socket.socket.node.grNode.pos().x()
+            end_pos[1] += self.end_socket.socket.node.grNode.pos().y()
+            self.grEdge.set_dst(end_pos[0], end_pos[1])
+        else:
+            self.grEdge.set_dst(source_pos[0], source_pos[1])
+        
+        self.grEdge.update()
 
-        @end_socket.setter
-        def end_socket(self, value):
-            # 如果已经被连接
-            if self._end_socket is not None:
-                self._end_socket.removeEdge(self)
+    def remove_from_current_items(self):
+        self.end_socket = None
+        self.start_socket = None
 
-            self._end_socket = value
-            if self.end_socket is not None:
-                self.end_socket.addEdge(self)
-
-        @property
-        def edge_type(self):
-            return self._edge_type
-
-        @edge_type.setter
-        def edge_type(self, value):
-            if hasattr(self, 'grEdge') and self.grEdge is not None:
-                self.scene.grScene.removeItem(self.grEdge)
-
-            self._edge_type = value
-
-            if self.edge_type == EDGE_TYPE_DIRECT:
-                self.grEdge = QDMGraphicsEdgeDirect(self)
-
-            elif self.edge_type == EDGE_TYPE_BEZIER:
-                self.grEdge = QDMGraphicsEdgeBezier(self)
-
-            else:
-                 self.grEdge = QDMGraphicsEdgeBezier(self)
-
-            self.scene.grScene.addItem(self.grEdge)
-            if self.start_socket is not None:
-                self.updatePositions()
+    def remove(self):
+        self.remove_from_current_items()
+        self.scene.removeEdge(self.grEdge)
+        self.scene.grScene.removeItem(self.grEdge)
+        self.grEdge = None

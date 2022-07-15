@@ -1,4 +1,3 @@
-from turtle import position
 from node_graphics_node import QDMGraphicsNode
 from node_content_widgets import QDMNodeContentWidgets
 from node_socket import Socket
@@ -6,6 +5,8 @@ from node_socket import LEFT_TOP
 from node_socket import LEFT_BOTTOM
 from node_socket import RIGHT_TOP
 from node_socket import RIGHT_BOTTOM
+from node_socket import SOCKET_LOGIC_TYPE
+from node_socket import SOCKET_VALUE_TYPE
 
 
 class Node():
@@ -14,7 +15,7 @@ class Node():
         self.title = title
         self.content = QDMNodeContentWidgets()
         # TODO: define different node type's height and width
-        self.grNode = QDMGraphicsNode(self, width = width, height = height)
+        self.grNode = QDMGraphicsNode(self, scene, width = width, height = height)
         self.scene.grScene.addItem(self.grNode)
         self.scene.addNode(self)
 
@@ -25,7 +26,12 @@ class Node():
         self.outputs = []
         counter = 0
         for item in inputs:
-            socket = Socket(self, index = counter, position = LEFT_TOP)
+            try:
+                socket_type = item['type']
+            except KeyError:
+                # 设置为默认的类型
+                pass
+            socket = Socket(self, index = counter, position = LEFT_TOP, socket_type = socket_type)
             counter += 1
             self.inputs.append(socket)
         counter = 0

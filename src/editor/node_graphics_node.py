@@ -6,8 +6,9 @@ from PyQt5.QtGui import *
     节点图像类
 """
 class QDMGraphicsNode(QGraphicsItem):
-    def __init__(self, node, parent=None, width = 180, height = 100):
+    def __init__(self, node, scene, parent = None, width = 180, height = 100):
         super().__init__(parent)
+        self._scene = scene
         self.node = node
         self.content = self.node.content
  
@@ -114,3 +115,10 @@ class QDMGraphicsNode(QGraphicsItem):
         painter.setPen(self._pen_default if not self.isSelected() else self._pen_selected)
         painter.setBrush(Qt.NoBrush)
         painter.drawPath(path_outline.simplified())
+
+
+    def mouseMoveEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
+        super().mouseMoveEvent(event)
+        if self.isSelected():
+            for gr_edge in self._scene.edges:
+                gr_edge.edge.update_positions()
