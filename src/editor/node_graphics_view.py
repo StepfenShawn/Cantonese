@@ -39,10 +39,8 @@ class QDMGraphicsView(QGraphicsView):
     
     # override
     def keyPressEvent(self, event) -> None:
-        if event.key() == Qt.Key_E:
-            self.edge_enable =~ self.edge_enable
         # TODO: delete the node
-        elif event.key() == Qt.Key_D:
+        if event.key() == Qt.Key_D:
             self.Key_D_Press(event)
         return super().keyPressEvent(event)
 
@@ -51,9 +49,10 @@ class QDMGraphicsView(QGraphicsView):
         if event.button() == Qt.MiddleButton:
             self.middleMouseButtonPress(event)
         elif event.button() == Qt.LeftButton:
-            if self.edge_enable:
-                item = self.get_item_at_click(event)
-                if isinstance(item, QDMGraphicsSocket):
+            item = self.get_item_at_click(event)
+            if isinstance(item, QDMGraphicsSocket):
+                if item.hoverEnter:
+                    self.edge_enable = True
                     self.edge_drag_start(item)
             else:
                 self.leftMouseButtonPress(event)

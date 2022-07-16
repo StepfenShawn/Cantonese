@@ -47,8 +47,8 @@ class NodeEditorWnd(QWidget):
         node2.setPos(-250, -350)
         node3 = Node(self.scene, "入口", inputs=[], outputs=[{'type' : SOCKET_LOGIC_TYPE}])
         node3.setPos(100, 100)
-        node4 = Node(self.scene, "1", inputs = [], outputs=[{'type' : SOCKET_VALUE_TYPE}], height = 70)
-        node5 = Node(self.scene, "2", inputs = [], outputs=[{'type' : SOCKET_VALUE_TYPE}], height = 70)
+        #node4 = Node(self.scene, "1", inputs = [], outputs=[{'type' : SOCKET_VALUE_TYPE}], height = 70)
+        #node5 = Node(self.scene, "2", inputs = [], outputs=[{'type' : SOCKET_VALUE_TYPE}], height = 70)
 
     def loadSytlesheet(self, filename):
         print('STYLE loading:', filename)

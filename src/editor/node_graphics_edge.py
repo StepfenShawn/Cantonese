@@ -105,3 +105,14 @@ class QDMGraphicsEdge(QGraphicsPathItem):
             path.cubicTo(s[0] + cpx_s, s[1] + cpy_s, d[0] + cpx_d, d[1] + cpy_d, self.posDestination[0],
                         self.posDestination[1])
             return path
+
+
+    def hoverEnterEvent(self, event: 'QGraphicsSceneHoverEvent') -> None:
+        self._pen.setWidthF(self.width * 4)
+        self.update()
+        return super().hoverEnterEvent(event)
+
+    def hoverLeaveEvent(self, event: 'QGraphicsSceneHoverEvent') -> None:
+        self._pen.setWidthF(self.width)
+        self.update()
+        return super().hoverLeaveEvent(event)

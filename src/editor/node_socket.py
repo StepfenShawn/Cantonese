@@ -15,11 +15,17 @@ class Socket():
         self.grSocket = QDMGraphicsSocket(self, position = position, socket_type = socket_type)
         self.grSocket.setPos(*self.node.getSocketPosition(self.index, self.position))
 
+        self.isConnected = False
+
         self.edges = []
 
     def getSocketPosition(self):
-        ret = self.node.getSocketPosition(self.index, self.position)
-        return ret
+        ret = [None, None]
+        ret[0], ret[1] = self.node.getSocketPosition(self.index, self.position)
+        # 获取中心位置
+        ret[0] = ret[0] + (self.grSocket.width / 2)
+        ret[1] = ret[1] + (self.grSocket.height / 2)
+        return ret[0], ret[1]
 
     def delete(self):
         self.grSocket.setParentItem(None)

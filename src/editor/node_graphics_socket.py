@@ -48,12 +48,19 @@ class QDMGraphicsSocket(QGraphicsItem):
         self._color_outline = QColor("#0A0C0A")
         # 白色连接端口颜色
         self._color_white_output = QColor("#ffffffff")
+        # 鼠标移动时的颜色
+        self._color_white_output_underMouse = QColor("#BEBEBE")
+        self._color_outline_underMouse = QColor("008B00")
 
         self._pen = QPen(self._color_outline)
         # 插槽轮廓线宽度
         self._pen.setWidthF(0.5)
+        self._pen_underMouse = QPen(self._color_outline_underMouse)
+        self._pen_underMouse.setWidth(2)
         self._white_pen = QPen(self._color_white_output)
         self._white_pen.setWidthF(1)
+        self._white_pen_underMouse = QPen(self._color_white_output_underMouse)
+        self._white_pen_underMouse.setWidthF(4)
         self._brush = QBrush(self._color_background)
         self._brush2 = QBrush(self._color_background2)
         self._brush3 = QBrush(self._color_white_output)
@@ -64,7 +71,7 @@ class QDMGraphicsSocket(QGraphicsItem):
         path_content = QPainterPath()
         list01 = [0,-2*w, 2*w-1,-2*w, 4*w-1,0, 4*w-1,1, 2*w-1,2*w+1 ,0,2*w+1]
         path_content.addPolygon(QPolygonF(QPolygon(list01)))
-        painter.setPen(self._white_pen)
+        painter.setPen(self._white_pen if not self.isUnderMouse() else self._white_pen_underMouse)
         painter.setRenderHint(QPainter.Antialiasing, False) #反走样
         #如果此端口已经被连接的话
         painter.drawPath(path_content.simplified())
@@ -73,7 +80,7 @@ class QDMGraphicsSocket(QGraphicsItem):
         """绘制插槽变量圆圈"""
         painter.translate(9.5, 10)
         painter.setBrush(self._brush)
-        painter.setPen(self._pen)
+        painter.setPen(self._pen if not self.isUnderMouse() else self._pen_underMouse)
         #绘制底层三角和圆形
         polygon = QPolygon()
         polygon.setPoints(4,self.radius*0.9,self.radius*1.7,0,4,-self.radius*0.9)
@@ -83,7 +90,7 @@ class QDMGraphicsSocket(QGraphicsItem):
     def paint(self, painter, QStyleOptionGraphicsItem, vidget = None):
         if self.socket_type == SOCKET_LOGIC_TYPE:
             self.drawLogicType(painter)
-        if self.socket_type == SOCKET_VALUE_TYPE:
+        elif self.socket_type == SOCKET_VALUE_TYPE:
             self.drawValueType(painter)
     
     # 定义边框
