@@ -3,7 +3,13 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from node_edge import Edge
 from node_graphics_socket import QDMGraphicsSocket
+from node_graphics_edge import QDMGraphicsEdge
 from node import Node
+from node_search import NodeSearch
+
+
+MODE_EDITING = 1
+MODE_NODE_SEARCHING = 2
 
 class QDMGraphicsView(QGraphicsView):
     def __init__(self, Scene, parent = None):
@@ -20,6 +26,12 @@ class QDMGraphicsView(QGraphicsView):
 
         self.edge_enable = False
         self.drag_edge = None
+
+        self.mode = None
+        self.editingFlag = False
+
+        self.bp_search = NodeSearch(self.Scene)
+        
 
 
     def initUI(self):
@@ -42,10 +54,24 @@ class QDMGraphicsView(QGraphicsView):
         # TODO: delete the node
         if event.key() == Qt.Key_D:
             self.Key_D_Press(event)
+        elif event.key() == Qt.Key_Delete:
+            if not self.editingFlag:
+                self.deleteSelected()
+            else:
+                super().keyPressEvent(event)
         return super().keyPressEvent(event)
+
+
+    def deleteSelected(self) -> None:
+        for item in self.grScene.selectedItems():
+            if isinstance(item, QDMGraphicsEdge):
+                item.edge.remove()
+            elif hasattr(item, 'node'):
+                item.node.remove()
 
     # 鼠标事件处理
     def mousePressEvent(self, event):
+        self.setStartPos(event.pos())
         if event.button() == Qt.MiddleButton:
             self.middleMouseButtonPress(event)
         elif event.button() == Qt.LeftButton:
@@ -81,10 +107,17 @@ class QDMGraphicsView(QGraphicsView):
                 if isinstance(item, QDMGraphicsSocket) and item is not self.drag_start_socket:
                     self.edge_drag_end(item)
                 else:
+                    self.mode = MODE_NODE_SEARCHING
+                    self.bp_search.setSearchWidgetLocation(self.mapToScene(event.pos()).x(), 
+                                                           self.mapToScene(event.pos()).y())
                     self.drag_edge.remove()
                     self.drag_edge = None
             self.leftMouseButtonRelease(event)
         elif event.button() == Qt.RightButton:
+            sc_pos = self.mapToScene(event.pos())
+            if sc_pos == self.mapToScene(self.getStartPos()):
+                self.mode = MODE_NODE_SEARCHING
+                self.bp_search.setSearchWidgetLocation(sc_pos.x(),sc_pos.y())
             self.rightMouseButtonRelease(event)
         else:
             super().mouseReleaseEvent(event)
@@ -125,9 +158,8 @@ class QDMGraphicsView(QGraphicsView):
         return super().mousePressEvent(event)
 
     def Key_D_Press(self, event):
-        item = self.get_item_at_click(event)
-        if isinstance(item, QGraphicsItem):
-            self.grScene.removeItem(item)
+        if self.mode == MODE_NODE_SEARCHING:
+            self.bp_search.remove()
         return super().keyPressEvent(event)
  
     def rightMouseButtonRelease(self, event):
@@ -185,3 +217,9 @@ class QDMGraphicsView(QGraphicsView):
     """
     def addNodes(self, name = "默认节点"):
         return Node(self.scene, title=name)
+
+    def getStartPos(self):
+        return self.start_pos
+
+    def setStartPos(self, pos):
+        self.start_pos = pos

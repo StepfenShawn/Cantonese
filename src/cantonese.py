@@ -1448,6 +1448,9 @@ def cantonese_lib_import(name : str) -> None:
     elif name == "json" or name == "json解析":
         cantonese_json_init()
         return "json"
+    elif name == "numpy" or name == "数值计算":
+        cantonese_numpy_init()
+        return "numpy"
     elif name[ : 7] == "python-":
         return name[7 : ]
     else:
@@ -2079,6 +2082,9 @@ def cantonese_pygame_init() -> None:
     cantonese_func_def("刷新", pygame.display.flip)
     cantonese_func_def("事件驱动", exec_event)
     cantonese_func_def("Say拜拜", pygame.quit)
+
+def cantonese_numpy_init() -> None:
+    pass
 
 def cantonese_lib_run(lib_name : str, path : str) -> None:
     pa = os.path.dirname(path) # Return the last file Path

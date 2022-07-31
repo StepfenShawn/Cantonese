@@ -8,7 +8,6 @@ from node_socket import RIGHT_BOTTOM
 from node_socket import SOCKET_LOGIC_TYPE
 from node_socket import SOCKET_VALUE_TYPE
 
-
 class Node():
     def __init__(self, scene, title = "Undefined Node", inputs = [], outputs = [], width = 180, height = 100) -> None:
         self.scene = scene
@@ -36,7 +35,12 @@ class Node():
             self.inputs.append(socket)
         counter = 0
         for item in outputs:
-            socket = Socket(self, index = counter, position = RIGHT_TOP)
+            try:
+                socket_type = item['type']
+            except KeyError:
+                # 设置为默认的类型
+                pass
+            socket = Socket(self, index = counter, position = RIGHT_TOP, socket_type = socket_type)
             counter += 1
             self.outputs.append(socket)
 
@@ -61,4 +65,11 @@ class Node():
             # start form top
             y = self.grNode.title_height + self.grNode._padding \
                 + self.grNode.edge_size + index * self.socket_spacing
-        return x, y 
+        return x, y
+
+    def remove(self):
+        for socket in (self.inputs + self.outputs):
+            if socket.isConnected:
+                socket.edge.remove()
+        self.scene.grScene.removeItem(self.grNode)
+        self.grNode = None
