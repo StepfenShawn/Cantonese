@@ -10,6 +10,17 @@ RIGHT_BOTTOM = 4
 SOCKET_VALUE_TYPE = 1
 SOCKET_LOGIC_TYPE = 2
 
+SOCKET_COLORS = [
+    QColor("#FFFF7700"),
+    QColor("#FF52e220"),
+    QColor("#FF0056a6"),
+    QColor("#FFa86db1"),
+    QColor("#FFb54747"),
+    QColor("#FFdbe220"),
+    QColor("#FF888888"),
+
+]
+
 """
     套接字图像类
 """

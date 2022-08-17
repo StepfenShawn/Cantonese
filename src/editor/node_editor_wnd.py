@@ -2,7 +2,9 @@ import typing
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
+# Views
 from node_graphics_view import QDMGraphicsView
+
 from node import Node
 from node_scene import Scene
 from node_graphics_socket import SOCKET_VALUE_TYPE
@@ -11,7 +13,7 @@ from node_graphics_socket import SOCKET_LOGIC_TYPE
 """
     编辑器主窗口
 """
-class NodeEditorWnd(QWidget):
+class NodeEditorWidget(QWidget):
     def __init__(self, parent: typing.Optional['QWidget'] = None):
         super().__init__(parent)
         # 加载节点样式
@@ -19,9 +21,10 @@ class NodeEditorWnd(QWidget):
         self.loadSytlesheet(self.stylesheet_filename)
         self.initUI()
 
+
     def initUI(self):
         # 设置窗口大小
-        self.setGeometry(200, 200, 800, 600)
+        self.setGeometry(200, 200, 800, 900)
  
         # 设置垂直布局
         self.layout = QVBoxLayout()
@@ -37,9 +40,6 @@ class NodeEditorWnd(QWidget):
         self.layout.addWidget(self.view)
  
         self.addNodes()
-
-        self.setWindowTitle("Cantonese Editor")
-        self.show()
 
     def addNodes(self):
         node1 = Node(self.scene, "相加", inputs=[{'type' : SOCKET_LOGIC_TYPE}, {'type' : SOCKET_VALUE_TYPE}, {'type' : SOCKET_VALUE_TYPE}], outputs=[{'type' : SOCKET_LOGIC_TYPE}])

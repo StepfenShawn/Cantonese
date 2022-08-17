@@ -10,6 +10,7 @@ from node_search import NodeSearch
 
 MODE_EDITING = 1
 MODE_NODE_SEARCHING = 2
+MODE_RUNNING = 3
 
 class QDMGraphicsView(QGraphicsView):
     def __init__(self, Scene, parent = None):
@@ -27,7 +28,7 @@ class QDMGraphicsView(QGraphicsView):
         self.edge_enable = False
         self.drag_edge = None
 
-        self.mode = None
+        self.mode = MODE_RUNNING
         self.editingFlag = False
 
         self.bp_search = NodeSearch(self.Scene)
@@ -48,6 +49,7 @@ class QDMGraphicsView(QGraphicsView):
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)        
 
         self.setDragMode(self.RubberBandDrag)
+        self.setAcceptDrops(True)
     
     # override
     def keyPressEvent(self, event) -> None:
@@ -75,6 +77,14 @@ class QDMGraphicsView(QGraphicsView):
         if event.button() == Qt.MiddleButton:
             self.middleMouseButtonPress(event)
         elif event.button() == Qt.LeftButton:
+            self.setDragMode(self.RubberBandDrag)
+            self.setAcceptDrops(True)
+            if self.mode == MODE_NODE_SEARCHING:
+                x, y = self.mapToScene(event.pos()).x(), self.mapToScene(event.pos()).y()
+                if ((x < self.bp_search.pos_x or x > self.bp_search.pos_x + self.bp_search.widget_search.width) \
+                    and (y > self.bp_search.pos_y or y < self.bp_search.pos_y + self.bp_search.widget_search.height)):
+                    self.mode = MODE_RUNNING
+                    self.bp_search.remove()
             item = self.get_item_at_click(event)
             if isinstance(item, QDMGraphicsSocket):
                 if item.hoverEnter:
@@ -124,28 +134,12 @@ class QDMGraphicsView(QGraphicsView):
  
     # 放大功能 - 按下 
     def middleMouseButtonPress(self, event):
-        releaseEvent = QMouseEvent(QEvent.MouseButtonRelease, 
-                            event.localPos(), event.screenPos(),
-                             Qt.MiddleButton, Qt.NoButton, event.modifiers())
-        super().mouseReleaseEvent(releaseEvent)
-        # 设置画布拖拽
-        self.setDragMode(QGraphicsView.ScrollHandDrag)
-        fakeEvent = QMouseEvent(event.type(), event.localPos(), 
-                            event.screenPos(),
-                            Qt.MiddleButton, event.buttons() | Qt.LeftButton, 
-                            event.modifiers())
-        super().mousePressEvent(fakeEvent)
+        super().mousePressEvent(event)
  
  
     #  缩小功能 - 松开 
     def middleMouseButtonRelease(self, event):
-        fakeEvent = QMouseEvent(event.type(), event.localPos(), 
-                              event.screenPos(),
-                              Qt.LeftButton, event.buttons() & ~Qt.LeftButton, 
-                              event.modifiers())
-        super().mouseReleaseEvent(fakeEvent)
-        # 取消拖拽
-        self.setDragMode(QGraphicsView.NoDrag)
+        super().mouseReleaseEvent(event)
  
  
     def leftMouseButtonPress(self, event):
@@ -155,15 +149,23 @@ class QDMGraphicsView(QGraphicsView):
         return super().mouseReleaseEvent(event)
  
     def rightMouseButtonPress(self, event):
-        return super().mousePressEvent(event)
+        self.setDragMode(QGraphicsView.ScrollHandDrag)
+        fakeEvent = QMouseEvent(event.type(), event.localPos(), event.screenPos(),
+                                Qt.LeftButton, event.buttons() | Qt.LeftButton, event.modifiers())
+        return super().mousePressEvent(fakeEvent)
 
     def Key_D_Press(self, event):
         if self.mode == MODE_NODE_SEARCHING:
             self.bp_search.remove()
+            self.mode == MODE_RUNNING
         return super().keyPressEvent(event)
  
     def rightMouseButtonRelease(self, event):
-        return super().mouseReleaseEvent(event)
+        releaseEvent = QMouseEvent(QEvent.MouseButtonRelease, event.localPos(), event.screenPos(),
+                                   Qt.LeftButton, Qt.NoButton, event.modifiers())
+        super().mouseReleaseEvent(releaseEvent)
+        super().mouseReleaseEvent(event)
+        self.setDragMode(self.NoDrag)
 
     def get_item_at_click(self, event):
         pos = event.pos()
