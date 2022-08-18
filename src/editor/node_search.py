@@ -62,14 +62,27 @@ class QDMNodeSearchGraphics(QGraphicsItem):
         self.node_widget3.setY(80)
         self.push_button_addvar.clicked.connect(self.addNode_AddVar)
 
+        self.push_button_addfunc = QPushButton("添加函数")
+        self.push_button_addfunc.setFixedSize(self.width, 40)
+        self.push_button_addfunc.setStyleSheet(self.push_button_css)
+        self.node_widget4 = QGraphicsProxyWidget(self)
+        self.node_widget4.setWidget(self.push_button_addfunc)
+        self.node_widget4.setY(120)
+        self.push_button_addfunc.clicked.connect(self.addNode_AddFunc)
+
+
+
     def addNode_BeginPlay(self):
-        self.signer.addNode_run('BeginPlay')
+        self.signer.addNode_run('入口')
 
     def addNode_PrintString(self):
-        self.signer.addNode_run('PrintString')
+        self.signer.addNode_run('输出')
 
     def addNode_AddVar(self):
-        self.signer.addNode_run('AddVar')
+        self.signer.addNode_run('变量')
+
+    def addNode_AddFunc(self):
+        self.signer.addNode_run('函数')
 
     """
         定义Qt的边框
@@ -122,20 +135,28 @@ class NodeSearch():
 
     # TODO
     def addNode(self, name = "默认节点"):
-        if name == 'BeginPlay':
+        if name == '入口':
             ret = Node(self.scene, title = name, outputs = [{'type' : SOCKET_LOGIC_TYPE}])
             ret.setPos(self.pos_x, self.pos_y)
             self.remove()
         
-        if name == 'PrintString':
+        elif name == '输出':
             ret = Node(self.scene, title = name, inputs = [{'type' : SOCKET_LOGIC_TYPE}, {'type' : SOCKET_VALUE_TYPE}], 
                                                 outputs = [{'type' : SOCKET_LOGIC_TYPE}])
             ret.setPos(self.pos_x, self.pos_y)
             self.remove()
 
-        if name == 'AddVar':
+        elif name == '变量':
             ret = Node(self.scene, title = name, width = 150, height = 80,outputs = [{'type' : SOCKET_VALUE_TYPE}])
             ret.setPos(self.pos_x, self.pos_y)
             self.remove()
+
+        elif name == '函数':
+            ret = Node(self.scene, title = name, outputs = [{'type' : SOCKET_LOGIC_TYPE}])
+            ret.setPos(self.pos_x, self.pos_y)
+            self.remove()
+
+        else:
+            return
         
         return ret

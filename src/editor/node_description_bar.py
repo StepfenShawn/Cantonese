@@ -8,8 +8,16 @@ class DescriptionBarWidget(QWidget):
     def __init__(self, Name : str, parent: typing.Optional['QWidget'] = None) -> None:
         super().__init__(parent)
         self.Name = Name
+        self.initDescriptionMap()
         self.initUI()
         self.initAssets()
+
+    def initDescriptionMap(self) -> None:
+        self.description_map = {
+            "入口" : "该程序的入口",
+            "输出" : "将参数打印至屏幕上",
+            "相加" : "将两个任意类型数字相加, 若都为字符串类型则拼接"
+        }
 
     def initUI(self):
         self.layout = QVBoxLayout()
@@ -19,9 +27,12 @@ class DescriptionBarWidget(QWidget):
         self.text = QTextEdit("Description")
 
         self.nodeName.setObjectName("nodeName")
-        self.text.setObjectName("Text")
 
-        self.text.setStyleSheet("#Text{background-color:#8B7E66}")
+        self.text.setObjectName("Text")
+        self.text.setFocusPolicy(Qt.NoFocus)
+        self.text.setFontPointSize(14)
+        self.text.setStyleSheet("#Text{background-color:#8B8B83}")
+
 
         self.layout.addWidget(self.nodeName)
         # TODO: self.layout.addWidget(QLabel("ID"))
@@ -31,11 +42,18 @@ class DescriptionBarWidget(QWidget):
     def updateNodeName(self, n):
         self.Name = n
         self.nodeName.setText(n)
+        self.updateDescription()
         self.update()
 
     # TODO
     def updateDescription(self):
-        self.update()
+        try:
+            ctx = self.description_map[self.Name]
+        except KeyError:
+            # ctx = self.description_map[self.nodeType]
+            ctx = "No descriptions"
+        self.text.setText(ctx)
+
 
     def initAssets(self):
         pass

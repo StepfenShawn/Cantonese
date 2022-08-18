@@ -29,7 +29,6 @@ class QDMGraphicsView(QGraphicsView):
         self.drag_edge = None
 
         self.mode = MODE_RUNNING
-        self.editingFlag = False
 
         self.bp_search = NodeSearch(self.Scene)
         
@@ -57,10 +56,7 @@ class QDMGraphicsView(QGraphicsView):
         if event.key() == Qt.Key_D:
             self.Key_D_Press(event)
         elif event.key() == Qt.Key_Delete:
-            if not self.editingFlag:
-                self.deleteSelected()
-            else:
-                super().keyPressEvent(event)
+            self.deleteSelected()
         return super().keyPressEvent(event)
 
 

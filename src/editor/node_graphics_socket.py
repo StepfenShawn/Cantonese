@@ -26,7 +26,7 @@ SOCKET_COLORS = [
 """
 class QDMGraphicsSocket(QGraphicsItem):
     def __init__(self, socket : 'Socket', parent = None, position : int = LEFT_TOP, 
-                    socket_type : int = SOCKET_LOGIC_TYPE) -> None:
+                    socket_type : int = SOCKET_LOGIC_TYPE, socket_name : str = '') -> None:
         super().__init__(socket.node.grNode)
         self.width = 26
         self.height = 20
@@ -34,6 +34,7 @@ class QDMGraphicsSocket(QGraphicsItem):
         self.isHighlighted = False
         self.position = position
         self.socket_type = socket_type
+        self.socket_name = socket_name
         self.initUI()
         self.initAssets()
         self.setAcceptHoverEvents(True) # 设置接受悬停事件
@@ -97,6 +98,10 @@ class QDMGraphicsSocket(QGraphicsItem):
         polygon.setPoints(4,self.radius*0.9,self.radius*1.7,0,4,-self.radius*0.9)
         painter.drawPolygon(polygon)
         painter.drawEllipse(-self.radius, -self.radius, 2 * self.radius, 2 * self.radius)
+
+        if self.socket_name != '':
+            # TODO
+            pass
 
     def paint(self, painter, QStyleOptionGraphicsItem, vidget = None):
         if self.socket_type == SOCKET_LOGIC_TYPE:

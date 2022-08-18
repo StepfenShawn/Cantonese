@@ -12,14 +12,18 @@ class Edge():
         self.end_socket = end_socket
         self.edge_type = edge_type
         self.grEdge = QDMGraphicsEdge(self, type = edge_type)
-        self.scene.addEdge(self.grEdge)
         self.scene.grScene.addItem(self.grEdge)
+
+        self.hasStored = False
 
         if self.start_socket is not None:
             self.update_positions()
 
 
     def store(self):
+        self.hasStored = True
+        self.start_socket.socket.edges.append(self.grEdge)
+        self.end_socket.socket.edges.append(self.grEdge)
         self.scene.addEdge(self.grEdge)
         self.scene.grScene.addItem(self.grEdge)
 
@@ -48,7 +52,7 @@ class Edge():
     def remove(self):
         self.remove_from_current_items()
         self.scene.grScene.removeItem(self.grEdge)
-        self.grEdge = None
+        self.grEdge = None        
         try:
             self.scene.removeEdge(self.grEdge)
         except ValueError:

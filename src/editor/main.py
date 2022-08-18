@@ -15,11 +15,32 @@ class NodeEditorWnd(QMainWindow):
 
     def _createMenuBar(self):
         menuBar = QMenuBar(self)
+        menuBar.setObjectName("Menu")
+        menuBar.setStyleSheet("#Menu{background-color:#F0FFFF}")
+
         fileMenu = QMenu("&File", self)
         EditMenu = QMenu("&Edit", self)
+        runMenu = QMenu("&Run", self)
         menuBar.addMenu(fileMenu)
+
+        fileMenu.addAction(self.newAction)
+        fileMenu.addAction(self.openAction)
+        fileMenu.addAction(self.saveAction)
+
+        runMenu.addAction(self.compileAction)
+
         menuBar.addMenu(EditMenu)
+        menuBar.addMenu(runMenu)
+
         self.setMenuBar(menuBar)
+
+    def _createActions(self):
+        self.newAction = QAction("&new", self)
+        self.openAction = QAction("&Open...", self)
+        self.saveAction = QAction("&Save as", self)
+
+        self.compileAction = QAction("&Compile", self)
+        self.compileAction.triggered.connect(self.compile)
 
     def _createToolBars(self):
         self.dBar = DescriptionBar(self)
@@ -29,13 +50,13 @@ class NodeEditorWnd(QMainWindow):
     def _updateToolBars(self, node_info = ""):
         self.dBar._nodeName = node_info
         self.dBar.widget.updateNodeName(node_info)
-        # self.addToolBar(Qt.LeftToolBarArea, self.dBar.Bar)
 
     def initUI(self):
         self.setWindowTitle("Cantonese Editor")
         self.setCentralWidget(self.nodeEditorWidgetClass)
         
         self._createToolBars()
+        self._createActions()
         self._createMenuBar()
 
         self.show()
@@ -44,6 +65,12 @@ class NodeEditorWnd(QMainWindow):
         if (event.type() == CustomEvent.idType):
             self._updateToolBars(event.getData().title)
         return super().event(event)
+
+    def compile(self):
+        print("----------------")
+        for node in self.nodeEditorWidgetClass.scene.nodes:
+            print(node.title)
+        print("----------------")
 
 
 if __name__ == '__main__':

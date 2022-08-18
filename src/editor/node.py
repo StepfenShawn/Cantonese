@@ -69,7 +69,9 @@ class Node():
 
     def remove(self):
         for socket in (self.inputs + self.outputs):
-            if socket.isConnected:
-                socket.edge.remove()
+            if socket.hasEdges():
+                for edge in socket.edges:
+                    edge.edge.remove()
         self.scene.grScene.removeItem(self.grNode)
+        self.scene.removeNode(self)
         self.grNode = None

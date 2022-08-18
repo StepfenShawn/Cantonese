@@ -15,8 +15,6 @@ class Socket():
         self.grSocket = QDMGraphicsSocket(self, position = position, socket_type = socket_type)
         self.grSocket.setPos(*self.node.getSocketPosition(self.index, self.position))
 
-        self.isConnected = False
-
         self.edges = []
 
     def getSocketPosition(self):
@@ -31,3 +29,6 @@ class Socket():
         self.grSocket.setParentItem(None)
         self.node.scene.grScene.removeItem(self.grSocket)
         del self.grSocket
+
+    def hasEdges(self):
+        return len(self.edges) != 0
