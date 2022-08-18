@@ -5,12 +5,15 @@ from node_graphics_scene import QDMGraphicsScene
 """
 
 class Scene():
-    def __init__(self) -> None:
+    def __init__(self, MainWindow) -> None:
         self.nodes = []
+        self.selectedNodes = []
         self.edges = []
         self.scene_width = 64000
         self.scene_height = 64000
         self.initUI()
+
+        self.MainWindow = MainWindow
 
 
     def initUI(self) -> None:
@@ -20,6 +23,9 @@ class Scene():
 
     def addNode(self, node) -> None:
         self.nodes.append(node)
+
+    def addSelectedNodes(self, node) -> None:
+        self.selectedNodes.append(node)
 
     def addEdge(self, edge) -> None:
         self.edges.append(edge)

@@ -2,6 +2,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
+from custom_event import CustomEvent
+
 """
     节点图像类
 """
@@ -122,3 +124,8 @@ class QDMGraphicsNode(QGraphicsItem):
         if self.isSelected():
             for gr_edge in self._scene.edges:
                 gr_edge.edge.update_positions()
+
+    def mousePressEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
+        postEvent = CustomEvent(self.node)
+        QCoreApplication.postEvent(self._scene.MainWindow, postEvent)
+        return super().mousePressEvent(event)

@@ -14,11 +14,12 @@ from node_graphics_socket import SOCKET_LOGIC_TYPE
     编辑器主窗口
 """
 class NodeEditorWidget(QWidget):
-    def __init__(self, parent: typing.Optional['QWidget'] = None):
+    def __init__(self, MainWnd, parent: typing.Optional['QWidget'] = None):
         super().__init__(parent)
         # 加载节点样式
         self.stylesheet_filename = 'style/node_style.qss'
         self.loadSytlesheet(self.stylesheet_filename)
+        self.mainWindow = MainWnd
         self.initUI()
 
 
@@ -32,7 +33,7 @@ class NodeEditorWidget(QWidget):
         self.setLayout(self.layout)
  
         # 渲染网格
-        self.scene = Scene()
+        self.scene = Scene(self.mainWindow)
         # self.grScene = self.scene.grScene
  
         # 渲染布局
