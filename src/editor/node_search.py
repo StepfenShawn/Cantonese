@@ -141,13 +141,13 @@ class NodeSearch():
             self.remove()
         
         elif name == '输出':
-            ret = Node(self.scene, title = name, inputs = [{'type' : SOCKET_LOGIC_TYPE}, {'type' : SOCKET_VALUE_TYPE}], 
+            ret = Node(self.scene, title = name, inputs = [{'type' : SOCKET_LOGIC_TYPE}, {'type' : SOCKET_VALUE_TYPE, 'name' : "参数"}], 
                                                 outputs = [{'type' : SOCKET_LOGIC_TYPE}])
             ret.setPos(self.pos_x, self.pos_y)
             self.remove()
 
         elif name == '变量':
-            ret = Node(self.scene, title = name, width = 150, height = 80,outputs = [{'type' : SOCKET_VALUE_TYPE}])
+            ret = Node(self.scene, title = name, width = 150, height = 80,outputs = [{'type' : SOCKET_VALUE_TYPE, 'name' : "返回值"}, {'type' : SOCKET_VALUE_TYPE, 'name' : "返回值"}])
             ret.setPos(self.pos_x, self.pos_y)
             self.remove()
 

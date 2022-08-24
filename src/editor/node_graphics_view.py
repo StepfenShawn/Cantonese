@@ -64,6 +64,7 @@ class QDMGraphicsView(QGraphicsView):
         for item in self.grScene.selectedItems():
             if isinstance(item, QDMGraphicsEdge):
                 item.edge.remove()
+                
             elif hasattr(item, 'node'):
                 item.node.remove()
 

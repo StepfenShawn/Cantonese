@@ -8,13 +8,21 @@ from node_socket import RIGHT_BOTTOM
 from node_socket import SOCKET_LOGIC_TYPE
 from node_socket import SOCKET_VALUE_TYPE
 
+NODE_FUNC_TYPE = 1
+NODE_VARAIBLE_TYPE = 2
+NODE_NONE_TYPE = 3
+NODE_BRANCH_TYPE = 4
+NODE_LOOP_TYPE = 5
+
 class Node():
-    def __init__(self, scene, title = "Undefined Node", inputs = [], outputs = [], width = 180, height = 100) -> None:
+    def __init__(self, scene, title = "Undefined Node", inputs = [], outputs = [], width = 180, height = 100, 
+                    node_type : int = NODE_NONE_TYPE) -> None:
         self.scene = scene
         self.title = title
+        self.node_type = node_type
         self.content = QDMNodeContentWidgets()
         # TODO: define different node type's height and width
-        self.grNode = QDMGraphicsNode(self, scene, width = width, height = height)
+        self.grNode = QDMGraphicsNode(self, scene, width = 210, height = height)
         self.scene.grScene.addItem(self.grNode)
         self.scene.addNode(self)
 
@@ -29,8 +37,12 @@ class Node():
                 socket_type = item['type']
             except KeyError:
                 # 设置为默认的类型
-                pass
-            socket = Socket(self, index = counter, position = LEFT_TOP, socket_type = socket_type)
+                socket_type = 1
+            try:
+                socket_name = item['name']
+            except KeyError:
+                socket_name = ''
+            socket = Socket(self, index = counter, position = LEFT_TOP, socket_type = socket_type, socket_name = socket_name)
             counter += 1
             self.inputs.append(socket)
         counter = 0
@@ -39,8 +51,12 @@ class Node():
                 socket_type = item['type']
             except KeyError:
                 # 设置为默认的类型
-                pass
-            socket = Socket(self, index = counter, position = RIGHT_TOP, socket_type = socket_type)
+                socket_type = 1
+            try:
+                socket_name = item['name']
+            except KeyError:
+                socket_name = ''
+            socket = Socket(self, index = counter, position = RIGHT_TOP, socket_type = socket_type, socket_name = socket_name)
             counter += 1
             self.outputs.append(socket)
 
@@ -75,3 +91,6 @@ class Node():
         self.scene.grScene.removeItem(self.grNode)
         self.scene.removeNode(self)
         self.grNode = None
+
+    def getAttr(self):
+        self.data = {}

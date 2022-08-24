@@ -45,6 +45,17 @@ class NodeEditorWidget(QWidget):
     def addNodes(self):
         node = Node(self.scene, "入口", inputs=[], outputs=[{'type' : SOCKET_LOGIC_TYPE}])
         node.setPos(100, 100)
+        """
+        node1 = Node(self.scene, "相加", inputs = [
+            {'type' : SOCKET_LOGIC_TYPE},
+            {'type' : SOCKET_VALUE_TYPE, 'name' : '参数1'}, 
+            {'type' : SOCKET_VALUE_TYPE, 'name' : '参数2'}], 
+        outputs = [
+            {'type' : SOCKET_LOGIC_TYPE},
+            {'type' : SOCKET_VALUE_TYPE, 'name' : '返回值'}, 
+        ]
+            )
+        """
        
     def loadSytlesheet(self, filename):
         print('STYLE loading:', filename)

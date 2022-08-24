@@ -51,8 +51,8 @@ class Edge():
 
     def remove(self):
         self.remove_from_current_items()
-        self.scene.grScene.removeItem(self.grEdge)
-        self.grEdge = None        
+        self.scene.grScene.removeItem(self.grEdge)       
+        self.grEdge = None
         try:
             self.scene.removeEdge(self.grEdge)
         except ValueError:

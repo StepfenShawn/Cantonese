@@ -77,6 +77,8 @@ class QDMGraphicsSocket(QGraphicsItem):
         self._brush2 = QBrush(self._color_background2)
         self._brush3 = QBrush(self._color_white_output)
 
+        self.font = QFont("Arial",9)
+
     def drawLogicType(self, painter):
         w = self.outline_width
         painter.translate(4, self.height/2-1)
@@ -85,10 +87,13 @@ class QDMGraphicsSocket(QGraphicsItem):
         path_content.addPolygon(QPolygonF(QPolygon(list01)))
         painter.setPen(self._white_pen if not self.isUnderMouse() else self._white_pen_underMouse)
         painter.setRenderHint(QPainter.Antialiasing, False) #反走样
-        #如果此端口已经被连接的话
+        # 如果此端口已经被连接的话
+        if self.socket.hasEdges():
+            painter.setBrush(self._brush3)
+            painter.setRenderHint(QPainter.Antialiasing, True)
         painter.drawPath(path_content.simplified())
 
-    def drawValueType(self,painter):
+    def drawValueType(self, painter):
         """绘制插槽变量圆圈"""
         painter.translate(9.5, 10)
         painter.setBrush(self._brush)
@@ -98,10 +103,17 @@ class QDMGraphicsSocket(QGraphicsItem):
         polygon.setPoints(4,self.radius*0.9,self.radius*1.7,0,4,-self.radius*0.9)
         painter.drawPolygon(polygon)
         painter.drawEllipse(-self.radius, -self.radius, 2 * self.radius, 2 * self.radius)
-
+        if not self.socket.hasEdges():
+            painter.setBrush(self._brush2)
+            painter.drawEllipse(-self.radius*1.2/2, -self.radius*1.2/2, 1.2 * self.radius, 1.2 * self.radius)
         if self.socket_name != '':
-            # TODO
-            pass
+            painter.setPen(self._white_pen)
+            painter.setFont(self.font)
+            if self.socket.isValueInput():
+                painter.drawText(10, 4, self.socket_name)
+            else:
+                painter.drawText(-8 - (self.radius * 2) - self.getRequiredSize(self.socket_name), 4, self.socket_name)
+
 
     def paint(self, painter, QStyleOptionGraphicsItem, vidget = None):
         if self.socket_type == SOCKET_LOGIC_TYPE:
@@ -133,3 +145,47 @@ class QDMGraphicsSocket(QGraphicsItem):
 
     def mousePressEvent(self, event: 'QGraphicsSceneMouseEvent'):
         super().mousePressEvent(event)
+
+    """
+        获取所需尺寸用来让父控件延展
+    """
+    def getRequiredSize(self, s_name):
+        font_metrics = QFontMetrics(self.font)
+        # 计算字体的长度
+        font_width = font_metrics.width(s_name,len(s_name)) 
+        return font_width
+
+class w_CheckBox(QCheckBox):
+    def __init__(self, parent = None):
+        super(w_CheckBox, self).__init__(parent)
+        self.setText("")
+        # 为窗口构建一个调色板
+        self.setPalette(QPalette(QColor("#00000000")))
+        # 自动填充背景
+        self.setAutoFillBackground(True)
+
+class w_input(QLineEdit):
+    def __init__(self, parent = None):
+        super(w_input, self).__init__(parent)
+        self.textChanged['QString'].connect(self.setTextSize)
+        self.setTextValidator()
+
+    def setTextValidator(self):
+        regx = QRegExp("^-?\d+$")
+        self.setValidator(QRegExpValidator(regx, self))
+        self.setText("0")
+
+    def setTextSize(self, a0 : str):
+        self.setFont(QFont("SimSun", 10))
+        font_metrics = QFontMetrics(self.font())
+        font_width = font_metrics.width(a0, len(a0))
+        text_len = font_width + 10
+
+        if text_len < 18:
+            text_len = 18
+        self.resize(text_len, self.height())
+
+    def focusOutEvent(self, a0: QFocusEvent) -> None:
+        if self.text() == "" or self.text() == "-":
+            self.setText("0")
+        return super().focusOutEvent(a0)
