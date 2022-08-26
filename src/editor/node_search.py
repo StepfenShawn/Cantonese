@@ -2,9 +2,12 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
-from node import Node
+from node import Node, NODE_FUNC_TYPE, NODE_BRANCH_TYPE, NODE_LOOP_TYPE, NODE_VARAIBLE_TYPE
 from node_graphics_socket import SOCKET_LOGIC_TYPE
 from node_graphics_socket import SOCKET_VALUE_TYPE
+from node_graphics_socket import SOCKET_VALUE_TYPE_STRING
+from node_graphics_socket import SOCKET_VALUE_TYPE_BOOL
+from node_graphics_socket import SOCKET_VALUE_TYPE_FLOAT
 
 
 class QSearchNodeBaseSigner(QObject):
@@ -70,6 +73,13 @@ class QDMNodeSearchGraphics(QGraphicsItem):
         self.node_widget4.setY(120)
         self.push_button_addfunc.clicked.connect(self.addNode_AddFunc)
 
+        self.push_button_addbranch = QPushButton("添加分支")
+        self.push_button_addbranch.setFixedSize(self.width, 40)
+        self.push_button_addbranch.setStyleSheet(self.push_button_css)
+        self.node_widget5 = QGraphicsProxyWidget(self)
+        self.node_widget5.setWidget(self.push_button_addbranch)
+        self.node_widget5.setY(160)
+        self.push_button_addbranch.clicked.connect(self.addNode_AddBranch)
 
 
     def addNode_BeginPlay(self):
@@ -83,6 +93,9 @@ class QDMNodeSearchGraphics(QGraphicsItem):
 
     def addNode_AddFunc(self):
         self.signer.addNode_run('函数')
+
+    def addNode_AddBranch(self):
+        self.signer.addNode_run('分支')
 
     """
         定义Qt的边框
@@ -141,21 +154,29 @@ class NodeSearch():
             self.remove()
         
         elif name == '输出':
-            ret = Node(self.scene, title = name, inputs = [{'type' : SOCKET_LOGIC_TYPE}, {'type' : SOCKET_VALUE_TYPE, 'name' : "参数"}], 
-                                                outputs = [{'type' : SOCKET_LOGIC_TYPE}])
+            ret = Node(self.scene, title = name, inputs = [{'type' : SOCKET_LOGIC_TYPE}, {'type' : SOCKET_VALUE_TYPE_STRING, 'name' : "参数", "value" : "hello world"}], 
+                                                outputs = [{'type' : SOCKET_LOGIC_TYPE}], node_type=NODE_FUNC_TYPE)
             ret.setPos(self.pos_x, self.pos_y)
             self.remove()
 
         elif name == '变量':
-            ret = Node(self.scene, title = name, width = 150, height = 80,outputs = [{'type' : SOCKET_VALUE_TYPE, 'name' : "返回值"}, {'type' : SOCKET_VALUE_TYPE, 'name' : "返回值"}])
+            ret = Node(self.scene, title = name, width = 150, height = 80,
+                        outputs = [{'type' : SOCKET_VALUE_TYPE_STRING, 'name' : "返回值"}],
+                        node_type=NODE_VARAIBLE_TYPE)
             ret.setPos(self.pos_x, self.pos_y)
             self.remove()
 
         elif name == '函数':
-            ret = Node(self.scene, title = name, outputs = [{'type' : SOCKET_LOGIC_TYPE}])
+            ret = Node(self.scene, title = name, outputs = [{'type' : SOCKET_LOGIC_TYPE}], node_type = NODE_FUNC_TYPE)
             ret.setPos(self.pos_x, self.pos_y)
             self.remove()
 
+        elif name == "分支":
+            ret = Node(self.scene, title = name, inputs = [{'type' : SOCKET_LOGIC_TYPE}, {'type' : SOCKET_VALUE_TYPE_BOOL, 'name' : 'condition'}], 
+                                outputs = [{'type' : SOCKET_LOGIC_TYPE}], 
+                                node_type = NODE_BRANCH_TYPE)
+            ret.setPos(self.pos_x, self.pos_y)
+            self.remove()
         else:
             return
         

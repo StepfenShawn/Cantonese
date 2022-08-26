@@ -26,6 +26,7 @@ class Edge():
         self.end_socket.socket.edges.append(self.grEdge)
         self.scene.addEdge(self.grEdge)
         self.scene.grScene.addItem(self.grEdge)
+        self.build_connect(self.start_socket.socket, self.end_socket.socket)
 
     def update_positions(self):
         source_pos = [None, None]
@@ -57,3 +58,8 @@ class Edge():
             self.scene.removeEdge(self.grEdge)
         except ValueError:
             pass
+
+    def build_connect(self, start, end):
+        start.isConnected = True
+        end.isConnected = True
+        end.value = start.value

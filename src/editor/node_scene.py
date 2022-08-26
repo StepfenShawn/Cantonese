@@ -12,6 +12,8 @@ class Scene():
         self.scene_width = 64000
         self.scene_height = 64000
         self.initUI()
+        
+        self.data = []
 
         self.MainWindow = MainWindow
 

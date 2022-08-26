@@ -7,6 +7,8 @@ from node_editor_wnd import NodeEditorWidget
 from node_description_bar import DescriptionBar
 from custom_event import CustomEvent
 
+from node_eval import Eval
+
 class NodeEditorWnd(QMainWindow):
     def __init__(self, parent = None):
         super().__init__(parent)
@@ -69,7 +71,7 @@ class NodeEditorWnd(QMainWindow):
     def compile(self):
         print("----------------")
         for node in self.nodeEditorWidgetClass.scene.nodes:
-            print(node.title)
+            print(Eval(node).trans())
         print("----------------")
 
 

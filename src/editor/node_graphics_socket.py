@@ -1,3 +1,4 @@
+from tabnanny import check
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -7,19 +8,23 @@ LEFT_BOTTOM = 2
 RIGHT_TOP = 3
 RIGHT_BOTTOM = 4
 
-SOCKET_VALUE_TYPE = 1
+SOCKET_VALUE_TYPE_BOOL = 1
+SOCKET_VALUE_TYPE_INT = 2
+SOCKET_VALUE_TYPE_FLOAT = 3
+SOCKET_VALUE_TYPE_STRING = 4
+
+SOCKET_VALUE_TYPE = (
+    SOCKET_VALUE_TYPE_BOOL, SOCKET_VALUE_TYPE_INT,
+    SOCKET_VALUE_TYPE_FLOAT, SOCKET_VALUE_TYPE_STRING
+)
 SOCKET_LOGIC_TYPE = 2
 
-SOCKET_COLORS = [
-    QColor("#FFFF7700"),
-    QColor("#FF52e220"),
-    QColor("#FF0056a6"),
-    QColor("#FFa86db1"),
-    QColor("#FFb54747"),
-    QColor("#FFdbe220"),
-    QColor("#FF888888"),
-
-]
+SOCKET_COLORS = {
+    SOCKET_VALUE_TYPE_BOOL : QColor("#fe0000"),
+    SOCKET_VALUE_TYPE_FLOAT : QColor("#41f702"),
+    SOCKET_VALUE_TYPE_STRING : QColor("#ee02f7"),
+    SOCKET_VALUE_TYPE_INT : QColor("#00effe")
+}
 
 """
     套接字图像类
@@ -54,7 +59,7 @@ class QDMGraphicsSocket(QGraphicsItem):
         初始化Qt中的QObjects
     """
     def initAssets(self):
-        self._color_background = QColor("#41f702")
+        self._color_background = SOCKET_COLORS[self.socket_type]
         self._color_background2 = QColor("#0A0C0A")
         # 端口周围轮廓颜色
         self._color_outline = QColor("#0A0C0A")
@@ -114,11 +119,12 @@ class QDMGraphicsSocket(QGraphicsItem):
             else:
                 painter.drawText(-8 - (self.radius * 2) - self.getRequiredSize(self.socket_name), 4, self.socket_name)
 
+        self.createInputWidget()
 
     def paint(self, painter, QStyleOptionGraphicsItem, vidget = None):
         if self.socket_type == SOCKET_LOGIC_TYPE:
             self.drawLogicType(painter)
-        elif self.socket_type == SOCKET_VALUE_TYPE:
+        elif self.socket_type in SOCKET_VALUE_TYPE:
             self.drawValueType(painter)
     
     # 定义边框
@@ -155,6 +161,28 @@ class QDMGraphicsSocket(QGraphicsItem):
         font_width = font_metrics.width(s_name,len(s_name)) 
         return font_width
 
+    def createInputWidget(self):
+        if self.socket_type == SOCKET_LOGIC_TYPE: return
+        if self.socket.isValueOutput(): return
+
+        self.socket_widget = QGraphicsProxyWidget(self)
+        if self.socket_type == SOCKET_VALUE_TYPE_BOOL:
+            self.w_input = w_CheckBox()
+            self.w_input.setGeometry(20 + self.getRequiredSize(self.socket_name), 0, 10, 20)
+            self.socket_widget.setWidget(self.w_input)
+            if self.socket.isConnected:
+                self.socket_widget.setWidget(None)
+                self.w_input.setGeometry(0,0,0,0)
+                self.w_input.setVisible(False)
+        """
+        else:
+            self.w_input = w_input()
+            self.w_input.setGeometry(20 + self.getRequiredSize(self.socket_name), 0, 10, 20)
+            self.socket_widget.setWidget(self.w_input)
+            if self.socket.isConnected:
+                self.w_input.hide()
+        """ 
+# TODO: Fix the bug can not press
 class w_CheckBox(QCheckBox):
     def __init__(self, parent = None):
         super(w_CheckBox, self).__init__(parent)
@@ -162,7 +190,19 @@ class w_CheckBox(QCheckBox):
         # 为窗口构建一个调色板
         self.setPalette(QPalette(QColor("#00000000")))
         # 自动填充背景
-        self.setAutoFillBackground(True)
+        # self.setAutoFillBackground(True)
+
+        self.check_event = False
+
+    def mousePressEvent(self, e: QMouseEvent) -> None:
+        if e.button() == Qt.LeftButton:
+            self.check_event = not(self.check_event)
+            
+            if self.check_event:
+                self.setChecked(True)
+            else:
+                self.setChecked(False)
+        return super().mousePressEvent(e)
 
 class w_input(QLineEdit):
     def __init__(self, parent = None):

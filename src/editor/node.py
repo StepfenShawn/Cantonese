@@ -14,6 +14,14 @@ NODE_NONE_TYPE = 3
 NODE_BRANCH_TYPE = 4
 NODE_LOOP_TYPE = 5
 
+TYPE_TO_NAME = {
+    1 : 'NODE_FUNC',
+    2 : 'NODE_VARAIBLE',
+    3 : 'NODE_NONE',
+    4 : 'NODE_BRANCH',
+    5 : 'NODE_LOOP'
+}
+
 class Node():
     def __init__(self, scene, title = "Undefined Node", inputs = [], outputs = [], width = 180, height = 100, 
                     node_type : int = NODE_NONE_TYPE) -> None:
@@ -42,7 +50,11 @@ class Node():
                 socket_name = item['name']
             except KeyError:
                 socket_name = ''
-            socket = Socket(self, index = counter, position = LEFT_TOP, socket_type = socket_type, socket_name = socket_name)
+            try:
+                value = item['value']
+            except KeyError:
+                value = ''
+            socket = Socket(self, index = counter, position = LEFT_TOP, socket_type = socket_type, socket_name = socket_name, value = value)
             counter += 1
             self.inputs.append(socket)
         counter = 0
@@ -56,7 +68,11 @@ class Node():
                 socket_name = item['name']
             except KeyError:
                 socket_name = ''
-            socket = Socket(self, index = counter, position = RIGHT_TOP, socket_type = socket_type, socket_name = socket_name)
+            try:
+                value = item['value']
+            except KeyError:
+                value = ''
+            socket = Socket(self, index = counter, position = RIGHT_TOP, socket_type = socket_type, socket_name = socket_name, value = value)
             counter += 1
             self.outputs.append(socket)
 
@@ -92,5 +108,43 @@ class Node():
         self.scene.removeNode(self)
         self.grNode = None
 
+    def getAllSocketName(self, debug = False):
+        
+        ret = {}
+
+        # init the return value
+        ret['input'] = []
+        ret['output'] = []
+
+        for item in self.inputs:
+            if debug:
+                print(item.socket_id_name)
+            ret['input'].append(item.dump())
+        for item in self.outputs:
+            if debug:
+                print(item.socket_id_name)
+            ret['output'].append(item.dump())
+
+        return ret
+
+    def findSocketByNameID(self, name):
+        for item in self.inputs:
+            if name == self.item.socket_id_name:
+                return item
+        for item in self.outputs:
+            if name == self.item.socket_id_name:
+                return item
+
+
     def getAttr(self):
         self.data = {}
+        self.data['node_name'] = self.title
+        self.data['node_type'] = TYPE_TO_NAME[self.node_type]
+        self.data['socket'] = self.getAllSocketName(debug = False)
+        return self.data
+
+    def updateAttr(self, data):
+        self.title = data['node_name']
+        self.node_type = data['node_type']
+        self.inputs = data['socket']['inputs']
+        self.outputs = data['socket']['outputs']
