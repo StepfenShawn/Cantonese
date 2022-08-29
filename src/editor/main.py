@@ -4,10 +4,11 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 from node_editor_wnd import NodeEditorWidget
-from node_description_bar import DescriptionBar
+# from node_description_bar import DescriptionBar
 from custom_event import CustomEvent
 
 from node_eval import Eval
+from node_description_widget import w_descriptionWidget
 
 class NodeEditorWnd(QMainWindow):
     def __init__(self, parent = None):
@@ -44,10 +45,9 @@ class NodeEditorWnd(QMainWindow):
         self.compileAction = QAction("&Compile", self)
         self.compileAction.triggered.connect(self.compile)
 
-    def _createToolBars(self):
-        self.dBar = DescriptionBar(self)
-        self.addToolBar(Qt.LeftToolBarArea, self.dBar.Bar)
-
+    def _createViewDescription(self):
+        self.view_description = w_descriptionWidget(self)
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.view_description)
 
     def _updateToolBars(self, node_info = ""):
         self.dBar._nodeName = node_info
@@ -57,7 +57,7 @@ class NodeEditorWnd(QMainWindow):
         self.setWindowTitle("Cantonese Editor")
         self.setCentralWidget(self.nodeEditorWidgetClass)
         
-        self._createToolBars()
+        self._createViewDescription()
         self._createActions()
         self._createMenuBar()
 
@@ -65,7 +65,8 @@ class NodeEditorWnd(QMainWindow):
 
     def event(self, event: QEvent) -> bool:
         if (event.type() == CustomEvent.idType):
-            self._updateToolBars(event.getData().title)
+            # self._updateToolBars(event.getData().title)
+            pass
         return super().event(event)
 
     def compile(self):

@@ -26,6 +26,20 @@ SOCKET_COLORS = {
     SOCKET_VALUE_TYPE_INT : QColor("#00effe")
 }
 
+class SocketProxyWidget(QGraphicsProxyWidget):
+    def __init__(self, parent : QGraphicsItem):
+        super(SocketProxyWidget, self).__init__(parent)
+        self.parent = parent
+
+    def boundingRect(self) -> QRectF:
+        # return super(SocketProxyWidget, self).boundingRect()
+        return QRectF(
+           0,
+           0,
+           self.parent.width,
+           self.parent.height
+        ).normalized()
+
 """
     套接字图像类
 """
@@ -165,7 +179,7 @@ class QDMGraphicsSocket(QGraphicsItem):
         if self.socket_type == SOCKET_LOGIC_TYPE: return
         if self.socket.isValueOutput(): return
 
-        self.socket_widget = QGraphicsProxyWidget(self)
+        self.socket_widget = SocketProxyWidget(self)
         if self.socket_type == SOCKET_VALUE_TYPE_BOOL:
             self.w_input = w_CheckBox()
             self.w_input.setGeometry(20 + self.getRequiredSize(self.socket_name), 0, 10, 20)

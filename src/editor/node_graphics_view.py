@@ -6,6 +6,7 @@ from node_graphics_socket import QDMGraphicsSocket
 from node_graphics_edge import QDMGraphicsEdge
 from node import Node
 from node_search import NodeSearch
+from node_graphics_socket import SocketProxyWidget
 
 
 MODE_EDITING = 1
@@ -87,6 +88,10 @@ class QDMGraphicsView(QGraphicsView):
                 if item.hoverEnter:
                     self.edge_enable = True
                     self.edge_drag_start(item)
+            elif isinstance(item, SocketProxyWidget):
+                if item.parent.hoverEnter:
+                    self.edge_enable = True
+                    self.edge_drag_start(item.parent)
             else:
                 self.leftMouseButtonPress(event)
         elif event.button() == Qt.RightButton:
@@ -111,8 +116,10 @@ class QDMGraphicsView(QGraphicsView):
             if self.edge_enable:
                 self.edge_enable = False
                 item = self.get_item_at_click(event)
-                if isinstance(item, QDMGraphicsSocket) and item is not self.drag_start_socket:
+                if (isinstance(item, QDMGraphicsSocket)) and item is not self.drag_start_socket:
                     self.edge_drag_end(item)
+                elif (isinstance(item, SocketProxyWidget)) and (isinstance(item.parent, QDMGraphicsSocket)) and item.parent is not self.drag_start_socket:
+                    self.edge_drag_end(item.parent)
                 else:
                     self.mode = MODE_NODE_SEARCHING
                     self.bp_search.setSearchWidgetLocation(self.mapToScene(event.pos()).x(), 
