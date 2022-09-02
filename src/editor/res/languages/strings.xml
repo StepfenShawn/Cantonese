@@ -1,0 +1,15 @@
+<resource>
+<openfile>Open</openfile>
+<openmorefile>OpenMore</openmorefile>
+<change_font>Font</change_font>
+<change_color>Color</change_color>
+<save_file>Save as</save_file>
+<set_page>Page setting</set_page>
+<print_file>Printer</print_file>
+<clear_file>Clear</clear_file>
+<run_file>Run</run_file>
+<exit>Exit</exit>
+<NodeMainName>Begin</NodeMainName>
+<NodeOutputName>Output</NodeOutputName>
+<NodeVarName>Var</NodeVarName>
+</resource>

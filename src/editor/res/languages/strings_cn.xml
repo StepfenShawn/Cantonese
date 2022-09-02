@@ -1,0 +1,15 @@
+<resource>
+<openfile>打开文件</openfile>
+<openmorefile>打开多文件</openmorefile>
+<change_font>字体</change_font>
+<change_color>颜色</change_color>
+<save_file>保存</save_file>
+<set_page>页面设置</set_page>
+<print_file>打印文件</print_file>
+<clear_file>清除</clear_file>
+<run_file>运行</run_file>
+<exit>退出</exit>
+<NodeMainName>入口</NodeMainName>
+<NodeOutputName>输出</NodeOutputName>
+<NodeVarName>变量</NodeVarName>
+</resource>

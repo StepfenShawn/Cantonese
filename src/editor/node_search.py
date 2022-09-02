@@ -9,6 +9,10 @@ from node_graphics_socket import SOCKET_VALUE_TYPE_STRING
 from node_graphics_socket import SOCKET_VALUE_TYPE_BOOL
 from node_graphics_socket import SOCKET_VALUE_TYPE_FLOAT
 
+from nodes.NodeMain import _NodeMain
+from nodes.NodeOutput import _NodeOutput
+from nodes.NodeVar import _NodeVar
+
 
 class QSearchNodeBaseSigner(QObject):
     addNode = pyqtSignal(object)
@@ -149,21 +153,18 @@ class NodeSearch():
     # TODO
     def addNode(self, name = "默认节点"):
         if name == '入口':
-            ret = Node(self.scene, title = name, outputs = [{'type' : SOCKET_LOGIC_TYPE}])
-            ret.setPos(self.pos_x, self.pos_y)
+            ret = _NodeMain(self.scene)
+            ret.node.setPos(self.pos_x, self.pos_y)
             self.remove()
         
         elif name == '输出':
-            ret = Node(self.scene, title = name, inputs = [{'type' : SOCKET_LOGIC_TYPE}, {'type' : SOCKET_VALUE_TYPE_STRING, 'name' : "参数", "value" : "hello world"}], 
-                                                outputs = [{'type' : SOCKET_LOGIC_TYPE}], node_type=NODE_FUNC_TYPE)
-            ret.setPos(self.pos_x, self.pos_y)
+            ret = _NodeOutput(self.scene)
+            ret.node.setPos(self.pos_x, self.pos_y)
             self.remove()
 
         elif name == '变量':
-            ret = Node(self.scene, title = name, width = 150, height = 80,
-                        outputs = [{'type' : SOCKET_VALUE_TYPE_STRING, 'name' : "返回值"}],
-                        node_type=NODE_VARAIBLE_TYPE)
-            ret.setPos(self.pos_x, self.pos_y)
+            ret = _NodeVar(self.scene)
+            ret.node.setPos(self.pos_x, self.pos_y)
             self.remove()
 
         elif name == '函数':

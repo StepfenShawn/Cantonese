@@ -67,6 +67,9 @@ class QDMGraphicsNode(QGraphicsItem):
         self._title = value
         self.title_item.setPlainText(self._title)
 
+    def setTitle(self, t):
+        self.title = t
+
 
     # 初始化套接字
     def initSocket(self):

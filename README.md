@@ -381,5 +381,6 @@ Vscode插件：https://github.com/Cantonese-community/vscode-cantonese
 * 完善語法錯誤檢查
 * 加多啲語句
 * 完善自己嘅虛擬機
+* 將 Cantonese 轉化成汇编语言
 
 Copyright (C) 2020-2022 StepfenShawn

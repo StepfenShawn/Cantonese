@@ -4,7 +4,6 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 from node_editor_wnd import NodeEditorWidget
-# from node_description_bar import DescriptionBar
 from custom_event import CustomEvent
 
 from node_eval import Eval
@@ -46,12 +45,12 @@ class NodeEditorWnd(QMainWindow):
         self.compileAction.triggered.connect(self.compile)
 
     def _createViewDescription(self):
-        self.view_description = w_descriptionWidget(self)
+        self.view_description = w_descriptionWidget(parent = self)
+        self.view_description.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.view_description)
 
-    def _updateToolBars(self, node_info = ""):
-        self.dBar._nodeName = node_info
-        self.dBar.widget.updateNodeName(node_info)
+    def _updateViewDescription(self, node_info = ""):
+        self.view_description.updateDescriptions(node_info)
 
     def initUI(self):
         self.setWindowTitle("Cantonese Editor")
@@ -65,8 +64,7 @@ class NodeEditorWnd(QMainWindow):
 
     def event(self, event: QEvent) -> bool:
         if (event.type() == CustomEvent.idType):
-            # self._updateToolBars(event.getData().title)
-            pass
+            self._updateViewDescription(event.getData().title)
         return super().event(event)
 
     def compile(self):

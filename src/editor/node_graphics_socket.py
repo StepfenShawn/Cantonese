@@ -1,4 +1,3 @@
-from tabnanny import check
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -17,6 +16,14 @@ SOCKET_VALUE_TYPE = (
     SOCKET_VALUE_TYPE_BOOL, SOCKET_VALUE_TYPE_INT,
     SOCKET_VALUE_TYPE_FLOAT, SOCKET_VALUE_TYPE_STRING
 )
+
+# For debug print ...
+SOCKET_VALUE_TYPE_MAP = {
+    SOCKET_VALUE_TYPE_BOOL : "SOCKET_VALUE_TYPE_BOOL",
+    SOCKET_VALUE_TYPE_INT : "SOCKET_VALUE_TYPE_INT",
+    SOCKET_VALUE_TYPE_FLOAT : "SOCKET_VALUE_TYPE_FLOAT",
+    SOCKET_VALUE_TYPE_STRING : "SOCKET_VALUE_TYPE_STRING"
+}
 SOCKET_LOGIC_TYPE = 2
 
 SOCKET_COLORS = {
@@ -204,7 +211,7 @@ class w_CheckBox(QCheckBox):
         # 为窗口构建一个调色板
         self.setPalette(QPalette(QColor("#00000000")))
         # 自动填充背景
-        # self.setAutoFillBackground(True)
+        self.setAutoFillBackground(True)
 
         self.check_event = False
 

@@ -2364,6 +2364,7 @@ dump_ast = False
 dump_lex = False
 to_js = False
 to_cpp = False
+_S = False
 mkfile = False
 
 def cantonese_run(code : str, is_to_py : bool, file : str, 
@@ -2382,10 +2383,18 @@ def cantonese_run(code : str, is_to_py : bool, file : str,
     if dump_ast:
         print(cantonese_parser.Node)
     if to_js:
-        import src.Compile
-        js, fh = src.Compile.Compile(cantonese_parser.Node, "js", file).ret()
+        import Compile
+        js, fh = Compile.Compile(cantonese_parser.Node, "js", file).ret()
         f = open(fh, 'w', encoding = 'utf-8')
         f.write(js)
+        sys.exit(1)
+
+    if _S:
+        import Compile
+        code, fh = Compile.Compile(cantonese_parser.Node, "asm", file).ret()
+        # f = open(fh, 'w', encoding = 'utf-8')
+        # f.write(code)
+        print(code)
         sys.exit(1)
 
     run(cantonese_parser.Node, path = file)
@@ -3340,12 +3349,15 @@ def main():
     arg_parser.add_argument("-debug", action = "store_true")
     arg_parser.add_argument("-v", action = "store_true")
     arg_parser.add_argument("-mkfile", action = "store_true")
+    arg_parser.add_argument("-S", action = "store_true")
+    arg_parser.add_argument("-s", action = "store_true")
     args = arg_parser.parse_args()
 
     global dump_ast
     global dump_lex
     global to_js
     global to_cpp
+    global _S
     global debug
     global mkfile
     global _version_
@@ -3390,6 +3402,8 @@ def main():
                 to_js = True
             if args.to_cpp:
                 to_cpp = True
+            if args.S or args.s:
+                _S = True
             if args.mkfile:
                 mkfile = True
             if args.to_asm:

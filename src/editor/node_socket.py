@@ -1,11 +1,4 @@
-from node_graphics_socket import QDMGraphicsSocket
-from node_graphics_socket import LEFT_TOP
-from node_graphics_socket import LEFT_BOTTOM
-from node_graphics_socket import RIGHT_TOP
-from node_graphics_socket import RIGHT_BOTTOM
-from node_graphics_socket import SOCKET_LOGIC_TYPE
-from node_graphics_socket import SOCKET_VALUE_TYPE
-from node_graphics_socket import w_CheckBox, w_input
+from node_graphics_socket import *
 
 class Socket():
     def __init__(self, node, index : int = 0, position : int = LEFT_TOP, socket_type : int = SOCKET_LOGIC_TYPE, socket_name : str = '', 
@@ -74,7 +67,7 @@ class Socket():
                     value = ''
 
         ret = {
-            'data_type' : self.socket_type,
+            'data_type' : SOCKET_VALUE_TYPE_MAP[self.socket_type],
             'position' : self.position,
             'logic_type' : self.logic_type,
             'scoket_name' : self.socket_id_name,
@@ -104,3 +97,6 @@ class Socket():
             except:
                 pass
         return
+
+    def getData(self):
+        return self.value

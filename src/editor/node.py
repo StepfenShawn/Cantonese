@@ -148,3 +148,7 @@ class Node():
         self.node_type = data['node_type']
         self.inputs = data['socket']['inputs']
         self.outputs = data['socket']['outputs']
+
+    def setTitle(self, t):
+        self.title = t
+        self.grNode.update()
