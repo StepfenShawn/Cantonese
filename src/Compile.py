@@ -1,4 +1,5 @@
 import dis
+from re import L
 
 class AsmRunner(object):
     def __init__(self, Nodes, asm_code, label = '', path = ''):
@@ -36,6 +37,7 @@ class AsmRunner(object):
         self.asm_code += "\t" + "ret\n"
 
     def add_to_datasegment(self, data):
+            
             if data[0] == 'string':
                 data[1] = "\"" + eval(data[1]) + "\\0" + "\""
                 if data[1] in self.lc_data_map.keys():
@@ -44,17 +46,24 @@ class AsmRunner(object):
                     self.lc_data_map[data[1]] = self.LC
                     self.asm_code += self.init_string(data[1])
                     self.LC += 1
+
             elif data[0] == 'identifier':
                 if self.var_type_map[data[1]] == 'int':
-                    if "%d\\0" not in self.lc_data_map.keys():
-                        self.lc_data_map["%d"] = self.LC
-                        self.asm_code += self.init_string("\"%d\\0\"")
+                    if "%d\\n\\0" not in self.lc_data_map.keys():
+                        self.lc_data_map["%d\\n\\0"] = self.LC
+                        self.asm_code += self.init_string("\"%d\\n\\0\"")
                         self.LC += 1
                 elif self.var_type_map[data[1]] == 'str':
-                    if "%c\\0" not in self.lc_data_map.keys():
-                        self.lc_data_map["%c"] = self.LC
-                        self.asm_code += self.init_string("\"%c\\0\"")
+                    if "%s\\n\\0" not in self.lc_data_map.keys():
+                        self.lc_data_map["%s\\n\\0"] = self.LC
+                        self.asm_code += self.init_string("\"%s\\n\\0\"")
                         self.LC += 1
+
+            elif data[0] == 'expr':
+                if "%d\\n\\0" not in self.lc_data_map.keys():
+                    self.lc_data_map["%d\\n\\0"] = self.LC
+                    self.asm_code += self.init_string("\"%d\\0\"")
+                    self.LC += 1
 
     def var_to_address(self, val):
         if self.var_type_map[val] == 'int':
@@ -94,9 +103,15 @@ class AsmRunner(object):
         re += "\t" + "call puts\n"
         self.ins.append(re)
 
-    def call_printf(self, lc_index):
+    def call_printf(self, lc_index, char_type : bool = False, val : int = None):
         re = ""
-        re += "\t" + "movl %eax, %edx\n"
+        if not char_type:
+            if val is not None:
+                re += "\t" + "movl " + self.var_address_map[val] + ", %eax\n"
+            re += "\t" + "movl %eax, %edx\n"
+        else:
+            re += "\t" + "movq " + self.var_address_map[val] + ", %rax\n"
+            re += "\t" + "movq %rax, %rdx\n"
         re += "\t" + "leaq .LC" + str(lc_index) + "(%rip), %rcx\n"
         re += "\t" + "call printf\n"
         self.ins.append(re)
@@ -116,7 +131,7 @@ class AsmRunner(object):
             self.var_type_map[var_name] = 'str'
             self.add_to_datasegment(['string', val])
             re += "\t" + "leaq .LC" + str(self.lc_data_map["\"" + eval(val) + "\\0" + "\""]) + "(%rip), %rax\n"
-            re += "\t" + "movq %rax, " + self.var_address_map(var_name) + "\n"
+            re += "\t" + "movq %rax, " + self.var_to_address(var_name) + "\n"
         else:
             pass
         self.ins.append(re)
@@ -135,12 +150,16 @@ class AsmRunner(object):
                     self.call_puts(self.lc_data_map[node[1][1]])
                 elif node[1][0] == 'identifier':
                     if self.var_type_map[node[1][1]] == 'int':
-                        self.call_printf(self.lc_data_map["%d"])
+                        self.call_printf(self.lc_data_map["%d\\n\\0"], val = node[1][1])
                     elif self.var_type_map[node[1][1]] == 'str':
-                        self.call_printf(self.lc_data_map["%c"])
+                        self.call_printf(self.lc_data_map["%s\\n\\0"], char_type = True, val = node[1][1])
                 elif node[1][0] == 'expr':
-                    bytecode = ExprEval(node[1][1]).parse()
-
+                    if hasattr(ExprEval(node[1][1], self).parse(), 'op'):
+                        self.ins.append(ExprEval(node[1][1], self).parse().genAsm())
+                        self.call_printf(self.lc_data_map["%d\\n\\0"])
+                    else:
+                        self.call_printf(self.lc_data_map["%d\\n\\0"], val = ExprEval(node[1][1], self).parse().genAsm())
+                    
 
             elif node[0] == 'node_let':
                 self.assign_movl(node[1][1], node[2][1])
@@ -245,11 +264,46 @@ class Compile(object):
                     self.run_js(node[3])
                     self.TO_JS_CODE += "}\n"
 
+class ExprNumOrIdentifier(object):
+    def __init__(self, arg : list, state : AsmRunner = None):
+        self.arg = arg
+        self.state = state
+
+    def genAsm(self):
+        return self.arg[1]
+
+class ExprOp(object):
+    def __init__(self, op : str, arg1 : list, arg2 : list, state : AsmRunner = None):
+        self.op = op
+        self.arg1 = arg1
+        self.arg2 = arg2
+        self.state = state
+
+    def genAsm(self):
+        if self.op == '+':
+            re = ""
+            if self.arg1[0] == 'num':
+                if self.arg2[0] == 'identifier': 
+                    re += "\t" + "movl " + self.state.var_address_map[self.arg2[1]] + ", %eax\n"
+                    re += "\t" + "addl $" + self.arg1[1] + ", %eax\n"
+
+            elif self.arg1[0] == 'identifier':
+                if self.arg2[0] == 'num':
+                    re += "\t" + "movl " + self.state.var_address_map[self.arg1[1]] + ", %eax\n";
+                    re += "\t" + "addl $" + self.arg2[1] + ". %eax\n"
+
+        return re
+
+    def __str__(self) -> str:
+        return str(self.arg1) + " " + self.op + " " + str(self.arg2)
 
 class ExprEval(object):
-    def __init__(self, string):
+    def __init__(self, string, state : AsmRunner = None):
         self.string = string
         self.py_ins = []
+        self.op = ['+', '-', '*', '/', '%']
+        self.stack = []
+        self.state = state
 
     def parse(self):
         # Trans the expr to python vm, then to asm
@@ -257,4 +311,67 @@ class ExprEval(object):
         bytecode = dis.Bytecode(self.string)
         for instr in bytecode: 
             self.py_ins.append({'opname' : instr.opname, 'args' : instr.argrepr})
-        print(self.py_ins)
+            if instr.opname == 'LOAD_NAME':
+                self.stack.append(instr.argrepr)
+            elif instr.opname == 'LOAD_CONST':
+                self.stack.append(instr.argrepr)
+            elif instr.opname == 'BINARY_ADD':
+                return self.__eval_add()
+            elif instr.opname == 'RETURN_VALUE' and instr.argrepr == '':
+                break
+
+        return self.__eval()
+
+    def get_type(self, val):
+        try:
+            v = eval(val)
+            if isinstance(v, float) or isinstance(v, int):
+                return 'num'
+            elif isinstance(v, str):
+                return 'string'
+        except NameError:
+            return 'identifier'
+
+    def __eval_add(self):
+        val1 = self.stack.pop()
+        val2 = self.stack.pop()
+
+        if self.get_type(val1) == 'identifier':
+            if self.get_type(val2) == 'num':
+                return ExprOp('+', ['identifier', val1], ['num', val2], self.state)
+            elif self.get_type(val2) == 'identifier':
+                return ExprOp('+', ['identifier', val1], ['identifier', val2], self.state)
+            elif self.get_type(val2) == 'string':
+                return ExprOp('+', ['identifier', val1], ['string', val2], self.state)
+
+        elif self.get_type(val1) == 'num':
+            if self.get_type(val2) == 'num':
+                return ExprOp('+', ['num', val1], ['num', val2], self.state)
+            elif self.get_type(val2) == 'identifier':
+                return ExprOp('+', ['num', val1], ['identifier', val2], self.state)
+            elif self.get_type(val2) == 'string':
+                return ExprOp('+', ['num', val1], ['string', val2], self.state)
+        
+        elif self.get_type(val1) == 'string':
+            if self.get_type(val2) == 'num':
+                return ExprOp('+', ['string', val1], ['num', val2], self.state)
+            elif self.get_type(val2) == 'identifier':
+                return ExprOp('+', ['string', val1], ['identifier', val2], self.state)
+            elif self.get_type(val2) == 'string':
+                return ExprOp('+', ['string', val1], ['string', val2], self.state)
+
+
+    def __eval(self):
+        # Var or identifier?
+        if len(self.stack) == 1:
+            try:
+                val = eval(self.stack[0])
+                if isinstance(val, float) or isinstance(val, int):
+                    return ExprNumOrIdentifier(['num', self.stack[0]], self.state)
+                elif isinstance(val, str):
+                    return ExprNumOrIdentifier(['string', self.stack[0]], self.state)
+            except NameError:
+                return ExprNumOrIdentifier(['identifier', self.stack[0]], self.state)
+
+        else:
+            pass
