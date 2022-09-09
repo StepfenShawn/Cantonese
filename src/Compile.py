@@ -1,5 +1,38 @@
 import dis
-from re import L
+
+
+"""
+    1st return register
+"""
+class Register_rax(object):
+    def __init__(self) -> None:
+        self.used = False
+"""
+    2nd return register
+"""
+class Register_rdx(object):
+    def __init__(self) -> None:
+        self.used = False
+"""
+    used to pass 5th argument to functions
+"""
+class Register_r8(object):
+    def __init__(self) -> None:
+        self.used = False
+
+"""
+    Used to pass 6th argument to functions
+"""
+class Register_r9(object):
+    def __init__(self) -> None:
+        self.used = False
+
+"""
+    temp register
+"""
+class Register_r10(object):
+    def __init__(self) -> None:
+        self.used = False
 
 class AsmRunner(object):
     def __init__(self, Nodes, asm_code, label = '', path = ''):
@@ -18,13 +51,30 @@ class AsmRunner(object):
         self.rpb_offset = 0
 
         self.lc_data_map = {}
+        self.bc_data_map = {}
+        self.func_segment_list = []
+
         self.var_type_map = {}
         self.var_address_map = {}
 
         self.int_size = 4
+        self.long_size = 4
+        self.float_size = 4
+        self.double_size = 8
         self.string_size = 8 # char* type
+        self.char_size = 1
 
         self.register = ['a', 'b', 'c', 'd']
+
+        self.block_name =  "__main"
+
+    def init_lc(self):
+        self.lc_data_map["%d\\n\\0"] = self.LC
+        self.asm_code += self.init_string("\"%d\\n\\0\"")
+        self.LC += 1
+        self.lc_data_map["%s\\n\\0"] = self.LC
+        self.asm_code += self.init_string("\"%s\\n\\0\"")
+        self.LC += 1
 
     def init_main_section(self):
         self.asm_code += "\t.text\n"
@@ -45,24 +95,6 @@ class AsmRunner(object):
                 else:
                     self.lc_data_map[data[1]] = self.LC
                     self.asm_code += self.init_string(data[1])
-                    self.LC += 1
-
-            elif data[0] == 'identifier':
-                if self.var_type_map[data[1]] == 'int':
-                    if "%d\\n\\0" not in self.lc_data_map.keys():
-                        self.lc_data_map["%d\\n\\0"] = self.LC
-                        self.asm_code += self.init_string("\"%d\\n\\0\"")
-                        self.LC += 1
-                elif self.var_type_map[data[1]] == 'str':
-                    if "%s\\n\\0" not in self.lc_data_map.keys():
-                        self.lc_data_map["%s\\n\\0"] = self.LC
-                        self.asm_code += self.init_string("\"%s\\n\\0\"")
-                        self.LC += 1
-
-            elif data[0] == 'expr':
-                if "%d\\n\\0" not in self.lc_data_map.keys():
-                    self.lc_data_map["%d\\n\\0"] = self.LC
-                    self.asm_code += self.init_string("\"%d\\0\"")
                     self.LC += 1
 
     def var_to_address(self, val):
@@ -86,6 +118,10 @@ class AsmRunner(object):
         ret = "\n.BLOCK" + str(self.BC) + ":\n"
         return ret
 
+    def init_function_block(self, name):
+        ret = "\n" + name + ":\n"
+        return ret
+
     def init_main_stack(self):
         self.asm_code += "\t" + "pushq %rbp\n"
         self.asm_code += "\t" + "movq %rsp, %rbp\n"
@@ -96,6 +132,9 @@ class AsmRunner(object):
     def count_stack_size(self):
         if self.rpb_offset != 0:
             self.stack_size += (int(self.rpb_offset / 16) + 1) * 16
+
+    def init_call_main(self):
+        self.asm_code += "\tcall __main\n"
 
     def call_puts(self, lc_index):
         re = ""
@@ -124,35 +163,79 @@ class AsmRunner(object):
 
     def assign_movl(self, var_name, val):
         re = ""
+        if var_name[0] == 'expr':
+            var_name = ExprEval(var_name[1]).parse().genAsm()
+
+        else:
+            var_name = var_name[1]
+
+        if val[0] != 'expr':
+            val = val[1]
+       
         if isinstance(eval(val), int):
             self.var_type_map[var_name] = 'int'
             re += "\t" + "movl $" + val + "," + self.var_to_address(var_name) + "\n"
+
         elif isinstance(eval(val), str):
             self.var_type_map[var_name] = 'str'
             self.add_to_datasegment(['string', val])
             re += "\t" + "leaq .LC" + str(self.lc_data_map["\"" + eval(val) + "\\0" + "\""]) + "(%rip), %rax\n"
             re += "\t" + "movq %rax, " + self.var_to_address(var_name) + "\n"
+        
+        else:
+            pass
+        
+        self.ins.append(re)
+
+    def __function(self, func_name, func_args, func_body):
+        code = ''
+        func_parse = AsmBlockParse(func_body, code, self.LC, self.lc_data_map, func_name[1])
+        self.func_segment_list.append(func_name)
+        print(func_parse.run())
+
+    def __return(self, val_node):
+        if val_node[0] == 'num':
+            self.asm_code += "\t" + "movl $" + val_node[1] + ", %eax\n"
+            self.asm_code += "\t" + "ret\n"
+
+        if val_node[0] == 'string':
+            self.add_to_datasegment(val_node)
+            self.asm_code += "\t" + "leap .LC" + str(self.lc_data_map["\"" + eval(val_node[1]) + "\\0" + "\""]) + \
+                "(%rip), %rax\n"
+            self.asm_code += "\t" + "ret\n"
+
+    def __call(self, f):
+        re = ""
+        if not ExprEval(f, self).parse().genAsm()['has_args']:
+            re += "\t" + "call " + ExprEval(f, self).parse().genAsm()['func_name'] + "\n"
         else:
             pass
         self.ins.append(re)
+        pass
 
     def add_all_ins(self):
         for item in self.ins:
             self.asm_code += item
 
-    def run(self):
-        self.ins = []
+    def run_init(self):
         self.asm_code += self.global_head
+        self.init_lc()
+
+    def run(self, in_main = True):
+        self.ins = []
+
         for node in self.Nodes:
             if node[0] == "node_print":
                 self.add_to_datasegment(node[1])
                 if node[1][0] == 'string':
                     self.call_puts(self.lc_data_map[node[1][1]])
+                
                 elif node[1][0] == 'identifier':
                     if self.var_type_map[node[1][1]] == 'int':
                         self.call_printf(self.lc_data_map["%d\\n\\0"], val = node[1][1])
                     elif self.var_type_map[node[1][1]] == 'str':
                         self.call_printf(self.lc_data_map["%s\\n\\0"], char_type = True, val = node[1][1])
+                
                 elif node[1][0] == 'expr':
                     if hasattr(ExprEval(node[1][1], self).parse(), 'op'):
                         self.ins.append(ExprEval(node[1][1], self).parse().genAsm())
@@ -162,25 +245,77 @@ class AsmRunner(object):
                     
 
             elif node[0] == 'node_let':
-                self.assign_movl(node[1][1], node[2][1])
-            
+                self.assign_movl(node[1], node[2])
+
+            elif node[0] == 'node_fundef':
+                func_name = node[1]
+                func_args = node[2]
+                func_body = node[3]
+
+                self.__function(func_name, func_args, func_body)
+
+            elif node[0] == 'node_call':
+                self.__call(node[1][1])
+
+            elif node[0] == 'node_return':
+                self.__return(node[1])
+
             elif node[0] == "node_exit":
                 self.call_exit()
-            
+
             else:
                 pass
 
+        
         self.init_main_section()
         self.init_main_stack()
         self.count_stack_size()
         self.init_stack_size()
-        self.asm_code += "\tcall __main\n"
+        self.init_call_main()
         self.add_all_ins()
         self.init_main_return_value()
+
+
         return self.asm_code
 
     def add_ins(self):
         pass
+
+    
+
+"""
+    A simple function stack structure:
+    args 3 (int) <- 20(%rbp)
+    args 2 (int) <- 16(%rbp)
+    args 1 (int) <- 12(%rbp)
+    return address (int) <- 8(%rbp)
+    old %rbp <- 0(%rbp)
+    variable 1 (int) <- -4(%rbp)
+    variable 2 (int) <- -8(%rbp)
+    variable 3 (int) <- -12(%rbp)
+    not used <- -16(%rbp) and (%rsp)
+"""
+
+class AsmBlockParse(AsmRunner):
+    def __init__(self, Nodes : list, asm_code : list, lc_index : int, lc_data_map : dict, block_name : str = '') -> None:
+        super(AsmBlockParse, self).__init__(Nodes, asm_code)
+        self.LC = lc_index
+        self.lc_data_map = lc_data_map
+        self.block_name = block_name
+
+    # Override
+    def init_main_section(self):
+        self.asm_code += "\t.text\n"
+        self.asm_code += "\t.globl " + self.block_name + "\n"
+        self.asm_code += self.block_name +  ":\n"
+
+    # Override
+    def init_call_main(self):
+        return
+
+    # Override
+    def init_lc(self):
+        return
 
 class Compile(object):
     def __init__(self, ast, target, path) -> None:
@@ -215,7 +350,9 @@ class Compile(object):
         return expr
     # TODO
     def run_asm(self, Nodes : list, label = '', path = '') -> None:
-        self.TO_ASM_CODE = AsmRunner(Nodes, self.TO_ASM_CODE, path = path).run()
+        asmbler = AsmRunner(Nodes, self.TO_ASM_CODE, path = path)
+        asmbler.run_init()
+        self.TO_ASM_CODE = asmbler.run()
 
     def run_cpp(self, Nodes : list, label = '', path = '') -> None:
         for node in Nodes:
@@ -264,6 +401,19 @@ class Compile(object):
                     self.run_js(node[3])
                     self.TO_JS_CODE += "}\n"
 
+class ExprFunctionCall(object):
+    def __init__(self, func_name :str, args : list, state : AsmRunner = None) -> None:
+        self.func_name = func_name
+        self.args = args
+        self.state = state
+
+    def genAsm(self) -> str:
+        if self.args == None:
+            return {'has_args' : False, 'func_name' : self.func_name}
+        else:
+            return {'has_args' : True, 'func_name' : self.func_name, 'args' : self.args}
+
+
 class ExprNumOrIdentifier(object):
     def __init__(self, arg : list, state : AsmRunner = None):
         self.arg = arg
@@ -289,14 +439,29 @@ class ExprOp(object):
 
             elif self.arg1[0] == 'identifier':
                 if self.arg2[0] == 'num':
-                    re += "\t" + "movl " + self.state.var_address_map[self.arg1[1]] + ", %eax\n";
+                    re += "\t" + "movl " + self.state.var_address_map[self.arg1[1]] + ", %eax\n"
                     re += "\t" + "addl $" + self.arg2[1] + ". %eax\n"
+
+        elif self.op == '-':
+            re = ""
+            if self.arg1[0] == 'num':
+                if self.arg2[0] == 'identifier':
+                    re += "\t" + "movl " + self.state.var_address_map[self.arg2[1]] + ", %eax\n"
+                    re += "\t" + "subl $" + self.arg1[1] + ", %eax\n"
+
+            elif self.arg1[0] == 'identifier':
+                if self.arg2[0] == 'num':
+                    re += "\t" + "movl " + self.state.var_address_map[self.arg1[1]] + ", %eax\n"
+                    re += "\t" + "subl $" + self.arg2[1] + ". %eax\n"
 
         return re
 
     def __str__(self) -> str:
         return str(self.arg1) + " " + self.op + " " + str(self.arg2)
 
+"""
+    result_type : 'EXPR_OP' | 'EXPR_VAR_OR_IDENT'
+"""
 class ExprEval(object):
     def __init__(self, string, state : AsmRunner = None):
         self.string = string
@@ -309,17 +474,25 @@ class ExprEval(object):
         # Trans the expr to python vm, then to asm
         # Expr -> Py-Opcode -> Mid-Opcode
         bytecode = dis.Bytecode(self.string)
-        for instr in bytecode: 
+        for instr in bytecode:
             self.py_ins.append({'opname' : instr.opname, 'args' : instr.argrepr})
             if instr.opname == 'LOAD_NAME':
                 self.stack.append(instr.argrepr)
             elif instr.opname == 'LOAD_CONST':
                 self.stack.append(instr.argrepr)
+            elif instr.opname == 'CALL_FUNCTION':
+                self._result_type = "EXPR_CALL"
+                return self.__eval_func_call(self.stack)                
             elif instr.opname == 'BINARY_ADD':
-                return self.__eval_add()
+                self._result_type = "EXPR_OP"
+                return self.__eval_op('+')
+            elif instr.opname == 'BINARY_SUBTRACT':
+                self._result_type = "EXPR_OP"
+                return self.__eval_op('-')
             elif instr.opname == 'RETURN_VALUE' and instr.argrepr == '':
                 break
-
+        
+        self._result_type = "EXPR_VAR_OR_IDENT"
         return self.__eval()
 
     def get_type(self, val):
@@ -332,34 +505,48 @@ class ExprEval(object):
         except NameError:
             return 'identifier'
 
-    def __eval_add(self):
+    def __eval_op(self, op : str = ''):
         val1 = self.stack.pop()
         val2 = self.stack.pop()
 
         if self.get_type(val1) == 'identifier':
             if self.get_type(val2) == 'num':
-                return ExprOp('+', ['identifier', val1], ['num', val2], self.state)
+                return ExprOp(op, ['identifier', val1], ['num', val2], self.state)
             elif self.get_type(val2) == 'identifier':
-                return ExprOp('+', ['identifier', val1], ['identifier', val2], self.state)
+                return ExprOp(op, ['identifier', val1], ['identifier', val2], self.state)
             elif self.get_type(val2) == 'string':
-                return ExprOp('+', ['identifier', val1], ['string', val2], self.state)
+                return ExprOp(op, ['identifier', val1], ['string', val2], self.state)
 
         elif self.get_type(val1) == 'num':
             if self.get_type(val2) == 'num':
-                return ExprOp('+', ['num', val1], ['num', val2], self.state)
+                return ExprOp(op, ['num', val1], ['num', val2], self.state)
             elif self.get_type(val2) == 'identifier':
-                return ExprOp('+', ['num', val1], ['identifier', val2], self.state)
+                return ExprOp(op, ['num', val1], ['identifier', val2], self.state)
             elif self.get_type(val2) == 'string':
-                return ExprOp('+', ['num', val1], ['string', val2], self.state)
+                return ExprOp(op, ['num', val1], ['string', val2], self.state)
         
         elif self.get_type(val1) == 'string':
             if self.get_type(val2) == 'num':
-                return ExprOp('+', ['string', val1], ['num', val2], self.state)
+                return ExprOp(op, ['string', val1], ['num', val2], self.state)
             elif self.get_type(val2) == 'identifier':
-                return ExprOp('+', ['string', val1], ['identifier', val2], self.state)
+                return ExprOp(op, ['string', val1], ['identifier', val2], self.state)
             elif self.get_type(val2) == 'string':
-                return ExprOp('+', ['string', val1], ['string', val2], self.state)
+                return ExprOp(op, ['string', val1], ['string', val2], self.state)
 
+
+    def __eval_func_call(self, stack):
+        func_name = stack[0]
+        args_lst = []
+        # If the function has no args
+        if len(stack) == 1:
+            return ExprFunctionCall(func_name, None, self.state)
+        else:
+            i = 1
+            while i < len(stack):
+                args_lst.append(stack[i])
+                i += 1
+
+            return ExprFunctionCall(func_name, args_lst, self.state)
 
     def __eval(self):
         # Var or identifier?
@@ -375,3 +562,6 @@ class ExprEval(object):
 
         else:
             pass
+
+    def result_type(self):
+        return self._result_type

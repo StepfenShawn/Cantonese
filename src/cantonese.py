@@ -2392,8 +2392,8 @@ def cantonese_run(code : str, is_to_py : bool, file : str,
     if _S:
         import Compile
         code, fh = Compile.Compile(cantonese_parser.Node, "asm", file).ret()
-        f = open(fh, 'w', encoding = 'utf-8')
-        f.write(code)
+        # f = open(fh, 'w', encoding = 'utf-8')
+        # f.write(code)
         print(code)
         sys.exit(1)
 
