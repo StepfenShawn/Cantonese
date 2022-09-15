@@ -16,5 +16,5 @@ $output string 要做咩:
 
 $output2 string => 畀我睇下 string 点样先？ %
 
-output 下 -> "Hello World"
-output2 下 -> "Hello World"
+output 下 -> "Hello World1"
+output2 下 -> "Hello World2"

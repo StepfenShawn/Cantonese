@@ -13,6 +13,15 @@ class Register_rax(object):
 class Register_rdx(object):
     def __init__(self) -> None:
         self.used = False
+
+class Register_rcx(object):
+    def __init__(self) -> None:
+        self.used = False
+
+class Register_ecx(object):
+    def __init__(self) -> None:
+        self.used = False
+
 """
     used to pass 5th argument to functions
 """
@@ -57,6 +66,14 @@ class AsmRunner(object):
         self.var_type_map = {}
         self.var_address_map = {}
 
+        """
+            Size map:
+            1 : BYTE PTR
+            2 : WORD PTR
+            4 : DWORD PTR
+            8 : QWORD PTR
+        """
+
         self.int_size = 4
         self.long_size = 4
         self.float_size = 4
@@ -64,7 +81,30 @@ class AsmRunner(object):
         self.string_size = 8 # char* type
         self.char_size = 1
 
-        self.register = ['a', 'b', 'c', 'd']
+
+        # The base attr : to mark which registers used for function block
+        self.rax = Register_rax()
+        self.ecx = Register_ecx()
+        self.r8 = Register_r8()
+        self.r9 = Register_r9()
+
+        self.register = [self.rax, self.ecx, self.r8, self.r9]
+
+        self.reg_map = {"rax": ["rax", "eax", "ax", "al"],
+               "rbx": ["rbx", "ebx", "bx", "bl"],
+               "rcx": ["rcx", "ecx", "cx", "cl"],
+               "rdx": ["rdx", "edx", "dx", "dl"],
+               "rsi": ["rsi", "esi", "si", "sil"],
+               "rdi": ["rdi", "edi", "di", "dil"],
+               "r8": ["r8", "r8d", "r8w", "r8b"],
+               "r9": ["r9", "r9d", "r9w", "r9b"],
+               "r10": ["r10", "r10d", "r10w", "r10b"],
+               "r11": ["r11", "r11d", "r11w", "r11b"],
+               "rbp": ["rbp", "", "", ""],
+               "rsp": ["rsp", "", "", ""]}
+
+
+        self.function_args_map = {}
 
         self.block_name =  "__main"
 
@@ -142,17 +182,26 @@ class AsmRunner(object):
         re += "\t" + "call puts\n"
         self.ins.append(re)
 
-    def call_printf(self, lc_index, char_type : bool = False, val : int = None):
+    def call_printf(self, lc_index, char_type : bool = False, val : int = None, arg : list = None):
         re = ""
-        if not char_type:
-            if val is not None:
-                re += "\t" + "movl " + self.var_address_map[val] + ", %eax\n"
-            re += "\t" + "movl %eax, %edx\n"
+        if lc_index == None and arg != None:
+            """
+                movq	%rcx, 16(%rbp)
+	            movq	16(%rbp), %rcx
+            """
+            re += "\t" + "movq %rcx, " + self.var_address_map[arg] + "\n"
+            re += "\t" + "movq " + self.var_address_map[arg] + ", %rcx\n"
+            re += "\t" + "call puts\n" 
         else:
-            re += "\t" + "movq " + self.var_address_map[val] + ", %rax\n"
-            re += "\t" + "movq %rax, %rdx\n"
-        re += "\t" + "leaq .LC" + str(lc_index) + "(%rip), %rcx\n"
-        re += "\t" + "call printf\n"
+            if not char_type:
+                if val is not None:
+                    re += "\t" + "movl " + self.var_address_map[val] + ", %eax\n"
+                re += "\t" + "movl %eax, %edx\n"
+            else:
+                re += "\t" + "movq " + self.var_address_map[val] + ", %rax\n"
+                re += "\t" + "movq %rax, %rdx\n"
+            re += "\t" + "leaq .LC" + str(lc_index) + "(%rip), %rcx\n"
+            re += "\t" + "call printf\n"
         self.ins.append(re)
 
     def call_exit(self):
@@ -189,9 +238,13 @@ class AsmRunner(object):
 
     def __function(self, func_name, func_args, func_body):
         code = ''
-        func_parse = AsmBlockParse(func_body, code, self.LC, self.lc_data_map, func_name[1])
+        if func_args is not None:
+            func_parse = AsmBlockParse(func_body, code, self.LC, self.lc_data_map, func_name[1], [func_args])
+        else:
+            func_parse = AsmBlockParse(func_body, code, self.LC, self.lc_data_map, func_name[1])
         self.func_segment_list.append(func_name)
         print(func_parse.run())
+        self.LC = func_parse.LC
 
     def __return(self, val_node):
         if val_node[0] == 'num':
@@ -206,12 +259,15 @@ class AsmRunner(object):
 
     def __call(self, f):
         re = ""
-        if not ExprEval(f, self).parse().genAsm()['has_args']:
-            re += "\t" + "call " + ExprEval(f, self).parse().genAsm()['func_name'] + "\n"
+        expr_eval_ret = ExprEval(f, self).parse().genAsm()
+        if not expr_eval_ret['has_args']:
+            re += "\t" + "call " + expr_eval_ret['func_name'] + "\n"
         else:
-            pass
+            for a in expr_eval_ret['args']:
+                self.add_to_datasegment(a)
+                re += "\t" + "leaq " + ".LC" + str(self.lc_data_map[a[1]]) + "(%rip), %rcx\n"
+            re += "\t" + "call " + expr_eval_ret['func_name'] + "\n"
         self.ins.append(re)
-        pass
 
     def add_all_ins(self):
         for item in self.ins:
@@ -235,6 +291,8 @@ class AsmRunner(object):
                         self.call_printf(self.lc_data_map["%d\\n\\0"], val = node[1][1])
                     elif self.var_type_map[node[1][1]] == 'str':
                         self.call_printf(self.lc_data_map["%s\\n\\0"], char_type = True, val = node[1][1])
+                    elif self.var_type_map[node[1][1]] == 'arg':
+                        self.call_printf(None, arg = node[1][1])
                 
                 elif node[1][0] == 'expr':
                     if hasattr(ExprEval(node[1][1], self).parse(), 'op'):
@@ -281,7 +339,7 @@ class AsmRunner(object):
     def add_ins(self):
         pass
 
-    
+
 
 """
     A simple function stack structure:
@@ -297,11 +355,29 @@ class AsmRunner(object):
 """
 
 class AsmBlockParse(AsmRunner):
-    def __init__(self, Nodes : list, asm_code : list, lc_index : int, lc_data_map : dict, block_name : str = '') -> None:
+    def __init__(self, Nodes : list, asm_code : list, lc_index : int, lc_data_map : dict, block_name : str = '', func_args : list = []) -> None:
         super(AsmBlockParse, self).__init__(Nodes, asm_code)
         self.LC = lc_index
         self.lc_data_map = lc_data_map
         self.block_name = block_name
+
+        # Because of the return address, the args need start from 16(%rbp)
+        self.args_start_offset = 16
+        self.args_map = {}
+
+        self.func_args = func_args
+
+    def stack_add_args(self, arg : str):
+        self.var_address_map[arg] = str(self.args_start_offset) + "(%rbp)"
+        self.var_type_map[arg] = 'arg'
+        self.args_start_offset += 16
+
+    # Override
+    def run(self):
+        if len(self.func_args) != 0:
+            for i in self.func_args:
+                self.stack_add_args(i[1])
+        return super().run()
 
     # Override
     def init_main_section(self):
@@ -543,7 +619,7 @@ class ExprEval(object):
         else:
             i = 1
             while i < len(stack):
-                args_lst.append(stack[i])
+                args_lst.append([self.get_type(stack[i]), stack[i]])
                 i += 1
 
             return ExprFunctionCall(func_name, args_lst, self.state)

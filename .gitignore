@@ -1,3 +1,6 @@
+test/test.c
+test/a.exe
+test/test.s
 # ---> Python
 # Byte-compiled / optimized / DLL files
 __pycache__/
