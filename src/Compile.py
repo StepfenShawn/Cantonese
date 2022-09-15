@@ -46,7 +46,7 @@ class Register_r10(object):
 class AsmRunner(object):
     def __init__(self, Nodes, asm_code, label = '', path = ''):
         self.LC = 0 # For count the string
-        self.BC = 0 # For count the block
+        self.BC = 0 # (block count) For count the block
         self.asm_code = asm_code # The asm code
         self.path = path
         self.Nodes = Nodes
@@ -90,7 +90,11 @@ class AsmRunner(object):
 
         self.register = [self.rax, self.ecx, self.r8, self.r9]
 
-        self.reg_map = {"rax": ["rax", "eax", "ax", "al"],
+        self.bc_ins = []
+        self.lc_ins = []
+
+        self.reg_map = {
+               "rax": ["rax", "eax", "ax", "al"],
                "rbx": ["rbx", "ebx", "bx", "bl"],
                "rcx": ["rcx", "ecx", "cx", "cl"],
                "rdx": ["rdx", "edx", "dx", "dl"],
@@ -101,7 +105,8 @@ class AsmRunner(object):
                "r10": ["r10", "r10d", "r10w", "r10b"],
                "r11": ["r11", "r11d", "r11w", "r11b"],
                "rbp": ["rbp", "", "", ""],
-               "rsp": ["rsp", "", "", ""]}
+               "rsp": ["rsp", "", "", ""]
+            }
 
 
         self.function_args_map = {}
@@ -110,10 +115,12 @@ class AsmRunner(object):
 
     def init_lc(self):
         self.lc_data_map["%d\\n\\0"] = self.LC
-        self.asm_code += self.init_string("\"%d\\n\\0\"")
+        # self.asm_code += self.init_string("\"%d\\n\\0\"")
+        self.lc_ins.append(self.init_string("\"%d\\n\\0\""))
         self.LC += 1
         self.lc_data_map["%s\\n\\0"] = self.LC
-        self.asm_code += self.init_string("\"%s\\n\\0\"")
+        # self.asm_code += self.init_string("\"%s\\n\\0\"")
+        self.lc_ins.append(self.init_string("\"%s\\n\\0\""))
         self.LC += 1
 
     def init_main_section(self):
@@ -134,7 +141,8 @@ class AsmRunner(object):
                     return
                 else:
                     self.lc_data_map[data[1]] = self.LC
-                    self.asm_code += self.init_string(data[1])
+                    # self.asm_code += self.init_string(data[1])
+                    self.lc_ins.append(self.init_string(data[1]))
                     self.LC += 1
 
     def var_to_address(self, val):
@@ -181,6 +189,15 @@ class AsmRunner(object):
         re += "\t" + "leaq .LC" + str(lc_index) + "(%rip), %rcx\n"
         re += "\t" + "call puts\n"
         self.ins.append(re)
+
+    def make_block(self, node : list):
+        self.BC += 1
+        re, code = '', ''
+        re = ".BC" + str(self.BC) + ":\n"
+        re += IfBlockParse(node, code, self.LC, self.BC, self.lc_ins, self.var_address_map, self.bc_ins).run()
+        self.bc_ins.append(re)
+        ret = [code, self.BC]
+        return ret
 
     def call_printf(self, lc_index, char_type : bool = False, val : int = None, arg : list = None):
         re = ""
@@ -269,8 +286,22 @@ class AsmRunner(object):
             re += "\t" + "call " + expr_eval_ret['func_name'] + "\n"
         self.ins.append(re)
 
+    def _exec_if(self, cond : str, block : list) -> None:
+        re = ""
+        re += ExprEval(cond, self).parse().genAsm()
+        re += ".BC" + str(self.make_block(block)[1]) + "\n"
+        self.ins.append(re)
+
     def add_all_ins(self):
         for item in self.ins:
+            self.asm_code += item
+
+    def add_all_block_ins(self):
+        for i in range(len(self.bc_ins) - 1, -1, -1):
+            self.asm_code += self.bc_ins[i]
+
+    def add_all_lc_ins(self):
+        for item in self.lc_ins:
             self.asm_code += item
 
     def run_init(self):
@@ -321,10 +352,13 @@ class AsmRunner(object):
             elif node[0] == "node_exit":
                 self.call_exit()
 
+            elif node[0] == "node_if":
+                self._exec_if(node[1][1], node[2])
+
             else:
                 pass
 
-        
+        self.add_all_lc_ins()
         self.init_main_section()
         self.init_main_stack()
         self.count_stack_size()
@@ -332,7 +366,7 @@ class AsmRunner(object):
         self.init_call_main()
         self.add_all_ins()
         self.init_main_return_value()
-
+        self.add_all_block_ins()
 
         return self.asm_code
 
@@ -391,6 +425,51 @@ class AsmBlockParse(AsmRunner):
 
     # Override
     def init_lc(self):
+        return
+
+class IfBlockParse(AsmRunner):
+    def __init__(self, Nodes : list, code : str, lc_index : int, bc_index : int, lc_ins, var_address_map : dict, bc_ins) -> None:
+        super(IfBlockParse, self).__init__(Nodes, code)
+        self.LC = lc_index
+        self.BC = bc_index
+        self.lc_ins = lc_ins
+        self.var_address_map = var_address_map
+        self.bc_ins = bc_ins
+
+    # Override
+    def init_main_section(self):
+        return
+
+    # Override
+    def init_main_stack(self):
+        return
+
+    # Override
+    def init_call_main(self):
+        return
+
+    # Override
+    def init_lc(self):
+        return
+
+    # Override
+    def init_main_return_value(self):
+        return
+
+    # Override
+    def count_stack_size(self):
+        return
+
+    # Override
+    def init_stack_size(self):
+        return
+
+    # Override
+    def add_all_block_ins(self):
+        return
+
+    # Override
+    def add_all_lc_ins(self):
         return
 
 class Compile(object):
@@ -530,6 +609,30 @@ class ExprOp(object):
                     re += "\t" + "movl " + self.state.var_address_map[self.arg1[1]] + ", %eax\n"
                     re += "\t" + "subl $" + self.arg2[1] + ". %eax\n"
 
+        elif self.op == '==' or self.op == '0': # == or is
+            re = ""
+            if self.arg1[0] == 'num':
+                if self.arg2[0] == 'identifier':
+                    re += '\t' + "cmpl $" + self.arg1[1] + ", " + self.state.var_address_map[self.arg2[1]] + '\n'
+                    re += '\t' + 'je '
+
+            elif self.arg1[0] == 'identifier':
+                if self.arg2[0] == 'num':
+                    re += '\t' + "cmpl $" + self.arg2[1] + ", " + self.state.var_address_map[self.arg1[1]] + '\n'
+                    re += '\t' + 'je '
+
+        elif self.op == '!=':
+            re = ""
+            if self.arg1[0] == 'num':
+                if self.arg2[0] == 'identifier':
+                    re += '\t' + "cmpl $" + self.arg1[1] + ", " + self.state.var_address_map[self.arg2[1]] + '\n'
+                    re += '\t' + 'jne '
+
+            elif self.arg1[0] == 'identifier':
+                if self.arg2[0] == 'num':
+                    re += '\t' + "cmpl $" + self.arg2[1] + ", " + self.state.var_address_map[self.arg1[1]] + '\n'
+                    re += '\t' + 'jne '
+
         return re
 
     def __str__(self) -> str:
@@ -565,6 +668,9 @@ class ExprEval(object):
             elif instr.opname == 'BINARY_SUBTRACT':
                 self._result_type = "EXPR_OP"
                 return self.__eval_op('-')
+            elif instr.opname == 'COMPARE_OP' or instr.opname == 'IS_OP':
+                self._result_type = "EXPR_OP"
+                return self.__eval_op(instr.argrepr)
             elif instr.opname == 'RETURN_VALUE' and instr.argrepr == '':
                 break
         
