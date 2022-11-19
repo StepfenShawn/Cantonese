@@ -21,10 +21,9 @@ class QDMGraphicsView(QGraphicsView):
         self.initUI()
 
         self.zoomInFactor = 1.25
-        self.zoomClamp = False
-        self.zoom = 10
+        self.zoom = 4
         self.zoomStep = 1
-        self.zoomRange = [0, 10]
+        self.zoomRange = [0, 4]
 
         self.edge_enable = False
         self.drag_edge = None
@@ -203,17 +202,16 @@ class QDMGraphicsView(QGraphicsView):
             # 缩小的比例 0.8
             zoomFactor = zoomOutFactor
             self.zoom -= self.zoomStep
-        # self.zoomRange[0] = 0 , self.zoomRange[1] =10
+        
         # 限制缩放
-        # 取消缩放 
         clamped = False
         if self.zoom < self.zoomRange[0]: 
-                  self.zoom, clamped = self.zoomRange[0], True
+            self.zoom, clamped = self.zoomRange[0], True
         if self.zoom > self.zoomRange[1]: 
-                  self.zoom, clamped = self.zoomRange[1], True
- 
+            self.zoom, clamped = self.zoomRange[1], True
+       
         # set scene scale
-        if not clamped or self.zoomClamp is False:
+        if not clamped:
             self.scale(zoomFactor, zoomFactor)
 
 
