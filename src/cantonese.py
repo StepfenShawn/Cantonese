@@ -25,8 +25,8 @@ class lexer(object):
         self.re_number = r"^0[xX][0-9a-fA-F]*(\.[0-9a-fA-F]*)?([pP][+\-]?[0-9]+)?|^[0-9]*(\.[0-9]*)?([eE][+\-]?[0-9]+)?"
         self.re_id = r"^[_\d\w]+|^[\u4e00-\u9fa5]+"
         self.re_str = r"(?s)(^'(\\\\|\\'|\\\n|\\z\s*|[^'\n])*')|(^\"(\\\\|\\\"|\\\n|\\z\s*|[^\"\n])*\")"
-        self.re_expr = r"[|](.*?)[|]"
-        self.re_python_expr = r"[~][\S\s]*[#]"
+        self.re_expr = r"[|][\S\s]*?[|]"
+        self.re_python_expr = r"[~][\S\s]*?[#]"
         self.re_callfunc = r"[&](.*?)[)]"
         self.op = r'(?P<op>(相加){1}|(加){1}|(减){1}|(乘){1}|(整除){1}|(除){1}|(余){1}|(异或){1}|(取反){1}|(左移){1}|(右移){1}'\
         r'(与){1}(或者){1}|(或){1}|(系){1})|(同埋){1}|(自己嘅){1}|(比唔上){1}|(喺){1}'
@@ -3301,7 +3301,10 @@ class 交互(cmd.Cmd):
     def __init__(self):
         super().__init__()
         self.prompt = '> '
-
+    
+    def var_def(self, key):
+        pass
+    
     def run(self, code):
         if code in variable.keys():
             print(variable[code])
@@ -3321,6 +3324,8 @@ class 交互(cmd.Cmd):
                 sys.exit(1)
             c = cantonese_run(code, False, '【标准输入】', 
                 REPL = True, get_py_code = True)
+            if len(c) == 0:
+                c = code
             self.run(c)
 
 
