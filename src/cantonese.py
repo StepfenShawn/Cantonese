@@ -10,7 +10,7 @@ import argparse
 from src.濑嘢 import 濑啲咩嘢
 from src.stack_vm import *
 
-_version_ = "Cantonese 1.0.1 Copyright (C) 2020-2022 StepfenShawn"
+_version_ = "Cantonese 1.0.2 Copyright (C) 2020-2023 StepfenShawn"
 
 """
     Get the Cantonese Token List
@@ -710,6 +710,10 @@ class Parser(object):
                         if_should_end += 1
                         stmt_if.append(self.tokens[self.pos])
                         self.pos += 1
+                    elif self.get(0)[1] == kw_else_or_not:
+                        if_should_end += 1
+                        stmt_if.append(self.tokens[self.pos])
+                        self.pos += 1
                     elif self.get(0)[1] == kw_assign or self.get(0)[1] == tr_kw_assign:
                         stmt_if.append(self.tokens[self.pos])
                         self.pos += 1
@@ -742,6 +746,10 @@ class Parser(object):
                             stmt_elif.append(self.tokens[self.pos])
                         self.pos += 1
                     elif self.get(0)[1] == kw_elif:
+                        elif_should_end += 1
+                        stmt_elif.append(self.tokens[self.pos])
+                        self.pos += 1
+                    elif self.get(0)[1] == kw_else_or_not:
                         elif_should_end += 1
                         stmt_elif.append(self.tokens[self.pos])
                         self.pos += 1
@@ -779,6 +787,10 @@ class Parser(object):
                         else_should_end += 1
                         stmt_else.append(self.tokens[self.pos])
                         self.pos += 1
+                    elif self.get(0)[1] == kw_else_or_not:
+                        else_should_end += 1
+                        stmt_else.append(self.tokens[self.pos])
+                        self.pos += 1
                     elif self.get(0)[1] == kw_assign  or self.get(0)[1] == tr_kw_assign:
                         stmt_else.append(self.tokens[self.pos])
                         self.pos += 1
@@ -791,12 +803,23 @@ class Parser(object):
                 node_else_new(self.Node, node_else)
 
             elif self.match([kw_while_do, tr_kw_while_do]):
+                while_case_end = 0 # The times of case "end"
+                while_should_end = 1
                 stmt = []
-                while self.tokens[self.pos][1][1] != kw_while:
-                    stmt.append(self.tokens[self.pos])
-                    self.pos += 1
+                while while_case_end != while_should_end and self.pos < len(self.tokens):
+                    if self.get(0)[1] == kw_while_do or self.get(0)[1] == tr_kw_while_do:
+                        while_should_end += 1
+                        stmt.append(self.tokens[self.pos])
+                        self.pos += 1
+                    elif self.get(0)[1] == kw_while or self.get(0)[1] == tr_kw_while:
+                        while_case_end += 1
+                        if while_case_end != while_should_end:
+                            stmt.append(self.tokens[self.pos])
+                        self.pos += 1
+                    else:
+                        stmt.append(self.tokens[self.pos])
+                        self.pos += 1
                 node_while = []
-                self.skip(1)
                 cond = self.get_value(self.get(0))
                 Parser(stmt, node_while).parse()
                 node_loop_new(self.Node, cond, node_while)
@@ -1099,6 +1122,10 @@ class Parser(object):
                             stmt_match.append(self.tokens[self.pos])
                         self.pos += 1
                     elif self.get(0)[1] == kw_elif:
+                        match_should_end += 1
+                        stmt_match.append(self.tokens[self.pos])
+                        self.pos += 1
+                    elif self.get(0)[1] == kw_else_or_not:
                         match_should_end += 1
                         stmt_match.append(self.tokens[self.pos])
                         self.pos += 1
