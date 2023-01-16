@@ -1,0 +1,88 @@
+exp ::= null
+    | false
+    | true
+    | Numeral
+    | LiteralString
+    | lambda_functoindef
+    | prefixexp
+    | exp binop exp
+    | unop exp
+    | '<*>'
+
+prefixexp ::= var
+          | functioncall
+
+var ::= id
+    | prefixexp '[' exp ']'
+    | prefixexp '->' id
+
+functioncall ::= prefixexp '下' '->' args
+             | prefixexp '(' args ')'
+
+lambda_functoindef ::= '$$' idlist '->' block '搞掂'
+
+listconstructor ::= '[' {fieldlist} ']'
+
+fieldlist ::= field {',' field} [',']
+
+field ::= '[' exp ']'
+        | exp
+
+printstmt ::= '畀我睇下' args '点样先'
+
+importstmt ::= '使下' idlist
+            | '使下' '|' idlist '|'
+
+explist ::= exp {',' exp}
+
+varlist ::= var {',' var}
+
+idlist ::= id {',' id}
+        | '|' id {',' id} '|'
+
+parlist ::= idlist {'<*>'}
+          | '<*>  
+
+args ::= '|' explist '|'
+      | '(' {explist} ')'
+      | LiteralString
+      | Numeral
+
+binop ::= '+' | '-' | '*' | '/' | '^' | '%' | '<->' | 
+         '<' | '<=' | '>' | '>=' | '==' | '!=' | and | or
+         '>>' | '<<'
+
+unop ::= not
+
+assignblock ::= varlist '系' explist [ assignblock ]
+
+matchblock ::= '撞见' exp '->' '{' block '}' [ matchblock ]
+
+block ::= {stat} [retstat]
+
+stat ::= ';' |
+      | '饮茶先啦'
+      | '收工'
+      | 'Share下' idlist
+      | '讲嘢' varlist '系' explist
+      | '讲嘢' '=>' '{' assignblock '}'
+      | printstmt ['@' idlist]
+      | importstmt
+      | functioncall ['@' idlist]
+      | '落操场玩跑步' block '玩到' exp '为止'
+      | '$' id [parlist] '要做咩' block '搞掂'
+      | functoindef ['@' idlist]
+      | '&' idlist '喺' '[' Numeral '...' Numeral ']' '=>' '{' block '}'
+      | '&' idlist '喺' '|' explist '|'
+      | id '从' Numeral '行到' Numeral block '行晒'
+      | '起底' args ['@' idlist]
+      | '如果' exp '嘅话' '->' '{' block '}' [定系 exp 嘅话 '->' '{' block '}'] ['唔系嘅话' '->' '{' block '}']
+      | match下 id '=>' '{' matchblock '}' 
+      | '掟个' id '来睇下'
+      | '谂下' args
+      | '有条仆街叫' ['|'] id ['|']
+      | '顶你' '->' ['|'] id ['|'] exp
+      | '丢你' '->' ['|'] id ['|']
+      | args 拍住上 '->' ['|'] id ['|']
+
+retstat ::= '还数' [explist]
