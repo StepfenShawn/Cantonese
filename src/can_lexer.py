@@ -281,8 +281,12 @@ class lexer(object):
             return [self.line, [TokenType.OP_MUL, c]]
 
         if c == '/':
-            self.next(1)
-            return [self.line, [TokenType.OP_DIV, c]]
+            if self.check('//'):
+                self.next(2)
+                return [self.line, [TokenType.OP_IDIV, '//']]
+            else:
+                self.next(1)
+                return [self.line, [TokenType.OP_DIV, c]]
 
         if c == '&':
             self.next(1)

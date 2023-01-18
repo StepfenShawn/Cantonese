@@ -31,10 +31,11 @@ class TokenType:
     OP_OR = 29         # or
     OP_NOT = 30        # not
     OP_BOR = 31        # |
-    KEYWORD = 32
-    IDENTIFIER = 33
-    STRING = 34
-    NUM = 35
+    OP_IDIV = 32       # //
+    KEYWORD = 33
+    IDENTIFIER = 34
+    STRING = 35
+    NUM = 36
     
 kw_print = "畀我睇下"
 kw_endprint = "点样先"

@@ -50,7 +50,7 @@ args ::= '|' explist '|'
 
 binop ::= '+' | '-' | '*' | '/' | '^' | '%' | '<->' | 
          '<' | '<=' | '>' | '>=' | '==' | '!=' | and | or
-         '>>' | '<<'
+         '>>' | '<<' | '==>'
 
 unop ::= not
 
@@ -77,7 +77,8 @@ stat ::= ';' |
       | id '从' exp '行到' exp block '行晒'
       | '起底' args
       | '如果' exp '嘅话' '->' '{' block '}' [定系 exp 嘅话 '->' '{' block '}'] ['唔系嘅话' '->' '{' block '}']
-      | match下 id '=>' '{' matchblock '}' 
+      | match下 id '=>' '{' matchblock '}'
+      | 用下 explist
       | '掟个' id '来睇下'
       | '谂下' args
       | '落Order' args

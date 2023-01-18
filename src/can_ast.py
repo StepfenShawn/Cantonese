@@ -72,6 +72,19 @@ class ListExp(AST):
                     s += '\t' + l + '\n'
         return s
 
+# Map Expr
+class MapExp(AST):
+    def __init__(self, elem_exps : list) -> None:
+        self.elem_exps = elem_exps
+
+    def __str__(self) -> str:
+        s = 'MapExp:\n'
+        for elem_exp in self.elem_exps:
+            for l in str(elem_exp).split('\n'):
+                if len(l):
+                    s += '\t' + l + '\n'
+        return s
+
 # unop exp
 class UnopExp(AST):
     def __init__(self, line : int, op, exp : AST) -> None:
@@ -108,6 +121,44 @@ class BinopExp(AST):
         for l in str(self.exp2).split('\n'):
             if len(l) > 0:
                 s += '  ' + l + '\n'
+        return s
+
+# exp1 = exp2
+class AssignExp(AST):
+    def __init__(self, exp1 : AST, exp2 : AST) -> None:
+        self.exp1 = exp1
+        self.exp2 = exp2
+
+    def __str__(self):
+        s = 'AssignExp:\n'
+        s += '"exp1": \n'
+        for l in str(self.exp1).split('\n'):
+            if len(l):
+                s += '\t' + l + '\n'
+        s += '"exp2": \n'
+        for l in str(self.exp2).split('\n'):
+            if len(l):
+                s += '\t' + l + '\n'
+
+        return s
+
+# exp1 ==> exp2
+class MappingExp(AST):
+    def __init__(self, exp1 : AST, exp2 : AST) -> None:
+        self.exp1 = exp1
+        self.exp2 = exp2
+
+    def __str__(self):
+        s = 'MappingExp:\n'
+        s += '"exp1": \n'
+        for l in str(self.exp1).split('\n'):
+            if len(l):
+                s += '\t' + l + '\n'
+        s += '"exp2": \n'
+        for l in str(self.exp2).split('\n'):
+            if len(l):
+                s += '\t' + l + '\n'
+
         return s
 
 class IdExp(AST):
@@ -156,11 +207,8 @@ class ListAccessExp(AST):
         return s
 
 class FuncCallExp(AST):
-    def __init__(self, line : int, last_line : int, prefix_exp : AST, name_exp : AST, args : AST):
-        self.line = line
-        self.last_line = last_line
+    def __init__(self, prefix_exp : AST,args : AST):
         self.prefix_exp = prefix_exp
-        self.name_exp = name_exp
         self.args = args
 
     def __str__(self):
@@ -169,7 +217,6 @@ class FuncCallExp(AST):
         for line in str(self.prefix_exp).split('\n'):
             s += '  ' + line + '\n'
         s += '},\n'
-        s += '"NameExp": ' + str(self.name_exp) + ',\n'
         s += '"Args": ' + '['
         for arg in self.args:
             s += '{\n'
@@ -602,5 +649,16 @@ class MethodCallStat(AST):
         for arg in self.args:
             for l in str(arg).split('\n'):
                 s += '\t' + l + '\n'
+
+        return s
+
+class CallStat(AST):
+    def __init__(self, exp : AST) -> None:
+        self.exp = exp
+
+    def __str__(self) -> str:
+        s = "CallStat:\n"
+        for l in str(self.exp).split('\n'):
+            s += '\t' + l + '\n'
 
         return s
