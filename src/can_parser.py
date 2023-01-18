@@ -116,6 +116,10 @@ class ExpParser(ParserBase):
                 line, op = now[0], self.get_token_value(now)
                 self.skip(1)
                 exp = can_ast.BinopExp(line, op if op != kw_is else '==', exp, self.parse_exp9())
+            elif self.get_token_value(now) in ('in', kw_in, tr_kw_in):
+                line = now[0]
+                self.skip(1)
+                exp = can_ast.BinopExp(line, ' in ', exp, self.parse_exp9())
             else:
                 break
         return exp
@@ -180,6 +184,14 @@ class ExpParser(ParserBase):
                 line, op = self.current()[0], self.get_token_value(self.current())
                 self.skip(1) # skip the op
                 exp = can_ast.BinopExp(line, op, exp, self.parse_exp3())
+            elif self.get_token_value(self.current()) == '加':
+                line = self.current()[0]
+                self.skip(1) # skip the op
+                exp = can_ast.BinopExp(line, '-', exp, self.parse_exp3())
+            elif self.get_token_value(self.current()) == '减':
+                line = self.current()[0]
+                self.skip(1) # skip the op
+                exp = can_ast.BinopExp(line, '-', exp, self.parse_exp3())
             else:
                 break
         return exp
@@ -192,13 +204,18 @@ class ExpParser(ParserBase):
                 line, op = self.current()[0], self.get_token_value(self.current())
                 self.skip(1) # Skip the op
                 exp = can_ast.BinopExp(line, op, exp, self.parse_exp2())
+            elif self.get_token_value(self.current()) == '乘':
+                line = self.current()[0]
+                self.skip(1) # Skip the op
+                exp = can_ast.BinopExp(line, '*', exp, self.parse_exp2())
             else:
                 break
         return exp
 
     # unop exp
     def parse_exp2(self):
-        if self.get_type(self.current()) == TokenType.OP_NOT:
+        if self.get_type(self.current()) == TokenType.OP_NOT or\
+            self.get_token_value(self.current()) == 'not':
             line, op = self.current()[0], self.get_token_value(self.current())
             self.skip(1) # Skip the op
             exp = can_ast.UnopExp(line, op, self.parse_exp2())
@@ -239,9 +256,12 @@ class ExpParser(ParserBase):
             self.skip(1)
             return can_ast.StringExp(tk[0], self.get_token_value(tk))
 
+        elif self.get_type(tk) == TokenType.SEP_LBRACK:
+            return self.parse_listcons()
+
         # lambda function
         elif self.get_token_value(tk) == '$$':
-            return self.parse_functiondef()
+            return self.parse_functiondef_expr()
         
         return self.parse_prefixexp()
     """
@@ -278,6 +298,20 @@ class ExpParser(ParserBase):
         self.get_next_token_of('|', 0)
         return exp
 
+    """
+    listcons := '[' exp_list ']'
+    """
+    def parse_listcons(self):
+        self.get_next_token_of_kind(TokenType.SEP_LBRACK, 0)
+        if self.get_type(self.current()) == TokenType.SEP_RBRACK: # []
+            self.skip(1)
+            return can_ast.ListExp("")
+        else:
+            exps = self.parse_exp_list()
+            self.get_next_token_of_kind(TokenType.SEP_RBRACK, 0)
+            return can_ast.ListExp(exps)
+        
+
     def finish_prefixexp(self, exp : can_ast.AST):
         while True:
             kind, value = self.get_type(self.current()), self.get_token_value(self.current())
@@ -285,20 +319,29 @@ class ExpParser(ParserBase):
                 self.skip(1)
                 key_exp : can_ast.AST = self.parse_exp()
                 self.get_next_token_of_kind(TokenType.SEP_RBRACK, 0)
-                exp = can_ast.ObjectAccessExp(self.get_line(), exp, key_exp)
+                exp = can_ast.ListAccessExp(self.get_line(), exp, key_exp)
             elif kind == TokenType.SEP_DOT or \
                 (kind == TokenType.KEYWORD and value == kw_do):
-                self.skip(1)
-                tk = self.get_next_token_of_kind(TokenType.IDENTIFIER, 0)
-                line, name = tk[0], self.get_token_value(tk)
-                key_exp = can_ast.IdExp(line, name)
-                exp = can_ast.ObjectAccessExp(line, exp, key_exp)
+                if self.get_type(self.look_ahead(1)) == TokenType.SEP_LCURLY:
+                    # || -> { ... } means we in a method define statement. So break it.
+                    break
+                # Otherwise it's a ObjectAccessExp
+                else:
+                    self.skip(1)
+                    tk = self.get_next_token_of_kind(TokenType.IDENTIFIER, 0)
+                    line, name = tk[0], self.get_token_value(tk)
+                    key_exp = can_ast.IdExp(line, name)
+                    exp = can_ast.ObjectAccessExp(line, exp, key_exp)
             elif (kind == TokenType.SEP_LPAREN) or \
                 (kind == TokenType.KEYWORD and value == kw_call_begin):
                 exp = self.finish_functioncall_exp(exp)
+            elif value == '嘅长度':
+                self.skip(1)
+                key_exp = can_ast.IdExp(self.get_line(), '__len__()')
+                exp = can_ast.ObjectAccessExp(self.get_line(), exp, key_exp)
             else:
                 break
-        return exp         
+        return exp
 
     """
     functioncall ::= prefixexp '下' '->' args
@@ -358,16 +401,27 @@ class ExpParser(ParserBase):
             return ids
 
     """
-    functoindef ::= '$$' idlist '->' block '搞掂'
+    lambda_functoindef ::= '$$' idlist '->' block '搞掂'
     """
-    def parse_functiondef(self):
-        pass
-    
+    def parse_functiondef_expr(self):
+        self.skip(1)
+        idlist : list = self.parse_idlist()
+        blocks : list = []
+        self.get_next_token_of(kw_do, 0)
+        # TODO: add a new class to parse lambda_block
+        while self.get_token_value(self.current()) not in [kw_func_end, tr_kw_func_end]:
+            blocks.append(self.parse_exp())
+           
+        self.skip(1)
+
+        return can_ast.LambdaExp(idlist, blocks)
+
     """
     args ::= '|' explist '|'
            | '(' {explist} ')'
            | LiteralString
            | Numeral
+           | id
     """
     def parse_args(self):
         args = []
@@ -388,13 +442,20 @@ class ExpParser(ParserBase):
         elif self.get_type(tk) == TokenType.NUM:
             self.skip(1)
             args = [can_ast.NumeralExp(tk[0], self.get_token_value(tk))]
+        elif self.get_type(tk) == TokenType.IDENTIFIER:
+            self.skip(1)
+            args = [can_ast.IdExp(tk[0], self.get_token_value(tk))]
         return args
 
 class StatParser(ParserBase):
-    def __init__(self, token_list : list) -> None:
+    def __init__(self, token_list : list, ExpParser = ExpParser) -> None:
         super(StatParser, self).__init__(token_list)
         self.pos = 0
         self.tokens = token_list
+
+        # Function address type:
+        # We can choose the class `ExpParser` Or `ClassBlockExpParser`
+        self.ExpParser = ExpParser
 
     def parse(self):
         tk = self.current()
@@ -403,34 +464,91 @@ class StatParser(ParserBase):
         if kind == TokenType.KEYWORD:
             if tk_value in [kw_print, tr_kw_print]:
                 return self.parse_print_stat()
+            
             elif tk_value in [kw_exit, kw_exit_1, kw_exit_2, tr_kw_exit_1, tr_kw_exit_2]:
                 return self.parse_exit_stat()
+            
             elif tk_value in [kw_assign, tr_kw_assign]:
                 return self.parse_assign_stat()
+            
             elif tk_value in [kw_if, tr_kw_if]:
                 return self.parse_if_stat()
+            
             elif tk_value in [kw_import, tr_kw_import]:
                 return self.parse_import_stat()
+            
             elif tk_value == kw_global_set:
                 return self.parse_global_stat()
+            
             elif tk_value in [kw_break, tr_kw_break]:
                 return self.parse_break_stat()
+            
             elif tk_value in [kw_while_do, tr_kw_while_do]:
                 return self.parse_while_stat()
+            
             elif tk_value == '|':
-                exp_parser = ExpParser(self.tokens[self.pos : ])
-                prefix_exps = exp_parser.parse_exp()
+                self.skip(1)
+                exp_parser = self.ExpParser(self.tokens[self.pos : ])
+                prefix_exps = exp_parser.parse_exp_list()
                 skip_step = exp_parser.pos = exp_parser.pos # we will skip it in parse_for_stat
                 del exp_parser
+                self.get_next_token_of('|', skip_step)
+                
                 if self.get_token_value(self.look_ahead(skip_step)) in [kw_from, tr_kw_from]:
                     return self.parse_for_stat(prefix_exps, skip_step)
+                
+                elif self.get_token_value(self.look_ahead(skip_step)) in [kw_call_begin, tr_kw_call_begin]:
+                    return self.parse_func_call_stat(prefix_exps, skip_step)
+                
+                elif self.get_token_value(self.look_ahead(skip_step)) in [kw_lst_assign, tr_kw_lst_assign]:
+                    return self.parse_list_assign_stat(prefix_exps, skip_step)
+                
+                elif self.get_token_value(self.look_ahead(skip_step)) in [kw_do, tr_kw_do]:
+                    return self.parse_class_method_call_stat(prefix_exps, skip_step) 
+
+
             elif tk_value == kw_function:
                 return self.parse_func_def_stat()
+            
+            elif tk_value in [kw_pass, tr_kw_pass]:
+                return self.parse_pass_stat()
+            
+            elif tk_value in [kw_return, tr_kw_return]:
+                return self.parse_return_stat()
+            
+            elif tk_value in [kw_del, tr_kw_del]:
+                return self.parse_del_stat()
+
+            elif tk_value in [kw_type, tr_kw_type]:
+                return self.parse_type_stat()
+
+            elif tk_value in [kw_assert, tr_kw_assert]:
+                return self.parse_assert_stat()
+
+            elif tk_value in [kw_try, tr_kw_try]:
+                return self.parse_try_stat()
+
+            elif tk_value in [kw_raise, tr_kw_raise]:
+                return self.parse_raise_stat()
+
+            elif tk_value in [kw_cmd, tr_kw_cmd]:
+                return self.parse_cmd_stat()
+
+            elif tk_value in [kw_class_def, tr_kw_class_def]:
+                return self.parse_class_def()
 
         elif kind == TokenType.IDENTIFIER:
             if self.get_token_value(self.look_ahead(1)) in [kw_from, tr_kw_from]:
                 return self.parse_for_stat()
+            
+            elif self.get_token_value(self.look_ahead(1)) in [kw_call_begin, tr_kw_call_begin]:
+                return self.parse_func_call_stat()
 
+            # TODO: fix bugs here
+            """
+            elif self.get_token_value(self.look_ahead(1)) in [kw_do, tr_kw_do]:
+                return self.parse_class_method_call_stat()
+            """
         elif kind == TokenType.EOF:
             return
             
@@ -446,7 +564,7 @@ class StatParser(ParserBase):
 
     def parse_print_stat(self):
         self.skip(1) # skip the kw_print
-        exp_parser = ExpParser(self.tokens[self.pos : ])
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
         args = exp_parser.parse_args()
         self.skip(exp_parser.pos)
         self.get_next_token_of(kw_endprint, step = 0)
@@ -459,13 +577,13 @@ class StatParser(ParserBase):
         if self.get_type(self.current()) == TokenType.SEP_RCURLY:
             self.skip(1)
             return can_ast.AssignStat(0, can_ast.AST, can_ast.AST)
-        var_list = []
-        exp_list = []
+        var_list : list = []
+        exp_list : list= []
         while self.get_type(self.current()) != TokenType.SEP_RCURLY:
-            var_list.append(self.parse_var_list())
+            var_list.append(self.parse_var_list()[0])
             self.get_next_token_of([kw_is, kw_is_3], 0)
-            exp_parser = ExpParser(self.tokens[self.pos : ])
-            exp_list.append(exp_parser.parse_exp_list())
+            exp_parser = self.ExpParser(self.tokens[self.pos : ])
+            exp_list.append(exp_parser.parse_exp_list()[0])
             self.skip(exp_parser.pos)
             del exp_parser # free the memory
         
@@ -478,7 +596,7 @@ class StatParser(ParserBase):
         if self.get_token_value(self.current()) != kw_do:
             var_list = self.parse_var_list()
             self.get_next_token_of([kw_is, kw_is_3], 0)
-            exp_parser = ExpParser(self.tokens[self.pos : ])
+            exp_parser = self.ExpParser(self.tokens[self.pos : ])
             exp_list = exp_parser.parse_exp_list()
             self.skip(exp_parser.pos)
             del exp_parser # free the memory
@@ -492,7 +610,7 @@ class StatParser(ParserBase):
             # The SEP_RCURLY will be checked in self.parse_assign_block()
 
     def parse_var_list(self):
-        exp_parser = ExpParser(self.tokens[self.pos : ])
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
         exp = exp_parser.parse_prefixexp()
         self.skip(exp_parser.pos)
         del exp_parser
@@ -500,7 +618,7 @@ class StatParser(ParserBase):
     
         while self.get_type(self.current()) == TokenType.SEP_COMMA:
             self.skip(1)
-            exp_parser = ExpParser(self.tokens[self.pos : ])
+            exp_parser = self.ExpParser(self.tokens[self.pos : ])
             exp = exp_parser.parse_prefixexp()
             self.skip(exp_parser.pos)
             del exp_parser
@@ -510,7 +628,8 @@ class StatParser(ParserBase):
 
     def check_var(self, exp : can_ast.AST):
         if isinstance(exp, can_ast.IdExp) or \
-           isinstance(exp, can_ast.ObjectAccessExp):
+           isinstance(exp, can_ast.ObjectAccessExp) or \
+           isinstance(exp, can_ast.ListAccessExp):
            return exp
         else:
             raise Exception('unreachable!')
@@ -523,15 +642,13 @@ class StatParser(ParserBase):
     def parse_if_stat(self):
         # Skip the keyword if
         self.skip(1)
-
-        if_exps : list = []
         if_blocks : list = []
         elif_exps : list = []
         elif_blocks : list = []
         else_blocks : list = []
 
-        exp_parser = ExpParser(self.tokens[self.pos : ])
-        if_exps.append(exp_parser.parse_exp())
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
+        if_exps = exp_parser.parse_exp()
         self.skip(exp_parser.pos)
         self.get_next_token_of([kw_then, tr_kw_then], 0)
         self.get_next_token_of(kw_do, 0)
@@ -546,18 +663,21 @@ class StatParser(ParserBase):
 
         while self.get_token_value(self.current()) in [kw_elif, tr_kw_elif]:
             self.skip(1) # skip and try to get the next token
-            exp_parser = ExpParser(self.tokens[self.pos : ])
+            exp_parser = self.ExpParser(self.tokens[self.pos : ])
             elif_exps.append(exp_parser.parse_exp())
             self.skip(exp_parser.pos)
             self.get_next_token_of([kw_then, tr_kw_then], 0)
             self.get_next_token_of(kw_do, 0)
             self.get_next_token_of_kind(TokenType.SEP_LCURLY, 0)
             del exp_parser # free the memory
+            elif_block : list = []
             while (self.get_type(self.current()) != TokenType.SEP_RCURLY):
                 block_parser = StatParser(self.tokens[self.pos : ])
-                elif_blocks.append(block_parser.parse())
+                elif_block.append(block_parser.parse())
                 self.skip(block_parser.pos)
                 del block_parser # free the memory
+            elif_blocks.append(elif_block)
+
             self.skip(1) # Skip the SEP_RCURLY '}'
 
         if self.get_token_value(self.current()) == kw_else_or_not:
@@ -577,7 +697,7 @@ class StatParser(ParserBase):
 
     def parse_import_stat(self):
         self.skip(1) # Skip the kw_import
-        exp_parser = ExpParser(self.tokens[self.pos : ])
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
         idlist = exp_parser.parse_idlist()
         self.skip(exp_parser.pos)
         del exp_parser # free thr memory
@@ -585,7 +705,7 @@ class StatParser(ParserBase):
 
     def parse_global_stat(self):
         self.skip(1) # Skip the kw_global
-        exp_parser = ExpParser(self.tokens[self.pos : ])
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
         idlist = exp_parser.parse_idlist()
         self.skip(exp_parser.pos)
         del exp_parser # free the memory
@@ -607,8 +727,8 @@ class StatParser(ParserBase):
 
         self.skip(1) # Skip the kw_while
         
-        exp_parser = ExpParser(self.tokens[self.pos : ])
-        cond_exps.append(exp_parser.parse_exp())
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
+        cond_exps = exp_parser.parse_exp()
         self.skip(exp_parser.pos)
         del exp_parser # free the memory
         self.get_next_token_of([kw_whi_end, tr_kw_whi_end], 0)
@@ -619,24 +739,24 @@ class StatParser(ParserBase):
         blocks : list = []
 
         if prefix_exp == None:
-            exp_parser = ExpParser(self.tokens[self.pos : ])
+            exp_parser = self.ExpParser(self.tokens[self.pos : ])
             id = exp_parser.parse_exp()
             self.skip(exp_parser.pos)
             del exp_parser # free the memory
 
         else:
-            id = prefix_exp
+            id = prefix_exp[0]
             self.skip(skip_prefix_exp)
         
         self.get_next_token_of([kw_from, tr_kw_from], 0)
 
-        exp_parser = ExpParser(self.tokens[self.pos : ])
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
         from_exp = exp_parser.parse_exp()
         self.skip(exp_parser.pos)
         del exp_parser # free the memory
         self.get_next_token_of([kw_to, tr_kw_to], 0)
 
-        exp_parser = ExpParser(self.tokens[self.pos : ])
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
         to_exp = exp_parser.parse_exp()
         self.skip(exp_parser.pos)
         del exp_parser # free the memory
@@ -651,10 +771,327 @@ class StatParser(ParserBase):
 
         return can_ast.ForStat(id, from_exp, to_exp, blocks)
 
-    def parse_func_def(self):
+    def parse_func_def_stat(self):
         self.skip(1) # Skip the kw_function
         
+        name = self.get_token_value(self.get_next_token_of_kind(TokenType.IDENTIFIER, 0))
         
-        exp_parser = ExpParser(self.tokens[self.pos : ])
-        args = exp_parser.parse_idlist()
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
+        args : list = exp_parser.parse_idlist()
+        args = [] if args == None else args
+        self.skip(exp_parser.pos)
         del exp_parser # free the memory
+
+        self.get_next_token_of([kw_func_begin, tr_kw_func_begin, kw_do], 0)
+
+        blocks : list = []
+        while (self.get_token_value(self.current()) not in [kw_func_end, tr_kw_func_end]):
+            block_parser = StatParser(self.tokens[self.pos : ])
+            blocks.append(block_parser.parse())
+            self.skip(block_parser.pos)
+            del block_parser
+
+        self.skip(1)
+
+        return can_ast.FunctoinDefStat(can_ast.IdExp(self.get_line(), name), args, blocks)
+
+    def parse_func_call_stat(self, prefix_exps : can_ast.AST = None, skip_step : int = 0):
+        if prefix_exps == None:
+            func_name = can_ast.IdExp(self.get_line(), self.get_token_value(self.current()))
+            self.skip(1)
+        else:
+            func_name = prefix_exps[0]
+            self.skip(skip_step)
+
+        self.get_next_token_of([kw_call_begin, tr_kw_call_begin], 0)
+        self.get_next_token_of(kw_do, 0)
+
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
+        args = exp_parser.parse_args()
+        self.skip(exp_parser.pos)
+        del exp_parser
+
+        if self.get_token_value(self.current()) == kw_get_value:
+            self.skip(1)
+            var_list = self.parse_var_list()
+            return can_ast.AssignStat(self.get_line(), var_list,
+                    [can_ast.FuncCallStat(func_name, args)])
+        else:
+            return can_ast.FuncCallStat(func_name, args)
+
+    def parse_class_method_call_stat(self, prefix_exps : can_ast.AST = None, skip_step : int = 0):
+        if prefix_exps == None:
+            exp_parser = self.ExpParser(self.tokens[self.pos : ])
+            name_exp = exp_parser.parse_exp()
+            self.skip(exp_parser.pos)
+            del exp_parser # free the memory
+        else:
+            self.skip(skip_step)
+            name_exp = prefix_exps[0]
+
+        self.get_next_token_of(kw_do, 0)
+
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
+        method : can_ast.AST = exp_parser.parse_exp()
+        self.skip(exp_parser.pos)
+        del exp_parser # free the memory
+
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
+        args : list = exp_parser.parse_args()
+        self.skip(exp_parser.pos)
+        del exp_parser # free thr memory
+    
+        return can_ast.MethodCallStat(name_exp, method, args)
+    
+    def parse_list_assign_stat(self, prefix_exp : can_ast.AST, skip_step : int):
+        self.skip(skip_step)
+        self.get_next_token_of([kw_lst_assign, tr_kw_lst_assign], 0)
+        self.get_next_token_of(kw_do, 0)
+        varlist = self.parse_var_list()
+
+        return can_ast.AssignStat(self.get_line(), varlist, 
+                [can_ast.ListExp(prefix_exp)])
+
+
+    def parse_pass_stat(self):
+        self.skip(1)
+        return can_ast.PassStat()
+
+    def parse_assert_stat(self):
+        self.skip(1)
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
+        exp = exp_parser.parse_exp()
+        self.skip(exp_parser.pos)
+        del exp_parser
+
+        return can_ast.AssertStat(exp)
+
+    def parse_return_stat(self):
+        self.skip(1)
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
+        exps = exp_parser.parse_exp_list()
+        self.skip(exp_parser.pos)
+        del exp_parser
+
+        return can_ast.ReturnStat(exps)
+
+    def parse_del_stat(self):
+        self.skip(1)
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
+        exps = exp_parser.parse_exp_list()
+        self.skip(exp_parser.pos)
+        del exp_parser
+
+        return can_ast.DelStat(exps)
+
+    def parse_try_stat(self):
+        self.skip(1)
+        self.get_next_token_of(kw_do, 0)
+        self.get_next_token_of_kind(TokenType.SEP_LCURLY, 0)
+
+        try_blocks : list = []
+        except_exps : list = []
+        except_blocks : list = []
+        finally_blocks : list = []
+
+        while self.get_type(self.current()) != TokenType.SEP_RCURLY:
+            block_parser = StatParser(self.tokens[self.pos : ])
+            try_blocks.append(block_parser.parse())
+            self.skip(block_parser.pos)
+            del block_parser
+
+        self.skip(1)
+        self.get_next_token_of([kw_except, tr_kw_except], 0)
+        
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
+        except_exps.append(exp_parser.parse_exp())
+        self.skip(exp_parser.pos)
+        del exp_parser
+
+        self.get_next_token_of([kw_then, tr_kw_then], 0)
+        self.get_next_token_of([kw_do], 0)
+        self.get_next_token_of_kind(TokenType.SEP_LCURLY, 0)
+
+        # a temp list to save the block
+        except_block = []
+        while self.get_type(self.current()) != TokenType.SEP_RCURLY:
+            block_parser = StatParser(self.tokens[self.pos : ])
+            except_block.append(block_parser.parse())
+            self.skip(block_parser.pos)
+            del block_parser
+        
+        self.skip(1)
+        except_blocks.append(except_block)
+
+        while self.get_token_value(self.current()) in [kw_except, tr_kw_except]:
+            self.get_next_token_of([kw_then, tr_kw_then], 0)
+
+            exp_parser = self.ExpParser(self.tokens[self.pos : ])
+            except_exps.append(exp_parser.parse_exp())
+            self.skip(exp_parser.pos)
+            del exp_parser
+
+            self.get_next_token_of(kw_do, 0)
+            self.get_next_token_of_kind(TokenType.SEP_LCURLY, 0)
+
+            # clear the list
+            except_block = []
+            while self.get_type(self.current()) != TokenType.SEP_RCURLY:
+                block_parser = StatParser(self.tokens[self.pos : ])
+                except_block.append(block_parser.parse())
+                self.skip(block_parser.pos)
+                del block_parser
+            
+            except_blocks.append(except_block)
+
+        if self.get_token_value(self.current()) in [kw_finally, tr_kw_finally]:
+            self.skip(1)
+            self.get_next_token_of(kw_do, 0)
+            self.get_next_token_of_kind(TokenType.SEP_LCURLY, 0)
+
+            while self.get_type(self.current()) != TokenType.SEP_RCURLY:
+                block_parser = StatParser(self.tokens[self.pos : ])
+                finally_blocks.append(block_parser.parse())
+                self.skip(block_parser.pos)
+                del block_parser
+
+            self.skip(1)
+
+        return can_ast.TryStat(try_blocks, except_exps, except_blocks, finally_blocks)
+
+    def parse_raise_stat(self):
+        self.skip(1)
+
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
+        name_exp = exp_parser.parse_exp()
+        self.skip(exp_parser.pos) # free the memory
+        del exp_parser
+
+        self.get_next_token_of([kw_raise_end, tr_kw_raise_end], 0)
+        return can_ast.RaiseStat(name_exp)
+
+    def parse_type_stat(self):
+        self.skip(1)
+
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
+        name_exp = exp_parser.parse_exp()
+        self.skip(exp_parser.pos) # free the memory
+        del exp_parser
+
+        return can_ast.TypeStat(name_exp)
+
+    def parse_cmd_stat(self):
+        self.skip(1)
+
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
+        args = exp_parser.parse_args()
+        self.skip(exp_parser.pos) # free the memory
+        del exp_parser
+
+        return can_ast.CmdStat(args)
+
+    def parse_class_def(self):
+        self.skip(1)
+        
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
+        class_name : can_ast.AST = exp_parser.parse_exp()
+        self.skip(exp_parser.pos)
+        del exp_parser # free the memory
+
+        self.get_next_token_of([kw_extend, tr_kw_extend], 0)
+        
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
+        extend_name : list = exp_parser.parse_exp_list()
+        self.skip(exp_parser.pos)
+        del exp_parser # free the memory
+
+        class_blocks = []
+        
+        while self.get_token_value(self.current()) not in [kw_endclass, tr_kw_endclass]:
+            class_block_parser = ClassBlockStatParser(self.tokens[self.pos : ])
+            class_blocks.append(class_block_parser.parse())
+            self.skip(class_block_parser.pos)
+
+        self.skip(1)
+
+        return can_ast.ClassDefStat(class_name, extend_name, class_blocks)
+    
+class ClassBlockExpParser(ExpParser):
+    def __init__(self, token_list: list) -> None:
+        super().__init__(token_list)
+
+    def parse_exp0(self):
+        tk = self.current()
+        if tk in [kw_self, tr_kw_self, '@@']:
+            self.skip(1)
+            return can_ast.ClassSelfExp(super().parse_exp0())
+        else:
+            return super().parse_exp0()
+
+class ClassBlockStatParser(StatParser):
+    def __init__(self, token_list: list, ExpParser = ClassBlockExpParser) -> None:
+        super().__init__(token_list, ExpParser)
+
+    def parse_method_block(self):
+        
+        self.skip(1) # Skip the kw_method
+
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
+        name_exp = exp_parser.parse_exp()
+        self.skip(exp_parser.pos)
+        del exp_parser # free the memory
+
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
+        args : list = exp_parser.parse_idlist()
+        args = [] if args == None else args
+        self.skip(exp_parser.pos)
+        del exp_parser # free the memory
+
+        self.get_next_token_of([kw_func_begin, tr_kw_func_begin, kw_do], 0)
+        
+        blocks : list = []
+        # '{' ... '}'
+        if self.get_type(self.current()) == TokenType.SEP_LCURLY:
+            self.skip(1)
+            while self.get_type(self.current()) != TokenType.SEP_RCURLY:
+                block_parser = ClassBlockStatParser(self.tokens[self.pos : ])
+                blocks.append(block_parser.parse())
+                self.skip(block_parser.pos)
+                del block_parser
+        
+        # '=> ... '%%'
+        else:
+            while (self.get_token_value(self.current()) not in [kw_func_end, tr_kw_func_end]):
+                block_parser = ClassBlockStatParser(self.tokens[self.pos : ])
+                blocks.append(block_parser.parse())
+                self.skip(block_parser.pos)
+                del block_parser        
+
+        self.skip(1)
+        
+        return can_ast.MethodDefStat(name_exp, args, blocks)
+
+    def parse_class_init_stat(self):
+        self.skip(1)
+
+        self.get_next_token_of(kw_do, 0)
+        self.get_next_token_of_kind(TokenType.SEP_LCURLY)
+
+        return self.parse_assign_block()
+        # The SEP_RCURLY will be checked in self.parse_assign_block()
+        
+    def parse_class_assign_stat(self):
+        return self.parse_assign_stat()
+
+    def parse(self):
+        tk = self.current()
+        kind = self.get_type(tk)
+        tk_value = self.get_token_value(tk)
+        if tk_value in [kw_method, tr_kw_method]:
+            return self.parse_method_block()
+        elif tk_value in [kw_class_assign, tr_kw_class_assign]:
+            return self.parse_class_assign_stat()
+        elif tk_value in [kw_class_init, tr_kw_class_init]:
+            return self.parse_class_init_stat()
+        else:
+            return super().parse()

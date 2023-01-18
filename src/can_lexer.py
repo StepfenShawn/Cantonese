@@ -131,16 +131,13 @@ class lexer(object):
             return [self.line, ['CONNECT', "\\"]]
 
         if c == '|':
-            if self.check('||'):
-                self.next(2)
-                return [self.line, [TokenType.KEYWORD, '||']]
             self.next(1)
             return [self.line, [TokenType.KEYWORD, '|']]
 
         if c == '%':
             if self.check('%%'):
                 self.next(2)
-                return [self.line, [TokenType.KEYWORD, '%%']]
+                return [self.line, [TokenType.KEYWORD, kw_func_end]]
             else:
                 self.next(1)
                 return [self.line, [TokenType.OP_MOD, '%']]
@@ -220,11 +217,15 @@ class lexer(object):
                 return [self.line, [TokenType.OP_NE, '!=']]
             else:
                 self.next(1)
-                return [self.line, [TokenType.OP_WAVE, '!']]
+                return [self.line, [TokenType.OP_NOT, '!']]
 
         if c == '@':
-            self.next(1)
-            return [self.line, [TokenType.KEYWORD, '@']]
+            if self.check('@@'):
+                self.next(2)
+                return [self.line, [TokenType.KEYWORD, '@@']]
+            else:
+                self.next(1)
+                return [self.line, [TokenType.KEYWORD, '@']]
         
         if c == '{':
             self.next(1)

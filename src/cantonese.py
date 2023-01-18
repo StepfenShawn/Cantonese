@@ -14,25 +14,6 @@ import can_parser
 
 _version_ = "Cantonese 1.0.3 Copyright (C) 2020-2023 StepfenShawn"
 
-"""
-    Connect the expr or string if case "\" 
-"""
-def handle_connect(tokens : list) -> list:
-    j = 0
-    for i in range(len(tokens)):
-        if tokens[j][1] == ['CONNECT', '\\']:
-            if j >= 1 and j < len(tokens) and ((tokens[j + 1][1][0] == "expr" and tokens[j - 1][1][0] == "expr") or \
-                    (tokens[j + 1][1][0] == "string" and tokens[j - 1][1][0] == "string")) :
-                tokens[j + 1][1][1] = tokens[j - 1][1][1][ : -1] + tokens[j + 1][1][1][ 1 : ]
-                tokens.pop(j)
-                tokens.pop(j - 1)
-                j -= 1
-            else:
-                tokens.pop(j)
-        else:
-            j += 1
-    return tokens
-
 def cantonese_token(code : str, keywords : str) -> list:
     lex = lexer(code, keywords)
     tokens = []
@@ -41,1159 +22,7 @@ def cantonese_token(code : str, keywords : str) -> list:
         tokens.append(token)
         if token[1] == [TokenType.EOF, 'EOF']:
             break
-    return handle_connect(tokens)
-    
-"""
-    AST node for the Token List
-"""
-def node_print_new(Node : list, arg) -> None:
-    """
-        Node_print
-            |
-           arg
-    """
-    Node.append(["node_print", arg])
-
-def node_sleep_new(Node : list, arg) -> None:
-    """
-        Node_sleep
-            |
-           arg
-    """
-    Node.append(["node_sleep", arg])
-
-def node_break_new(Node : list) -> None:
-    Node.append(["node_break"])
-
-def node_exit_new(Node : list) -> None:
-    """
-        Node_exit
-            |
-           arg
-    """
-    Node.append(["node_exit"])
-
-def node_let_new(Node : list, key ,value) -> None:
-    """
-        Node_let
-          /  \
-        key   value
-    """
-    Node.append(["node_let", key, value])
-
-def node_if_new(Node : list, cond, stmt) -> None:
-    """
-        Node_if
-          /  \
-        cond  stmt
-    """
-    Node.append(["node_if", cond, stmt])
-
-def node_elif_new(Node : list, cond, stmt) -> None:
-    """
-        Node_elif
-          /  \
-        cond  stmt
-    """
-    Node.append(["node_elif", cond, stmt])
-
-def node_else_new(Node : list, stmt) -> None:
-    """
-        Node_else
-            |
-           stmt
-    """
-    Node.append(["node_else", stmt])
-
-def node_loop_new(Node : list, cond, stmt) -> None:
-    """
-        Node_loop
-          /  \
-        cond  stmt
-    """
-    Node.append(["node_loop", cond, stmt])
-
-def node_func_new(Node : list, func_name, args, body) -> None:
-    """
-        Node_fundef
-         /  |  \
-       name args body
-    """
-    Node.append(["node_fundef", func_name, args, body])
-
-def node_call_new(Node : list, func_name) -> None:
-    """
-        Node_call
-            |
-           name
-    """
-    Node.append(["node_call", func_name])
-
-def node_build_in_func_call_new(Node : list, var, func_name, args) -> None:
-    """
-        Node_bcall
-          /  \
-        name  args
-    """
-    Node.append(["node_bcall", var, func_name, args])
-
-def node_import_new(Node : list, name) -> None:
-    """
-        Node_import
-            |
-           name
-    """
-    Node.append(["node_import", name])
-
-def node_return_new(Node : list, v) -> None:
-    """
-        Node_return
-            |
-          value
-    """
-    Node.append(["node_return", v])
-
-def node_py_expr_new(Node : list, expr) -> None:
-    Node.append(["node_py_expr", expr])
-
-def node_try_new(Node : list, try_part) -> None:
-    """
-        Node_try
-           |
-          stmt
-    """
-    Node.append(["node_try", try_part])
-
-def node_except_new(Node : list, _except, except_part) -> None:
-    """
-        Node_except
-          /  \
-     exception  stmt
-    """
-    Node.append(["node_except", _except, except_part])
-
-def node_finally_new(Node : list, finally_part) -> None:
-    """
-        Node_finally
-            |
-           stmt
-    """
-    Node.append(["node_finally", finally_part])
-
-def node_raise_new(Node : list, execption) -> None:
-    """
-        Node_raise
-            |
-          exception
-    """
-    Node.append(["node_raise", execption])
-
-def node_for_new(Node : list, iterating_var, sequence, stmt_part) -> None:
-    """
-        Node_for
-         /  |  \
-        iter seq stmt
-    """
-    Node.append(["node_for", iterating_var, sequence, stmt_part])
-
-def node_turtle_new(Node : list, instruction) -> None:
-    Node.append(["node_turtle", instruction])
-
-def node_assert_new(Node : list, args) -> None:
-    Node.append(["node_assert", args])
-
-def node_model_new(Node : list, model, datatest) -> None:
-    """
-        Node_model
-          /  \
-         model dataset
-    """
-    Node.append(["node_model", model, datatest])
-
-def node_gettype_new(Node : list, value) -> None:
-    Node.append(["node_gettype", value])
-
-def node_class_new(Node : list, name, extend, method) -> None:
-    """
-        Node_class
-          / | \
-        name extend method
-    """
-    Node.append(["node_class", name, extend, method])
-
-def node_attribute_new(Node : list, attr_list) -> None:
-    Node.append(["node_attr", attr_list])
-
-def node_method_new(Node : list, name, args, stmt) -> None:
-    """
-        Node_method
-         / | \
-        name args stmt
-    """
-    Node.append(["node_method", name, args, stmt])
-
-def node_cmd_new(Node : list, cmd) -> None:
-    """
-        Node_cmd
-            |
-        conmmand
-    """
-    Node.append(["node_cmd", cmd])
-
-def node_list_new(Node : list, name, list) -> None:
-    """
-        Node_list
-          /  \
-        name list
-    """
-    Node.append(["node_list", name, list])
-
-def node_stack_new(Node : list, name) -> None:
-    """
-        Node_stack
-            |
-           name
-    """
-    Node.append(["node_stack", name])
-
-def node_global_new(Node : list, global_table) -> None:
-    Node.append(["node_global", global_table])
-
-def node_del_new(Node : list, var) -> None:
-    Node.append(["node_del", var])
-
-def node_lambda_new(Node : list, args, ret_value, v) -> None:
-    Node.append(["node_lambda", args, ret_value, v])
-
-def node_match_new(Node : list, id, stmt_match) -> None:
-    Node.append(["node_match", id, stmt_match])
-
-def node_case_new(Node : list, case_v, case_stmt, v = "") -> None:
-    Node.append(["node_case", case_v, case_stmt, v])
-
-"""
-    Parser for cantonese Token List
-"""
-class Parser(object):
-    def __init__(self, tokens, Node):
-        self.tokens = tokens
-        self.pos = 0
-        self.Node = Node
-    
-    def syntax_check(self, token, tag):
-        if tag == "value" and self.get(0)[1] == token:
-            return
-        elif tag == "type" and self.get(0)[0] == token:
-            return
-        else:
-            raise "Syntax error!"
-
-    def get(self, offset, get_line = False):
-        if self.pos + offset >= len(self.tokens):
-            return ["", ""]
-        if get_line:
-            return self.tokens[self.pos + offset][0]
-        return self.tokens[self.pos + offset][1]
-    
-    def get_value(self, token):
-        if token[0] == 'expr':
-            # If is expr, Remove the "|"
-            token[1] = token[1][1 : -1]
-        if token[0] == 'callfunc':
-            # If is call func, Remove the '&'
-            token[1] = token[1][1 :]
-        return token
-
-    def last(self, offset):
-        return self.tokens[self.pos - offset][1]
-    
-    def skip(self, offset):
-        self.pos += offset
-    
-    """
-        Support the use of both traditonal and simplified characters
-    """
-    def _match_full(self, tokentype, skip = False) -> bool:
-        current_token = self.get(0)[1]
-        if tokentype == "KW_ENDPRINT":
-            if skip:
-                self.pos += 1
-            return current_token in ['点样先', '點樣先', '点樣先', '點样先']
-    """
-        Try to check the next token, skip if it's matched.
-    """
-    def match(self, name):
-        if not isinstance(name, list):
-            if self.get(0)[1] == name:
-                self.pos += 1
-                return True
-            else:
-                return False
-        else:
-            if self.get(0)[1] in name:
-                    self.pos += 1
-                    return True
-            return False
-
-    """
-        Try to check the next token's type, skip if it's matched.
-    """
-    def match_type(self, type):
-        if self.get(0)[0] == type:
-            self.pos += 1
-            return True
-        else:
-            return False
-
-    def token_type_except(self, tk, err, skip = False, i = 0):
-        if isinstance(tk, list):
-            if self.get(i)[0] in tk:
-                if skip:
-                    self.pos += 1
-            
-        if self.get(0)[0] == tk:
-            self.pos += 1
-            return
-        
-        line = self.get(i, get_line = True)
-        raise Exception("Line " + str(line) + err + "\n 你嘅类型係: " + self.get(i)[0])
-
-    def token_except(self, tk, err, skip = False, i = 0):
-        if isinstance(tk, list):
-            if self.get(i)[1] in tk:
-                if skip:
-                    self.pos += 1
-                return
-
-        elif self.get(i)[1] == tk:
-            if skip:
-                self.pos += 1
-            return
-
-        line = self.get(i, get_line = True)
-        raise Exception("Line " + str(line) + err + "\n 净系揾到: " + self.get(i)[1])
-
-    def _raise(self, err):
-        line = self.get(0, get_line = True)
-        raise Exception("Line " + str(line) + err + "\n 净系揾到: " + self.get(0)[1])
-
-    def parse(self):
-        while True:
-            if self.match([kw_print, tr_kw_print]):
-                node_print_new(self.Node, self.get_value(self.get(0)))
-                self.skip(1) # Skip the args
-                if self._match_full('KW_ENDPRINT'):
-                    self.skip(1)
-                else:
-                    self._raise( " : 濑嘢! 揾唔到 '点样先' ")
-            elif self.match("sleep"):
-                node_sleep_new(self.Node, self.get(0))
-                self.skip(1)
-
-            elif self.match([kw_exit, kw_exit_1, kw_exit_2]):
-                node_exit_new(self.Node)
-                self.skip(1)
-
-            elif self.match([kw_global_set, tr_kw_global_set]):
-                table = self.get_value(self.get(0))
-                self.skip(1)
-                node_global_new(self.Node, table)
-
-            elif self.match([kw_del, tr_kw_del]):
-                var = self.get_value(self.get(0))
-                self.skip(1)
-                node_del_new(self.Node, var)
-
-            elif self.match([kw_class_assign, tr_kw_class_assign]):
-                kw = self.get(0)[1]
-                if kw != kw_do:
-                    self.token_except(tk = [kw_is, kw_is_2, kw_is_3], i = 1,  err = " : 濑嘢! 揾唔到 '係' " )
-                    node_let_new(self.Node, self.get_value(self.get(0)), self.get_value(self.get(2)))
-                    self.skip(3)
-
-                if kw == kw_do:  
-                    self.token_except(tk = [kw_do], err = " : 濑嘢! 揾唔到 '->' ", skip = True)
-                    self.token_except(tk = [kw_begin], err = " : 濑嘢! 揾唔到 '{' ", skip = True)
-                    assign_list = []
-                    while self.tokens[self.pos][1][1] != kw_end:
-                        assign_list.append(self.tokens[self.pos][1])
-                        self.pos += 1
-                    if len(assign_list) % 3 != 0:
-                        raise Exception(" 濑嘢! 唔知你想点? 请检查你嘅赋值语句!!!")
-                    for i in range(0, len(assign_list)):
-                        k = assign_list[i][1]
-                        if k == kw_is or k == kw_is_2 or k == kw_is_3:
-                            node_let_new(self.Node, self.get_value(assign_list[i - 1]),
-                                    self.get_value(assign_list[i + 1]))
-                    self.skip(1)
-
-            elif self.match([kw_assign, tr_kw_assign]):
-                kw = self.get(0)[1]
-                if kw != kw_do:
-                    self.token_except(tk = [kw_is, kw_is_2, kw_is_3], i = 1,  err = " : 濑嘢! 揾唔到 '係' " )
-                    node_let_new(self.Node, self.get_value(self.get(0)), self.get_value(self.get(2)))
-                    self.skip(3)
-
-                if kw == kw_do:  
-                    self.token_except(tk = [kw_do], err = " : 濑嘢! 揾唔到 '->' ", skip = True)
-                    self.token_except(tk = [kw_begin], err = " : 濑嘢! 揾唔到 '{' ", skip = True)
-                    assign_list = []
-                    while self.tokens[self.pos][1][1] != kw_end:
-                        assign_list.append(self.tokens[self.pos][1])
-                        self.pos += 1
-                    if len(assign_list) % 3 != 0:
-                        raise Exception(" 濑嘢! 唔知你想点? 请检查你嘅赋值语句!!!")
-                    for i in range(0, len(assign_list)):
-                        k = assign_list[i][1]
-                        if k == kw_is or k == kw_is_2 or k == kw_is_3:
-                            node_let_new(self.Node, self.get_value(assign_list[i - 1]),
-                                    self.get_value(assign_list[i + 1]))
-                    self.skip(1)
-
-            
-            elif self.match(kw_if):
-                cond = self.get_value(self.get(0))
-                self.token_except(tk = kw_then, i = 1, err = " : 濑嘢! 揾唔到 '嘅话' ")
-                self.token_except(tk = kw_do, i = 2, err = " : 濑嘢! 揾唔到 '->' ")
-                self.token_except(tk = kw_begin, i = 3, err = " : 濑嘢! 揾唔到 '{' ")
-                self.skip(4) # Skip the "cond", "then", "do", "begin"
-                if_case_end = 0 # The times of case "end"
-                if_should_end = 1
-                node_if = []
-                stmt_if = []
-                while if_case_end != if_should_end and self.pos < len(self.tokens):
-                    if self.get(0)[1] == kw_if:
-                        if_should_end += 1
-                        stmt_if.append(self.tokens[self.pos])
-                        self.pos += 1
-                    elif self.get(0)[1] == kw_end:
-                        if_case_end += 1
-                        if if_case_end != if_should_end:
-                            stmt_if.append(self.tokens[self.pos])
-                        self.pos += 1
-                    elif self.get(0)[1] == kw_elif:
-                        if_should_end += 1
-                        stmt_if.append(self.tokens[self.pos])
-                        self.pos += 1
-                    elif self.get(0)[1] == kw_else_or_not:
-                        if_should_end += 1
-                        stmt_if.append(self.tokens[self.pos])
-                        self.pos += 1
-                    elif self.get(0)[1] == kw_assign or self.get(0)[1] == tr_kw_assign:
-                        stmt_if.append(self.tokens[self.pos])
-                        self.pos += 1
-                        if self.tokens[self.pos][1][1] == kw_do:
-                            if_should_end += 1
-                    else:
-                        stmt_if.append(self.tokens[self.pos])
-                        self.pos += 1
-                Parser(stmt_if, node_if).parse()
-                node_if_new(self.Node, cond, node_if)
-            
-            elif self.match(kw_elif): # case "定系" elif
-                cond = self.get_value(self.get(0))
-                self.token_except(tk = kw_then, i = 1, err = " : 濑嘢! 揾唔到 '嘅话' ")
-                self.token_except(tk = kw_do, i = 2, err = " : 濑嘢! 揾唔到 '->' ")
-                self.token_except(tk = kw_begin, i = 3, err = " : 濑嘢! 揾唔到 '{' ")
-                self.skip(4) # Skip the "cond", "then", "do", "begin"
-                elif_case_end = 0 # The times of case "end"
-                elif_should_end = 1
-                node_elif = []
-                stmt_elif = []
-                while elif_case_end != elif_should_end and self.pos < len(self.tokens):
-                    if self.get(0)[1] == kw_if:
-                        elif_should_end += 1
-                        stmt_elif.append(self.tokens[self.pos])
-                        self.pos += 1
-                    elif self.get(0)[1] == kw_end:
-                        elif_case_end += 1
-                        if elif_case_end != elif_should_end:
-                            stmt_elif.append(self.tokens[self.pos])
-                        self.pos += 1
-                    elif self.get(0)[1] == kw_elif:
-                        elif_should_end += 1
-                        stmt_elif.append(self.tokens[self.pos])
-                        self.pos += 1
-                    elif self.get(0)[1] == kw_else_or_not:
-                        elif_should_end += 1
-                        stmt_elif.append(self.tokens[self.pos])
-                        self.pos += 1
-                    elif self.get(0)[1] == kw_assign or self.get(0)[1] == tr_kw_assign:
-                        stmt_elif.append(self.tokens[self.pos])
-                        self.pos += 1
-                        if self.tokens[self.pos][1][1] == kw_do:
-                            elif_should_end += 1
-                    else:
-                        stmt_elif.append(self.tokens[self.pos])
-                        self.pos += 1
-                Parser(stmt_elif, node_elif).parse()
-                node_elif_new(self.Node, cond, node_elif)
-
-            elif self.match(kw_else_or_not): # case "唔系" else
-                self.token_except(tk = kw_then, i = 0, err = " : 濑嘢! 揾唔到 '嘅话' ")
-                self.token_except(tk = kw_do, i = 1, err = " : 濑嘢! 揾唔到 '->' ")
-                self.token_except(tk = kw_begin, i = 2, err = " : 濑嘢! 揾唔到 '{' ")
-                self.skip(3) # Skip the "then", "do", "begin"
-                else_case_end = 0 # The times of case "end"
-                else_should_end = 1
-                node_else = []
-                stmt_else = []
-                while else_case_end != else_should_end and self.pos < len(self.tokens):
-                    if self.get(0)[1] == kw_if:
-                        else_should_end += 1
-                        stmt_else.append(self.tokens[self.pos])
-                        self.pos += 1
-                    elif self.get(0)[1] == kw_end:
-                        else_case_end += 1
-                        if else_case_end != else_should_end:
-                            stmt_else.append(self.tokens[self.pos])
-                        self.pos += 1
-                    elif self.get(0)[1] == kw_elif:
-                        else_should_end += 1
-                        stmt_else.append(self.tokens[self.pos])
-                        self.pos += 1
-                    elif self.get(0)[1] == kw_else_or_not:
-                        else_should_end += 1
-                        stmt_else.append(self.tokens[self.pos])
-                        self.pos += 1
-                    elif self.get(0)[1] == kw_assign  or self.get(0)[1] == tr_kw_assign:
-                        stmt_else.append(self.tokens[self.pos])
-                        self.pos += 1
-                        if self.tokens[self.pos][1][1] == kw_do:
-                            else_should_end += 1
-                    else:
-                        stmt_else.append(self.tokens[self.pos])
-                        self.pos += 1
-                Parser(stmt_else, node_else).parse()
-                node_else_new(self.Node, node_else)
-
-            elif self.match([kw_while_do, tr_kw_while_do]):
-                while_case_end = 0 # The times of case "end"
-                while_should_end = 1
-                stmt = []
-                while while_case_end != while_should_end and self.pos < len(self.tokens):
-                    if self.get(0)[1] == kw_while_do or self.get(0)[1] == tr_kw_while_do:
-                        while_should_end += 1
-                        stmt.append(self.tokens[self.pos])
-                        self.pos += 1
-                    elif self.get(0)[1] == kw_while or self.get(0)[1] == tr_kw_while:
-                        while_case_end += 1
-                        if while_case_end != while_should_end:
-                            stmt.append(self.tokens[self.pos])
-                        self.pos += 1
-                    else:
-                        stmt.append(self.tokens[self.pos])
-                        self.pos += 1
-                node_while = []
-                cond = self.get_value(self.get(0))
-                Parser(stmt, node_while).parse()
-                node_loop_new(self.Node, cond, node_while)
-                self.skip(2) # Skip the "end"
-            
-            elif self.match(kw_function): # Case "function"
-                if self.get(0)[1] == kw_function:
-                    self.skip(1)
-                    args = self.get_value(self.get(0))
-                    self.skip(1)
-                    self.token_except(tk = kw_do, err = " : 濑嘢! 揾唔到 '->' ")
-                    self.skip(1)
-                    func_ret = self.get_value(self.get(0))
-                    self.skip(1)
-                    if self.get(0)[1] == kw_get_value:
-                        self.skip(1)
-                        k = self.get(0)
-                        self.skip(1)
-                        node_lambda_new(self.Node, args, func_ret, k)
-                    else:
-                        node_lambda_new(self.Node, args, func_ret, None)
-
-                elif self.get(1)[0] == 'expr' or self.get(1)[0] == 'identifier':
-                   func_name = self.get_value(self.get(0))
-                   args = self.get_value(self.get(1))
-                   self.token_except(tk = kw_func_begin, i = 2, err = " : 濑嘢! 揾唔到 '要做咩' ")
-                   self.skip(3)
-                   func_stmt = []
-                   while self.tokens[self.pos][1][1] != kw_func_end:
-                       func_stmt.append(self.tokens[self.pos])
-                       self.pos += 1
-                   node_func = []
-                   Parser(func_stmt, node_func).parse()
-                   node_func_new(self.Node, func_name, args, node_func)
-                   self.skip(1) # Skip the funcend
-                
-                else:
-                    func_name = self.get_value(self.get(0))
-                    self.token_except(tk = kw_func_begin, i = 1, err = " : 濑嘢! 揾唔到 '要做咩' ")
-                    self.skip(2) # Skip the funcbegin
-                    func_stmt = []
-                    while self.tokens[self.pos][1][1] != kw_func_end:
-                        func_stmt.append(self.tokens[self.pos])
-                        self.pos += 1
-                    node_func = []
-                    Parser(func_stmt, node_func).parse()
-                    node_func_new(self.Node, func_name, "None", node_func)
-                    self.skip(1) # Skip the funcend
-            
-            elif self.match(kw_turtle_beg):
-                self.skip(2) # Skip the "do", "begin"
-                turtle_inst = []
-                while self.tokens[self.pos][1][1] != kw_end:
-                    if self.tokens[self.pos][1][0] == 'identifier':
-                        pass
-                    else:
-                        turtle_inst.append(self.get_value(self.tokens[self.pos][1])[1])
-                    self.pos += 1
-                node_turtle_new(self.Node, turtle_inst)
-                self.skip(1)
-            
-            elif self.match(kw_call):
-                node_call_new(self.Node, self.get_value(self.get(0)))
-                self.skip(1)
-            
-            elif self.match(kw_import):
-                node_import_new(self.Node, self.get_value(self.get(0)))
-                self.skip(1)
-            
-            elif self.match_type("expr") or self.match_type("identifier"):
-                if self.match([kw_from, tr_kw_from]):
-                    iterating_var = self.get_value(self.get(-2))
-                    seq = "(" + str(self.get_value(self.get(0))[1]) + "," \
-                          + str(self.get_value(self.get(2))[1]) + ")"
-                    self.skip(3)
-                    node_for = []
-                    for_stmt = []
-                    for_case_end = 0
-                    for_should_end = 1
-                    while for_should_end != for_case_end and self.pos < len(self.tokens):
-                        if (self.get(0)[0] == "expr" or self.get(0)[0] == "identifier") \
-                             and (self.get(1)[1] == kw_from or self.get(1)[1] == tr_kw_from):
-                            for_should_end += 1
-                            for_stmt.append(self.tokens[self.pos])
-                            self.pos += 1
-                        elif self.get(0)[1] == kw_endfor:
-                            for_case_end += 1
-                            if for_case_end != for_should_end:
-                                for_stmt.append(self.tokens[self.pos])
-                            self.pos += 1
-                        else:
-                            for_stmt.append(self.tokens[self.pos])
-                            self.pos += 1
-                    Parser(for_stmt, node_for).parse()
-                    node_for_new(self.Node, iterating_var, seq, node_for)
-                
-                if self.get(0)[1] == kw_lst_assign:
-                    self.skip(1)
-                    list = self.get_value(self.get(-2))
-                    name = self.get_value(self.get(1))
-                    node_list_new(self.Node, name, list)
-                    self.skip(2)
-
-                if self.get(0)[1] == kw_set_assign:
-                    self.skip(1)
-                    list = self.get_value(self.get(-2))
-                    name = self.get_value(self.get(1))
-                    list[1] = "{" + list[1] + "}"
-                    node_let_new(self.Node, name, list)
-                    self.skip(2)
-
-                if self.get(0)[1] == kw_do:
-                    self.skip(1)
-                    id = self.get_value(self.get(-2))
-                    args = self.get_value(self.get(1))
-                    func = self.get_value(self.get(0))
-                    node_build_in_func_call_new(self.Node, id, func, args)
-                    self.skip(2)
-
-                if self.get(0)[1] == kw_call_begin:
-                    func_name = self.get_value(self.get(-1))
-                    self.skip(2)
-                    args = self.get_value(self.get(0))
-                    cons = ['expr', func_name[1] + '(' + args[1] + ')']
-                    self.skip(1)
-                    if self.get(0)[1] == kw_get_value:
-                        self.skip(1)
-                        v = self.get_value(self.get(0))
-                        node_let_new(self.Node, v, cons)
-                    else:
-                        node_call_new(self.Node, cons)
-
-            elif self.match([kw_return, tr_kw_return]):
-                node_return_new(self.Node, self.get_value(self.get(0)))
-                self.skip(1)
-
-            elif self.match(kw_get_value):
-                node_py_expr_new(self.Node, self.get_value(self.get(0)))
-                self.skip(1)
-            
-            elif self.match([kw_try, tr_kw_try]):
-                self.token_except(tk = kw_do, i = 0, err = " : 濑嘢! 揾唔到 '->' ")
-                self.token_except(tk = kw_begin, i = 1, err = " : 濑嘢! 揾唔到 '{'")
-                self.skip(2) # SKip the "begin, do"
-                should_end = 1
-                case_end = 0
-                node_try = []
-                stmt_try = []
-                while case_end != should_end and self.pos < len(self.tokens):
-                    if self.get(0)[1] == kw_end:
-                        case_end += 1
-                        self.pos += 1
-                    else:
-                        stmt_try.append(self.tokens[self.pos])
-                        self.pos += 1
-                Parser(stmt_try, node_try).parse()
-                node_try_new(self.Node, node_try)
-            
-            elif self.match(kw_except):
-                _except = self.get_value(self.get(0))
-                self.token_except(tk = kw_then, i = 1, err = " : 濑嘢! 揾唔到 '嘅话'")
-                self.token_except(tk = kw_do, i = 2, err = " : 濑嘢! 揾唔到 '->'")
-                self.token_except(tk = kw_begin, i = 3, err = " : 濑嘢! 揾唔到 '{'")
-                self.skip(4) # SKip the "except", "then", "begin", "do"
-                should_end = 1
-                case_end = 0
-                node_except = []
-                stmt_except = []
-                while case_end != should_end and self.pos < len(self.tokens):
-                    if self.get(0)[1] == kw_end:
-                        case_end += 1
-                        self.pos += 1
-                    else:
-                        stmt_except.append(self.tokens[self.pos])
-                        self.pos += 1
-                Parser(stmt_except, node_except).parse()
-                node_except_new(self.Node, _except , node_except)
-
-            elif self.match([kw_finally, tr_kw_finally]):
-                self.token_except(tk = kw_do, i = 0, err =  " : 濑嘢! 揾唔到 '->'")
-                self.token_except(tk = kw_begin, i = 1, err = " : 濑嘢! 揾唔到 '{'")
-                self.skip(2) # Skip the "begin", "do"
-                should_end = 1
-                case_end = 0
-                node_finally = []
-                stmt_finally = []
-                while case_end != should_end and self.pos < len(self.tokens):
-                    if self.get(0)[1] == kw_end:
-                        case_end += 1
-                        self.pos += 1
-                    else:
-                        stmt_finally.append(self.tokens[self.pos])
-                        self.pos += 1
-                Parser(stmt_finally, node_finally).parse()
-                node_finally_new(self.Node, node_finally)
-
-            elif self.match([kw_assert, tr_kw_assert]):
-                node_assert_new(self.Node, self.get_value(self.get(0)))
-                self.skip(1)
-            
-            elif self.match([kw_raise, tr_kw_raise]):
-                node_raise_new(self.Node, self.get_value(self.get(0)))
-                self.skip(2)
-            
-            elif self.match([kw_type, tr_kw_type]):
-                node_gettype_new(self.Node, self.get_value(self.get(0)))
-                self.skip(1)
-            
-            elif self.match([kw_pass, tr_kw_pass]):
-                self.Node.append(["node_pass"])
-            
-            elif self.match([kw_break, tr_kw_break]):
-                node_break_new(self.Node)
-            
-            elif self.match([kw_class_def, tr_kw_class_def]):
-                class_name = self.get_value(self.get(0))
-                self.skip(1)
-                if self.match(kw_extend):
-                    extend = self.get_value(self.get(0))
-                    self.skip(1)
-                class_stmt = []
-                node_class = []
-                while self.tokens[self.pos][1][1] != kw_endclass:
-                    class_stmt.append(self.tokens[self.pos])
-                    self.pos += 1
-                Parser(class_stmt, node_class).parse()
-                self.skip(1) # Skip the "end"
-                node_class_new(self.Node, class_name, extend, node_class)
-
-            elif self.match(kw_class_init):
-                self.skip(1)
-                attr_lst = self.get_value(self.get(0))
-                self.skip(1)
-                node_attribute_new(self.Node, attr_lst)
-            
-            elif self.match([kw_method, tr_kw_method]):
-                method_name = self.get_value(self.get(0))
-                self.skip(1)
-                # Check if has args
-                if self.get(0)[0] == "expr":
-                    args = self.get_value(self.get(0))
-                    self.skip(1)
-                else:
-                    args = "None"
-                self.skip(2) # Skip the "do", "begin"
-                method_stmt = []
-                node_method = []
-                method_should_end = 1
-                method_case_end = 0
-                while method_case_end != method_should_end and self.pos < len(self.tokens):
-                    if self.get(0)[1] == kw_end:
-                        method_case_end += 1
-                        if method_case_end != method_should_end:
-                            method_stmt.append(self.tokens[self.pos])    
-                        self.pos += 1
-                    elif self.get(0)[1] == kw_if:
-                        method_should_end += 1
-                        method_stmt.append(self.tokens[self.pos])    
-                        self.pos += 1
-                    elif self.get(0)[1] == kw_elif:
-                        method_should_end += 1
-                        method_stmt.append(self.tokens[self.pos])    
-                        self.pos += 1
-                    elif self.get(0)[1] == kw_else_or_not:
-                        method_should_end += 1
-                        method_stmt.append(self.tokens[self.pos])    
-                        self.pos += 1
-                    elif self.get(0)[1] == kw_assign  or self.get(0)[1] == tr_kw_assign:
-                        method_stmt.append(self.tokens[self.pos])
-                        self.pos += 1
-                        if self.tokens[self.pos][1][1] == kw_do:
-                            method_should_end += 1
-                    else:
-                        method_stmt.append(self.tokens[self.pos])
-                        self.pos += 1
-                Parser(method_stmt, node_method).parse()
-                node_method_new(self.Node, method_name, args, node_method)
-            
-            elif self.match(kw_match):
-                v = self.get_value(self.get(0))
-                self.token_except(kw_do, i = 1, err = " : 濑嘢: 揾唔到 '->' ")
-                self.token_except(kw_begin, i = 2, err = " : 濑嘢: 揾唔到 '{' ")
-                self.skip(3) # Skip the kw_do, kw_begin
-                stmt_match = []
-                node_match = []
-                match_case_end = 0
-                match_should_end = 1
-                while match_case_end != match_should_end and self.pos < len(self.tokens):
-                    if self.get(0)[1] == kw_case or self.get(0)[1] == tr_kw_case:
-                        match_should_end += 1
-                        stmt_match.append(self.tokens[self.pos])
-                        self.pos += 1
-                    if self.get(0)[1] == kw_if:
-                        match_should_end += 1
-                        stmt_match.append(self.tokens[self.pos])
-                        self.pos += 1
-                    elif self.get(0)[1] == kw_end:
-                        match_case_end += 1
-                        if match_case_end != match_should_end:
-                            stmt_match.append(self.tokens[self.pos])
-                        self.pos += 1
-                    elif self.get(0)[1] == kw_elif:
-                        match_should_end += 1
-                        stmt_match.append(self.tokens[self.pos])
-                        self.pos += 1
-                    elif self.get(0)[1] == kw_else_or_not:
-                        match_should_end += 1
-                        stmt_match.append(self.tokens[self.pos])
-                        self.pos += 1
-                    elif self.get(0)[1] == kw_assign or self.get(0)[1] == tr_kw_assign:
-                        stmt_match.append(self.tokens[self.pos])
-                        self.pos += 1
-                        if self.tokens[self.pos][1][1] == kw_do:
-                            match_should_end += 1
-                    else:
-                        stmt_match.append(self.tokens[self.pos])
-                        self.pos += 1
-                Parser(stmt_match, node_match).parse()
-                node_match_new(self.Node, v, node_match)
-
-            elif self.match([kw_case, tr_kw_case]):
-                v = self.get_value(self.get(0))
-                self.token_except(kw_do, i = 1, err = " : 濑嘢! 揾唔到 '->' ")
-                self.token_except(kw_begin, i = 2, err = " : 濑嘢! 揾唔到  '{' ")
-                self.skip(3)
-                stmt_case = []
-                node_case = []
-                case_case_end = 0
-                case_should_end = 1
-                while case_case_end != case_should_end and self.pos < len(self.tokens):
-                    if self.get(0)[1] == kw_if:
-                        case_should_end += 1
-                        stmt_case.append(self.tokens[self.pos])
-                        self.pos += 1
-                    elif self.get(0)[1] == kw_end:
-                        case_case_end += 1
-                        if case_case_end != case_should_end:
-                            stmt_case.append(self.tokens[self.pos])
-                        self.pos += 1
-                    elif self.get(0)[1] == kw_elif:
-                        case_should_end += 1
-                        stmt_case.append(self.tokens[self.pos])
-                        self.pos += 1
-                    elif self.get(0)[1] == kw_assign or self.get(0)[1] == tr_kw_assign:
-                        stmt_case.append(self.tokens[self.pos])
-                        self.pos += 1
-                        if self.tokens[self.pos][1][1] == kw_do:
-                            case_should_end += 1
-                    else:
-                        stmt_case.append(self.tokens[self.pos])
-                        self.pos += 1
-                Parser(stmt_case, node_case).parse()
-                node_case_new(self.Node, v, node_case)
-
-            elif self.match(kw_cmd):
-                node_cmd_new(self.Node, self.get_value(self.get(0)))
-                self.skip(1)
-
-            elif self.match(kw_model):
-                model = self.get_value(self.get(0))
-                self.skip(1)
-                self.syntax_check(kw_mod_new, "value")
-                self.skip(2)
-                datatest = self.get_value(self.get(0))
-                self.skip(1)
-                node_model_new(self.Node, model, datatest)
-            
-            elif self.match(kw_stackinit):
-                node_stack_new(self.Node, self.get_value(self.get(0)))
-                self.skip(1)
-
-            elif self.match([kw_push, tr_kw_push]):
-                self.syntax_check(kw_do, "value")
-                self.skip(1)
-                self.Node.append(["stack_push", self.get_value(self.get(0)), self.get_value(self.\
-                    get(1))])
-                self.skip(2)
-            
-            elif self.match(kw_pop):
-                self.syntax_check(kw_do, "value")
-                self.skip(1)
-                self.Node.append(["stack_pop", self.get_value(self.get(0)), self.get_value(self.\
-                    get(1))])
-                self.skip(1)
-
-            else:
-                break
-
-variable = {}
-TO_PY_CODE = ""
- 
-def run(Nodes : list, TAB = '', label = '', path = '', arg = '') -> None:
-    def check(tab):
-        if label != 'whi_run' and label != 'if_run' and label != 'else_run' and  \
-            label != 'elif_run' and label != "func_run" and label != "try_run" and \
-            label != "except_run" and label != "finally_run" and label != "for_run" and \
-            label != "class_run" and label != "method_run":
-            tab = ''
-    global TO_PY_CODE
-    if Nodes == None:
-        return None
-    for node in Nodes:
-        if node[0] == "node_print":
-            check(TAB)
-            TO_PY_CODE += TAB + "print(" + node[1][1] + ")\n"
-            
-        if node[0] == "node_sleep":
-            check(TAB)
-            TO_PY_CODE += TAB + "import time\n"
-            TO_PY_CODE += TAB + "time.sleep(" + node[1][1] + ")\n"
-        
-        if node[0] == "node_import":
-            check(TAB)
-            if cantonese_lib_import(node[1][1]) == "Not found":
-                cantonese_lib_run(node[1][1], path)
-            else:
-                TO_PY_CODE += TAB + "import " + cantonese_lib_import(node[1][1]) + "\n"
-
-        if node[0] == "node_exit":
-            check(TAB)
-            TO_PY_CODE += TAB + "exit()\n"
-
-        if node[0] == "node_global":
-            check(TAB)
-            TO_PY_CODE += TAB + "global " + node[1][1] + "\n"
-
-        if node[0] == "node_del":
-            check(TAB)
-            TO_PY_CODE += TAB + "del " + node[1][1] + "\n"
-        
-        if node[0] == "node_let":
-            check(TAB)
-            TO_PY_CODE += TAB + node[1][1] + " = " + node[2][1] + "\n"
-        
-        if node[0] == "node_if":
-            check(TAB)
-            TO_PY_CODE += TAB + "if " + node[1][1] + ":\n"
-            run(node[2], TAB + '\t', 'if_run')
-            label = ''
-        
-        if node[0] == "node_elif":
-            check(TAB)
-            TO_PY_CODE += TAB + "elif " + node[1][1] + ":\n"
-            run(node[2], TAB + '\t', 'elif_run')
-            label = ''
-        
-        if node[0] == "node_else":
-            check(TAB)
-            TO_PY_CODE += TAB + "else:\n"
-            run(node[1], TAB + '\t', 'else_run')
-            label = ''
-        
-        if node[0] == "node_loop":
-            check(TAB)
-            TO_PY_CODE += TAB + "while " + "not (" + node[1][1] + "):\n"
-            run(node[2], TAB + '\t', 'whi_run')
-            label = ''
-        
-        if node[0] == "node_for":
-            check(TAB)
-            TO_PY_CODE += TAB + "for " + node[1][1] + " in " + "range" + \
-                          node[2] + ":\n"
-            run(node[3], TAB + '\t', "for_run")
-            label = ''
-        
-        if node[0] == "node_fundef":
-            # check if has args
-            if node[2] == 'None':
-                check(TAB)
-                TO_PY_CODE += TAB + "def " + node[1][1] + "():\n"
-                run(node[3], TAB + '\t', 'func_run')
-                label = ''
-            else:
-                check(TAB)
-                TO_PY_CODE += TAB + "def " + node[1][1] + "(" + node[2][1] + "):\n"
-                run(node[3], TAB + '\t', 'func_run')
-                label = ''
-        
-        if node[0] == "node_call":
-            check(TAB)
-            TO_PY_CODE += TAB + node[1][1] + "\n"
-
-        if node[0] == "node_break":
-            check(TAB)
-            TO_PY_CODE += TAB + "break\n"
-        
-        if node[0] == "node_pass":
-            check(TAB)
-            TO_PY_CODE += TAB + "pass\n"
-        
-        if node[0] == "node_bcall":
-            check(TAB)
-            # check if has args
-            if node[3] != "None":
-                TO_PY_CODE += TAB + node[1][1] + "." + node[2][1] + "(" + node[3][1] + ")\n"
-            else:
-                TO_PY_CODE += TAB + node[1][1] + "." + node[2][1] + "()\n"
-        
-        if node[0] == "node_return":
-            check(TAB)
-            TO_PY_CODE += TAB + "return " + node[1][1] + "\n"
-
-        if node[0] == "node_py_expr":
-            check(TAB)
-            TO_PY_CODE += TAB + node[1][1][1 : -1] + "\n"
-        
-        if node[0] == "node_list":
-            check(TAB)
-            TO_PY_CODE += TAB + node[1][1] + " = [" + node[2][1] + "]\n"
-        
-        if node[0] == "node_raise":
-            check(TAB)
-            TO_PY_CODE += TAB + "raise " + node[1][1] + "\n"
-        
-        if node[0] == "node_cmd":
-            check(TAB)
-            TO_PY_CODE += TAB + "os.system(" + node[1][1] + ")\n"
-        
-        if node[0] == "node_turtle":
-            check(TAB)
-            cantonese_turtle_init()
-            for ins in node[1]:
-                TO_PY_CODE += TAB + ins + "\n"
-        
-        if node[0] == "node_assert":
-            check(TAB)
-            TO_PY_CODE += TAB + "assert " + node[1][1] + "\n"
-        
-        if node[0] == "node_gettype":
-            check(TAB)
-            TO_PY_CODE += TAB + "print(type(" + node[1][1] + "))\n"
-        
-        if node[0] == "node_try":
-            check(TAB)
-            TO_PY_CODE += TAB + "try:\n"
-            run(node[1], TAB + '\t', 'try_run')
-            label = ''
-        
-        if node[0] == "node_except":
-            check(TAB)
-            TO_PY_CODE += TAB + "except " + node[1][1] + ":\n" 
-            run(node[2], TAB + '\t', 'except_run')
-            label = ''
-        
-        if node[0] == "node_finally":
-            check(TAB)
-            TO_PY_CODE += TAB + "finally:\n"
-            run(node[1], TAB + '\t', 'finally_run')
-            label = ''
-
-        if node[0] == "node_class":
-            check(TAB)
-            TO_PY_CODE += TAB + "class " + node[1][1] + "(" \
-                          + node[2][1] + "):\n"
-            run(node[3], TAB + '\t', 'class_run')
-            label = ''
-
-        if node[0] == "node_attr":
-            check(TAB)
-            TO_PY_CODE += TAB + "def __init__(self, " + node[1][1] + "):\n"
-            attr_lst = node[1][1].replace(" ", "").split(',')
-            for i in attr_lst:
-                TO_PY_CODE += TAB + '\t' + "self." + i + " = " + i + "\n"
-
-        if node[0] == "node_method":
-            check(TAB)
-            if node[2] == 'None':
-                TO_PY_CODE += TAB + "def " + node[1][1] + "(self):\n"
-            else:
-                TO_PY_CODE += TAB + "def " + node[1][1] + "(self, " + node[2][1] + "):\n"
-            run(node[3], TAB + '\t', "method_run")
-            label = ''
-
-        if node[0] == "node_stack":
-            check(TAB)
-            cantonese_stack_init()
-            TO_PY_CODE += TAB + node[1][1] + " = stack()\n"
-
-        if node[0] == "stack_push":
-            check(TAB)
-            TO_PY_CODE += TAB + node[1][1] + ".push(" + node[2][1] +")\n"
-        
-        if node[0] == "stack_pop":
-            check(TAB)
-            TO_PY_CODE += TAB + node[1][1] + ".pop()\n"
-
-        if node[0] == "node_model":
-            check(TAB)
-            TO_PY_CODE += TAB + cantonese_model_new(node[1][1], node[2][1], \
-                                TAB, TO_PY_CODE)
-
-        if node[0] == "node_lambda":
-            check(TAB)
-            if node[3] == None:
-                TO_PY_CODE += TAB + "lambda " + node[1][1] + ":" + node[2][1] + "\n"
-            else:
-                TO_PY_CODE += TAB + node[3][1] + "= lambda " + node[1][1] + ":" + node[2][1] + "\n"
-
-        if node[0] == "node_match":
-            check(TAB)
-            v = node[1][1]
-            run(node[2], arg = v)
-
-        if node[0] == "node_case":
-            check(TAB)
-            if arg != '':
-                TO_PY_CODE += TAB + "if " + arg + " == " + node[1][1] + ":\n"
-                run(node[2], TAB + '\t', 'if_run')
-
+    return tokens
 
 """
     Built-in library for Cantonese
@@ -1904,48 +733,255 @@ to_cpp = False
 _S = False
 mkfile = False
 
+class Codegen(object):
+    def __init__(self, nodes : list, path : str):
+        self.nodes = nodes
+        self.path = path
+        self.tab = ''
+
+    def codegen_expr(self, exp) -> str:
+        if isinstance(exp, can_parser.can_ast.StringExp):
+            return exp.s
+        
+        elif isinstance(exp, can_parser.can_ast.NumeralExp):
+            return exp.val
+        
+        elif isinstance(exp, can_parser.can_ast.IdExp):
+            return exp.name
+
+        elif isinstance(exp, can_parser.can_ast.FalseExp):
+            return "False"
+        
+        elif isinstance(exp, can_parser.can_ast.TrueExp):
+            return "True"
+        
+        elif isinstance(exp, can_parser.can_ast.NullExp):
+            return "None"
+
+        elif isinstance(exp, can_parser.can_ast.BinopExp):
+            return '(' + self.codegen_expr(exp.exp1) + exp.op + self.codegen_expr(exp.exp2) + ')'
+
+        elif isinstance(exp, can_parser.can_ast.ObjectAccessExp):
+            return self.codegen_expr(exp.prefix_exp) + '.' + self.codegen_expr(exp.key_exp)
+
+        elif isinstance(exp, can_parser.can_ast.ListAccessExp):
+            return self.codegen_expr(exp.prefix_exp) + '[' + self.codegen_expr(exp.key_exp) + ']'
+        
+        elif isinstance(exp, can_parser.can_ast.UnopExp):
+            return '(' + exp.op + ' ' + self.codegen_expr(exp.exp) + ')'
+        
+        elif isinstance(exp, can_parser.can_ast.FuncCallExp):
+            return self.codegen_expr(exp.prefix_exp) + '(' + self.codegen_args(exp.args) + ')'
+
+        elif isinstance(exp, can_parser.can_ast.LambdaExp):
+            return ' lambda ' + self.codegen_args(exp.id_list) + ' : ' + self.codegen_args(exp.blocks)
+
+        elif isinstance(exp, can_parser.can_ast.ListExp):
+            s = '['
+            for elem in exp.elem_exps:
+                s += self.codegen_expr(elem) + ', '
+            s = s[ : -2] + ']'
+            return s
+
+        elif isinstance(exp, can_parser.can_ast.ClassSelfExp):
+            s = 'self.' + self.codegen_expr(exp.exp)
+            return s
+
+        else:
+            return ''
+
+    def codegen_args(self, args : list) -> str:
+        s = ''
+        for arg in args:
+            s += ', ' + self.codegen_expr(arg)
+        return s[2 : ]
+
+    def codegen_method_args(self, args : list) -> str:
+        s = ''
+        for arg in args:
+            s += ', ' + self.codegen_expr(arg)
+        return "self, " + s[2 : ]
+
+    def codegen_varlist(self, lst : list) -> str:
+        s = ''
+        for l in lst:
+            s += ', ' + self.codegen_expr(l)
+        return s[2 : ]
+
+    def codegen_stat(self, stat):
+        if isinstance(stat, can_parser.can_ast.PrintStat):
+            return self.tab + 'print(' + self.codegen_args(stat.args) + ')\n'
+        
+        elif isinstance(stat, can_parser.can_ast.AssignStat):
+            return self.tab + self.codegen_varlist(stat.var_list) + ' = ' + self.codegen_args(stat.exp_list) + '\n'
+
+        elif isinstance(stat, can_parser.can_ast.ExitStat):
+            return self.tab + 'exit()\n'
+
+        elif isinstance(stat, can_parser.can_ast.PassStat):
+            return self.tab + 'pass\n'
+
+        elif isinstance(stat, can_parser.can_ast.BreakStat):
+            return self.tab + 'break\n'
+
+        elif isinstance(stat, can_parser.can_ast.IfStat):
+            s = ''
+            s += self.tab + 'if ' + self.codegen_expr(stat.if_exp) + ':\n'
+            s += self.codegen_block(stat.if_block)
+            
+            for i in range(len(stat.elif_exps)):
+                s += self.tab + 'elif ' + self.codegen_expr(stat.elif_exps[i]) + ':\n'
+                s += self.codegen_block(stat.elif_blocks[i])
+
+            if len(stat.else_blocks):
+                s += self.tab + 'else:\n'
+                s += self.codegen_block(stat.else_blocks)
+            
+            return s
+
+        elif isinstance(stat, can_parser.can_ast.TryStat):
+            s = ''
+            s += self.tab + 'try: \n'
+            s += self.codegen_block(stat.try_blocks)
+
+            for i in range(len(stat.except_exps)):
+                s += self.tab + 'except ' + self.codegen_expr(stat.except_exps[i]) + ':\n'
+                s += self.codegen_block(stat.except_blocks[i])
+
+            if len(stat.finally_blocks):
+                s += self.tab + 'finally:\n'
+                s += self.codegen_block(stat.finally_blocks)
+
+            return s
+
+        elif isinstance(stat, can_parser.can_ast.RaiseStat):
+            s = ''
+            s += self.tab + 'raise ' + self.codegen_expr(stat.name_exp) + '\n'
+            return s
+
+        elif isinstance(stat, can_parser.can_ast.WhileStat):
+            s = ''
+            s += self.tab + 'while not ' + self.codegen_expr(stat.cond_exp) + ':\n'
+            s += self.codegen_block(stat.blocks)
+            return s
+
+        elif isinstance(stat, can_parser.can_ast.ForStat):
+            s = ''
+            s += self.tab + 'for ' + self.codegen_expr(stat.var) + ' in range('+ self.codegen_expr(stat.from_exp) \
+                        + ', ' + self.codegen_expr(stat.to_exp) + '):\n'
+            s += self.codegen_block(stat.blocks)
+            return s
+
+        elif isinstance(stat, can_parser.can_ast.FunctoinDefStat):
+            s = ''
+            s += self.tab + 'def ' + self.codegen_expr(stat.name_exp) + '(' + self.codegen_args(stat.args) + '):\n'
+            s += self.codegen_block(stat.blocks)
+            return s
+
+        elif isinstance(stat, can_parser.can_ast.FuncCallStat):
+            s = ''
+            s += self.tab + self.codegen_expr(stat.func_name) + '(' + self.codegen_args(stat.args) + ')' + '\n'
+            return s
+
+        elif isinstance(stat, can_parser.can_ast.ImportStat):
+            return self.tab + 'import ' + self.codegen_args(stat.idlist) + '\n'
+
+        elif isinstance(stat, can_parser.can_ast.ReturnStat):
+            s = ''
+            s += self.tab + 'return ' + self.codegen_args(stat.exps) + '\n'
+            return s
+
+        elif isinstance(stat, can_parser.can_ast.DelStat):
+            s = ''
+            s += self.tab + 'del ' + self.codegen_args(stat.exps) + '\n'
+            return s
+
+        elif isinstance(stat, can_parser.can_ast.TypeStat):
+            s = ''
+            s += self.tab + 'print(type(' + self.codegen_expr(stat.exps) + '))\n'
+            return s
+
+        elif isinstance(stat, can_parser.can_ast.AssertStat):
+            s = ''
+            s += self.tab + 'assert ' + self.codegen_expr(stat.exps) + '\n'
+            return s
+
+        elif isinstance(stat, can_parser.can_ast.ClassDefStat):
+            s = ''
+            s += self.tab + 'class ' + self.codegen_expr(stat.class_name) + '(' + self.codegen_args(stat.class_extend) + '):\n'
+            s += self.codegen_block(stat.class_blocks)
+            return s
+
+        elif isinstance(stat, can_parser.can_ast.MethodDefStat):
+            s = ''
+            s += self.tab + 'def ' + self.codegen_expr(stat.name_exp) + '(' + self.codegen_method_args(stat.args) + '):\n'
+            s += self.codegen_block(stat.class_blocks)
+            return s
+
+        elif isinstance(stat, can_parser.can_ast.MethodCallStat):
+            s = ''
+            s += self.tab + self.codegen_expr(stat.name_exp) + '.' + self.codegen_expr(stat.method) + \
+                 '(' + self.codegen_args(stat.args) + ')\n'
+            return s
+
+    def codegen_block(self, blocks):
+        save = self.tab
+        self.tab += '\t'
+        s = ''
+        for block in blocks:
+            s += self.codegen_stat(block)
+        self.tab = save
+        return s
+
+variable = {}
 def cantonese_run(code : str, is_to_py : bool, file : str, 
                     REPL = False, get_py_code = False) -> None:
     
     global dump_ast
     global dump_lex
     global TO_PY_CODE
-    # from . import parser
     tokens = cantonese_token(code, keywords)
-    print(tokens)
-    stats = can_parser.StatParser(tokens).parse_stats()
-    for stat in stats:
-        print(stat)
-    # TODO: update for v1.0.3
-    """  
-    cantonese_parser = Parser(tokens, [])
-    cantonese_parser.parse()
 
+    stats = can_parser.StatParser(tokens).parse_stats()
+    code_gen = Codegen(stats, file)
+    code = ''
+    for stat in stats:
+        code += code_gen.codegen_stat(stat)
+
+
+    exec(code, variable)
+    # TODO: update for v1.0.3
+    
     if dump_lex:
         for token in tokens:
             print("line " + str(token[0]) + ": " + str(token[1]))
 
     if dump_ast:
-        print(cantonese_parser.Node)
+        for stat in stats:
+            print(stat)
     if to_js:
+        """TODO:
         import Compile
         js, fh = Compile.Compile(cantonese_parser.Node, "js", file).ret()
         f = open(fh, 'w', encoding = 'utf-8')
         f.write(js)
         sys.exit(1)
-
+        """
+        pass
     if _S:
+        """ TODO:
         import Compile
         code, fh = Compile.Compile(cantonese_parser.Node, "asm", file).ret()
         # f = open(fh, 'w', encoding = 'utf-8')
         # f.write(code)
         print(code)
         sys.exit(1)
-
-    run(cantonese_parser.Node, path = file)
+        """
     """
+    run(cantonese_parser.Node, path = file)
+    
     cantonese_lib_init()
-
+    """
     if is_to_py:
         print(TO_PY_CODE)
 
@@ -1956,7 +992,7 @@ def cantonese_run(code : str, is_to_py : bool, file : str,
         f.write("###########################################\n")
         f.write("# Run it by " + "'cantonese " + file[: len(file) - 10] + '.py' + " -build' \n")
         f.write(TO_PY_CODE)
-    
+    """
     if debug:
         import dis
         print(dis.dis(TO_PY_CODE))
@@ -1971,7 +1007,7 @@ def cantonese_run(code : str, is_to_py : bool, file : str,
             exec(TO_PY_CODE, variable)
         except Exception as e:
             print("濑嘢!" + "\n".join(濑啲咩嘢(e)))
-    
+    """
 class AST(object):
     def __init__(self, Nodes) -> None:
         self.Nodes = Nodes

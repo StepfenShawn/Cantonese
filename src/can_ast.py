@@ -59,6 +59,19 @@ class StringExp(AST):
     def __str__(self):
         return "StringExp:\n String: %s\n" % self.s
 
+# List Expr
+class ListExp(AST):
+    def __init__(self, elem_exps : list) -> None:
+        self.elem_exps = elem_exps
+
+    def __str__(self) -> str:
+        s = 'ListExp:\n'
+        for elem_exp in self.elem_exps:
+            for l in str(elem_exp).split('\n'):
+                if len(l):
+                    s += '\t' + l + '\n'
+        return s
+
 # unop exp
 class UnopExp(AST):
     def __init__(self, line : int, op, exp : AST) -> None:
@@ -126,6 +139,22 @@ class ObjectAccessExp(AST):
         s += '"Key": ' + str(self.key_exp) + ',\n'
         return s
 
+class ListAccessExp(AST):
+    def __init__(self, last_line : int, prefix_exp : AST, key_exp : AST):
+        self.last_line = last_line
+        self.prefix_exp = prefix_exp
+        self.key_exp = key_exp
+
+    def __str__(self):
+        s = ''
+        s += "ListAccessExp: \n"
+        s += '"PrefixExp": {\n'
+        for line in str(self.prefix_exp).split('\n'):
+            s += '  ' + line + '\n'
+        s += '},\n'
+        s += '"Key": ' + str(self.key_exp) + ',\n'
+        return s
+
 class FuncCallExp(AST):
     def __init__(self, line : int, last_line : int, prefix_exp : AST, name_exp : AST, args : AST):
         self.line = line
@@ -151,6 +180,33 @@ class FuncCallExp(AST):
         s += ']'
         return s
 
+class LambdaExp(AST):
+    def __init__(self, id_list : list, blocks : list) -> None:
+        self.id_list = id_list
+        self.blocks = blocks
+
+    def __str__(self) -> str:
+        s = 'LambdaExp:\n'
+        s += 'id_list:\n'
+        for id in self.id_list:
+            for l in str(id).split('\n'):
+                s += '\t' + l + '\n'
+        s += 'blocks:\n'
+        for block in self.blocks:
+            for l in str(block).split('\n'):
+                s += '\t' + l + '\n'
+
+        return s
+
+class ClassSelfExp(AST):
+    def __init__(self, exp : AST):
+        self.exp = exp
+
+    def __str__(self) -> str:
+        s = 'ClassSelfExp:\n'
+        for l in str(self.exp).split('\n'):
+            s += '\t' + l + '\n'
+        return s
 
 class ExitStat(AST):
     def __init__(self) -> None:
@@ -160,14 +216,26 @@ class ExitStat(AST):
         return "ExitStat \n"
 
 class FuncCallStat(AST):
-    def __init__(self, exp : AST):
-        self.exp = exp
+    def __init__(self, func_name : AST, args : list):
+        self.func_name = func_name
+        self.args = args
+
+    def __str__(self) -> str:
+        s = 'FunctoinCall:\n'
+        s += "name: " + str(self.func_name) + '\n'
+        s += "args: \n"
+        for arg in self.args:
+            for l in str(arg).split('\n'):
+                if len(l):
+                    s += '\t' + l + '\n'
+
+        return s
 
 class IfStat(AST):
-    def __init__(self, if_exps : list, if_blocks : list, elif_exps : list, 
+    def __init__(self, if_exp : list, if_block : list, elif_exps : list, 
                     elif_blocks : list, else_blocks : list):
-        self.if_exps = if_exps
-        self.if_blocks = if_blocks
+        self.if_exp = if_exp
+        self.if_block = if_block
         self.elif_exps = elif_exps
         self.elif_blocks = elif_blocks
         self.else_blocks = else_blocks
@@ -175,12 +243,11 @@ class IfStat(AST):
     def __str__(self) -> str:
         s = 'IfStat:\n'
         s += '"Exps": ' + '\n'
-        for exp in self.if_exps:
-            for l in str(exp).split('\n'):
-                s += '\t' + l + '\n'
+        for l in str(self.if_exp).split('\n'):
+            s += '\t' + l + '\n'
         
         s += '"if_Blocks": ' + '\n'
-        for block in self.if_blocks:
+        for block in self.if_block:
             for l in str(block).split('\n'):
                 s += '\t' + l + '\n'
 
@@ -228,7 +295,7 @@ assignstat := '讲嘢' varlist '系' explist
             | '讲嘢' '=>' '{' assignblock '}'
 """
 class AssignStat(AST):
-    def __init__(self, last_line : int, var_list : AST, exp_list : AST):
+    def __init__(self, last_line : int, var_list : list, exp_list : list):
         self.last_line = last_line
         self.var_list = var_list
         self.exp_list = exp_list
@@ -270,17 +337,16 @@ class ForStat(AST):
         return s
 
 class WhileStat(AST):
-    def __init__(self, exps : list, blocks : list) -> None:
-        self.cond_exps = exps
+    def __init__(self, exp : list, blocks : list) -> None:
+        self.cond_exp = exp
         self.blocks = blocks
 
     def __str__(self) -> str:
         s = 'WhileStat:\n'
         s += 'Cond:\n'
-        for cond_exp in self.cond_exps:
-            for l in str(cond_exp).split('\n'):
-                if len(l):
-                    s += '\t' + l + '\n'
+        for l in str(self.cond_exp).split('\n'):
+            if len(l):
+                s += '\t' + l + '\n'
         s += 'Blocks:\n'
         for block in self.blocks:
             for l in str(block).split('\n'):
@@ -310,9 +376,77 @@ class FunctoinDefStat(AST):
                 if len(l):
                     s += '\t' + l + '\n'
 
+        return s
+
+class MethodDefStat(AST):
+    def __init__(self, name_exp : AST, args : list, class_blocks : list) -> None:
+        self.name_exp = name_exp
+        self.args = args
+        self.class_blocks = class_blocks
+
+    def __str__(self) -> str:
+        s = "MethodDefStat:\n"
+        s += 'Name: ' + str(self.name_exp) + '\n'
+        s += 'Args: ' + str(self.args) + '\n'
+        s += 'Blocks:\n'
+        for block in self.class_blocks:
+            for l in str(block).split('\n'):
+                if len(l):
+                    s += '\t' + l + '\n'
+
+        return s
+
+class AttrDefStat(AST):
+    def __init__(self, class_var_list : list, class_exp_list : list) -> None:
+        self.class_var_list = class_var_list
+        self.class_exp_list = class_exp_list
+
+    def __str__(self) -> str:
+        s += "AttrDefStat:\n"
+        s += 'Class_var_list:\n'
+        for class_var in self.class_var_list:
+            for l in str(class_var).split('\n'):
+                s += '\t' + l + '\n'
+        s += 'Class_exp_list:\n'
+        for class_exp in self.class_exp_list:
+            for l in str(class_exp).split('\n'):
+                s += '\t' + l + '\n'
+        
+        return s
+
+class ClassInitStat(AST):
+    def __init__(self, class_var_list : list) -> None:
+        self.class_var_list = class_var_list
+
+    def __str__(self) -> str:
+        s = 'ClassInitStat:\n'
+        for class_var in self.class_var_list:
+            for l in str(class_var).split('\n'):
+                s += '\t' + l + '\n'
+
+        return s
+
 class ClassDefStat(AST):
-    def __init__(self) -> None:
-        pass
+    def __init__(self, class_name : AST, class_extend : list, class_blocks : list) -> None:
+        self.class_name = class_name
+        self.class_extend = class_extend
+        self.class_blocks = class_blocks
+
+    def __str__(self) -> str:
+        s = 'ClassDefStat\n'
+        s += 'class_name: \n'
+        for l in str(self.class_name).split('\n'):
+            s += '\t' + l + '\n'
+        s += 'extends: \n'
+        for extend in self.class_extend:
+            for l in str(extend).split('\n'):
+                s += '\t' + l + '\n'
+        s += 'class_blocks: \n'
+        for blocks in self.class_blocks:
+            for l in str(blocks).split('\n'):
+                s += '\t' + l + '\n'
+        
+        return s
 
 class ImportStat(AST):
     def __init__(self, idlist : list) -> None:
@@ -328,12 +462,49 @@ class ImportStat(AST):
         return s
 
 class RaiseStat(AST):
-    def __init__(self) -> None:
-        pass
+    def __init__(self, name_exp) -> None:
+        self.name_exp = name_exp
+
+    def __str__(self) -> str:
+        s = 'RaiseStat:\n'
+        for exp in str(self.name_exp).split('\n'):
+            s += '\t' + exp + '\n'
+
+        return s
 
 class TryStat(AST):
-    def __init__(self) -> None:
-        pass
+    def __init__(self, try_blocks : list, except_exps : list, 
+                except_blocks : list, finally_blocks : list) -> None:
+        self.try_blocks = try_blocks
+        self.except_exps = except_exps
+        self.except_blocks = except_blocks
+        self.finally_blocks = finally_blocks
+
+    def __str__(self) -> str:
+        s = 'TryStat:\n'
+        s += '"TryBlocks": ' + '\n'
+        for block in self.try_blocks:
+            for l in str(block).split('\n'):
+                s += '\t' + l + '\n'
+
+        if (self.except_exps != [] or self.except_blocks != []):
+            s += '"ExceptExps": ' + '\n'
+            for exp in self.except_exps:
+                for l in str(exp).split('\n'):
+                    s += '\t' + l + '\n'
+            
+            s += '"ExceptBlocks": ' + '\n'
+            for block in self.except_blocks:
+                for l in str(block).split('\n'):
+                    s += '\t' + l + '\n'
+
+        if (self.finally_blocks != []):
+            s += '"elif_Blocks": ' + '\n'
+            for block in self.finally_blocks:
+                for l in str(block).split('\n'):
+                    s += '\t' + l + '\n'
+
+        return s 
 
 class LambdaStat(AST):
     def __init__(self) -> None:
@@ -364,4 +535,72 @@ class TypeStat(AST):
         self.exps = exps
 
     def __str__(self) -> str:
-        pass
+        s = 'TypeStat:\n'
+        for exp in str(self.exps).split('\n'):
+            s += '\t' + exp + '\n'
+        return s
+
+class AssertStat(AST):
+    def __init__(self, exps) -> None:
+        self.exps = exps
+
+    def __str__(self) -> str:
+        s = 'AssertStat:\n'
+        for exp in str(self.exps).split('\n'):
+            s += '\t' + exp + '\n'
+
+        return s
+
+class ReturnStat(AST):
+    def __init__(self, exps : list) -> None:
+        self.exps = exps
+
+    def __str__(self) -> str:
+        s = 'ReturnStat:\n'
+        for exp in self.exps:
+            for l in str(exp).split('\n'):
+                s += '\t' + l + '\n'
+
+        return s
+
+class DelStat(AST):
+    def __init__(self, exps : list) -> None:
+        self.exps = exps
+
+    def __str__(self) -> str:
+        s = 'DelStat:\n'
+        for exp in self.exps:
+            for l in str(exp).split('\n'):
+                s += '\t' + l + '\n'
+
+        return s
+
+class CmdStat(AST):
+    def __init__(self, args : list) -> None:
+        self.args = args
+
+    def __str__(self) -> str:
+        s = 'CmdStat:\n'
+        s += 'Args:\n'
+        for arg in self.args:
+            for l in str(arg).split('\n'):
+                s += '\t' + l + '\n'
+        
+        return s
+
+class MethodCallStat(AST):
+    def __init__(self, name_exp : AST, method : AST, args : list):
+        self.name_exp = name_exp
+        self.method = method
+        self.args = args
+
+    def __str__(self) -> str:
+        s = "MethodCallStat:\n"
+        s += 'prefix_exp: ' + str(self.name_exp) + '\n'
+        s += 'Method_name: ' + str(self.method) + '\n'
+        s += 'Args:\n'
+        for arg in self.args:
+            for l in str(arg).split('\n'):
+                s += '\t' + l + '\n'
+
+        return s

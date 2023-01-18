@@ -71,18 +71,31 @@ stat ::= ';' |
       | functioncall ['@' idlist]
       | '落操场玩跑步' block '玩到' exp '为止'
       | '$' id [parlist] '要做咩' block '搞掂'
-      | functoindef ['@' idlist]
-      | '&' idlist '喺' '[' Numeral '...' Numeral ']' '=>' '{' block '}'
-      | '&' idlist '喺' '|' explist '|'
-      | id '从' Numeral '行到' Numeral block '行晒'
-      | '起底' args ['@' idlist]
+      | '$' id [parlist] '=>' block '%%'
+      | lambda_functoindef ['@' idlist]
+      | '&' idlist '喺' '|' explist '|' '=>' block '%%'
+      | id '从' exp '行到' exp block '行晒'
+      | '起底' args
       | '如果' exp '嘅话' '->' '{' block '}' [定系 exp 嘅话 '->' '{' block '}'] ['唔系嘅话' '->' '{' block '}']
       | match下 id '=>' '{' matchblock '}' 
       | '掟个' id '来睇下'
       | '谂下' args
+      | '落Order' args
       | '有条仆街叫' ['|'] id ['|']
       | '顶你' '->' ['|'] id ['|'] exp
       | '丢你' '->' ['|'] id ['|']
-      | args 拍住上 '->' ['|'] id ['|']
+      | exp 拍住上 '->' ['|'] id ['|']
+      | exp '->' exp args
+      | try_stmt
+      | class_def_stmt
+
+try_stmt ::= '执嘢' '->' '{' block '}' ['揾到' exp '嘅话' '->' '{' block '}']* ['执手尾' '-> '{' block '}']
+
+class_def_stmt ::= '咩系' exp [佢个老豆叫 id] class_def_block '明白未啊'
+
+class_def_block ::= '佢嘅' classvarlist 係 explist
+              | '佢识得' id [parlist] '=>' block '%%'
+              | '佢识得' id [parlist] '->' '{' block '}'
+              | '佢有啲咩' '->' '{' assignblock '}'
 
 retstat ::= '还数' [explist]

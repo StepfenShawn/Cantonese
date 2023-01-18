@@ -207,6 +207,7 @@ keywords = (
     kw_endclass,
     kw_cmd,
     kw_break,
+    kw_del,
     kw_lst_assign,
     kw_set_assign,
     kw_global_set,
