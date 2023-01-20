@@ -172,8 +172,8 @@ try-except-finally:
 ``` 
 ### <a name="11">調用 Python 庫</a>
 ```
-使下 python-os
-使下 python-math
+使下 python_os
+使下 python_math
 ```
 ### <a name="12">面向對象編程</a>
 聲明對象 `duck`，繼承至 `object`，分別有兩個方法 `游水` 同埋 `睡觉` ，仲有一個屬性 `性别`：  

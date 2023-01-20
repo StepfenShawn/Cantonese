@@ -363,6 +363,28 @@ class AssignStat(AST):
 
         return s
 
+class AssignBlockStat(AST):
+    def __init__(self, last_line : int, var_list : list, exp_list : list):
+        self.last_line = last_line
+        self.var_list = var_list
+        self.exp_list = exp_list
+
+    def __str__(self):
+        s = 'AssignStat:\n'
+        s += '"VarList": ' + '\n'
+        for var in self.var_list:
+            for l in str(var).split('\n'):
+                if len(l):
+                    s += '  ' + l + '\n'
+
+        s += '"ExpList": ' + '\n'
+        for exp in self.exp_list:
+            for l in str(exp).split('\n'):
+                if len(l):
+                    s += '  ' + l + '\n'
+
+        return s
+
 class ForStat(AST):
     def __init__(self, id : AST, from_exp : AST, to_exp : AST, blocks : list) -> None:
         self.var = id

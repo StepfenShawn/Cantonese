@@ -277,8 +277,12 @@ class lexer(object):
             return [self.line, [TokenType.OP_MINUS, c]]
 
         if c == '*':
-            self.next(1)
-            return [self.line, [TokenType.OP_MUL, c]]
+            if self.check('**'):
+                self.next(2)
+                return [self.line, [TokenType.OP_POW, c]]
+            else:
+                self.next(1)
+                return [self.line, [TokenType.OP_MUL, c]]
 
         if c == '/':
             if self.check('//'):
@@ -294,7 +298,7 @@ class lexer(object):
 
         if c == '^':
             self.next(1)
-            return [self.line, [TokenType.OP_POW, c]]
+            return [self.line, [TokenType.OP_WAVE, c]]
 
         if c == ',':
             self.next(1)
@@ -358,3 +362,13 @@ class lexer(object):
                 ret += '\\'
                 s = s[2:]
                 continue
+
+def cantonese_token(code : str, keywords : str) -> list:
+    lex = lexer(code, keywords)
+    tokens = []
+    while True:
+        token = lex.get_token()
+        tokens.append(token)
+        if token[1] == [TokenType.EOF, 'EOF']:
+            break
+    return tokens

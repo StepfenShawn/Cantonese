@@ -20,16 +20,6 @@ from can_codegen import *
 
 _version_ = "Cantonese 1.0.3 Copyright (C) 2020-2023 StepfenShawn"
 
-def cantonese_token(code : str, keywords : str) -> list:
-    lex = lexer(code, keywords)
-    tokens = []
-    while True:
-        token = lex.get_token()
-        tokens.append(token)
-        if token[1] == [TokenType.EOF, 'EOF']:
-            break
-    return tokens
-
 dump_ast = False
 dump_lex = False
 to_js = False
@@ -37,28 +27,6 @@ to_cpp = False
 _S = False
 mkfile = False
 TO_PY_CODE = ''
-
-def cantonese_lib_run(lib_name : str, path : str) -> str:
-    pa = os.path.dirname(path) # Return the last file Path
-    tokens = []
-    code = ""
-    found = False
-    for dirpath,dirnames,files in os.walk(pa):
-        if lib_name + '.cantonese' in files:
-            code = open(pa + '/' + lib_name + '.cantonese', encoding = 'utf-8').read()
-            code = re.sub(re.compile(r'/\*.*?\*/', re.S), ' ', code)
-            found = True
-    if found == False:
-        raise ImportError(lib_name + '.cantonese not found.')
-    
-    tokens = cantonese_token(code, keywords)
-    stats = can_parser.StatParser(tokens).parse_stats()
-    code_gen = Codegen(stats, path)
-    code = ''
-    for stat in stats:
-        code += code_gen.codegen_stat(stat)
-    
-    return code
 
 def cantonese_run(code : str, is_to_py : bool, file : str, 
                     REPL = False, get_py_code = False) -> None:

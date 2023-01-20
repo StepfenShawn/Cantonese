@@ -68,8 +68,11 @@ def cantonese_lib_init() -> None:
         else:
             for i in lst:
                 if i[0] - loss <= range_lst[0] and i[1] + loss >= range_lst[1]:
-                    return True  
+                    return True
 
+
+    def make_tuple(*args):
+        return tuple(args)
 
     cantonese_func_def("最尾", get_list_end)
     cantonese_func_def("身位", where)
@@ -82,6 +85,7 @@ def cantonese_lib_init() -> None:
     cantonese_func_def("啱", True)
 
     cantonese_func_def("畀你啲嘢", input)
+    cantonese_func_def("畀个tuple", make_tuple)
 
     cantonese_stack_init()
 
@@ -686,7 +690,7 @@ def cantonese_lib_import(name : str) -> None:
     elif name == "numpy" or name == "数值计算":
         cantonese_numpy_init()
         return "numpy"
-    elif name[ : 7] == "python-":
+    elif name[ : 7] == "python_":
         return name[7 : ]
     else:
         return "Not found"

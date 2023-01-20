@@ -1,6 +1,36 @@
 import can_parser
+import can_lexer
+import os
+import re
 
 from can_lib import cantonese_lib_import
+
+class CanPyCompile(object):
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def cantonese_lib_run(lib_name : str, path : str) -> str:
+        pa = os.path.dirname(path) # Return the last file Path
+        tokens = []
+        code = ""
+        found = False
+        for dirpath,dirnames,files in os.walk(pa):
+            if lib_name + '.cantonese' in files:
+                code = open(pa + '/' + lib_name + '.cantonese', encoding = 'utf-8').read()
+                code = re.sub(re.compile(r'/\*.*?\*/', re.S), ' ', code)
+                found = True
+        if found == False:
+            raise ImportError(lib_name + '.cantonese not found.')
+    
+        tokens = can_lexer.cantonese_token(code, can_lexer.keywords)
+        stats = can_parser.StatParser(tokens).parse_stats()
+        code_gen = Codegen(stats, path)
+        code = ''
+        for stat in stats:
+            code += code_gen.codegen_stat(stat)
+        
+        return code
 
 class Codegen(object):
     def __init__(self, nodes : list, path : str):
@@ -93,12 +123,15 @@ class Codegen(object):
 
     def codegen_lib_list(self, lib_list : list) -> str:
         s = ''
+        user_lib = []
         for lib in lib_list:
             import_res = cantonese_lib_import(self.codegen_expr(lib))
             if import_res != "Not found":
                 s += ', ' + import_res
+            else:
+                user_lib.append(self.codegen_expr(lib))
 
-        return s[2 : ]
+        return s[2 : ], user_lib
     def codegen_build_in_method_or_id(self, exp : can_parser.can_ast) -> str:
         list_build_in_method = {
             "加啲" : "append",
@@ -125,7 +158,15 @@ class Codegen(object):
             return self.tab + 'print(' + self.codegen_args(stat.args) + ')\n'
         
         elif isinstance(stat, can_parser.can_ast.AssignStat):
-            return self.tab + self.codegen_varlist(stat.var_list) + ' = ' + self.codegen_args(stat.exp_list) + '\n'
+            s = ''
+            s += self.tab + self.codegen_args(stat.var_list) + ' = ' + self.codegen_args(stat.exp_list) + '\n'
+            return s
+
+        elif isinstance(stat, can_parser.can_ast.AssignBlockStat):
+            s = ''
+            for i in range(len(stat.var_list)):
+                s += self.tab + self.codegen_expr(stat.var_list[i]) + ' = ' + self.codegen_expr(stat.exp_list[i]) + '\n'
+            return s
 
         elif isinstance(stat, can_parser.can_ast.ExitStat):
             return self.tab + 'exit()\n'
@@ -196,7 +237,14 @@ class Codegen(object):
             return s
 
         elif isinstance(stat, can_parser.can_ast.ImportStat):
-            return self.tab + 'import ' + self.codegen_lib_list(stat.idlist) + '\n'
+            s = ''
+            libs, user_lib = self.codegen_lib_list(stat.idlist)
+            if len(libs):
+                s += self.tab + 'import ' + libs + '\n'
+            if len(user_lib):
+                for l in user_lib:
+                    s += self.tab + CanPyCompile.cantonese_lib_run(l, self.path)
+            return s
 
         elif isinstance(stat, can_parser.can_ast.ReturnStat):
             s = ''
@@ -241,17 +289,14 @@ class Codegen(object):
             s += self.tab + 'os.system(' + self.codegen_args(stat.args) + ')\n'
             return s
 
-        elif isinstance(stat, can_parser.can_ast.ClassInitStat):
-            s = ''
-            s += self.tab + 'def __init__(self, ' + self.codegen_args(stat.class_var_list) + '):\n'
-            for i in range(len(stat.class_var_list)):
-                s += self.tab + 'self.' + self.codegen_expr(stat.class_var_list[i]) + ' = ' + \
-                    self.codegen_expr(stat.class_var_list[i]) + '\n'
-            return s
-
         elif isinstance(stat, can_parser.can_ast.CallStat):
             s = ''
             s += self.tab + self.codegen_expr(stat.exp) + '\n'
+            return s
+
+        elif isinstance(stat, can_parser.can_ast.GlobalStat):
+            s = ''
+            s += self.tab + 'global ' + self.codegen_args(stat.idlist) + '\n'
             return s
 
     def codegen_block(self, blocks):

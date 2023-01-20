@@ -136,25 +136,28 @@ class ExpParser(ParserBase):
     # exp1 <|> exp2
     def parse_exp9(self):
         exp = self.parse_exp8()
-        while self.get_type(self.current()) == TokenType.OP_BOR:
+        while self.get_type(self.current()) == TokenType.OP_BOR or \
+            self.get_token_value(self.current()) == "或":
             line = self.current()[0]
             self.skip(1)
             exp = can_ast.BinopExp(line, '|', exp, self.parse_exp8())
         return exp
 
-    # exp1 ! exp2
+    # exp1 ^ exp2
     def parse_exp8(self):
         exp = self.parse_exp7()
-        while self.get_type(self.current()) == TokenType.OP_WAVE:
+        while self.get_type(self.current()) == TokenType.OP_WAVE or \
+            self.get_token_value(self.current()) == "异或":
             line = self.current()[0]
             self.skip(1)
-            exp = can_ast.BinopExp(line, '!', exp, self.parse_exp8())
+            exp = can_ast.BinopExp(line, '^', exp, self.parse_exp8())
         return exp
 
     # exp1 & exp2
     def parse_exp7(self):
         exp = self.parse_exp6()
-        while self.get_type(self.current()) == TokenType.OP_BAND:
+        while self.get_type(self.current()) == TokenType.OP_BAND or \
+            self.get_token_value(self.current()) == '与':
             line = self.current()[0]
             self.skip(1)
             exp = can_ast.BinopExp(line, '&', exp, self.parse_exp8())
@@ -166,7 +169,19 @@ class ExpParser(ParserBase):
         if self.get_type(self.current()) in (TokenType.OP_SHL, TokenType.OP_SHR):
             line = self.current()[0]
             op = self.get_token_value(self.current())
+            self.skip(1) # Skip the op
             exp = can_ast.BinopExp(line, op, exp, self.parse_exp5())
+        
+        elif self.get_token_value(self.current()) == '左移':
+            line, op = self.current()[0], "<<"
+            self.skip(1) # Skip the op
+            exp = can_ast.BinopExp(line, op, exp, self.parse_exp5())
+        
+        elif self.get_token_value(self.current()) == '右移':
+            line, op = self.current()[0], ">>"
+            self.skip(1) # Skip the op
+            exp = can_ast.BinopExp(line, op, exp, self.parse_exp5())
+        
         else:
             return exp
         return exp
@@ -247,18 +262,28 @@ class ExpParser(ParserBase):
     # unop exp
     def parse_exp2(self):
         if self.get_type(self.current()) == TokenType.OP_NOT or \
-            self.get_token_value(self.current()) == 'not':
+            self.get_token_value(self.current()) == 'not' or \
+            self.get_token_value(self.current()) == '-' or \
+            self.get_token_value(self.current()) == '~':
             line, op = self.current()[0], self.get_token_value(self.current())
             self.skip(1) # Skip the op
             exp = can_ast.UnopExp(line, op, self.parse_exp2())
             return exp
+
+        elif self.get_type(self.current()) == '取反':
+            line, op = self.current()[0], '~'
+            self.skip(1) # Skip the op
+            exp = can_ast.UnopExp(line, op, self.parse_exp2())
+            return exp
+
         return self.parse_exp1()
 
-    # x ^ y
+    # x ** y
     def parse_exp1(self):
         exp = self.parse_exp0()
         if self.get_type(self.current()) == TokenType.OP_POW:
             line, op = self.current()[0], self.get_token_value(self.current())
+            self.skip(1) # Skip the op
             exp = can_ast.BinopExp(line, op, exp, self.parse_exp2())
         return exp
 
@@ -413,12 +438,27 @@ class ExpParser(ParserBase):
             last_line = self.get_line()
             return can_ast.FuncCallExp(prefix_exp, args)
 
-    """
-    parlist ::= idlist [',', '<*>']
-             | '<*>'
-    """
+   
     def parse_parlist(self):
-        kind = self.get_type(self.current())
+        if self.get_type(self.current()) == TokenType.IDENTIFIER or \
+            self.get_token_value(self.current()) == '<*>':
+            par_parser = ParExpParser(self.tokens[self.pos : ])
+            exps = par_parser.parse_exp_list()
+            self.skip(par_parser.pos)
+            del par_parser # free the memory
+            return exps
+        
+        elif self.get_token_value(self.current()) == '|':
+            self.skip(1)
+            par_parser = ParExpParser(self.tokens[self.pos : ])
+            exps = par_parser.parse_exp_list()
+            self.skip(par_parser.pos)
+            del par_parser # free the memory
+            self.get_next_token_of('|', 0)
+            return exps
+        
+        else:
+            return []
 
     """
     idlist ::= id [',', id]
@@ -498,6 +538,53 @@ class ExpParser(ParserBase):
             self.skip(1)
             args = [can_ast.IdExp(tk[0], self.get_token_value(tk))]
         return args
+
+"""
+    parlist ::= id [',', id | '<*>']
+             | id '=' exp [',' id]
+             | '<*>'
+"""
+
+class ParExpParser(ExpParser):
+    def __init__(self, token_list: list) -> None:
+        super().__init__(token_list)
+
+    # override
+    def parse_exp(self):
+        return self.parse_exp0()
+
+    # override
+    def parse_exp0(self):
+        tk = self.current()
+
+        if self.get_token_value(tk) == '<*>':
+            self.skip(1)
+            return can_ast.VarArgExp(tk[0])
+        
+        return self.parse_prefixexp()
+
+    # override
+    def parse_prefixexp(self):
+        if self.get_type(self.current()) == TokenType.IDENTIFIER:
+            line, name = self.current()[0], self.get_token_value(self.current())
+            self.skip(1)
+            exp = can_ast.IdExp(line, name)
+            return self.finish_prefixexp(exp)
+        else:
+            raise Exception("Parlist must be a identifier type!")
+
+    # override
+    def finish_prefixexp(self, exp: can_ast.AST):
+        kind = self.get_type(self.current())
+        value = self.get_token_value(self.current())
+        if value == '=' or value == '==>':
+            self.skip(1)
+            exp_parser = ExpParser(self.tokens[self.pos : ])
+            exp2 = exp_parser.parse_exp()
+            self.skip(exp_parser.pos)
+            del exp_parser # free the memory
+            return can_ast.AssignExp(exp, exp2)
+        return exp
 
 class StatParser(ParserBase):
     def __init__(self, token_list : list, ExpParser = ExpParser) -> None:
@@ -616,11 +703,9 @@ class StatParser(ParserBase):
             elif self.get_token_value(self.look_ahead(1)) in [kw_call_begin, tr_kw_call_begin]:
                 return self.parse_func_call_stat()
 
-            # TODO: fix bugs here
-            """
             elif self.get_token_value(self.look_ahead(1)) in [kw_do, tr_kw_do]:
                 return self.parse_class_method_call_stat()
-            """
+
         elif kind == TokenType.EOF:
             return
             
@@ -661,7 +746,7 @@ class StatParser(ParserBase):
         
         # Skip the SEP_RCURLY
         self.skip(1)
-        return can_ast.AssignStat(self.get_line(), var_list, exp_list)
+        return can_ast.AssignBlockStat(self.get_line(), var_list, exp_list)
 
     def parse_assign_stat(self):
         self.skip(1)
@@ -701,7 +786,8 @@ class StatParser(ParserBase):
     def check_var(self, exp : can_ast.AST):
         if isinstance(exp, can_ast.IdExp) or \
            isinstance(exp, can_ast.ObjectAccessExp) or \
-           isinstance(exp, can_ast.ListAccessExp):
+           isinstance(exp, can_ast.ListAccessExp) or \
+           isinstance(exp, can_ast.ClassSelfExp):
            return exp
         else:
             raise Exception('unreachable!')
@@ -850,7 +936,7 @@ class StatParser(ParserBase):
         name = self.get_token_value(self.get_next_token_of_kind(TokenType.IDENTIFIER, 0))
         
         exp_parser = self.ExpParser(self.tokens[self.pos : ])
-        args : list = exp_parser.parse_idlist()
+        args : list = exp_parser.parse_parlist()
         args = [] if args == None else args
         self.skip(exp_parser.pos)
         del exp_parser # free the memory
@@ -894,10 +980,8 @@ class StatParser(ParserBase):
 
     def parse_class_method_call_stat(self, prefix_exps : can_ast.AST = None, skip_step : int = 0):
         if prefix_exps == None:
-            exp_parser = self.ExpParser(self.tokens[self.pos : ])
-            name_exp = exp_parser.parse_exp()
-            self.skip(exp_parser.pos)
-            del exp_parser # free the memory
+            name_exp = can_ast.IdExp(self.get_line(), self.get_token_value(self.current()))
+            self.skip(1)
         else:
             self.skip(skip_step)
             name_exp = prefix_exps[0]
@@ -1177,7 +1261,7 @@ class ClassBlockStatParser(StatParser):
         del exp_parser # free the memory
 
         exp_parser = self.ExpParser(self.tokens[self.pos : ])
-        args : list = exp_parser.parse_idlist()
+        args : list = exp_parser.parse_parlist()
         args = [] if args == None else args
         self.skip(exp_parser.pos)
         del exp_parser # free the memory
@@ -1209,11 +1293,24 @@ class ClassBlockStatParser(StatParser):
     def parse_class_init_stat(self):
         self.skip(1)
 
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
+        args = exp_parser.parse_parlist()
+        self.skip(exp_parser.pos)
+        del exp_parser # free the memory
+
         self.get_next_token_of(kw_do, 0)
         self.get_next_token_of_kind(TokenType.SEP_LCURLY, 0)
 
-        return self.parse_assign_block()
-        # The SEP_RCURLY will be checked in self.parse_assign_block()
+        blocks : list = []
+        while (self.get_type(self.current()) != TokenType.SEP_RCURLY):
+            block_parser = StatParser(self.tokens[self.pos : ], self.ExpParser)
+            blocks.append(block_parser.parse())
+            self.skip(block_parser.pos)
+            del block_parser # free the memory
+
+        self.skip(1)
+
+        return can_ast.MethodDefStat(can_ast.IdExp(self.get_line(), '__init__'), args, blocks)
         
     def parse_class_assign_stat(self):
         return self.parse_assign_stat()
