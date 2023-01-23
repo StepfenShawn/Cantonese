@@ -78,6 +78,9 @@ class Codegen(object):
         elif isinstance(exp, can_parser.can_ast.LambdaExp):
             return ' lambda ' + self.codegen_args(exp.id_list) + ' : ' + self.codegen_args(exp.blocks)
 
+        elif isinstance(exp, can_parser.can_ast.IfElseExp):
+            return '(' + self.codegen_expr(exp.if_exp) + ' if ' + self.codegen_expr(exp.if_cond_exp) + ' else ' + self.codegen_expr(exp.else_exp) + ')'
+
         elif isinstance(exp, can_parser.can_ast.ListExp):
             s = '['
             if len(exp.elem_exps):

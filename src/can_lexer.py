@@ -74,6 +74,8 @@ class lexer(object):
                 self.line += 1
             elif self.check('?') or self.check(':') or self.check('：') or self.check('？'):
                 self.next(1)
+            elif self.check('「') or self.check('」'):
+                self.next(1)
             elif self.is_white_space(self.code[0]):
                 self.next(1)
             else:

@@ -3,11 +3,14 @@ exp ::= null
     | true
     | Numeral
     | LiteralString
+    | listconstructor
+    | mapconstructor
     | lambda_functoindef
     | prefixexp
     | exp binop exp
     | unop exp
     | '<*>'
+    | '若然' exp "=>" exp "唔系咁就" "=>" exp
 
 prefixexp ::= var
           | functioncall
@@ -15,17 +18,19 @@ prefixexp ::= var
 var ::= id
     | prefixexp '[' exp ']'
     | prefixexp '->' id
+    | prefixexp '.' id 
 
 functioncall ::= prefixexp '下' '->' args
              | prefixexp '(' args ')'
 
-lambda_functoindef ::= '$$' idlist '->' block '搞掂'
 
 listconstructor ::= '[' {fieldlist} ']'
+mapconstructor ::= '{' {fieldlist} '}'
 
 fieldlist ::= field {',' field} [',']
 
 field ::= '[' exp ']'
+        | '{' exp '}'
         | exp
 
 printstmt ::= '畀我睇下' args '点样先'
@@ -43,10 +48,8 @@ idlist ::= id {',' id}
 parlist ::= idlist {'<*>'}
           | '<*>  
 
-args ::= '|' explist '|'
-      | '(' {explist} ')'
-      | LiteralString
-      | Numeral
+args ::= '|' {explist} '|'
+      | exp
 
 binop ::= '+' | '-' | '*' | '/' | '^' | '%' | '<->' | 
          '<' | '<=' | '>' | '>=' | '==' | '!=' | and | or
@@ -72,8 +75,9 @@ stat ::= ';' |
       | '落操场玩跑步' block '玩到' exp '为止'
       | '$' id [parlist] '要做咩' block '搞掂'
       | '$' id [parlist] '=>' block '%%'
+      | '$' id [parlist] 即係 '=>' exp_list
       | lambda_functoindef ['@' idlist]
-      | '&' idlist '喺' '|' explist '|' '=>' block '%%'
+      | '&' idlist '喺' explist '=>' block '%%'
       | id '从' exp '行到' exp block '行晒'
       | '起底' args
       | '如果' exp '嘅话' '->' '{' block '}' [定系 exp 嘅话 '->' '{' block '}'] ['唔系嘅话' '->' '{' block '}']

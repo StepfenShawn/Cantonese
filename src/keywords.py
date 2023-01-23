@@ -49,6 +49,8 @@ kw_class_def = "咩系"
 kw_else_or_not = "唔系"
 kw_is = "系"
 kw_if = "如果"
+kw_expr_if = "若然"
+kw_expr_else = "唔系咁就"
 kw_then = "嘅话"
 kw_do = "->"
 kw_begin = "{"
@@ -113,6 +115,8 @@ tr_kw_class_def = "咩系"
 tr_kw_else_or_not = "唔系"
 tr_kw_is = "系"
 tr_kw_if = "如果"
+tr_kw_expr_if = "若然"
+tr_kw_expr_else = "唔系咁就"
 tr_kw_then = "嘅話"
 tr_kw_do = "->"
 tr_kw_begin = "{"
@@ -178,6 +182,8 @@ keywords = (
     kw_else_or_not,
     kw_is,
     kw_if,
+    kw_expr_if,
+    kw_expr_else,
     kw_then,
     kw_do,
     kw_begin,
@@ -241,6 +247,8 @@ keywords = (
     tr_kw_else_or_not,
     tr_kw_is,
     tr_kw_if,
+    tr_kw_expr_if,
+    tr_kw_expr_else,
     tr_kw_then,
     tr_kw_do,
     tr_kw_begin,

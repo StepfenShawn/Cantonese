@@ -255,6 +255,26 @@ class ClassSelfExp(AST):
             s += '\t' + l + '\n'
         return s
 
+class IfElseExp(AST):
+    def __init__(self, if_cond_exp : AST, if_exp : AST, else_exp : AST) -> None:
+        self.if_cond_exp = if_cond_exp
+        self.if_exp = if_exp
+        self.else_exp = else_exp
+
+    def __str__(self) -> str:
+        s = 'IfElseExp:\n'
+        s += "IfCond:\n"
+        for l in str(self.if_cond_exp).split('\n'):
+            s += '\t' + l + '\n'
+        s += "IfExp:\n"
+        for l in str(self.if_exp).split('\n'):
+            s += '\t' + l + '\n'
+        s += "ElseExp:\n"
+        for l in str(self.else_exp).split('\n'):
+            s += '\t' + l + '\n'
+
+        return s
+
 class ExitStat(AST):
     def __init__(self) -> None:
         pass
