@@ -332,6 +332,7 @@ class ExpParser(ParserBase):
     prefixexp ::= var
           | '(' exp ')'
           | '|' exp '|'
+          | '<|' id '|>'
           | functioncall
           | id '=' exp
 
@@ -344,6 +345,11 @@ class ExpParser(ParserBase):
             line, name = self.current()[0], self.get_token_value(self.current())
             self.skip(1)
             exp = can_ast.IdExp(line, name)
+        elif self.get_type(self.current()) == TokenType.SEPCIFIC_ID_BEG:
+            self.skip(1)
+            name = self.get_token_value(self.get_next_token_of_kind(TokenType.IDENTIFIER, 0))
+            exp = can_ast.SpecificIdExp(name)
+            self.get_next_token_of_kind(TokenType.SEPICFIC_ID_END, 0)
         # '(' exp ')'
         elif self.get_type(self.current()) == TokenType.SEP_LPAREN:
             exp = self.parse_parens_exp()
@@ -709,6 +715,18 @@ class StatParser(ParserBase):
 
             elif tk_value in [kw_pop, tr_kw_pop]:
                 return self.parse_stack_pop_stat()
+
+            elif tk_value in [kw_match, tr_kw_match]:
+                return self.parse_match_stat()
+
+            elif tk_value == '@@@':
+                return self.parse_extend_stat()
+
+            elif tk_value in [kw_model, tr_kw_model]:
+                return self.parse_model_new_stat()
+
+            elif tk_value in [kw_turtle_beg, tr_kw_turtle_beg]:
+                return self.parse_turtle_stat()
 
         elif kind == TokenType.IDENTIFIER:
             if self.get_token_value(self.look_ahead(1)) in [kw_from, tr_kw_from]:
@@ -1262,6 +1280,105 @@ class StatParser(ParserBase):
         del exp_parse # free the memory
 
         return can_ast.AssignStat(self.get_line(), id_exp, lambda_exp)
+
+    def parse_match_stat(self):
+        self.skip(1)
+        match_val : list = []
+        match_block : list = []
+        default_match_block : list = []
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
+        match_id = exp_parser.parse_exp()
+        self.skip(exp_parser.pos)
+        del exp_parser # free the memory
+
+        self.get_next_token_of(kw_do, 0)
+        self.get_next_token_of_kind(TokenType.SEP_LCURLY, 0)
+
+        while self.get_type(self.current()) != TokenType.SEP_RCURLY:
+            while self.get_token_value(self.current()) in [kw_case, tr_kw_case]:
+                self.skip(1)
+                exp_parser = self.ExpParser(self.tokens[self.pos : ])
+                match_val.append(exp_parser.parse_exp())
+                self.skip(exp_parser.pos)
+                del exp_parser # free the memory
+
+                self.get_next_token_of(kw_do, 0)
+                self.get_next_token_of_kind(TokenType.SEP_LCURLY, 0)
+
+                block : list = []
+
+                while self.get_type(self.current()) != TokenType.SEP_RCURLY:
+                    stat_parser = StatParser(self.tokens[self.pos : ], self.ExpParser)
+                    block.append(stat_parser.parse())
+                    self.skip(stat_parser.pos)
+                    del stat_parser # free the memory
+
+                self.skip(1)
+                match_block.append(block)
+            
+            if self.get_token_value(self.current()) == kw_else_or_not:
+                self.skip(1)
+                self.get_next_token_of([kw_then, tr_kw_then], 0)
+                self.get_next_token_of(kw_do, 0)
+                self.get_next_token_of_kind(TokenType.SEP_LCURLY, 0)
+
+                while self.get_type(self.current()) != TokenType.SEP_RCURLY:
+                    stat_parser = StatParser(self.tokens[self.pos : ], self.ExpParser)
+                    default_match_block.append(stat_parser.parse())
+                    self.skip(stat_parser.pos)
+                    del stat_parser # free the memory
+
+                self.skip(1)
+        
+        self.skip(1)
+
+        return can_ast.MatchStat(match_id, match_val, match_block, default_match_block)
+
+    def parse_extend_stat(self):
+        self.skip(1)
+        tk = self.get_next_token_of_kind(TokenType.EXTEND_EXPR, 0)
+        return can_ast.ExtendStat(self.get_token_value(tk)[1 : -1])
+
+    def parse_model_new_stat(self):
+        self.skip(1)
+
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
+        model_name = exp_parser.parse_exp()
+        self.skip(exp_parser.pos)
+        del exp_parser # free the memory
+
+        self.get_next_token_of([kw_mod_new, tr_kw_mod_new], 0)
+        self.get_next_token_of(kw_do, 0)
+
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
+        dataset = exp_parser.parse_exp()
+        self.skip(exp_parser.pos)
+        del exp_parser # free the memory
+
+        return can_ast.ModelNewStat(model_name, dataset)
+
+    def parse_turtle_stat(self):
+        self.skip(1)
+
+        instruction_ident : list = ["首先", "跟住", "最尾"]
+        self.get_next_token_of(kw_do, 0)
+        self.get_next_token_of_kind(TokenType.SEP_LCURLY, 0)
+
+        exp_blocks : list = []
+
+        while self.get_type(self.current()) != TokenType.SEP_RCURLY:
+            if self.get_token_value(self.current()) in instruction_ident and \
+                self.get_type(self.current()) == TokenType.IDENTIFIER:
+                self.skip(1)
+            else:
+                exp_parser = self.ExpParser(self.tokens[self.pos : ])
+                exp_blocks.append(exp_parser.parse_exp())
+                self.skip(exp_parser.pos)
+                del exp_parser # free the memory
+
+        self.skip(1)
+
+        return can_ast.TurtleStat(exp_blocks)
 
 class LambdaBlockExpParser(ExpParser):
     def __init__(self, token_list: list) -> None:

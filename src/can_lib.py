@@ -279,6 +279,7 @@ def cantonese_math_init():
     cantonese_func_def("corr", corr)
     cantonese_func_def("矩阵", Matrix)
     cantonese_func_def("点积", Matrix.matrix_multiplication)
+    cantonese_func_def("相加", Matrix.matrix_addition)
     cantonese_func_def("开根", math.sqrt)
     cantonese_func_def("绝对值", math.fabs)
     cantonese_func_def("正弦", math.sin)

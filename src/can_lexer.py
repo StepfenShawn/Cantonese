@@ -128,13 +128,13 @@ class lexer(object):
            self.next(1)
            return [self.line, [TokenType.OP_BAND, '&']]
 
-        if c == '\\':
-            self.next(1)
-            return [self.line, ['CONNECT', "\\"]]
-
         if c == '|':
-            self.next(1)
-            return [self.line, [TokenType.KEYWORD, '|']]
+            if self.check('|>'):
+                self.next(2)
+                return [self.line, [TokenType.SEPICFIC_ID_END, '|>']]
+            else:
+                self.next(1)
+                return [self.line, [TokenType.KEYWORD, '|']]
 
         if c == '%':
             if self.check('%%'):
@@ -146,7 +146,7 @@ class lexer(object):
 
         if c == '~':
             token = self.scan_python_expr()
-            return [self.line, ['py_expr', token]]
+            return [self.line, [TokenType.EXTEND_EXPR, token]]
 
         if c == '-':
             if self.check('->'):
@@ -198,6 +198,10 @@ class lexer(object):
                 self.next(2)
                 return [self.line, [TokenType.OP_SHL, '<<']]
 
+            elif self.check('<|'):
+                self.next(2)
+                return [self.line, [TokenType.SEPCIFIC_ID_BEG, '<|']]
+
             else:
                 self.next(1)
                 return [self.line, [TokenType.OP_LT, '<']]
@@ -222,7 +226,10 @@ class lexer(object):
                 return [self.line, [TokenType.OP_NOT, '!']]
 
         if c == '@':
-            if self.check('@@'):
+            if self.check('@@@'):
+                self.next(3)
+                return [self.line, [TokenType.KEYWORD, '@@@']]
+            elif self.check('@@'):
                 self.next(2)
                 return [self.line, [TokenType.KEYWORD, '@@']]
             else:

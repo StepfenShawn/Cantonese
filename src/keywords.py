@@ -36,6 +36,9 @@ class TokenType:
     IDENTIFIER = 34
     STRING = 35
     NUM = 36
+    EXTEND_EXPR = 37 # Call the other language,
+    SEPCIFIC_ID_BEG = 38 # <|
+    SEPICFIC_ID_END = 39 # |>
     
 kw_print = "畀我睇下"
 kw_endprint = "点样先"

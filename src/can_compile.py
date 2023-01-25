@@ -3,7 +3,8 @@ import can_lexer
 import os
 import re
 
-from can_lib import cantonese_lib_import
+from can_lib import cantonese_lib_import, cantonese_model_new,\
+    cantonese_turtle_init
 
 class CanPyCompile(object):
     def __init__(self):
@@ -107,6 +108,13 @@ class Codegen(object):
 
         elif isinstance(exp, can_parser.can_ast.AssignExp):
             s = self.codegen_expr(exp.exp1) + ' = ' + self.codegen_expr(exp.exp2)
+            return s
+
+        elif isinstance(exp, can_parser.can_ast.SpecificIdExp):
+            s = ''
+            p_corr = re.match(r'(.*)同(.*)有几衬', exp.id, re.M|re.I)
+            if p_corr:
+                s = " corr(" + p_corr.group(1) +", " + p_corr.group(2) + ") "
             return s
 
         else:
@@ -300,6 +308,43 @@ class Codegen(object):
         elif isinstance(stat, can_parser.can_ast.GlobalStat):
             s = ''
             s += self.tab + 'global ' + self.codegen_args(stat.idlist) + '\n'
+            return s
+
+        elif isinstance(stat, can_parser.can_ast.ExtendStat):
+            s = ''
+            s += self.tab + stat.code + '\n'
+            return s
+
+        elif isinstance(stat, can_parser.can_ast.MatchStat):
+            s = ''
+            enum = ['if ', 'elif ']
+            for i in range(len(stat.match_val)):
+                if i == 0:
+                    elif_or_if = 'if '
+                else:
+                    elif_or_if = 'elif '
+                s += self.tab + elif_or_if + self.codegen_expr(stat.match_id) + ' == ' + \
+                     self.codegen_expr(stat.match_val[i]) + ':\n'
+                s += self.codegen_block(stat.match_block_exp[i])
+
+            if len(stat.default_match_block):
+                s += self.tab + 'else:\n'
+                s += self.codegen_block(stat.default_match_block)
+
+            return s
+
+        elif isinstance(stat, can_parser.can_ast.ModelNewStat):
+            s = ''
+            model = self.codegen_expr(stat.model)
+            dataset = self.codegen_expr(stat.dataset)
+            s += cantonese_model_new(model, dataset, self.tab, s)
+            return s
+
+        elif isinstance(stat, can_parser.can_ast.TurtleStat):
+            s = ''
+            cantonese_turtle_init()
+            for item in stat.exp_blocks:
+                s += self.tab + self.codegen_expr(item) + '\n'
             return s
 
     def codegen_block(self, blocks):

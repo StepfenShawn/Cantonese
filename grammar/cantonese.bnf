@@ -13,6 +13,9 @@ exp ::= null
     | '若然' exp "=>" exp "唔系咁就" "=>" exp
 
 prefixexp ::= var
+          | '|' exp '|'
+          | '(' exp ')'
+          | '<|' id '|>'
           | functioncall
 
 var ::= id
@@ -89,6 +92,8 @@ stat ::= ';' |
       | '有条仆街叫' ['|'] id ['|']
       | '顶你' '->' ['|'] id ['|'] exp
       | '丢你' '->' ['|'] id ['|']
+      | '嗌' exp 过嚟估下 '->' exp
+      | '老作一下' '->' '{' exp_list '}'
       | exp 拍住上 '->' ['|'] id ['|']
       | exp '->' exp args
       | try_stmt

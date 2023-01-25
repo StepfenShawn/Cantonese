@@ -245,6 +245,13 @@ class LambdaExp(AST):
 
         return s
 
+class SpecificIdExp(AST):
+    def __init__(self, id : AST) -> None:
+        self.id = id
+
+    def __str__(self) -> str:
+        return "SpecificIdExp\n"
+
 class ClassSelfExp(AST):
     def __init__(self, exp : AST):
         self.exp = exp
@@ -704,3 +711,49 @@ class CallStat(AST):
             s += '\t' + l + '\n'
 
         return s
+
+class MatchStat(AST):
+    def __init__(self, match_id : AST, match_val : list, match_block_exp : list, 
+                default_match_block : list) -> None:
+        self.match_id = match_id
+        self.match_val = match_val
+        self.match_block_exp = match_block_exp
+        self.default_match_block = default_match_block
+
+    def __str__(self) -> str:
+        s = "MatchStat:\n"
+        s += "MatchId:\n"
+        for l in str(self.match_id).split('\n'):
+            s += '\t' + l + '\n'
+        for val in self.match_val:
+            for l in str(val).split('\n'):
+                s += '\t' + l + '\n'
+        for block in self.match_block_exp:
+            for l in str(block).split('\n'):
+                s += '\t' + l + '\n'
+        for block in self.default_match_block:
+            for l in str(block).split('\n'):
+                s += '\t' + l + '\n'
+        return s
+
+class ExtendStat(AST):
+    def __init__(self, code : str):
+        self.code = code
+
+    def __str__(self):
+        return "ExtendStat\n"
+
+class ModelNewStat(AST):
+    def __init__(self, model : AST, dataset : AST):
+        self.model = model
+        self.dataset = dataset
+
+    def __str__(self):
+        return "ModelNewStat\n"
+
+class TurtleStat(AST):
+    def __init__(self, exp_blocks : list):
+        self.exp_blocks = exp_blocks
+
+    def __str__(self):
+        return "TurtleStat\n"
