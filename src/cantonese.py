@@ -55,26 +55,20 @@ def cantonese_run(code : str, is_to_py : bool, file : str,
 
 
     if to_js:
-        """TODO:
         import Compile
-        js, fh = Compile.Compile(cantonese_parser.Node, "js", file).ret()
+        js, fh = Compile.Compile(stats, "js", file).ret()
         f = open(fh, 'w', encoding = 'utf-8')
         f.write(js)
         sys.exit(1)
-        """
-        pass
+        
     if _S:
-        """ TODO:
         import Compile
-        code, fh = Compile.Compile(cantonese_parser.Node, "asm", file).ret()
+        code, fh = Compile.Compile(stats, "asm", file).ret()
         # f = open(fh, 'w', encoding = 'utf-8')
         # f.write(code)
         print(code)
         sys.exit(1)
-        """
-    """
-    run(cantonese_parser.Node, path = file)
-    """
+        
     cantonese_lib_init()
     if is_to_py:
         print(TO_PY_CODE)

@@ -722,6 +722,9 @@ class StatParser(ParserBase):
             elif tk_value == '@@@':
                 return self.parse_extend_stat()
 
+            elif tk_value == '&&':
+                return self.parse_for_each_stat()
+
             elif tk_value in [kw_model, tr_kw_model]:
                 return self.parse_model_new_stat()
 
@@ -1333,6 +1336,38 @@ class StatParser(ParserBase):
         self.skip(1)
 
         return can_ast.MatchStat(match_id, match_val, match_block, default_match_block)
+
+    def parse_for_each_stat(self):
+        self.skip(1)
+
+        id_list : list = []
+        exp_list : list = []
+        blocks : list = []
+
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
+        id_list = exp_parser.parse_idlist()
+        self.skip(exp_parser.pos)
+        del exp_parser # free the memory
+
+        self.get_next_token_of([kw_in, tr_kw_in], 0)
+
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
+        exp_list = exp_parser.parse_exp_list()
+        self.skip(exp_parser.pos)
+        del exp_parser # free the memory
+
+        self.get_next_token_of(kw_do, 0)
+        self.get_next_token_of_kind(TokenType.SEP_LCURLY, 0)
+
+        while (self.get_type(self.current()) != TokenType.SEP_RCURLY):
+            stat_parser = StatParser(self.tokens[self.pos : ], self.ExpParser)
+            blocks.append(stat_parser.parse())
+            self.skip(stat_parser.pos)
+            del stat_parser # free the memory
+        
+        self.skip(1)
+
+        return can_ast.ForEachStat(id_list, exp_list, blocks)
 
     def parse_extend_stat(self):
         self.skip(1)

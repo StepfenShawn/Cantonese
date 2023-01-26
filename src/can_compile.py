@@ -333,6 +333,13 @@ class Codegen(object):
 
             return s
 
+        elif isinstance(stat, can_parser.can_ast.ForEachStat):
+            s = ''
+            s += self.tab + 'for ' + self.codegen_args(stat.id_list) + ' in ' + self.codegen_args(stat.exp_list) + ':\n'
+            s += self.codegen_block(stat.blocks)
+
+            return s
+
         elif isinstance(stat, can_parser.can_ast.ModelNewStat):
             s = ''
             model = self.codegen_expr(stat.model)

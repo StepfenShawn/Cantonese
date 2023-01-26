@@ -125,8 +125,12 @@ class lexer(object):
         c = self.code[0]
         
         if c == '&':
-           self.next(1)
-           return [self.line, [TokenType.OP_BAND, '&']]
+            if self.check('&&'):
+                self.next(2)
+                return [self.line, [TokenType.KEYWORD, '&&']]
+            else:
+                self.next(1)
+                return [self.line, [TokenType.OP_BAND, '&']]
 
         if c == '|':
             if self.check('|>'):

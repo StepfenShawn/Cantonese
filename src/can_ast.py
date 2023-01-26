@@ -432,6 +432,28 @@ class ForStat(AST):
 
         return s
 
+class ForEachStat(AST):
+    def __init__(self, id_list : list, exp_list : list, blocks : list) -> None:
+        self.id_list = id_list
+        self.exp_list = exp_list
+        self.blocks = blocks
+
+    def __str__(self) -> str:
+        s = 'ForEachStat:\n'
+        s += 'Idlist:\n'
+        for id in self.id_list:
+            for l in str(id).split('\n'):
+                s += '\t' + l + '\n'
+        s += 'Explist:\n'
+        for exp in self.exp_list:
+            for l in str(exp).split('\n'):
+                s += '\t' + l + '\n'
+        s += "Blocks:\n"
+        for block in self.blocks:
+            for l in str(block).split('\n'):
+                s += '\t' + l + '\n'
+        return s
+
 class WhileStat(AST):
     def __init__(self, exp : list, blocks : list) -> None:
         self.cond_exp = exp
