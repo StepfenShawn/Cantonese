@@ -1,5 +1,5 @@
-from keywords import *
-import can_ast
+from src.keywords import *
+import src.can_ast as can_ast
 
 class ParserBase(object):
     def __init__(self, token_list : list) -> None:
@@ -968,24 +968,32 @@ class StatParser(ParserBase):
     def parse_func_def_stat(self):
         self.skip(1) # Skip the kw_function
         
-        name = self.get_token_value(self.get_next_token_of_kind(TokenType.IDENTIFIER, 0))
-        
-        exp_parser = self.ExpParser(self.tokens[self.pos : ])
-        args : list = exp_parser.parse_parlist()
-        args = [] if args == None else args
-        self.skip(exp_parser.pos)
-        del exp_parser # free the memory
+        if self.get_token_value(self.current()) == '即係':
+            self.skip(1)
+            exp_parser = self.ExpParser(self.tokens[self.pos : ])
+            args : list = exp_parser.parse_parlist()
+            args = [] if args == None else args
+            self.get_next_token_of([kw_do], 0)
 
-        self.get_next_token_of([kw_func_begin, tr_kw_func_begin, kw_do], 0)
+        else:
+            name = self.get_token_value(self.get_next_token_of_kind(TokenType.IDENTIFIER, 0))
+            
+            exp_parser = self.ExpParser(self.tokens[self.pos : ])
+            args : list = exp_parser.parse_parlist()
+            args = [] if args == None else args
+            self.skip(exp_parser.pos)
+            del exp_parser # free the memory
 
-        blocks : list = []
-        while (self.get_token_value(self.current()) not in [kw_func_end, tr_kw_func_end]):
-            block_parser = StatParser(self.tokens[self.pos : ], self.ExpParser)
-            blocks.append(block_parser.parse())
-            self.skip(block_parser.pos)
-            del block_parser
+            self.get_next_token_of([kw_func_begin, tr_kw_func_begin, kw_do], 0)
 
-        self.skip(1)
+            blocks : list = []
+            while (self.get_token_value(self.current()) not in [kw_func_end, tr_kw_func_end]):
+                block_parser = StatParser(self.tokens[self.pos : ], self.ExpParser)
+                blocks.append(block_parser.parse())
+                self.skip(block_parser.pos)
+                del block_parser
+
+            self.skip(1)
 
         return can_ast.FunctoinDefStat(can_ast.IdExp(self.get_line(), name), args, blocks)
 

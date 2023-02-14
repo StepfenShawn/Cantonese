@@ -566,6 +566,27 @@ class ClassDefStat(AST):
         
         return s
 
+class MatchModeFuncDefStat(AST):
+    def __init__(self, func_name : AST, arg_list : list, return_list : list) -> None:
+        self.func_name = func_name
+        self.arg_list = arg_list
+        self.return_list = return_list
+
+    def __str__(self) -> str:
+        s = "MatchModeFuncDefStat"
+        s += "func_name: \n"
+        for l in str(self.func_name).split('\n'):
+            s += '\t' + l + '\n'
+        s += "arg_list: \n"
+        for arg in self.arg_list:
+            for l in str(arg).split('\n'):
+                s += '\t' + l + '\n'
+        for ret in self.return_list:
+            for l in str(ret).split('\n'):
+                s += '\t' + l + '\n'
+        
+        return s
+
 class ImportStat(AST):
     def __init__(self, idlist : list) -> None:
         self.idlist = idlist

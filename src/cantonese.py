@@ -8,17 +8,17 @@ import sys
 import os
 import argparse
 
-from can_error import 濑啲咩嘢
-from stack_vm import *
-from can_lexer import *
-from can_compile import *
-from can_lib import *
+from src.can_error import 濑啲咩嘢
+from src.stack_vm import *
+from src.can_lexer import *
+from src.can_compile import *
+from src.can_lib import *
 
-from can_web_parser import *
-from can_asm_parser import *
-from can_codegen import *
+from src.can_web_parser import *
+from src.can_asm_parser import *
+from src.can_codegen import *
 
-_version_ = "Cantonese 1.0.3 Copyright (C) 2020-2023 StepfenShawn"
+_version_ = "Cantonese 1.0.8 Copyright (C) 2020-2023 StepfenShawn"
 
 dump_ast = False
 dump_lex = False
@@ -37,7 +37,7 @@ def cantonese_run(code : str, is_to_py : bool, file : str,
     global variable
 
     tokens = cantonese_token(code, keywords)
-    # TODO: update for v1.0.3
+    # TODO: update for v1.0.8
     if dump_lex:
         for token in tokens:
             print("line " + str(token[0]) + ": " + str(token[1]))

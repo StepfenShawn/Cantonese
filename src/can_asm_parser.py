@@ -1,6 +1,6 @@
 import sys
 
-from can_lexer import *
+from src.can_lexer import *
 
 TO_ASM = ""
 

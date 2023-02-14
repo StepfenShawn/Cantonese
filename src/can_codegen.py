@@ -1,4 +1,4 @@
-from stack_vm import *
+from src.stack_vm import *
 
 class AST(object):
     def __init__(self, Nodes) -> None:
