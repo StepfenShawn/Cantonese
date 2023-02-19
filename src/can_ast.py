@@ -478,7 +478,7 @@ class ListInitStat(AST):
     def __init__(self) -> None:
         pass
 
-class FunctoinDefStat(AST):
+class FunctionDefStat(AST):
     def __init__(self, name_exp : AST, args : list, blocks : list) -> None:
         self.name_exp = name_exp
         self.args = args
@@ -494,6 +494,18 @@ class FunctoinDefStat(AST):
                 if len(l):
                     s += '\t' + l + '\n'
 
+        return s
+
+class FuncTypeDefStat(AST):
+    def __init__(self, func_name : AST, args_type : list, return_type : list) -> None:
+        self.func_name = func_name
+        self.args_type = args_type
+        self.return_type = return_type
+
+    def __str__(self) -> str:
+        s = 'FuncTypeDefStat\n'
+        s += 'Name: ' + str(self.func_name) + '\n'
+        # s += 
         return s
 
 class MethodDefStat(AST):

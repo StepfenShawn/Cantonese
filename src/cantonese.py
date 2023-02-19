@@ -26,6 +26,7 @@ to_js = False
 to_cpp = False
 _S = False
 mkfile = False
+_to_llvm = False
 TO_PY_CODE = ''
 
 def cantonese_run(code : str, is_to_py : bool, file : str, 
@@ -68,7 +69,12 @@ def cantonese_run(code : str, is_to_py : bool, file : str,
         # f.write(code)
         print(code)
         sys.exit(1)
-        
+    
+    if _to_llvm:
+        import src.can_llvm_build as can_llvm_build
+        llvm_compiler = can_llvm_build.llvmCompiler(path=__file__)
+        print(llvm_compiler.compile_stat(stats))
+
     cantonese_lib_init()
     if is_to_py:
         print(TO_PY_CODE)
@@ -176,6 +182,8 @@ def main():
     arg_parser.add_argument("-mkfile", action = "store_true")
     arg_parser.add_argument("-S", action = "store_true")
     arg_parser.add_argument("-s", action = "store_true")
+    arg_parser.add_argument("-l", action = "store_true")
+    arg_parser.add_argument("-llvm", action = "store_true")
     args = arg_parser.parse_args()
 
     global dump_ast
@@ -186,6 +194,7 @@ def main():
     global debug
     global mkfile
     global _version_
+    global _to_llvm
 
     if args.v:
         print(_version_)
@@ -228,6 +237,8 @@ def main():
                 _S = True
             if args.mkfile:
                 mkfile = True
+            if args.llvm or args.l:
+                _to_llvm = True
             if args.to_asm:
                 Cantonese_asm_run(code, args.file)
             cantonese_run(code, is_to_py, args.file)

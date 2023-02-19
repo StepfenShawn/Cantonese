@@ -995,7 +995,7 @@ class StatParser(ParserBase):
 
             self.skip(1)
 
-        return can_ast.FunctoinDefStat(can_ast.IdExp(self.get_line(), name), args, blocks)
+        return can_ast.FunctionDefStat(can_ast.IdExp(self.get_line(), name), args, blocks)
 
     def parse_func_call_stat(self, prefix_exps : can_ast.AST = None, skip_step : int = 0):
         if prefix_exps == None:

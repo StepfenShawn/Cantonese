@@ -236,7 +236,7 @@ class Codegen(object):
             s += self.codegen_block(stat.blocks)
             return s
 
-        elif isinstance(stat, can_parser.can_ast.FunctoinDefStat):
+        elif isinstance(stat, can_parser.can_ast.FunctionDefStat):
             s = ''
             s += self.tab + 'def ' + self.codegen_expr(stat.name_exp) + '(' + self.codegen_args(stat.args) + '):\n'
             s += self.codegen_block(stat.blocks)

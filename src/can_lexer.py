@@ -186,6 +186,10 @@ class lexer(object):
                 self.next(3)
                 return [self.line, [TokenType.KEYWORD, '<*>']]
 
+            elif self.check('<$>'):
+                self.next(3)
+                return [self.line, [TokenType.KEYWORD, '<$>']]
+
             elif self.check('<|>'):
                 self.next(3)
                 return [self.line, [TokenType.OP_BOR, '<|>']]
