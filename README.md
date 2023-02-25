@@ -328,14 +328,18 @@ pip install kivy
 [喺呢度](examples/)睇下更多例子.  
 
 # <a name="25">点样运行?</a>
-Cantonese 可以用多種方式運行，用自己嘅虛擬機，或者翻譯成 Python 同 HTML 都得！
+Cantonese 可以用多種方式運行，用自己嘅虛擬機，用LLVM，或者翻譯成 Python 同 HTML 都得！
 使用虛擬機執行（僅支援部分語句）：   
 ```shell
 cantonese [-文件名] -stack_vm
 ```
 查睇生產嘅指令：
-```
+```shell
 cantonese [-文件名] -stack_vm -debug
+```
+使用`LLVM`執行 (需安装`llvmlite`, 僅支援部分語句):  
+```shell
+cantonese [-文件名] -llvm
 ```
 用 Python 虛擬機運行（環境净係支援 Python3，因为噉先至符合廣東人先進嘅思想！）：
 ```shell
@@ -350,7 +354,7 @@ cantonese [文件名] -to_py
 cantonese examples/basic/helloworld.cantonese -to_py
 ```
 運行嘅結果係：  
-```
+```python
 print(" Hello World! ")
 exit()
 ```

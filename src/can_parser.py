@@ -1,5 +1,5 @@
-from src.keywords import *
-import src.can_ast as can_ast
+from keywords import *
+import can_ast as can_ast
 
 class ParserBase(object):
     def __init__(self, token_list : list) -> None:

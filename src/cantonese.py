@@ -8,15 +8,15 @@ import sys
 import os
 import argparse
 
-from src.can_error import 濑啲咩嘢
-from src.stack_vm import *
-from src.can_lexer import *
-from src.can_compile import *
-from src.can_lib import *
+from can_error import 濑啲咩嘢
+from stack_vm import *
+from can_lexer import *
+from can_compile import *
+from can_lib import *
 
-from src.can_web_parser import *
-from src.can_asm_parser import *
-from src.can_codegen import *
+from can_web_parser import *
+from can_asm_parser import *
+from can_codegen import *
 
 _version_ = "Cantonese 1.0.8 Copyright (C) 2020-2023 StepfenShawn"
 
@@ -71,9 +71,15 @@ def cantonese_run(code : str, is_to_py : bool, file : str,
         sys.exit(1)
     
     if _to_llvm:
-        import src.can_llvm_build as can_llvm_build
-        llvm_compiler = can_llvm_build.llvmCompiler(path=__file__)
-        print(llvm_compiler.compile_stat(stats))
+        import can_llvm_build as can_llvm_build
+        import llvm_evaluator
+        evaluator = llvm_evaluator.LLvmEvaluator(file)
+        for i,stat in enumerate(stats):
+            if i != len(stats) - 1:
+                evaluator.evaluate(stat)
+            else:
+                evaluator.evaluate(stat, endMainBlock=True)
+        exit()
 
     cantonese_lib_init()
     if is_to_py:

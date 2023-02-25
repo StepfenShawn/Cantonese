@@ -1,5 +1,5 @@
 import re
-from src.keywords import *
+from keywords import *
 
 """
     Get the Cantonese Token List
