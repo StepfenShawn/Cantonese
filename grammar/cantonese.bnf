@@ -76,9 +76,7 @@ stat ::= ';' |
       | importstmt
       | functioncall ['@' idlist]
       | '落操场玩跑步' block '玩到' exp '为止'
-      | '$' id [parlist] '要做咩' block '搞掂'
-      | '$' id [parlist] '=>' block '%%'
-      | '$' id [parlist] 即係 '=>' exp_list
+      | ['<$>' parlist '收皮' parlist  '</$>'] function_def_stmt
       | lambda_functoindef ['@' idlist]
       | '&&' idlist '喺' explist '=>' '{' block '}'
       | id '从' exp '行到' exp block '行晒'
@@ -98,6 +96,10 @@ stat ::= ';' |
       | exp '->' exp args
       | try_stmt
       | class_def_stmt
+
+function_def_stmt ::=  '$' id [parlist] '要做咩' block '搞掂'
+      | '$' id [parlist] '=>' block '%%'
+      | '$' id [parlist] 即係 '=>' exp_list
 
 try_stmt ::= '执嘢' '->' '{' block '}' ['揾到' exp '嘅话' '->' '{' block '}']* ['执手尾' '-> '{' block '}']
 

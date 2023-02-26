@@ -339,6 +339,7 @@ class ExpParser(ParserBase):
     var ::= id
           | prefixexp '[' exp ']'
           | prefixexp '->' id
+          | prefixexp '==>' id
     """
     def parse_prefixexp(self):
         if self.get_type(self.current()) == TokenType.IDENTIFIER:
@@ -670,6 +671,8 @@ class StatParser(ParserBase):
                 elif self.get_token_value(self.look_ahead(skip_step)) in [kw_do, tr_kw_do]:
                     return self.parse_class_method_call_stat(prefix_exps, skip_step) 
 
+            elif tk_value == '<$>':
+                return self.parse_func_def_with_type_stat()
 
             elif tk_value == kw_function:
                 return self.parse_func_def_stat()
@@ -822,6 +825,7 @@ class StatParser(ParserBase):
         if isinstance(exp, can_ast.IdExp) or \
            isinstance(exp, can_ast.ObjectAccessExp) or \
            isinstance(exp, can_ast.ListAccessExp) or \
+           isinstance(exp, can_ast.MappingExp) or \
            isinstance(exp, can_ast.ClassSelfExp):
            return exp
         else:
@@ -965,9 +969,33 @@ class StatParser(ParserBase):
 
         return can_ast.ForStat(id, from_exp, to_exp, blocks)
 
-    def parse_func_def_stat(self):
-        self.skip(1) # Skip the kw_function
+    def parse_func_def_with_type_stat(self):
+        self.get_next_token_of("<$>", 0)
+
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
+        args_type : list = exp_parser.parse_parlist()
+        args_type = [] if args_type == None else args_type
+        self.skip(exp_parser.pos)
+        del exp_parser # free the memory
+
+        self.get_next_token_of("收皮", 0)
         
+
+        while (self.get_token_value(self.current())) != '</$>':
+            exp_parser = self.ExpParser(self.tokens[self.pos : ])
+            rets_type = exp_parser.parse_idlist()
+            self.skip(exp_parser.pos)
+            del exp_parser
+
+        rets_type = [] if rets_type == None else rets_type
+
+        self.skip(1)
+
+        return self.parse_func_def_stat(decl_args_type=args_type, decl_ret_type=rets_type)
+
+    def parse_func_def_stat(self, decl_args_type = [], decl_ret_type = []):
+        self.get_next_token_of(kw_function, 0)
+
         if self.get_token_value(self.current()) == '即係':
             self.skip(1)
             exp_parser = self.ExpParser(self.tokens[self.pos : ])
@@ -995,7 +1023,8 @@ class StatParser(ParserBase):
 
             self.skip(1)
 
-        return can_ast.FunctionDefStat(can_ast.IdExp(self.get_line(), name), args, blocks)
+        return can_ast.FunctionDefStat(can_ast.IdExp(self.get_line(), name), args, blocks, 
+                                        decl_args_type, decl_ret_type)
 
     def parse_func_call_stat(self, prefix_exps : can_ast.AST = None, skip_step : int = 0):
         if prefix_exps == None:

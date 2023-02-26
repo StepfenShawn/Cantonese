@@ -479,10 +479,13 @@ class ListInitStat(AST):
         pass
 
 class FunctionDefStat(AST):
-    def __init__(self, name_exp : AST, args : list, blocks : list) -> None:
+    def __init__(self, name_exp : AST, args : list, blocks : list,
+                args_type : list = [], ret_type : list = []) -> None:
         self.name_exp = name_exp
         self.args = args
         self.blocks = blocks
+        self.args_type = args_type
+        self.ret_type = ret_type
 
     def __str__(self) -> str:
         s = 'FuncDefStat:\n'

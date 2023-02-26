@@ -237,10 +237,25 @@ class Codegen(object):
             return s
 
         elif isinstance(stat, can_parser.can_ast.FunctionDefStat):
-            s = ''
-            s += self.tab + 'def ' + self.codegen_expr(stat.name_exp) + '(' + self.codegen_args(stat.args) + '):\n'
-            s += self.codegen_block(stat.blocks)
-            return s
+            if stat.args_type != [] and\
+                stat.ret_type != []:
+                # remove the '<*>'
+                stat.args_type = list(filter(lambda x : not isinstance(x, can_parser.can_ast.VarArgExp), stat.args_type))
+                assert stat.args.__len__() == stat.args_type.__len__()
+                s = ''
+                arg_decl = ''
+                for arg, arg_ty in zip(stat.args, stat.args_type):
+                    arg_decl += self.codegen_expr(arg) + " : " + self.codegen_expr(arg_ty) + ','
+                s += self.tab + 'def ' + self.codegen_expr(stat.name_exp) + '(' + arg_decl + ') -> ' + self.codegen_args(stat.ret_type) \
+                     + ':\n'
+                s += self.codegen_block(stat.blocks)
+                return s
+
+            else:
+                s = ''
+                s += self.tab + 'def ' + self.codegen_expr(stat.name_exp) + '(' + self.codegen_args(stat.args) + '):\n'
+                s += self.codegen_block(stat.blocks)
+                return s
 
         elif isinstance(stat, can_parser.can_ast.FuncCallStat):
             s = ''

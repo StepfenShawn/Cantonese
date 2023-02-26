@@ -8,7 +8,17 @@ class llvmCompiler(object):
         self.add_builtin_func()
         self.builder = ir.IRBuilder(ir.Function(self.module, ir.FunctionType(ir.IntType(32), []), "main").
             append_basic_block('entry'))
+        # Maps var names to ir.Value
         self.func_symtab = {}
+        # Maps var types to ir.Type
+        self.type_map = {
+            'bool' : ir.IntType(1),
+            'int' : ir.IntType(32),
+            'float' : ir.FloatType(),
+            'double' : ir.DoubleType(),
+            'void' : ir.VoidType(),
+            'str' : ir.ArrayType(ir.IntType(8), 1)
+        }
 
     def main_ret(self):
         self.builder.ret(ir.Constant(ir.IntType(32), 0))
@@ -64,6 +74,11 @@ class llvmCompiler(object):
     def _codegen_ExitStat(self, node : can_ast.ExitStat):
         return self.builder.call(self.exit, [ir.Constant(ir.IntType(32), 1)])
 
+    def _codegen_AssignStat(self, node : can_ast.AssignStat):
+        for keys, values in zip(node.exp_list, node.last_line):
+            self.visit_assign(self.getIdName(keys), self._codegen(values))
+        
+
     def _codegen_PrintStat(self, node : can_ast.PrintStat):
         call_args = [self._codegen(arg) for arg in node.args]
         return self.builder.call(self.printf, call_args, 'calltmp')
@@ -83,3 +98,17 @@ class llvmCompiler(object):
             return self.builder.uitofp(cmp, ir.DoubleType(), 'booltmp')
         else:
             raise Exception('Unknown binary operator: ' + node.op)
+
+    def getIdName(self, exp : can_ast.IdExp) -> str:
+        return exp.name
+
+    def visit_assign(self, name : str, value : ir.Value):
+        if not self.func_symtab.__contains__(name):
+            # Storing the value to the pointer
+            ptr = self.builder.alloca(value.type)
+            self.builder.store(value, ptr)
+            self.func_symtab[name] = ptr
+        
+        else:
+            ptr = self.func_symtab[name]
+            self.builder.store(value, ptr)

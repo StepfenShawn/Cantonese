@@ -105,6 +105,7 @@ kw_get_value = "@"
 kw_del = "delete下"
 kw_match = "match下"
 kw_case = "撞见"
+kw_func_map = "收皮"
 
 tr_kw_print = "畀我睇下"
 tr_kw_endprint = "點樣先"

@@ -1,7 +1,7 @@
 /*
     函数语句示例
 */
-/* <$> SayHello () --> () */ 
+<$> <*> 收皮 :: None </$>
 $SayHello 要做咩:
     畀我睇下 "Hello" 点样先？
 搞掂
@@ -11,6 +11,7 @@ SayHello 下 -> ||
 $SayHello2 => 畀我睇下 "Hello" 点样先？ %%
 SayHello2 下 -> ||
 
+<$> str 收皮 :: None </$>
 $output string 要做咩:
     畀我睇下 string 点样先？
 搞掂
