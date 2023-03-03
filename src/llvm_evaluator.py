@@ -19,7 +19,7 @@ class LLvmEvaluator:
             
             # Convert llvm ir into in-memory representation
             llvmmod = llvm.parse_assembly(str(self.codegen.module))
-
+            print(llvmmod)
             # Optimize the module
             if optimize:
                 pmb = llvm.create_pass_manager_builder()

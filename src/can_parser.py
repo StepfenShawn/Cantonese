@@ -518,7 +518,7 @@ class ExpParser(ParserBase):
         blocks : list = []
         self.get_next_token_of(kw_do, 0)
         blocks.append(self.parse_exp())
-
+        self.get_next_token_of([kw_func_end, tr_kw_func_end], 0)
         return can_ast.LambdaExp(idlist, blocks)
 
     def parse_if_else_expr(self):

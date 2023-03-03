@@ -306,7 +306,7 @@ class FuncCallStat(AST):
         return s
 
 class IfStat(AST):
-    def __init__(self, if_exp : list, if_block : list, elif_exps : list, 
+    def __init__(self, if_exp : AST, if_block : list, elif_exps : list, 
                     elif_blocks : list, else_blocks : list):
         self.if_exp = if_exp
         self.if_block = if_block
@@ -508,7 +508,6 @@ class FuncTypeDefStat(AST):
     def __str__(self) -> str:
         s = 'FuncTypeDefStat\n'
         s += 'Name: ' + str(self.func_name) + '\n'
-        # s += 
         return s
 
 class MethodDefStat(AST):
