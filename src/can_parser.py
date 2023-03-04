@@ -931,7 +931,7 @@ class StatParser(ParserBase):
         del exp_parser # free the memory
         self.get_next_token_of([kw_whi_end, tr_kw_whi_end], 0)
 
-        return can_ast.WhileStat(cond_exps, blocks)
+        return can_ast.WhileStat(can_ast.UnopExp(self.get_line(), 'not', cond_exps), blocks)
 
     def parse_for_stat(self, prefix_exp : ExpParser = None, skip_prefix_exp : int = 0):
         blocks : list = []

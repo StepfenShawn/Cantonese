@@ -338,7 +338,7 @@ cantonese [-文件名] -stack_vm
 ```shell
 cantonese [-文件名] -stack_vm -debug
 ```
-使用`LLVM`執行 (需安装`llvmlite`, 僅支援部分語句):  
+使用`LLVM`執行 (需安装`llvmlite`同`clang`, 僅支援部分語句):  
 ```shell
 cantonese [-文件名] -llvm
 ```

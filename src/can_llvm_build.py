@@ -17,10 +17,22 @@ class llvmUtils:
         return ir.Constant(ir.ArrayType(ir.IntType(8), n), buf)
 
     @staticmethod
-    def const(val, wifth = None):
+    def const(val, width = None):
         if isinstance(val, int):
             return ir.Constant(ir.IntType(32), val)
 
+    @staticmethod
+    def typeToFormat(typ : ir.types):
+        fmt = None
+        if isinstance(typ, ir.IntType):
+            fmt = "%d"
+        elif isinstance(typ, ir.FloatType):
+            fmt = "%f"
+        elif isinstance(typ, ir.DoubleType):
+            fmt = "%lf"
+        else:
+            fmt = "%s"
+        return fmt
 
 class llvmCompiler(object):
     def __init__(self, path) -> None:
@@ -43,6 +55,9 @@ class llvmCompiler(object):
 
         self.string_i = -1
         self.block_i = -1
+        self.is_break = False
+        self.loop_test_blocks = []
+        self.loop_end_blocks = []
 
     def inc_string(self):
         self.string_i += 1
@@ -69,8 +84,8 @@ class llvmCompiler(object):
         percent_d = self.builder.gep(percent_d, 
                 [llvmUtils.const(0), llvmUtils.const(0)])
         percent_d = self.builder.bitcast(percent_d, ir.IntType(8).as_pointer())
-        self.builder.call('printf', [percent_d, num])
-        self.builder.call('putchar', [ir.Constant(ir.IntType(32), 10)])
+        self.builder.call(self.module.get_global("printf"), [percent_d, num])
+        self.builder.call(self.module.get_global("putchar"), [ir.Constant(ir.IntType(32), 10)])
 
     def add_builtin_func(self):
         # Add the declaration of exit
@@ -140,9 +155,11 @@ class llvmCompiler(object):
     def _codegen_FalseExp(self, node : can_ast.FalseExp):
         return ir.Constant(ir.IntType(1), 0)
 
-    def _codegn_True(self, node : can_ast.TrueExp):
+    def _codegen_TrueExp(self, node : can_ast.TrueExp):
         return ir.Constant(ir.IntType(1), 1)
 
+    # -----------------------------------------------------------
+    # Statements for cantonese
     # -----------------------------------------------------------
 
     def _codegen_FunctionDefStat(self, node : can_ast.FunctionDefStat):
@@ -180,9 +197,19 @@ class llvmCompiler(object):
         ptr = self.func_symtab[node.name]
         return self.builder.load(ptr)
 
+    def _codegen_FuncCallExp(self, node : can_ast.FuncCallExp):
+        callee_func = self.module.globals.get(self.getIdName(node.prefix_exp), 
+            None)
+        if callee_func == None:
+            raise Exception("Calling a no exists function: " + self.getIdName(node.prefix_exp))
+        call_args = [self._codegen(arg) for arg in node.args]
+        return self.builder.call(callee_func, call_args)
+
     def _codegen_FuncCallStat(self, node : can_ast.FuncCallStat):
         callee_func = self.module.globals.get(self.getIdName(node.func_name), 
             None)
+        if callee_func == None:
+            raise Exception("Calling a no exists funtion: " + self.getIdName(node.func_name))
         call_args = [self._codegen(arg) for arg in node.args]
         return self.builder.call(callee_func, call_args, 'calltmp')
 
@@ -195,9 +222,22 @@ class llvmCompiler(object):
             self.visit_assign(self.getIdName(keys), self._codegen(values))
 
     def _codegen_PrintStat(self, node : can_ast.PrintStat):
-        callee_func = self.module.globals.get("puts", None)
         call_args = [self._codegen(arg) for arg in node.args]
-        return self.builder.call(callee_func, call_args, 'calltmp')
+        if isinstance(call_args[0].type, ir.DoubleType):
+            self.print_num("%lf", call_args[0])
+        else:
+            callee_func = self.module.globals.get("puts", None)
+            return self.builder.call(callee_func, call_args, 'calltmp')
+
+    def _codegen_BreakStat(self, node : can_ast.BreakStat):
+        if len(self.loop_end_blocks) == 0:
+            raise Exception("Syntax Error: 'break' cannot be used outside of control flow statements")
+        self.is_break = True
+        return self.builder.branch(self.loop_end_blocks[-1])
+
+    def _codegen_ReturnStat(self, node : can_ast.ReturnStat):
+        # TODO: Add function return
+        self.builder.ret(ir.Constant(ir.IntType(32), 0))
 
     def _codegen_IfStat(self, node : can_ast.IfStat):
         orelse = node.else_blocks
@@ -228,9 +268,8 @@ class llvmCompiler(object):
                         self._compile(node.if_block)
                     with otherwise:
                         self._compile(node.else_blocks)
-            # else:
-                # if_bb = self.bui
 
+    # TODO: Fix bug that cannot use 'break' without 'if'
     def _codegen_WhileStat(self, node : can_ast.WhileStat):
         cond = self._codegen(node.cond_exp)
         
@@ -238,6 +277,9 @@ class llvmCompiler(object):
         while_loop_entry = self.builder.append_basic_block("while_block_entry_" + str(self.inc_block()))
         while_loop_otherwise = self.builder.append_basic_block("while_loop_otherwise_" + str(self.inc_block()))
         
+        self.loop_test_blocks.append(while_loop_entry)
+        self.loop_end_blocks.append(while_loop_otherwise)
+
         self.builder.cbranch(cond, while_loop_entry, while_loop_otherwise)
         # Setting the builder postion at start
         self.builder.position_at_start(while_loop_entry)
@@ -245,6 +287,8 @@ class llvmCompiler(object):
         cond = self._codegen(node.cond_exp)
         self.builder.cbranch(cond, while_loop_entry, while_loop_otherwise)
         self.builder.position_at_start(while_loop_otherwise)
+        self.loop_test_blocks.pop()
+        self.loop_end_blocks.pop()
 
     def gen_logic(self, op : str, lhs, rhs):
         return self.builder.fcmp_ordered(op, lhs, rhs)
@@ -275,6 +319,20 @@ class llvmCompiler(object):
             return self.builder.shl(lhs, rhs)
         else:
             raise Exception('Unknown binary operator: ' + node.op)
+
+    def _codegen_UnopExp(self, node : can_ast.UnopExp):
+        rhs = self._codegen(node.exp)
+
+        if node.op == '~':
+            return self.builder.not_(rhs)
+        elif node.op == '-':
+            return self.builder.neg(rhs)
+        elif node.op == 'not':
+            return self.builder.select(
+                self.builder.icmp_signed('==', ir.Constant(ir.IntType(1), 0), rhs),
+                ir.Constant(ir.IntType(1), 1),
+                ir.Constant(ir.IntType(1), 0)
+            )
 
     def getIdName(self, exp : can_ast.IdExp) -> str:
         return exp.name

@@ -225,7 +225,7 @@ class Codegen(object):
 
         elif isinstance(stat, can_parser.can_ast.WhileStat):
             s = ''
-            s += self.tab + 'while not ' + self.codegen_expr(stat.cond_exp) + ':\n'
+            s += self.tab + 'while ' + self.codegen_expr(stat.cond_exp) + ':\n'
             s += self.codegen_block(stat.blocks)
             return s
 
