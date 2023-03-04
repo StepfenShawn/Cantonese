@@ -169,7 +169,7 @@ tr_kw_class_init = "佢有啲咩"
 tr_kw_self = "自己嘅"
 tr_kw_call_begin = "下"
 tr_kw_get_value = "@"
-tr_kw_del = "delete下"
+tr_kw_del = "冇鳩用"
 tr_kw_match = "match下"
 tr_kw_case = "撞見"
 
@@ -302,5 +302,6 @@ keywords = (
     tr_kw_call_begin,
     tr_kw_get_value,
     tr_kw_match,
-    tr_kw_case
+    tr_kw_case,
+    tr_kw_del
 )
