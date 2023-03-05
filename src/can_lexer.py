@@ -186,15 +186,6 @@ class lexer(object):
                 self.next(3)
                 return [self.line, [TokenType.KEYWORD, '<*>']]
 
-            # TODO: let `<$>`, `</$>` join the TokenType.SEPCIFIC_*
-            elif self.check('<$>'):
-                self.next(3)
-                return [self.line, [TokenType.KEYWORD, '<$>']]
-
-            elif self.check('</$>'):
-                self.next(4)
-                return [self.line, [TokenType.KEYWORD, '</$>']]
-
             elif self.check('<|>'):
                 self.next(3)
                 return [self.line, [TokenType.OP_BOR, '<|>']]
@@ -202,7 +193,11 @@ class lexer(object):
             elif self.check('<->'):
                 self.next(3)
                 return [self.line, [TokenType.OP_CONCAT, '<->']]
-            
+
+            elif self.check('<<<'):
+                self.next(3)
+                return [self.line, [TokenType.KEYWORD, '<<<']]
+
             elif self.check('<='):
                 self.next(2)
                 return [self.line, [TokenType.OP_LE, '<=']]
@@ -220,7 +215,10 @@ class lexer(object):
                 return [self.line, [TokenType.OP_LT, '<']]
         
         if c == '>':
-            if self.check('>='):
+            if self.check('>>>'):
+                self.next(3)
+                return [self.line, [TokenType.KEYWORD, '>>>']]
+            elif self.check('>='):
                 self.next(2)
                 return [self.line, [TokenType.OP_GE, '>=']]
             elif self.check('>>'):

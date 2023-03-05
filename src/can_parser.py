@@ -671,7 +671,7 @@ class StatParser(ParserBase):
                 elif self.get_token_value(self.look_ahead(skip_step)) in [kw_do, tr_kw_do]:
                     return self.parse_class_method_call_stat(prefix_exps, skip_step) 
 
-            elif tk_value == '<$>':
+            elif tk_value == '<<<':
                 return self.parse_func_def_with_type_stat()
 
             elif tk_value == kw_function:
@@ -970,7 +970,7 @@ class StatParser(ParserBase):
         return can_ast.ForStat(id, from_exp, to_exp, blocks)
 
     def parse_func_def_with_type_stat(self):
-        self.get_next_token_of("<$>", 0)
+        self.get_next_token_of("<<<", 0)
 
         exp_parser = self.ExpParser(self.tokens[self.pos : ])
         args_type : list = exp_parser.parse_parlist()
@@ -981,7 +981,7 @@ class StatParser(ParserBase):
         self.get_next_token_of("收皮", 0)
         
 
-        while (self.get_token_value(self.current())) != '</$>':
+        while (self.get_token_value(self.current())) != '>>>':
             exp_parser = self.ExpParser(self.tokens[self.pos : ])
             rets_type = exp_parser.parse_idlist()
             self.skip(exp_parser.pos)

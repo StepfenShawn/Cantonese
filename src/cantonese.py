@@ -61,14 +61,6 @@ def cantonese_run(code : str, is_to_py : bool, file : str,
         f = open(fh, 'w', encoding = 'utf-8')
         f.write(js)
         sys.exit(1)
-        
-    if _S:
-        import Compile
-        code, fh = Compile.Compile(stats, "asm", file).ret()
-        # f = open(fh, 'w', encoding = 'utf-8')
-        # f.write(code)
-        print(code)
-        sys.exit(1)
     
     if _to_llvm:
         import can_llvm_build as can_llvm_build
@@ -76,9 +68,9 @@ def cantonese_run(code : str, is_to_py : bool, file : str,
         evaluator = llvm_evaluator.LLvmEvaluator(file)
         for i,stat in enumerate(stats):
             if i != len(stats) - 1:
-                evaluator.evaluate(stat)
+                evaluator.evaluate(stat, llvmdump=debug)
             else:
-                evaluator.evaluate(stat, endMainBlock=True)
+                evaluator.evaluate(stat, llvmdump=debug, endMainBlock=True)
         exit()
 
     cantonese_lib_init()
@@ -186,8 +178,6 @@ def main():
     arg_parser.add_argument("-debug", action = "store_true")
     arg_parser.add_argument("-v", "-verison", action = "store_true", help = "Print the version")
     arg_parser.add_argument("-mkfile", action = "store_true")
-    arg_parser.add_argument("-S", action = "store_true")
-    arg_parser.add_argument("-s", action = "store_true")
     arg_parser.add_argument("-l", action = "store_true")
     arg_parser.add_argument("-llvm", action = "store_true")
     args = arg_parser.parse_args()
@@ -239,8 +229,6 @@ def main():
                 to_js = True
             if args.to_cpp:
                 to_cpp = True
-            if args.S or args.s:
-                _S = True
             if args.mkfile:
                 mkfile = True
             if args.llvm or args.l:

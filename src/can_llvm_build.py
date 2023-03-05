@@ -47,10 +47,19 @@ class llvmCompiler(object):
         self.type_map = {
             'bool' : ir.IntType(1),
             'int' : ir.IntType(32),
+            'i1' : ir.IntType(1),
+            'i8' : ir.IntType(8),
+            'i16' : ir.IntType(16),
+            'i32' : ir.IntType(32),
+            'i64' : ir.IntType(64),
+            'i128' : ir.IntType(128),
             'float' : ir.FloatType(),
             'double' : ir.DoubleType(),
             'void' : ir.VoidType(),
-            'str' : ir.ArrayType(ir.IntType(8), 1)
+            'None' : ir.VoidType(),
+            'none' : ir.VoidType(),
+            'str' : ir.IntType(8).as_pointer(),
+            'string' : ir.IntType(8).as_pointer()
         }
 
         self.string_i = -1
@@ -147,7 +156,10 @@ class llvmCompiler(object):
     #------------------------------------------------------------
 
     def _codegen_NumeralExp(self, node : can_ast.NumeralExp):
-        return ir.Constant(ir.DoubleType(), float(node.val))
+        if isinstance(eval(node.val), float):
+            return ir.Constant(ir.DoubleType(), node.val)
+        elif isinstance(eval(node.val), int):
+            return ir.Constant(ir.IntType(32), node.val)
 
     def _codegen_StringExp(self, node : can_ast.StringExp):
         return self.create_global_string(node.s[1:-1], 's_' + str(self.inc_string()))
@@ -164,34 +176,44 @@ class llvmCompiler(object):
 
     def _codegen_FunctionDefStat(self, node : can_ast.FunctionDefStat):
         name = self.getIdName(node.name_exp)
-        params = [self._codegen(arg) for arg in node.args]
+        params_name = [self.getIdName(arg) for arg in node.args]
         params_ptr = []
 
-        params_type = [self.getIdName(arg_type) for arg_type in node.args_type]
-        return_type = self.getIdName(node.ret_type)
+        params_type = [self.type_map[self.getIdName(arg_type)] for arg_type in node.args_type]
+        return_type = self.type_map[self.getIdName(node.ret_type[0])]
 
         fnty = ir.FunctionType(return_type, params_type)
         func = ir.Function(self.module, fnty, name=name)
 
         # Define function's block
         block = func.append_basic_block(f'{name}_entry')
-        
+
+        previous_builer = self.builder
+        self.builder = ir.IRBuilder(block)
+
         # Storing the pointers of each parameter
         for i, typ, in enumerate(params_type):
             ptr = self.builder.alloca(typ)
             self.builder.store(func.args[i], ptr)
             params_ptr.append(ptr)
 
-        previous_builer = self.builder
-        self.builder = ir.IRBuilder(block)
         previous_variable = self.func_symtab.copy()
-        for i,x in enumerate(zip(params_type, params_ptr)):
+        for i,x in enumerate(zip(params_type, params_name)):
             typ = params_type[i]
             ptr = params_ptr[i]
-
-            self.func_symtab[self._codegen(params_ptr)] = ptr
+            self.func_symtab[x[1]] = ptr
+        self.func_symtab[name] = func
 
         self._compile(node.blocks)
+
+        if isinstance(return_type, ir.VoidType):
+            self.builder.ret_void()
+
+        # Removing the function's variables.
+        self.func_symtab = previous_variable
+        # Done with the function's builder
+        # Return to the previous builder
+        self.builder = previous_builer
 
     def _codegen_IdExp(self, node : can_ast.IdExp):
         ptr = self.func_symtab[node.name]
@@ -225,6 +247,8 @@ class llvmCompiler(object):
         call_args = [self._codegen(arg) for arg in node.args]
         if isinstance(call_args[0].type, ir.DoubleType):
             self.print_num("%lf", call_args[0])
+        elif isinstance(call_args[0].type, ir.IntType):
+            self.print_num("%d", call_args[0])
         else:
             callee_func = self.module.globals.get("puts", None)
             return self.builder.call(callee_func, call_args, 'calltmp')
@@ -236,8 +260,14 @@ class llvmCompiler(object):
         return self.builder.branch(self.loop_end_blocks[-1])
 
     def _codegen_ReturnStat(self, node : can_ast.ReturnStat):
-        # TODO: Add function return
-        self.builder.ret(ir.Constant(ir.IntType(32), 0))
+        # TODO: Support muti-return?
+        return self.builder.ret(self._codegen(node.exps[0]))
+
+    def _codegen_ForEachStat(self, node : can_ast.ForEachStat):
+        pass
+
+    def _codegen_ForStat(self, node : can_ast.ForStat):
+        pass
 
     def _codegen_IfStat(self, node : can_ast.IfStat):
         orelse = node.else_blocks
@@ -290,35 +320,62 @@ class llvmCompiler(object):
         self.loop_test_blocks.pop()
         self.loop_end_blocks.pop()
 
-    def gen_logic(self, op : str, lhs, rhs):
+    def gen_flogic(self, op : str, lhs, rhs):
         return self.builder.fcmp_ordered(op, lhs, rhs)
+
+    # TODO: support unsigned
+    def gen_ilogic(self, op : str, lhs, rhs):
+        return self.builder.icmp_signed(op, lhs, rhs)
 
     def _codegen_BinopExp(self, node : can_ast.BinopExp):
         lhs = self._codegen(node.exp1)
         rhs = self._codegen(node.exp2)
+
+        if isinstance(lhs.type, ir.FloatType) and \
+            isinstance(rhs.type, ir.FloatType):
+            if node.op == '+':
+                return self.builder.fadd(lhs, rhs)
+            elif node.op == '-':
+                return self.builder.fsub(lhs, rhs)
+            elif node.op == '*':
+                return self.builder.fmul(lhs, rhs)
+            elif node.op == '/':
+                return self.builder.fdiv(lhs, rhs)
+            elif node.op == '%':
+                return self.builder.frem(lhs, rhs)
+            elif node.op in ('<', '<=', '>', '>=', '=='):
+                return self.gen_flogic(node.op, lhs, rhs)
+            else:
+                raise Exception('Unknown binary operator for float type: ' + node.op)
+
+        elif isinstance(lhs.type, ir.IntType) and \
+              isinstance(rhs.type, ir.IntType):
+            if node.op == '+':
+                return self.builder.add(lhs, rhs)
+            elif node.op == '-':
+                return self.builder.sub(lhs, rhs)
+            elif node.op == '*':
+                return self.builder.mul(lhs, rhs)
+            elif node.op == '/':
+                return self.builder.div(lhs, rhs)
+            elif node.op == '%':
+                return self.builder.rem(lhs, rhs)
+            elif node.op in ('<', '<=', '>', '>=', '=='):
+                return self.gen_ilogic(node.op, lhs, rhs)
+            elif node.op == '&':
+                return self.builder.and_(lhs, rhs)
+            elif node.op == '|':
+                return self.builder.xor(lhs, rhs)
+            elif node.op == '>>':
+                return self.builder.ashr(lhs, rhs)
+            elif node.op == '<<':
+                return self.builder.shl(lhs, rhs)
+            else:
+                raise Exception("Unknown binary operator for int type: " + node.op)
         
-        if node.op == '+':
-            return self.builder.fadd(lhs, rhs)
-        elif node.op == '-':
-            return self.builder.fsub(lhs, rhs)
-        elif node.op == '*':
-            return self.builder.fmul(lhs, rhs)
-        elif node.op == '/':
-            return self.builder.fdiv(lhs, rhs)
-        elif node.op == '%':
-            return self.builder.frem(lhs, rhs)
-        elif node.op in ('<', '<=', '>', '>=', '=='):
-           return self.gen_logic(node.op, lhs, rhs)
-        elif node.op == '&':
-            return self.builder.and_(lhs, rhs)
-        elif node.op == '|':
-            return self.builder.xor(lhs, rhs)
-        elif node.op == '>>':
-            return self.builder.ashr(lhs, rhs)
-        elif node.op == '<<':
-            return self.builder.shl(lhs, rhs)
+        # TODO: convert the type?
         else:
-            raise Exception('Unknown binary operator: ' + node.op)
+            pass
 
     def _codegen_UnopExp(self, node : can_ast.UnopExp):
         rhs = self._codegen(node.exp)

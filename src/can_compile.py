@@ -245,8 +245,8 @@ class Codegen(object):
                 s = ''
                 arg_decl = ''
                 for arg, arg_ty in zip(stat.args, stat.args_type):
-                    arg_decl += self.codegen_expr(arg) + " : " + self.codegen_expr(arg_ty) + ','
-                s += self.tab + 'def ' + self.codegen_expr(stat.name_exp) + '(' + arg_decl + ') -> ' + self.codegen_args(stat.ret_type) \
+                    arg_decl += self.codegen_expr(arg) + " : " + '"'  + self.codegen_expr(arg_ty) + '"' + ','
+                s += self.tab + 'def ' + self.codegen_expr(stat.name_exp) + '(' + arg_decl + ') -> ' + '"'  + self.codegen_args(stat.ret_type) + '"' \
                      + ':\n'
                 s += self.codegen_block(stat.blocks)
                 return s

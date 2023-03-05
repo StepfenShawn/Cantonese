@@ -16,10 +16,9 @@ class LLvmEvaluator:
         self.codegen.gen_code(ast)
         if endMainBlock:
             self.codegen.main_ret()
-            
+            print(self.codegen.module)
             # Convert llvm ir into in-memory representation
             llvmmod = llvm.parse_assembly(str(self.codegen.module))
-            print(llvmmod)
             # Optimize the module
             if optimize:
                 pmb = llvm.create_pass_manager_builder()
@@ -36,9 +35,9 @@ class LLvmEvaluator:
             with llvm.create_mcjit_compiler(llvmmod, target_machine) as ee:
                 ee.finalize_object()
 
-                if llvmdump:
-                    print("========== Machine Code =============")
-                    print(target_machine.emit_assembly(llvmmod))
+                # if llvmdump:
+                #     print("========== Machine Code =============")
+                #     print(target_machine.emit_assembly(llvmmod))
                 fptr = CFUNCTYPE(c_int32)(ee.get_function_address("main"))
                 result = fptr()
                 return result

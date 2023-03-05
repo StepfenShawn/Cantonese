@@ -4,7 +4,7 @@
 [![pypi](https://img.shields.io/pypi/v/Cantonese)](https://pypi.org/project/Cantonese/)   
 # 粵語編程語言
 如果你唔識粵語或者編程，請睇[5分钟边学编程边学粤语](doc/cantonese.md)。  
-##### 個 Compiler 係喺我讀高中陣開發嘅，所以代碼寫得好屎(宜家都係一鳩樣)，歡迎各個粵語同埋編程愛好者一齊討論同貢獻！  
+### 個 Compiler 係喺我讀高中時開發嘅，所以代碼寫得好屎(宜家都係一鳩樣)，歡迎各個粵語同埋編程愛好者一齊討論同貢獻！  
 # 點樣安裝?
 ```
 pip install Cantonese
@@ -115,7 +115,7 @@ $factorial |项数| 即係 => 项数 * fanctorial(项数 - 1)
 ```  
 返回最大值：  
 ```
-<$> int, int 收皮 :: int  </$>
+<<< int, int 收皮 :: int  >>>
 $get_max |数字1, 数字2| 要做咩:
     如果 |数字1 比唔上 数字2| 嘅话 -> {
         还数「数字2」
@@ -334,7 +334,7 @@ pip install kivy
 [喺呢度](examples/)睇下更多例子.  
 
 # <a name="25">点样运行?</a>
-Cantonese 可以用多種方式運行，用自己嘅虛擬機，用LLVM，或者翻譯成 Python 同 HTML 都得！
+Cantonese 可以用多種方式運行，用自己嘅虛擬機，用 `LLVM`，或者翻譯成 Python 同 HTML 都得！
 使用虛擬機執行（僅支援部分語句）：   
 ```shell
 cantonese [-文件名] -stack_vm
@@ -380,7 +380,7 @@ cantonese examples/web/web_hello.cantonese -to_web -compile
 Vscode插件：https://github.com/Cantonese-community/vscode-cantonese  
 
 # <a name="26">TODOs</a>
-歡迎各個粵語同埋編程愛好者一齊討論同貢獻！為粵語文化遺產嘅保護貢獻出自己嘅一份力量！ 
+歡迎各個粵語同埋編程愛好者一齊討論同貢獻！為粵語文化遺產嘅保護貢獻出自己嘅一份力量!  
 今後要做咩：
 * 加多啲語句
 * 完善自己嘅虛擬機
