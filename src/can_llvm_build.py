@@ -170,6 +170,23 @@ class llvmCompiler(object):
     def _codegen_TrueExp(self, node : can_ast.TrueExp):
         return ir.Constant(ir.IntType(1), 1)
 
+    def _codegen_IfElseExp(self, node : can_ast.IfElseExp):
+        return self.builder.select(
+            self._codegen(node.if_cond_exp),
+            self._codegen(node.if_exp),
+            self._codegen(node.else_exp)
+        )
+
+    """
+    define internal T @lambda(...) {
+	    ...
+	    ret ...
+    }
+    """
+
+    def _codegen_Lambda(self, node : can_ast.LambdaExp):
+        return
+
     # -----------------------------------------------------------
     # Statements for cantonese
     # -----------------------------------------------------------

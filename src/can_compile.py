@@ -116,7 +116,6 @@ class Codegen(object):
             if p_corr:
                 s = " corr(" + p_corr.group(1) +", " + p_corr.group(2) + ") "
             return s
-
         else:
             return ''
 
