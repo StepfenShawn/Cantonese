@@ -110,8 +110,8 @@ match下 状态 -> {
 ### <a name="7">函数</a>
 用 Cantonese 實現嘅階乘：  
 ```
-$factorial 1 即係 => 1
-$factorial |项数| 即係 => 项数 * fanctorial(项数 - 1)
+<$> factorial 1 即係 => 1 搞掂
+<$> factorial |项数| 即係 => 项数 * factorial(项数 - 1) 搞掂
 ```  
 返回最大值：  
 ```

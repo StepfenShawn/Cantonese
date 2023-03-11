@@ -256,6 +256,23 @@ class Codegen(object):
                 s += self.codegen_block(stat.blocks)
                 return s
 
+        elif isinstance(stat, can_parser.can_ast.MatchModeFuncDefStat):
+            s = ''
+            s += self.tab + 'def ' + self.codegen_expr(stat.func_name) + '(*args):\n'
+            for args, blocks in zip(stat.args_list, stat.block_list):
+                # TODO: support more args
+                if len(args) == 1:
+                    if isinstance(args[0], (can_parser.can_ast.NumeralExp, can_parser.can_ast.StringExp, 
+                                        can_parser.can_ast.ListExp)):
+                        s += self.tab + '\t' + 'if args[0] == '+ self.codegen_expr(args[0])  + ':\n';
+                        s += self.tab + '\t\t' + 'return ' + self.codegen_expr(blocks) + '\n'
+                    elif isinstance(args[0], can_parser.can_ast.IdExp):
+                        # TODO: use re.sub here
+                        s += self.tab + '\t' +'return ' + self.codegen_expr(blocks).replace(args[0].name, "args[0]") + '\n'
+                    
+            return s
+
+
         elif isinstance(stat, can_parser.can_ast.FuncCallStat):
             s = ''
             s += self.tab + self.codegen_expr(stat.func_name) + '(' + self.codegen_args(stat.args) + ')' + '\n'

@@ -674,6 +674,9 @@ class StatParser(ParserBase):
             elif tk_value == '<<<':
                 return self.parse_func_def_with_type_stat()
 
+            elif tk_value == '<$>':
+                return self.parse_match_mode_func_def_stat()
+
             elif tk_value == kw_function:
                 return self.parse_func_def_stat()
 
@@ -993,38 +996,56 @@ class StatParser(ParserBase):
 
         return self.parse_func_def_stat(decl_args_type=args_type, decl_ret_type=rets_type)
 
-    def parse_func_def_stat(self, decl_args_type = [], decl_ret_type = []):
-        self.get_next_token_of(kw_function, 0)
-
-        if self.get_token_value(self.current()) == '即係':
+    def parse_match_mode_func_def_stat(self):
+        args_list : list = []
+        block_list : list = []
+        while (self.get_token_value(self.current()) == '<$>'):
             self.skip(1)
-            exp_parser = self.ExpParser(self.tokens[self.pos : ])
-            args : list = exp_parser.parse_parlist()
-            args = [] if args == None else args
-            self.get_next_token_of([kw_do], 0)
 
-        else:
-            name = self.get_token_value(self.get_next_token_of_kind(TokenType.IDENTIFIER, 0))
-            
+            name = self.get_token_value(self.get_next_token_of_kind(TokenType.IDENTIFIER, 0))            
             exp_parser = self.ExpParser(self.tokens[self.pos : ])
-            args : list = exp_parser.parse_parlist()
+            args : list = exp_parser.parse_exp_list()
             args = [] if args == None else args
             self.skip(exp_parser.pos)
             del exp_parser # free the memory
 
-            self.get_next_token_of([kw_func_begin, tr_kw_func_begin, kw_do], 0)
+            args_list.append(args)
 
-            blocks : list = []
-            while (self.get_token_value(self.current()) not in [kw_func_end, tr_kw_func_end]):
-                block_parser = StatParser(self.tokens[self.pos : ], self.ExpParser)
-                blocks.append(block_parser.parse())
-                self.skip(block_parser.pos)
-                del block_parser
+            self.get_next_token_of("即係", 0)
+            self.get_next_token_of([kw_do], 0)
+            exp_parser = self.ExpParser(self.tokens[self.pos : ])
+            body = exp_parser.parse_exp()
+            self.skip(exp_parser.pos)
+            del exp_parser # free the memory
 
-            self.skip(1)
+            block_list.append(body)
 
+            self.get_next_token_of([kw_func_end, tr_kw_func_end], 0)
+        
+        return can_ast.MatchModeFuncDefStat(can_ast.IdExp(self.get_line(), name), args_list, block_list)
+
+    def parse_func_def_stat(self, decl_args_type = [], decl_ret_type = []):
+        self.get_next_token_of(kw_function, 0)
+        
+        name = self.get_token_value(self.get_next_token_of_kind(TokenType.IDENTIFIER, 0))            
+        exp_parser = self.ExpParser(self.tokens[self.pos : ])
+        args : list = exp_parser.parse_parlist()
+        args = [] if args == None else args
+        self.skip(exp_parser.pos)
+        del exp_parser # free the memory
+
+        self.get_next_token_of([kw_func_begin, tr_kw_func_begin, kw_do], 0)
+
+        blocks : list = []
+        while (self.get_token_value(self.current()) not in [kw_func_end, tr_kw_func_end]):
+            block_parser = StatParser(self.tokens[self.pos : ], self.ExpParser)
+            blocks.append(block_parser.parse())
+            self.skip(block_parser.pos)
+            del block_parser
+
+        self.skip(1)
         return can_ast.FunctionDefStat(can_ast.IdExp(self.get_line(), name), args, blocks, 
-                                        decl_args_type, decl_ret_type)
+                                    decl_args_type, decl_ret_type)
 
     def parse_func_call_stat(self, prefix_exps : can_ast.AST = None, skip_step : int = 0):
         if prefix_exps == None:

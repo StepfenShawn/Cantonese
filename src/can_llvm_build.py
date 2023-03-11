@@ -22,6 +22,16 @@ class llvmUtils:
             return ir.Constant(ir.IntType(32), val)
 
     @staticmethod
+    def getType(val : str) -> str:
+        e = eval(val)
+        if isinstance(e, int):
+            return 'i32'
+        elif isinstance(e, float):
+            return 'double'
+        elif isinstance(e, str):
+            return 'str'
+
+    @staticmethod
     def typeToFormat(typ : ir.types):
         fmt = None
         if isinstance(typ, ir.IntType):
@@ -33,6 +43,11 @@ class llvmUtils:
         else:
             fmt = "%s"
         return fmt
+
+class CantoneseCache:
+    def __init__(self, value, flags = ""):
+        self.value = value
+        self.flags = flags
 
 class llvmCompiler(object):
     def __init__(self, path) -> None:
@@ -61,6 +76,7 @@ class llvmCompiler(object):
             'str' : ir.IntType(8).as_pointer(),
             'string' : ir.IntType(8).as_pointer()
         }
+        self.caches = {}
 
         self.string_i = -1
         self.block_i = -1
@@ -184,8 +200,8 @@ class llvmCompiler(object):
     }
     """
 
-    def _codegen_Lambda(self, node : can_ast.LambdaExp):
-        return
+    def _codegen_LambdaExp(self, node : can_ast.LambdaExp):
+        return CantoneseCache(node)
 
     # -----------------------------------------------------------
     # Statements for cantonese
@@ -193,44 +209,48 @@ class llvmCompiler(object):
 
     def _codegen_FunctionDefStat(self, node : can_ast.FunctionDefStat):
         name = self.getIdName(node.name_exp)
-        params_name = [self.getIdName(arg) for arg in node.args]
-        params_ptr = []
+        if node.args_type != [] or node.ret_type != []:
+            params_name = [self.getIdName(arg) for arg in node.args]
+            params_ptr = []
 
-        params_type = [self.type_map[self.getIdName(arg_type)] for arg_type in node.args_type]
-        return_type = self.type_map[self.getIdName(node.ret_type[0])]
+            params_type = [self.type_map[self.getIdName(arg_type)] for arg_type in node.args_type]
+            return_type = self.type_map[self.getIdName(node.ret_type[0])]
 
-        fnty = ir.FunctionType(return_type, params_type)
-        func = ir.Function(self.module, fnty, name=name)
+            fnty = ir.FunctionType(return_type, params_type)
+            func = ir.Function(self.module, fnty, name=name)
 
-        # Define function's block
-        block = func.append_basic_block(f'{name}_entry')
+            # Define function's block
+            block = func.append_basic_block(f'{name}_entry')
 
-        previous_builer = self.builder
-        self.builder = ir.IRBuilder(block)
+            previous_builer = self.builder
+            self.builder = ir.IRBuilder(block)
 
-        # Storing the pointers of each parameter
-        for i, typ, in enumerate(params_type):
-            ptr = self.builder.alloca(typ)
-            self.builder.store(func.args[i], ptr)
-            params_ptr.append(ptr)
+            # Storing the pointers of each parameter
+            for i, typ, in enumerate(params_type):
+                ptr = self.builder.alloca(typ)
+                self.builder.store(func.args[i], ptr)
+                params_ptr.append(ptr)
 
-        previous_variable = self.func_symtab.copy()
-        for i,x in enumerate(zip(params_type, params_name)):
-            typ = params_type[i]
-            ptr = params_ptr[i]
-            self.func_symtab[x[1]] = ptr
-        self.func_symtab[name] = func
+            previous_variable = self.func_symtab.copy()
+            for i,x in enumerate(zip(params_type, params_name)):
+                typ = params_type[i]
+                ptr = params_ptr[i]
+                self.func_symtab[x[1]] = ptr
+            self.func_symtab[name] = func
 
-        self._compile(node.blocks)
+            self._compile(node.blocks)
 
-        if isinstance(return_type, ir.VoidType):
-            self.builder.ret_void()
+            if isinstance(return_type, ir.VoidType):
+                self.builder.ret_void()
 
-        # Removing the function's variables.
-        self.func_symtab = previous_variable
-        # Done with the function's builder
-        # Return to the previous builder
-        self.builder = previous_builer
+            # Removing the function's variables.
+            self.func_symtab = previous_variable
+            # Done with the function's builder
+            # Return to the previous builder
+            self.builder = previous_builer
+
+        else:
+            self.caches[name] = CantoneseCache(node)
 
     def _codegen_IdExp(self, node : can_ast.IdExp):
         ptr = self.func_symtab[node.name]
@@ -240,7 +260,13 @@ class llvmCompiler(object):
         callee_func = self.module.globals.get(self.getIdName(node.prefix_exp), 
             None)
         if callee_func == None:
-            raise Exception("Calling a no exists function: " + self.getIdName(node.prefix_exp))
+            if self.caches.get(self.getIdName(node.prefix_exp)) != None:
+                cache_node = self.caches[self.getIdName].value
+                if isinstance(cache_node, can_ast.LambdaExp):
+                    pass
+
+            else:
+                raise Exception("Calling a no exists function: " + self.getIdName(node.prefix_exp))
         call_args = [self._codegen(arg) for arg in node.args]
         return self.builder.call(callee_func, call_args)
 
@@ -283,8 +309,11 @@ class llvmCompiler(object):
     def _codegen_ForEachStat(self, node : can_ast.ForEachStat):
         pass
 
+    # TODO:
     def _codegen_ForStat(self, node : can_ast.ForStat):
-        pass
+        from_val = self._codegen(node.from_exp)
+        to_val = self._codefgen(node.to_exp)
+        self.visit_assign(self.getIdName(node.var), from_val)
 
     def _codegen_IfStat(self, node : can_ast.IfStat):
         orelse = node.else_blocks
@@ -297,17 +326,8 @@ class llvmCompiler(object):
                     self._compile(node.if_block)
             
             else:
-                if_bb = self.builder.function.append_basic_block('then_block_' + str(self.inc_block()))
-                elif_bb : list = []
-                for elif_exp, block in zip(node.elif_exps, node.elif_blocks):
-                    elif_bb.append(ir.Block(self.builder.function, 'then_block_' + str(self.inc_block())))
-                self.builder.position_at_start(if_bb)
-                self._compile(node.if_block)
-                for i, elif_exp, elif_block in zip(elif_bb, node.elif_exps, node.elif_blocks):
-                    self.builder.position_at_start(i)
-                    self._compile(elif_block)
-                    self.builder.cbranch(self._codegen(elif_exp), if_bb, i)
-
+                pass
+            
         else:
             if elseif == []:
                 with self.builder.if_else(cond) as (true, otherwise):
@@ -315,6 +335,29 @@ class llvmCompiler(object):
                         self._compile(node.if_block)
                     with otherwise:
                         self._compile(node.else_blocks)
+
+    def _codegen_MatchStat(self, node : can_ast.MatchStat):
+        switch_end_block = self.builder.append_basic_block('swtich_end')
+        default_block = self.builder.append_basic_block('defalut')
+        switch = self.builder.switch(self._codegen(node.match_id), default_block)
+        cases = []
+
+        for case in node.match_val:
+            cases.append(self.builder.append_basic_block('case'))
+        self.builder.position_at_end(default_block)
+        self.builder.branch(switch_end_block)
+
+        for x, case_node in enumerate(zip(node.match_val, node.match_block_exp)):
+            self.builder.position_at_end(cases[x])
+            self._compile(case_node[1])
+            if x == len(node.match_val) - 1:
+                self.builder.branch(switch_end_block)
+            else:
+                self.builder.cbranch(self._codegen(can_ast.BinopExp(None, '==', case_node[0], node.match_id)), 
+                        switch_end_block, cases[x + 1])
+            switch.add_case(self._codegen(case_node[0]), cases[x])
+
+        self.builder.position_at_end(switch_end_block)
 
     # TODO: Fix bug that cannot use 'break' without 'if'
     def _codegen_WhileStat(self, node : can_ast.WhileStat):
@@ -411,8 +454,12 @@ class llvmCompiler(object):
     def getIdName(self, exp : can_ast.IdExp) -> str:
         return exp.name
 
-    def visit_assign(self, name : str, value : ir.Value):
-        if not self.func_symtab.__contains__(name):
+    def visit_assign(self, name : str, value : ir.Value or CantoneseCache):
+        if isinstance(value, CantoneseCache):
+            # Add to caches
+            self.caches[name] = value
+
+        elif not self.func_symtab.__contains__(name):
             # Storing the value to the pointer
             ptr = self.builder.alloca(value.type)
             self.builder.store(value, ptr)
@@ -422,5 +469,9 @@ class llvmCompiler(object):
             ptr = self.func_symtab[name]
             self.builder.store(value, ptr)
 
-    def visist_func_def(self):
+    def remove_var(self, name):
+        # self.builder.
+        pass
+
+    def visit_func_def(self):
         pass

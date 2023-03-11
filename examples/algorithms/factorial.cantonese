@@ -9,6 +9,9 @@ $factorial |项数| 要做咩:
         还数 |factorial(项数 减 1) 乘 项数|
     }
 搞掂
-
+/* 用<$>又得:
+<$> factorial 1 即係 => 1 搞掂
+<$> factorial |项数| 即係 => 项数 * factorial(项数 - 1) 搞掂
+*/
 畀我睇下 |factorial(2)| 点样先？
 畀我睇下 |factorial(6)| 点样先？
