@@ -4,7 +4,7 @@
 [![pypi](https://img.shields.io/pypi/v/Cantonese)](https://pypi.org/project/Cantonese/)   
 # 粵語編程語言
 如果你唔識粵語或者編程，請睇[5分钟边学编程边学粤语](doc/cantonese.md)。  
-### 個 Compiler 係喺我讀高中時開發嘅，所以代碼寫得好屎(宜家都係一鳩樣)，歡迎各個粵語同埋編程愛好者一齊討論同貢獻！  
+### 個 Compiler 係喺我讀高中時開發嘅，所以代碼寫得好屎(宜家都係一撚樣)，歡迎各個粵語同埋編程愛好者一齊討論同貢獻！  
 # 點樣安裝?
 ```
 pip install Cantonese
@@ -381,6 +381,8 @@ Vscode插件：https://github.com/Cantonese-community/vscode-cantonese
 
 # <a name="26">TODOs</a>
 歡迎各個粵語同埋編程愛好者一齊討論同貢獻！為粵語文化遺產嘅保護貢獻出自己嘅一份力量!  
+send PR 前請睇 [貢獻指南](./CONTRIBUTING.md)
+
 今後要做咩：
 * 加多啲語句
 * 完善自己嘅虛擬機
