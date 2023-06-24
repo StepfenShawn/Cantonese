@@ -1,7 +1,7 @@
 import llvmlite.ir as ir
 import llvmlite.binding as llvm
 from ctypes import *
-from can_llvm_build import llvmCompiler
+from .can_llvm_build import llvmCompiler
 
 class LLvmEvaluator:
     def __init__(self, path):

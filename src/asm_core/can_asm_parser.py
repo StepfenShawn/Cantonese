@@ -1,6 +1,7 @@
 import sys
+sys.path.append("..")
 
-from can_lexer import *
+from lexer.can_lexer import *
 
 TO_ASM = ""
 

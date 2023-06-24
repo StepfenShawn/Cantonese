@@ -1,9 +1,12 @@
-import can_parser as can_parser
-import can_lexer as can_lexer
+import sys
+sys.path.append("..")
+
+import Parser.can_parser as can_parser
+import lexer.can_lexer as can_lexer
 import os
 import re
 
-from can_lib import cantonese_lib_import, cantonese_model_new,\
+from libraries.can_lib import cantonese_lib_import, cantonese_model_new,\
     cantonese_turtle_init
 
 class CanPyCompile(object):

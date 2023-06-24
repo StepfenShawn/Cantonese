@@ -1,5 +1,7 @@
 import sys
-from can_lexer import *
+sys.path.append("..")
+
+from lexer.can_lexer import *
 
 class WebParser(object):
     def __init__(self, tokens : list, Node : list) -> None:

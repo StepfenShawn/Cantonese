@@ -1,5 +1,8 @@
-from keywords import *
-import can_ast as can_ast
+import sys
+sys.path.append("..")
+
+from lexer.keywords import *
+from Ast import can_ast
 
 class ParserBase(object):
     def __init__(self, token_list : list) -> None:
@@ -749,6 +752,9 @@ class StatParser(ParserBase):
 
         elif kind == TokenType.EOF:
             return
+        
+        else:
+            raise Exception("Unknown grammer in %s" % (str(self.get_line())))
             
     def parse_stats(self):
         stats = []

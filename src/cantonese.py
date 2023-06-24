@@ -9,14 +9,14 @@ import os
 import argparse
 
 from can_error import 濑啲咩嘢
-from stack_vm import *
-from can_lexer import *
-from can_compile import *
-from can_lib import *
+from vm.stack_vm import *
+from lexer.can_lexer import *
+from compiler.can_compile import *
+from libraries.can_lib import *
 
-from can_web_parser import *
-from can_asm_parser import *
-from can_codegen import *
+from web_core.can_web_parser import *
+from asm_core.can_asm_parser import *
+from vm.can_codegen import *
 
 _version_ = "Cantonese 1.0.8 Copyright (C) 2020-2023 StepfenShawn"
 
@@ -56,15 +56,15 @@ def cantonese_run(code : str, is_to_py : bool, file : str,
 
 
     if to_js:
-        import Compile
+        import asm_core.Compile as Compile
         js, fh = Compile.Compile(stats, "js", file).ret()
         f = open(fh, 'w', encoding = 'utf-8')
         f.write(js)
         sys.exit(1)
     
     if _to_llvm:
-        import can_llvm_build as can_llvm_build
-        import llvm_evaluator
+        import llvm_core.can_llvm_build as can_llvm_build
+        import llvm_core.llvm_evaluator as llvm_evaluator
         evaluator = llvm_evaluator.LLvmEvaluator(file)
         for i,stat in enumerate(stats):
             if i != len(stats) - 1:

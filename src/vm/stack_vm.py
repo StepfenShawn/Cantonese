@@ -7,7 +7,7 @@
 from enum import Enum, unique
 from collections import namedtuple
 
-import env
+from . import env
 
 @unique
 class OpCode(Enum):
