@@ -1,5 +1,9 @@
 from abc import ABC, abstractmethod
 
+"""
+    abstract class for Parser
+"""
+
 class ParserABC(ABC):
     def __init__(self, token_list : list) -> None:
         self.pos = 0

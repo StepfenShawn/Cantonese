@@ -38,7 +38,7 @@ pip install Cantonese
 <a href="#25">點樣運行?</a>  
 <a href="#26">TODOs</a>  
 # <a name="0">引言</a>
-粵語編程語言係乜嘢? 佢係一門用粵語嚟同計算機溝通嘅編程語言。  
+粵語編程語言係乜? 佢係一門用粵語嚟同計算機溝通嘅編程語言。  
 喺呢隻语言度，計算機可以讀明你寫嘅粵語。所以話，你可以用粵語嚟操作(虐待)計算機。
 #### 所有關鍵字可以使用繁體, 或者簡體同繁體混合
 # <a name="1">咋咋臨入門</a>
@@ -332,6 +332,7 @@ pip install kivy
 # 仲有啲咩?
 
 [喺呢度](examples/)睇下更多例子.  
+所有關鍵字: https://github.com/Cantonese-community/Keywords  
 
 # <a name="25">点样运行?</a>
 Cantonese 可以用多種方式運行，用自己嘅虛擬機，用 `LLVM`，或者翻譯成 Python 同 HTML 都得！

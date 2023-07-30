@@ -801,13 +801,10 @@ class StatParser(ParserBase):
         elif_blocks : list = []
         else_blocks : list = []
 
-        exp_parser = self.ExpParser(self.tokens[self.pos : ])
-        if_exps = exp_parser.parse_exp()
-        self.skip(exp_parser.pos)
+        if_exps = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp)
         self.get_next_token_of([kw_then, tr_kw_then], 0)
         self.get_next_token_of(kw_do, 0)
         self.get_next_token_of_kind(TokenType.SEP_LCURLY, 0)
-        del exp_parser # free the memory
 
         while (ParserUtil.get_type(self.current()) != TokenType.SEP_RCURLY):
             block_parser = StatParser(self.tokens[self.pos : ], self.ExpParser)
@@ -818,14 +815,13 @@ class StatParser(ParserBase):
 
         while ParserUtil.get_token_value(self.current()) in [kw_elif, tr_kw_elif]:
             self.skip(1) # skip and try to get the next token
-            exp_parser = self.ExpParser(self.tokens[self.pos : ])
-            elif_exps.append(exp_parser.parse_exp())
-            self.skip(exp_parser.pos)
+            elif_exps.append(ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp))
             self.get_next_token_of([kw_then, tr_kw_then], 0)
             self.get_next_token_of(kw_do, 0)
             self.get_next_token_of_kind(TokenType.SEP_LCURLY, 0)
-            del exp_parser # free the memory
+            
             elif_block : list = []
+            
             while (ParserUtil.get_type(self.current()) != TokenType.SEP_RCURLY):
                 block_parser = StatParser(self.tokens[self.pos : ], self.ExpParser)
                 elif_block.append(block_parser.parse())
@@ -852,10 +848,7 @@ class StatParser(ParserBase):
 
     def parse_import_stat(self):
         self.skip(1) # Skip the kw_import
-        exp_parser = self.ExpParser(self.tokens[self.pos : ])
-        idlist = exp_parser.parse_idlist()
-        self.skip(exp_parser.pos)
-        del exp_parser # free thr memory
+        idlist = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_idlist)
         return can_ast.ImportStat(idlist)
 
     def parse_global_stat(self):
@@ -879,10 +872,7 @@ class StatParser(ParserBase):
 
         self.skip(1) # Skip the kw_while
         
-        exp_parser = self.ExpParser(self.tokens[self.pos : ])
-        cond_exps = exp_parser.parse_exp()
-        self.skip(exp_parser.pos)
-        del exp_parser # free the memory
+        cond_exps = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp)
         self.get_next_token_of([kw_whi_end, tr_kw_whi_end], 0)
 
         return can_ast.WhileStat(can_ast.UnopExp(self.get_line(), 'not', cond_exps), blocks)
@@ -891,10 +881,7 @@ class StatParser(ParserBase):
         blocks : list = []
 
         if prefix_exp == None:
-            exp_parser = self.ExpParser(self.tokens[self.pos : ])
-            id = exp_parser.parse_exp()
-            self.skip(exp_parser.pos)
-            del exp_parser # free the memory
+            id = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp)
 
         else:
             id = prefix_exp[0]
@@ -902,16 +889,10 @@ class StatParser(ParserBase):
         
         self.get_next_token_of([kw_from, tr_kw_from], 0)
 
-        exp_parser = self.ExpParser(self.tokens[self.pos : ])
-        from_exp = exp_parser.parse_exp()
-        self.skip(exp_parser.pos)
-        del exp_parser # free the memory
+        from_exp = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp)
         self.get_next_token_of([kw_to, tr_kw_to], 0)
 
-        exp_parser = self.ExpParser(self.tokens[self.pos : ])
-        to_exp = exp_parser.parse_exp()
-        self.skip(exp_parser.pos)
-        del exp_parser # free the memory
+        to_exp = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp)
 
         while (ParserUtil.get_token_value(self.current()) not in [kw_endfor, tr_kw_endfor]):
             block_parse = StatParser(self.tokens[self.pos : ], self.ExpParser)
@@ -926,24 +907,17 @@ class StatParser(ParserBase):
     def parse_func_def_with_type_stat(self):
         self.get_next_token_of("<<<", 0)
 
-        exp_parser = self.ExpParser(self.tokens[self.pos : ])
-        args_type : list = exp_parser.parse_parlist()
+        args_type : list = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_parlist)
         args_type = [] if args_type == None else args_type
-        self.skip(exp_parser.pos)
-        del exp_parser # free the memory
 
         self.get_next_token_of("收皮", 0)
         
-
-        while (ParserUtil.get_token_value(self.current())) != '>>>':
-            exp_parser = self.ExpParser(self.tokens[self.pos : ])
-            rets_type = exp_parser.parse_idlist()
-            self.skip(exp_parser.pos)
-            del exp_parser
+        if (ParserUtil.get_token_value(self.current())) != '>>>':
+            rets_type = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_idlist)
 
         rets_type = [] if rets_type == None else rets_type
 
-        self.skip(1)
+        self.get_next_token_of('>>>', 0)
 
         return self.parse_func_def_stat(decl_args_type=args_type, decl_ret_type=rets_type)
 
@@ -954,20 +928,14 @@ class StatParser(ParserBase):
             self.skip(1)
 
             name = ParserUtil.get_token_value(self.get_next_token_of_kind(TokenType.IDENTIFIER, 0))            
-            exp_parser = self.ExpParser(self.tokens[self.pos : ])
-            args : list = exp_parser.parse_exp_list()
+            args : list = ParserUtil.parse_exp(self, self.getExpParser(), by=self.Exp_parser.parse_exp_list)
             args = [] if args == None else args
-            self.skip(exp_parser.pos)
-            del exp_parser # free the memory
 
             args_list.append(args)
 
             self.get_next_token_of("即係", 0)
             self.get_next_token_of([kw_do], 0)
-            exp_parser = self.ExpParser(self.tokens[self.pos : ])
-            body = exp_parser.parse_exp()
-            self.skip(exp_parser.pos)
-            del exp_parser # free the memory
+            body = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp)
 
             block_list.append(body)
 
@@ -1069,27 +1037,17 @@ class StatParser(ParserBase):
 
     def parse_assert_stat(self):
         self.skip(1)
-        exp_parser = self.ExpParser(self.tokens[self.pos : ])
-        exp = exp_parser.parse_exp()
-        self.skip(exp_parser.pos)
-        del exp_parser
-
+        exp = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp)
         return can_ast.AssertStat(exp)
 
     def parse_return_stat(self):
         self.skip(1)
-        exp_parser = self.ExpParser(self.tokens[self.pos : ])
-        exps = exp_parser.parse_exp_list()
-        self.skip(exp_parser.pos)
-        del exp_parser
-
+        exps = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp_list)
         return can_ast.ReturnStat(exps)
 
     def parse_del_stat(self):
         self.skip(1)
-        exp_parser = self.ExpParser(self.tokens[self.pos : ])
-        exps = exp_parser.parse_exp_list()
-        self.skip(exp_parser.pos)
+        exps = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp_list)
         del exp_parser
 
         return can_ast.DelStat(exps)
