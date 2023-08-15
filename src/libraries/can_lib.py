@@ -1,49 +1,62 @@
 import sys
 import re
+import functools
 
-variable = {}
+variable: dict = {}
 
 def cantonese_func_def(func_name : str, func) -> None:
     global variable
     variable[func_name] = func
 
+def define_func(name):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kw):
+            return func(*args, **kw)
+        cantonese_func_def(name, wrapper)
+        return wrapper
+    return decorator
+
 def cantonese_lib_init() -> None:
+
+    @define_func("开份文件")
     def cantonese_open(file, 模式 = 'r', 解码 = None):
         return open(file, mode = 模式, encoding = 解码)
 
+    @define_func("关咗佢")
     def cantonese_close(file) -> None:
         file.close()
 
+    @define_func("睇睇文件名")
     def out_name(file) -> None:
         print(file.name)
 
+    @define_func("睇睇有咩")
     def out_ctx(file, size = None) -> None:
         if size == None:
             print(file.read())
             return
         print(file.read(size))
 
+    @define_func("文件名")
     def get_name(file) -> str:
         return file.name
 
+    @define_func("读取")
     def cantonese_read(file, size = None) -> str:
         if size == None:
             return file.read()
         return file.read(size)
-    
-    cantonese_func_def("开份文件", cantonese_open)
-    cantonese_func_def("关咗佢", cantonese_close)
-    cantonese_func_def("睇睇文件名", out_name)
-    cantonese_func_def("睇睇有咩", out_ctx)
-    cantonese_func_def("文件名", get_name)
-    cantonese_func_def("读取", cantonese_read)
 
+    @define_func("最尾")
     def get_list_end(lst : list):
         return lst[-1]
 
+    @define_func("排头位")
     def get_list_beg(lst : list):
         return lst[0]
 
+    @define_func("身位")
     def where(lst : list, index : int, index2 = None, index3 = None, index4 = None):
         if index2 != None and index3 == None and index4 == None:
             return lst[index][index2]
@@ -53,12 +66,15 @@ def cantonese_lib_init() -> None:
             return lst[index][index2][index3][index4]
         return lst[index]
     
+    @define_func("挜位")
     def lst_insert(lst : list, index : int, obj) -> None:
         lst.insert(index, obj)
 
+    @define_func("摞位")
     def list_get(lst : list, index : int):
         return lst[index]
 
+    @define_func("check范围")
     def lst_range(lst : list, range_lst : list, loss, types = 1, func = None, func_ret = None) -> bool:
         if types == 2:
             for i in lst:
@@ -70,52 +86,42 @@ def cantonese_lib_init() -> None:
                 if i[0] - loss <= range_lst[0] and i[1] + loss >= range_lst[1]:
                     return True
 
-
+    @define_func("畀个tuple")
     def make_tuple(*args):
         return tuple(args)
-
-    cantonese_func_def("最尾", get_list_end)
-    cantonese_func_def("身位", where)
-    cantonese_func_def("挜位", lst_insert)
-    cantonese_func_def("排头位", get_list_beg)
-    cantonese_func_def("摞位", list_get)
-    cantonese_func_def("check范围", lst_range)
 
     cantonese_func_def("唔啱", False)
     cantonese_func_def("啱", True)
 
     cantonese_func_def("畀你啲嘢", input)
-    cantonese_func_def("畀个tuple", make_tuple)
 
     cantonese_stack_init()
 
 def cantonese_json_init() -> None:
     import json
 
+    @define_func("读取json")
     def json_load(text):
         return json.loads(text)
 
+    @define_func("睇下json")
     def show_json_load(text):
         print(json.loads(text))
     
-    cantonese_func_def("睇下json", show_json_load)
-    cantonese_func_def("读取json", json_load)
-
 def cantonese_csv_init() -> None:
     import csv
 
+    @define_func("睇睇csv有咩")
     def out_csv_read(file):
         for i in csv.reader(file):
             print(i)
-    
+
+    @define_func("读取csv")
     def get_csv(file):
         ret = []
         for i in csv.reader(file):
             ret.append(i)
         return i
-
-    cantonese_func_def("睇睇csv有咩", out_csv_read)
-    cantonese_func_def("读取csv", get_csv)
 
 def cantonese_random_init() -> None:
     import random
@@ -131,28 +137,27 @@ def cantonese_datetime_init() -> None:
 def cantonese_xml_init() -> None:
     from xml.dom.minidom import parse
     import xml.dom.minidom
-    
+
+    @define_func("剪樖Dom树")
     def make_dom(file) -> None:
         return xml.dom.minidom.parse(file).documentElement
 
+    @define_func("Dom有嘢")
     def has_attr(docelm, attr) -> bool:
         return docelm.hasAttribute(attr)
 
+    @define_func("睇Dom有咩")
     def get_attr(docelm, attr):
         print(docelm.getAttribute(attr))
     
+    @define_func("用Tag揾")
+    @define_func("用Tag揾嘅")
     def getElementsByTag(docelm, tag : str, out = None, ctx = None):
         if out == 1:
             print(docelm.getElementsByTagName(tag))
         if ctx != None:
             print(ctx + docelm.getElementsByTagName(tag)[0].childNodes[0].data)
         return docelm.getElementsByTagName(tag)
-
-    cantonese_func_def("整樖Dom树", make_dom)
-    cantonese_func_def("Dom有嘢", has_attr)
-    cantonese_func_def("睇Dom有咩", get_attr)
-    cantonese_func_def("用Tag揾", getElementsByTag)
-    cantonese_func_def("用Tag揾嘅", getElementsByTag)
 
 def cantonese_turtle_init() -> None:
     import turtle
@@ -162,6 +167,8 @@ def cantonese_turtle_init() -> None:
 
 def cantonese_smtplib_init() -> None:
     import smtplib
+
+    @define_func("send份邮件")
     def send(sender : str, receivers : str,  message : str, 
              smtpObj = smtplib.SMTP('localhost')) -> None:
         try:
@@ -169,24 +176,23 @@ def cantonese_smtplib_init() -> None:
             print("Successfully sent email!")
         except Exception:
             print("Error: unable to send email")
-    cantonese_func_def("send份邮件", send)
 
 def cantonese_stack_init() -> None:
+    @define_func("stack")
     class _stack(object):
         def __init__(self):
             self.stack = []
         def __str__(self):
             return 'Stack: ' + str(self.stack)
+        @define_func("我顶")
         def push(self, value):
             self.stack.append(value)
+        @define_func("我丢")
         def pop(self):
             if self.stack:
                 return self.stack.pop()
             else:
                 raise LookupError('stack 畀你丢空咗!')
-    cantonese_func_def("stack", _stack)
-    cantonese_func_def("我丢", _stack.pop)
-    cantonese_func_def("我顶", _stack.push)
 
 def cantonese_math_init():
     import math
@@ -311,18 +317,19 @@ def cantonese_re_init() -> None:
 
 def cantonese_urllib_init() -> None:
     import urllib.request
+
+    @define_func("睇网页")
     def can_urlopen_out(url : str) -> None:
         print(urllib.request.urlopen(url).read())
 
+    @define_func("揾网页")
     def can_urlopen(url : str):
         return urllib.request.urlopen(url)
-
-    cantonese_func_def("睇网页", can_urlopen_out)
-    cantonese_func_def("揾网页", can_urlopen)
 
 def cantonese_requests_init() -> None:
     import requests
 
+    @define_func("𠯠求")
     def req_get(url : str, data = "", json = False):
         headers = {
             'user-agent':
@@ -336,28 +343,25 @@ def cantonese_requests_init() -> None:
             return res.json()
         return res.text
 
-    cantonese_func_def("𠯠求", req_get)
-
 def cantonese_socket_init() -> None:
     import socket
 
+    @define_func("通电话")
     def s_new():
         return socket.socket() 
 
+    @define_func("倾偈")
     def s_connect(s, port, host = socket.gethostname()):
         s.connect((host, port))
         return s
     
+    @define_func("收风")
     def s_recv(s, i : int):
         return s.recv(i)
     
+    @define_func("收线")
     def s_close(s) -> None:
         s.close()
-
-    cantonese_func_def("倾偈", s_connect)
-    cantonese_func_def("收风", s_recv)
-    cantonese_func_def("通电话", s_new)
-    cantonese_func_def("收线", s_close)
 
 def cantonese_kivy_init() -> None:
     from kivy.app import App
@@ -365,10 +369,17 @@ def cantonese_kivy_init() -> None:
     from kivy.uix.button import Button
     from kivy.uix.boxlayout import BoxLayout
 
+    
+    cantonese_func_def("App", App)
+    cantonese_func_def("Label", Label)
+    cantonese_func_def("Button", Button)
+
+    @define_func("同我show")
     def app_show(ctx, 宽 = (.5, .5), 
         高 = {"center_x": .5, "center_y": .5}) -> None:
         return Label(text = ctx, size_hint = 宽, pos_hint = 高)
 
+    @define_func("App运行")
     def app_run(app_main, build_func) -> None:
         print("The app is running ...")
         def build(self):
@@ -376,10 +387,12 @@ def cantonese_kivy_init() -> None:
         app_main.build = build
         app_main().run()
 
+    @define_func("开掣")
     def app_button(ctx, 宽 = (.5, .5), 
         高 = {"center_x": .5, "center_y": .5}) -> None:
         return Button(text = ctx, size_hint = 宽, pos_hint = 高)
 
+    @define_func("老作")
     def app_layout(types, 布局 = "", 方向 = 'vertical', 间距 = 15, 内边距 = 10):
         if 布局 ==  "":
             if types == "Box":
@@ -389,17 +402,9 @@ def cantonese_kivy_init() -> None:
             for i in types.stack:
                 布局.add_widget(i)
     
+    @define_func("睇实佢")
     def button_bind(btn, func) -> None:
         btn.bind(on_press = func)
-
-    cantonese_func_def("App", App)
-    cantonese_func_def("Label", Label)
-    cantonese_func_def("Button", Button)
-    cantonese_func_def("App运行", app_run)
-    cantonese_func_def("同我show", app_show)
-    cantonese_func_def("开掣", app_button)
-    cantonese_func_def("老作", app_layout)
-    cantonese_func_def("睇实佢", button_bind)
 
 def cantonese_pygame_init() -> None:
     
@@ -412,12 +417,14 @@ def cantonese_pygame_init() -> None:
     pygame.mixer.init()
     pygame.font.init()
 
+    @define_func("屏幕老作")
     def pygame_setmode(size, caption = ""):
         if caption != "":
             pygame.display.set_caption(caption)
             return pygame.display.set_mode(size, 0, 32)
         return pygame.display.set_mode(size, 0, 32)
 
+    @define_func("图片老作")
     def pygame_imgload(path, color = ""):
         img = pygame.image.load(path).convert_alpha()
         if color != "":
@@ -500,9 +507,11 @@ def cantonese_pygame_init() -> None:
     def time_tick(clock_obj, t):
         clock_obj.tick(t)
 
+    @define_func("矩形老作")
     def pygame_rectload(屏幕, 颜色, X, Y, H = 20, W = 20):
         pygame.draw.rect(屏幕, 颜色, pygame.Rect(X, Y, H, W))
 
+    @define_func("动图老作")
     def pygame_gif_show(屏幕, 序列, pos = (0, 0), delay = 100):
         for i in 序列:
             屏幕.blit(i, pos)
@@ -543,28 +552,11 @@ def cantonese_pygame_init() -> None:
         sprite.kill()
 
     def sprite_trace(target, tracer, type = "", speed = 3, speed_y = 16, speed_x = 16):
-        """
-        x1, y1 = tracer.x, tracer.y
-        x2, y2 = target[0], target[1] # TODO use target.x
-        dx = x2 - x1
-        dy = y1 - y2
-        r = math.sqrt(math.pow(dx,2) + math.pow(dy,2))
-        if r == 0:
-            r = 0.1
-        sin = dy / r
-        cos = dx / r
-        x1 += cos * speed
-        y1 -= sin * speed
-        """
         if type == "Linear":
             dx, dy = target[0] - tracer.x, target[1] - tracer.y
             dist = math.hypot(dx, dy) + 0.1
             dx, dy = dx / dist, dy / dist  # Normalize.
             # Move along this normalized vector towards the player at current speed.
-            """
-            tracer.x += dx * speed
-            tracer.y += dy * speed
-            """
             return (dx * speed, dy * speed)
     """
         display_width : width of the screen
@@ -604,10 +596,6 @@ def cantonese_pygame_init() -> None:
         def 点击(self, position):
             return self.check_click(position)
 
-    cantonese_func_def("屏幕老作", pygame_setmode)
-    cantonese_func_def("图片老作", pygame_imgload)
-    cantonese_func_def("动图老作", pygame_gif_show)
-    cantonese_func_def("矩形老作", pygame_rectload)
     cantonese_func_def("嚟个矩形", pygame.Rect)
     cantonese_func_def("嚟个按钮", Button)
     cantonese_func_def("写隻字", pygame_text_show)

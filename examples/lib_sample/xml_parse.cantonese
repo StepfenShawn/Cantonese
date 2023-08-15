@@ -2,7 +2,7 @@
  * Cantonese 读取xml文件
  */
 使下 xml
-讲嘢: |Dom| 系 整樖Dom树("../examples/lib_sample/movies.xml")
+讲嘢: |Dom| 系 剪樖Dom树("../examples/lib_sample/movies.xml")
 如果 Dom有嘢(Dom, "shelf") 嘅话 -> {
     |睇Dom有咩| 下 -> (Dom, "shelf")
 }
