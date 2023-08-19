@@ -1,6 +1,7 @@
 import sys
 import re
 import functools
+from collections import namedtuple
 
 variable: dict = {}
 
@@ -306,14 +307,14 @@ def cantonese_model_new(model, datatest, tab, code) -> str:
     return code
 
 def cantonese_re_init() -> None:
+
+    @define_func("衬唔衬")
     def can_re_match(pattern : str, string : str, flags = 0):
         return re.match(pattern, string, flags)
-    
+
+    @define_func("衬")
     def can_re_match_out(pattern : str, string : str, flags = 0) -> None:
         print(re.match(pattern, string, flags).span())
-
-    cantonese_func_def("衬", can_re_match_out)
-    cantonese_func_def("衬唔衬", can_re_match)
 
 def cantonese_urllib_init() -> None:
     import urllib.request
@@ -431,6 +432,7 @@ def cantonese_pygame_init() -> None:
             img.set_colorkey((color),pygame.RLEACCEL)
         return img
 
+    @define_func("嚟首music")
     def pygame_musicload(path, loop = True, start = 0.0):
         pygame.mixer.music.load(path)
         if loop:
@@ -438,29 +440,37 @@ def cantonese_pygame_init() -> None:
         else:
             pygame.mixer.music.play(1, start)
 
+    @define_func("嚟首sound")
     def pygame_soundload(path):
         return pygame.mixer.Sound(path)
     
+    @define_func("播放")
     def pygame_sound_play(sound):
         sound.play()
 
+    @define_func("暂停")
     def pygame_sound_stop(sound):
         sound.stop()
 
+    @define_func("玩跑步")
     def pygame_move(object, speed):
         return object.move(speed)
 
+    @define_func("喺边")
     def object_rect(object, center = ""):
         if center == "":
             return object.get_rect()
         return object.get_rect(center = center)
 
+    @define_func("校色")
     def pygame_color(color):
         return pygame.Color(color)
 
+    @define_func("摞掣")
     def pygame_key(e):
         return e.key
 
+    @define_func("上画")
     def draw(屏幕, obj = "", obj_where = "", event = "", 颜色 = "", 位置 = "") -> None:
         if event == "":
             for event in pygame.event.get():
@@ -482,7 +492,8 @@ def cantonese_pygame_init() -> None:
             屏幕.blit(obj, obj_where)
 
         pygame.time.delay(2)
-
+    
+    @define_func("事件驱动")
     def exec_event(event):
         event_map = {
                 "KEYDOWN" : KEYDOWN
@@ -494,6 +505,7 @@ def cantonese_pygame_init() -> None:
                 if events.type == pygame.QUIT: 
                     sys.exit()
 
+    @define_func("揾位")
     def direction(obj, dir):
         if dir == "左边" or dir == "left":
             return obj.left
@@ -504,6 +516,7 @@ def cantonese_pygame_init() -> None:
         if dir == "下边" or dir == "bottom":
             return obj.bottom
 
+    @define_func("睇表")
     def time_tick(clock_obj, t):
         clock_obj.tick(t)
 
@@ -522,6 +535,7 @@ def cantonese_pygame_init() -> None:
         textSurface = font.render(text, True, color)
         return textSurface, textSurface.get_rect()
 
+    @define_func("写隻字")
     def pygame_text_show(screen, text, display_x, display_y,
                          style = 'freesansbold.ttf', _delay = 100, size = 115,
                          color = (255,255,255), update = True):
@@ -533,24 +547,31 @@ def cantonese_pygame_init() -> None:
         if update:
             pygame.display.update()
 
+    @define_func("屏幕校色")
     def screen_fill(screen, color):
         screen.fill(color)
 
+    @define_func("画图片")
     def img_show(screen, img, where):
         screen.blit(img, where)
 
+    @define_func("嚟个公仔")
     def sprite_add(group, sprite):
         group.add(sprite)
 
+    @define_func("刷新公仔")
     def sprite_update(group, ticks):
         group.update(ticks)
 
+    @define_func("画公仔")
     def sprite_draw(group, screen):
         group.draw(screen)
 
+    @define_func("摞公仔")
     def sprite_kill(sprite):
         sprite.kill()
 
+    @define_func("跟踪")
     def sprite_trace(target, tracer, type = "", speed = 3, speed_y = 16, speed_x = 16):
         if type == "Linear":
             dx, dy = target[0] - tracer.x, target[1] - tracer.y
@@ -563,6 +584,7 @@ def cantonese_pygame_init() -> None:
         display_height : height of the screen
     """
 
+    @define_func("嚟个按钮")
     class Button(object):
         def __init__(self, text, color, screen,
                     display_width = 1200, display_height = 600, 
@@ -597,89 +619,51 @@ def cantonese_pygame_init() -> None:
             return self.check_click(position)
 
     cantonese_func_def("嚟个矩形", pygame.Rect)
-    cantonese_func_def("嚟个按钮", Button)
-    cantonese_func_def("写隻字", pygame_text_show)
-    cantonese_func_def("嚟首music", pygame_musicload)
-    cantonese_func_def("嚟首sound", pygame_soundload)
-    cantonese_func_def("播放", pygame_sound_play)
-    cantonese_func_def("暂停", pygame_sound_stop)
-    cantonese_func_def("画图片", img_show)
-    cantonese_func_def("玩跑步", pygame_move)
-    cantonese_func_def("喺边", object_rect)
-    cantonese_func_def("上画", draw)
-    cantonese_func_def("揾位", direction)
-    cantonese_func_def("画公仔", sprite_draw)
-    cantonese_func_def("刷新公仔", sprite_update)
-    cantonese_func_def("摞公仔", sprite_kill)
     cantonese_func_def("公仔", pygame.sprite.Sprite)
     cantonese_func_def("公仔集", pygame.sprite.Group)
     cantonese_func_def("睇下撞未", pygame.sprite.collide_rect)
-    cantonese_func_def("嚟个公仔", sprite_add)
-    cantonese_func_def("跟踪", sprite_trace)
     cantonese_func_def("计时器", pygame.time.Clock)
-    cantonese_func_def("睇表", time_tick)
     cantonese_func_def("延时", pygame.time.delay)
-    cantonese_func_def("校色", pygame_color)
-    cantonese_func_def("屏幕校色", screen_fill)
-    cantonese_func_def("摞掣", pygame_key)
     cantonese_func_def("check下鼠标", pygame.mouse.get_pos)
     cantonese_func_def("check下点击", pygame.mouse.get_pressed)
     cantonese_func_def("刷新", pygame.display.flip)
-    cantonese_func_def("事件驱动", exec_event)
     cantonese_func_def("Say拜拜", pygame.quit)
 
 def cantonese_numpy_init() -> None:
     pass
 
+LibRegister = namedtuple('LibRegister', ['names', 'f_init', 'import_res'])
+
+lib_list = [
+    LibRegister(["random", "随机数"], cantonese_random_init, "random"),
+    LibRegister(["datetime", "日期"], cantonese_datetime_init, "datetime"),
+    LibRegister(["math", "数学"], cantonese_math_init, "math"),
+    LibRegister(["smtplib", "邮箱"], cantonese_smtplib_init, "stmplib"),
+    LibRegister(["xml", "xml解析"], cantonese_xml_init, "xml"),
+    LibRegister(["csv", "csv解析"], cantonese_csv_init, "csv"),
+    LibRegister(["os", "系统"], None, "os"),
+    LibRegister(["re", "正则匹配"], cantonese_re_init, "re"),
+    LibRegister(["urllib", "网页获取"], cantonese_urllib_init, "urllib"),
+    LibRegister(["requests", "网络请求"], cantonese_requests_init, "requests"),
+    LibRegister(["socket", "网络连接"], cantonese_socket_init, "socket"),
+    LibRegister(["kivy", "手机程式"], cantonese_kivy_init, "kivy"),
+    LibRegister(["pygame", "游戏"], cantonese_pygame_init, "pygame"),
+    LibRegister(["json", "json解析"], cantonese_json_init, "json"),
+    LibRegister(["numpy", "数值计算"], cantonese_numpy_init, "numpy")
+]
+
 """
     Built-in library for Cantonese
 """
-def cantonese_lib_import(name : str) -> None:
-    if name == "random" or name == "随机数":
-        cantonese_random_init()
-        return "random"
-    elif name == "datetime" or name == "日期":
-        cantonese_datetime_init()
-        return "datetime"
-    elif name == "math" or name == "数学":
-        cantonese_math_init()
-        return "math"
-    elif name == "smtplib" or name == "邮箱":
-        cantonese_smtplib_init()
-        return "smtplib"
-    elif name == "xml" or name == "xml解析":
-        cantonese_xml_init()
-        return "xml"
-    elif name == "csv" or name == "csv解析":
-        cantonese_csv_init()
-        return "csv"
-    elif name == "os" or name == "系统":
-        return "os"
-    elif name == "re" or name == "正则匹配":
-        cantonese_re_init()
-        return "re"
-    elif name == "urllib" or name == "网页获取":
-        cantonese_urllib_init()
-        return "urllib"
-    elif name == "requests" or name == "网络请求":
-        cantonese_requests_init()
-        return "requests"
-    elif name == "socket" or name == "网络连接":
-        cantonese_socket_init()
-        return "socket"
-    elif name == "kivy" or name == "手机程式":
-        cantonese_kivy_init()
-        return "kivy"
-    elif name == "pygame" or name == "游戏":
-        cantonese_pygame_init()
-        return "pygame"
-    elif name == "json" or name == "json解析":
-        cantonese_json_init()
-        return "json"
-    elif name == "numpy" or name == "数值计算":
-        cantonese_numpy_init()
-        return "numpy"
-    elif name[ : 7] == "python_":
+def cantonese_lib_import(name : str) -> str:
+    global lib_list
+
+    if name[ : 7] == "python_":
         return name[7 : ]
-    else:
-        return "Not found"
+
+    for lib in lib_list:
+        if name in lib.names:
+            if lib.f_init is not None:
+                lib.f_init()
+            return lib.import_res
+    return "Not found"
