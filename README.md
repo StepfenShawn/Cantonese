@@ -4,7 +4,7 @@
 [![pypi](https://img.shields.io/pypi/v/Cantonese)](https://pypi.org/project/Cantonese/)   
 # 粵語編程語言
 如果你唔識粵語或者編程，請睇[5分钟边学编程边学粤语](doc/cantonese.md).  
-### 個 Compiler 係喺我讀高中時開發嘅，所以代碼寫得好屎(宜家都係一撚樣)，歡迎各個粵語同埋編程愛好者一齊討論同貢獻！  
+#### 個 Compiler 大部份係喺我讀高中時開發嘅，所以代碼寫得好屎(宜家都一撚樣)，歡迎各個粵語或編程愛好者一齊討論同貢獻！  
 # 點樣安裝?
 ```
 pip install Cantonese
@@ -35,6 +35,7 @@ pip install Cantonese
 &emsp;&emsp;<a href="#22">各種排序同查找算法</a>  
 &emsp;&emsp;<a href="#23">寫個網頁嚟睇下？</a>   
 &emsp;&emsp;<a href="#24">用粵語開發一隻 App</a>   
+&emsp;&emsp;<a href="#25">數據庫編程都得???(開發緊)</a>  
 <a href="#25">點樣運行?</a>  
 <a href="#26">TODOs</a>  
 # <a name="0">引言</a>
@@ -66,7 +67,7 @@ pip install Cantonese
 <class 'int'>
 ```
 ### <a name="5">循環</a>
-打印從 1 到 100：  
+打印從 1 到 100, 其中`飲茶先啦`相當於break, `Hea陣先`相當於Continue：  
 ```
 讲嘢:「start」系 0
 讲嘢:「结束」系 唔啱
@@ -74,8 +75,9 @@ pip install Cantonese
     讲嘢:「start」系「start + 1」
     畀我睇下「start」 点样先?
     如果 |start >= 100| 嘅话 -> {
-        饮茶先啦
+        飲茶先啦
     }
+    Hea陣先
 玩到「结束」为止
 收工
 ```
@@ -328,12 +330,24 @@ pip install kivy
 ```
 ![App](img/HelloApp.jpg)  
 
+### <a href="#25">數據庫編程都得(開發緊)</a>
+select語句:
+```
+喺 成績表 度揾 學生哥 邊個 (年紀 大于 10 同埋 名字 係 'dany');
+
+喺 成績表 度揾 最尾 10 个 學生哥;
+喺 成績表 度揾 排頭 20 个 學生哥; 
+
+/* select * from xx  */
+睇下 xx;
+```
+
 # 仲有啲咩?
 
 [喺呢度](examples/)睇下更多例子.  
 所有關鍵字: https://github.com/Cantonese-community/Keywords  
 
-# <a name="25">点样运行?</a>
+# <a name="26">点样运行?</a>
 Cantonese 可以用多種方式運行，用自己嘅虛擬機，用 `LLVM`，或者翻譯成 Python 同 HTML 都得！
 使用虛擬機執行（僅支援部分語句）：   
 ```shell
@@ -379,7 +393,7 @@ cantonese examples/web/web_hello.cantonese -to_web -compile
 ```
 Vscode插件：https://github.com/Cantonese-community/vscode-cantonese  
 
-# <a name="26">TODOs</a>
+# <a name="27">TODOs</a>
 歡迎各個粵語同埋編程愛好者一齊討論同貢獻！為粵語文化遺產嘅保護貢獻出自己嘅一份力量!  
 send PR 前請睇 [貢獻指南](./CONTRIBUTING.md)
 

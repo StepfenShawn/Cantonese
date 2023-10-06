@@ -190,6 +190,9 @@ class Codegen(object):
         elif isinstance(stat, can_parser.can_ast.BreakStat):
             return self.tab + 'break\n'
 
+        elif isinstance(stat, can_parser.can_ast.ContinueStat):
+            return self.tab + 'continue\n'
+
         elif isinstance(stat, can_parser.can_ast.IfStat):
             s = ''
             s += self.tab + 'if ' + self.codegen_expr(stat.if_exp) + ':\n'

@@ -635,10 +635,10 @@ def cantonese_numpy_init() -> None:
 LibRegister = namedtuple('LibRegister', ['names', 'f_init', 'import_res'])
 
 lib_list = [
-    LibRegister(["random", "随机数"], cantonese_random_init, "random"),
+    LibRegister(["random", "随机数", "隨機數"], cantonese_random_init, "random"),
     LibRegister(["datetime", "日期"], cantonese_datetime_init, "datetime"),
-    LibRegister(["math", "数学"], cantonese_math_init, "math"),
-    LibRegister(["smtplib", "邮箱"], cantonese_smtplib_init, "stmplib"),
+    LibRegister(["math", "数学", "數學"], cantonese_math_init, "math"),
+    LibRegister(["smtplib", "邮箱", "郵箱"], cantonese_smtplib_init, "stmplib"),
     LibRegister(["xml", "xml解析"], cantonese_xml_init, "xml"),
     LibRegister(["csv", "csv解析"], cantonese_csv_init, "csv"),
     LibRegister(["os", "系统"], None, "os"),

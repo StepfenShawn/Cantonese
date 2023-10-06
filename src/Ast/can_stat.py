@@ -390,6 +390,13 @@ class BreakStat(AST):
     def __str__(self):
         return "BreakStat\n"
 
+class ContinueStat(AST):
+    def __init__(self) -> None:
+        pass
+
+    def __str__(self):
+        return "ContinueStat\n"
+
 class TypeStat(AST):
     def __init__(self, exps) -> None:
         self.exps = exps

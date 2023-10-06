@@ -13,6 +13,6 @@
     }
     |'doctype' ==> 'json', 'type' ==> 'AUTO', 'i' ==> 文本| 埋堆 -> |数据|
     讲嘢 : |网址| 係 "http://fanyi.youdao.com/translate"
-    𠯠求 下 -> |网址, data = 数据, json = True| @ |数据|
+    收风 下 -> |网址, data = 数据, json = True| @ |数据|
     畀我睇下 |身位(数据, 'translateResult', 0, 0, "tgt")| 点样先?
 玩到 |结束| 为止

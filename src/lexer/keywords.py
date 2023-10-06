@@ -84,6 +84,7 @@ kw_method = "佢识得"
 kw_endclass = "明白未啊"
 kw_cmd = "落Order"
 kw_break = "饮茶先啦"
+kw_continue = "Hea阵先"
 kw_lst_assign = "拍住上"
 kw_set_assign = "埋堆"
 kw_global_set = "Share下"
@@ -151,6 +152,7 @@ tr_kw_method = "佢識得"
 tr_kw_endclass = "明白未啊"
 tr_kw_cmd = "落Order"
 tr_kw_break = "飲茶先啦"
+tr_kw_continue = "Hea陣先"
 tr_kw_lst_assign = "拍住上"
 tr_kw_set_assign = "埋堆"
 tr_kw_global_set = "Share下"
@@ -218,6 +220,7 @@ keywords = (
     kw_endclass,
     kw_cmd,
     kw_break,
+    kw_continue,
     kw_del,
     kw_lst_assign,
     kw_set_assign,
@@ -283,6 +286,7 @@ keywords = (
     tr_kw_endclass,
     tr_kw_cmd,
     tr_kw_break,
+    tr_kw_continue,
     tr_kw_lst_assign,
     tr_kw_set_assign,
     tr_kw_global_set,

@@ -607,6 +607,9 @@ class StatParser(ParserBase):
             
             elif tk_value in [kw_break, tr_kw_break]:
                 return self.parse_break_stat()
+
+            elif tk_value in [kw_continue, tr_kw_continue]:
+                return self.parse_continue_stat()
             
             elif tk_value in [kw_while_do, tr_kw_while_do]:
                 return self.parse_while_stat()
@@ -859,6 +862,10 @@ class StatParser(ParserBase):
     def parse_break_stat(self):
         self.skip(1) # Skip the kw_break
         return can_ast.BreakStat()
+
+    def parse_continue_stat(self):
+        self.skip(1) # Skip the kw_continue
+        return can_ast.ContinueStat()
 
     def parse_while_stat(self):
         self.skip(1) # Skip the kw_while_do
