@@ -53,7 +53,7 @@ pip install Cantonese
 讲嘢:「A」系 1
 讲嘢:「B」系 2
 ```
-可以用`冇鳩用`嚟delete變量:  
+可以用`冇鳩用`或者`冇撚用`嚟delete變量:  
 ```
 冇鳩用: A,B
 ```
@@ -141,7 +141,7 @@ $$ x -> |x * x| 搞掂 @ f
 ```
 ### <a name="8">掟出異常</a>
 ```
-掟个「ImportError」来睇下?
+掟个「ImportError」嚟睇下?
 ```
 運行結果：
 ```

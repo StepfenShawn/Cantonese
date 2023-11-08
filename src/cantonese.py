@@ -5,17 +5,19 @@
 import cmd
 import re
 import sys
-import os
+import zhconv
 import argparse
 
-from can_error import 濑啲咩嘢
-from vm.stack_vm import *
-from lexer.can_lexer import *
-from compiler.can_compile import *
-from libraries.can_lib import *
+import sys
+sys.path.append("./compiler/")
 
+from can_error import 濑啲咩嘢
+import can_compile
+import can_lexer
+import can_parser
+
+from compiler.libraries.can_lib import *
 from web_core.can_web_parser import *
-from asm_core.can_asm_parser import *
 from vm.can_codegen import *
 
 _version_ = "Cantonese 1.0.8 Copyright (C) 2020-2023 StepfenShawn"
@@ -38,14 +40,16 @@ def cantonese_run(code : str, is_to_py : bool, file : str,
     global TO_PY_CODE
     global variable
 
-    tokens = cantonese_token(code, keywords)
+    code = zhconv.convert(code, 'zh-hk')
+        
+    tokens = can_lexer.cantonese_token(code)
     # TODO: update for v1.0.8
     if Options.dump_lex:
         for token in tokens:
             print("line " + str(token[0]) + ": " + str(token[1]))
 
     stats = can_parser.StatParser(tokens).parse_stats()
-    code_gen = Codegen(stats, file)
+    code_gen = can_compile.Codegen(stats, file)
 
     if Options.dump_ast:
         for stat in stats:
@@ -55,13 +59,6 @@ def cantonese_run(code : str, is_to_py : bool, file : str,
     for stat in stats:
         TO_PY_CODE += code_gen.codegen_stat(stat)
 
-
-    if Options.to_js:
-        import asm_core.Compile as Compile
-        js, fh = Compile.Compile(stats, "js", file).ret()
-        f = open(fh, 'w', encoding = 'utf-8')
-        f.write(js)
-        sys.exit(1)
     
     if Options._to_llvm:
         import llvm_core.can_llvm_build as can_llvm_build
@@ -69,9 +66,9 @@ def cantonese_run(code : str, is_to_py : bool, file : str,
         evaluator = llvm_evaluator.LLvmEvaluator(file)
         for i,stat in enumerate(stats):
             if i != len(stats) - 1:
-                evaluator.evaluate(stat, llvmdump=debug)
+                evaluator.evaluate(stat, llvmdump=Options.debug)
             else:
-                evaluator.evaluate(stat, llvmdump=debug, endMainBlock=True)
+                evaluator.evaluate(stat, llvmdump=Options.debug, endMainBlock=True)
         exit()
 
     cantonese_lib_init()
@@ -139,41 +136,17 @@ def 开始交互():
     import time
     交互().cmdloop(str(time.asctime(time.localtime(time.time()))))
 
-def cantonese_run_with_vm(code : str, file : bool) -> None:
-    tokens = cantonese_token(code, keywords)
-    stats = can_parser.StatParser(tokens).parse_stats()
-
-    if Options.dump_ast:
-        for stat in stats:
-            print(stat)
-    if Options.dump_lex:
-        print(tokens)
-    gen_op_code = []
-    stmt = make_stmt(stats, [])
-    run_with_vm(stmt, gen_op_code, True, path = file)
-    code = Code()
-    code.ins_lst = gen_op_code
-    if Options.debug:
-        for j in gen_op_code:
-            print(j)
-    cs = CanState(code)
-    cs._run()
-
 def main():
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument("file", nargs = '?', default = "")
     arg_parser.add_argument("others", nargs = '?', default = "")
     arg_parser.add_argument("-to_py", action = "store_true", help = "Translate Cantonese to Python")
     arg_parser.add_argument("-讲翻py", action = "store_true", help = "Translate Cantonese to Python")
-    arg_parser.add_argument("-to_js", action = "store_true", help = "Translate Cantonese to JS")
-    arg_parser.add_argument("-to_cpp", action = "store_true", help = "Translate Cantonese to C++")
-    arg_parser.add_argument("-to_asm", action = "store_true", help = "Translate Cantonese to assembly")
     arg_parser.add_argument("-to_web", action = "store_true")
     arg_parser.add_argument("-倾偈", action = "store_true")
     arg_parser.add_argument("-compile", action = "store_true")
     arg_parser.add_argument("-讲白啲", action = "store_true")
     arg_parser.add_argument("-build", action = "store_true")
-    arg_parser.add_argument("-stack_vm", action = "store_true")
     arg_parser.add_argument("-ast", action = "store_true")
     arg_parser.add_argument("-lex", action = "store_true")
     arg_parser.add_argument("-debug", action = "store_true")
@@ -215,19 +188,11 @@ def main():
                 Options.dump_lex = True
             if args.debug:
                 Options.debug = True
-            if args.stack_vm:
-                cantonese_run_with_vm(code, args.file)
-                sys.exit(1)
-            if args.to_js:
-                Options.to_js = True
-            if args.to_cpp:
-                Options.to_cpp = True
             if args.mkfile:
                 Options.mkfile = True
             if args.llvm or args.l:
                 Options._to_llvm = True
-            if args.to_asm:
-                Cantonese_asm_run(code, args.file)
+            
             cantonese_run(code, is_to_py, args.file)
     except FileNotFoundError:
         print("濑嘢!: 揾唔到你嘅文件 :(")

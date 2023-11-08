@@ -1,15 +1,12 @@
-import sys
-sys.path.append("..")
-
-import Parser.can_parser as can_parser
-import lexer.can_lexer as can_lexer
+import can_parser as can_parser
+cimport can_lexer as can_lexer
 import os
 import re
 
 from libraries.can_lib import cantonese_lib_import, cantonese_model_new,\
     cantonese_turtle_init
 
-class CanPyCompile(object):
+class CanPyCompile:
     def __init__(self):
         pass
 
@@ -27,7 +24,7 @@ class CanPyCompile(object):
         if found == False:
             raise ImportError(lib_name + '.cantonese not found.')
     
-        tokens = can_lexer.cantonese_token(code, can_lexer.keywords)
+        tokens = can_lexer.cantonese_token(code)
         stats = can_parser.StatParser(tokens).parse_stats()
         code_gen = Codegen(stats, path)
         code = ''

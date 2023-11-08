@@ -1,10 +1,7 @@
-import sys
-sys.path.append("..")
-
-from lexer.keywords import *
+from can_lexer cimport *
 from Ast import can_ast
-from .parser_base import *
-from .util import ParserUtil
+from parser_base cimport *
+from util import ParserUtil, exp_type
 
 class ExpParser(ParserBase):
     def __init__(self, token_list : list) -> None:
@@ -50,7 +47,7 @@ class ExpParser(ParserBase):
     def parse_exp12(self):
         exp = self.parse_exp11()
         while ParserUtil.get_token_value(self.current()) in ['or', '或者']:
-            line = self.current()[0]
+            line = self.current().lineno
             self.skip(1)
             exp = can_ast.BinopExp(line, 'or', exp, self.parse_exp11())
         return exp
@@ -59,7 +56,7 @@ class ExpParser(ParserBase):
     def parse_exp11(self):
         exp = self.parse_exp10()
         while ParserUtil.get_token_value(self.current()) in ['and', '同埋']:
-            line = self.current()[0]
+            line = self.current().lineno
             self.skip(1)
             exp = can_ast.BinopExp(line, 'and', exp, self.parse_exp10())
         return exp
@@ -70,17 +67,17 @@ class ExpParser(ParserBase):
         while True:
             now = self.current()
             if ParserUtil.get_token_value(now) in ('>', '>=', '<', '<=', '==', '!=', kw_is):
-                line, op = now[0], ParserUtil.get_token_value(now)
+                line, op = now.lineno, ParserUtil.get_token_value(now)
                 self.skip(1)
                 exp = can_ast.BinopExp(line, op if op != kw_is else '==', exp, self.parse_exp9())
             
-            elif ParserUtil.get_token_value(now) in ('in', kw_in, tr_kw_in):
-                line = now[0]
+            elif ParserUtil.get_token_value(now) in ('in', kw_in):
+                line = now.lineno
                 self.skip(1)
                 exp = can_ast.BinopExp(line, ' in ', exp, self.parse_exp9())
             
             elif ParserUtil.get_token_value(now) == '比唔上':
-                line = now[0]
+                line = now.lineno
                 self.skip(1)
                 exp = can_ast.BinopExp(line, '<', exp, self.parse_exp9())
 
@@ -93,7 +90,7 @@ class ExpParser(ParserBase):
         exp = self.parse_exp8()
         while ParserUtil.get_type(self.current()) == TokenType.OP_BOR or \
             ParserUtil.get_token_value(self.current()) == "或":
-            line = self.current()[0]
+            line = self.current().lineno
             self.skip(1)
             exp = can_ast.BinopExp(line, '|', exp, self.parse_exp8())
         return exp
@@ -103,7 +100,7 @@ class ExpParser(ParserBase):
         exp = self.parse_exp7()
         while ParserUtil.get_type(self.current()) == TokenType.OP_WAVE or \
             ParserUtil.get_token_value(self.current()) == "异或":
-            line = self.current()[0]
+            line = self.current().lineno
             self.skip(1)
             exp = can_ast.BinopExp(line, '^', exp, self.parse_exp8())
         return exp
@@ -113,7 +110,7 @@ class ExpParser(ParserBase):
         exp = self.parse_exp6()
         while ParserUtil.get_type(self.current()) == TokenType.OP_BAND or \
             ParserUtil.get_token_value(self.current()) == '与':
-            line = self.current()[0]
+            line = self.current().lineno
             self.skip(1)
             exp = can_ast.BinopExp(line, '&', exp, self.parse_exp8())
         return exp
@@ -122,18 +119,18 @@ class ExpParser(ParserBase):
     def parse_exp6(self):
         exp = self.parse_exp5()
         if ParserUtil.get_type(self.current()) in (TokenType.OP_SHL, TokenType.OP_SHR):
-            line = self.current()[0]
+            line = self.current().lineno
             op = ParserUtil.get_token_value(self.current())
             self.skip(1) # Skip the op
             exp = can_ast.BinopExp(line, op, exp, self.parse_exp5())
         
         elif ParserUtil.get_token_value(self.current()) == '左移':
-            line, op = self.current()[0], "<<"
+            line, op = self.current().lineno, "<<"
             self.skip(1) # Skip the op
             exp = can_ast.BinopExp(line, op, exp, self.parse_exp5())
         
         elif ParserUtil.get_token_value(self.current()) == '右移':
-            line, op = self.current()[0], ">>"
+            line, op = self.current().lineno, ">>"
             self.skip(1) # Skip the op
             exp = can_ast.BinopExp(line, op, exp, self.parse_exp5())
         
@@ -150,7 +147,7 @@ class ExpParser(ParserBase):
         line = 0
         exps = [exp]
         while ParserUtil.get_type(self.current()) == TokenType.OP_CONCAT:
-            line = self.current()[0]
+            line = self.current().lineno
             self.skip(1)
             exps.append(self.parse_exp4())
         return can_ast.ConcatExp(line, exps)
@@ -160,17 +157,17 @@ class ExpParser(ParserBase):
         exp = self.parse_exp3()
         while True:
             if ParserUtil.get_type(self.current()) in (TokenType.OP_ADD, TokenType.OP_MINUS):
-                line, op = self.current()[0], ParserUtil.get_token_value(self.current())
+                line, op = self.current().lineno, ParserUtil.get_token_value(self.current())
                 self.skip(1) # skip the op
                 exp = can_ast.BinopExp(line, op, exp, self.parse_exp3())
             
             elif ParserUtil.get_token_value(self.current()) == '加':
-                line = self.current()[0]
+                line = self.current().lineno
                 self.skip(1) # skip the op
                 exp = can_ast.BinopExp(line, '+', exp, self.parse_exp3())
             
             elif ParserUtil.get_token_value(self.current()) == '减':
-                line = self.current()[0]
+                line = self.current().lineno
                 self.skip(1) # skip the op
                 exp = can_ast.BinopExp(line, '-', exp, self.parse_exp3())
             
@@ -185,27 +182,27 @@ class ExpParser(ParserBase):
         while True:
             if ParserUtil.get_type(self.current()) in (TokenType.OP_MUL, TokenType.OP_MOD, 
                     TokenType.OP_DIV, TokenType.OP_IDIV):
-                line, op = self.current()[0], ParserUtil.get_token_value(self.current())
+                line, op = self.current().lineno, ParserUtil.get_token_value(self.current())
                 self.skip(1) # Skip the op
                 exp = can_ast.BinopExp(line, op, exp, self.parse_exp2())
             
             elif ParserUtil.get_token_value(self.current()) == '乘':
-                line = self.current()[0]
+                line = self.current().lineno
                 self.skip(1) # Skip the op
                 exp = can_ast.BinopExp(line, '*', exp, self.parse_exp2())
 
             elif ParserUtil.get_token_value(self.current()) == '余':
-                line = self.current()[0]
+                line = self.current().lineno
                 self.skip(1) # Skip the op
                 exp = can_ast.BinopExp(line, '%', exp, self.parse_exp2())
 
             elif ParserUtil.get_token_value(self.current()) == '整除':
-                line = self.current()[0]
+                line = self.current().lineno
                 self.skip(1) # Skip the op
                 exp = can_ast.BinopExp(line, '//', exp, self.parse_exp2())
 
             elif ParserUtil.get_token_value(self.current()) == '除':
-                line = self.current()[0]
+                line = self.current().lineno
                 self.skip(1) # Skip the op
                 exp = can_ast.BinopExp(line, '//', exp, self.parse_exp2())
 
@@ -220,13 +217,13 @@ class ExpParser(ParserBase):
             ParserUtil.get_token_value(self.current()) == 'not' or \
             ParserUtil.get_token_value(self.current()) == '-' or \
             ParserUtil.get_token_value(self.current()) == '~':
-            line, op = self.current()[0], ParserUtil.get_token_value(self.current())
+            line, op = self.current().lineno, ParserUtil.get_token_value(self.current())
             self.skip(1) # Skip the op
             exp = can_ast.UnopExp(line, op, self.parse_exp2())
             return exp
 
         elif ParserUtil.get_type(self.current()) == '取反':
-            line, op = self.current()[0], '~'
+            line, op = self.current().lineno, '~'
             self.skip(1) # Skip the op
             exp = can_ast.UnopExp(line, op, self.parse_exp2())
             return exp
@@ -237,7 +234,7 @@ class ExpParser(ParserBase):
     def parse_exp1(self):
         exp = self.parse_exp0()
         if ParserUtil.get_type(self.current()) == TokenType.OP_POW:
-            line, op = self.current()[0], ParserUtil.get_token_value(self.current())
+            line, op = self.current().lineno, ParserUtil.get_token_value(self.current())
             self.skip(1) # Skip the op
             exp = can_ast.BinopExp(line, op, exp, self.parse_exp2())
         return exp
@@ -246,27 +243,27 @@ class ExpParser(ParserBase):
         tk = self.current()
         if ParserUtil.get_token_value(tk) == '<*>':
             self.skip(1)
-            return can_ast.VarArgExp(tk[0])
+            return can_ast.VarArgExp(tk.lineno)
         
-        elif ParserUtil.get_token_value(tk) in [kw_false, tr_kw_false, "False"]:
+        elif ParserUtil.get_token_value(tk) in [kw_false, "False"]:
             self.skip(1)
-            return can_ast.FalseExp(tk[0])
+            return can_ast.FalseExp(tk.lineno)
         
-        elif ParserUtil.get_token_value(tk) in [kw_true, tr_kw_true, "True"]:
+        elif ParserUtil.get_token_value(tk) in [kw_true, "True"]:
             self.skip(1)
-            return can_ast.TrueExp(tk[0])
+            return can_ast.TrueExp(tk.lineno)
         
-        elif ParserUtil.get_token_value(tk) in [kw_none, tr_kw_none, "None"]:
+        elif ParserUtil.get_token_value(tk) in [kw_none, "None"]:
             self.skip(1)
-            return can_ast.NullExp(tk[0])
+            return can_ast.NullExp(tk.lineno)
         
         elif ParserUtil.get_type(tk) == TokenType.NUM:
             self.skip(1)
-            return can_ast.NumeralExp(tk[0], ParserUtil.get_token_value(tk))
+            return can_ast.NumeralExp(tk.lineno, ParserUtil.get_token_value(tk))
         
         elif ParserUtil.get_type(tk) == TokenType.STRING:
             self.skip(1)
-            return can_ast.StringExp(tk[0], ParserUtil.get_token_value(tk))
+            return can_ast.StringExp(tk.lineno, ParserUtil.get_token_value(tk))
 
         elif ParserUtil.get_type(tk) == TokenType.SEP_LBRACK:
             return self.parse_listcons()
@@ -279,7 +276,7 @@ class ExpParser(ParserBase):
             return self.parse_functiondef_expr()
 
         # If-Else expr
-        elif ParserUtil.get_token_value(tk) in [kw_expr_if, tr_kw_expr_if]:
+        elif ParserUtil.get_token_value(tk) in [kw_expr_if]:
             return self.parse_if_else_expr()
         
         return self.parse_prefixexp()
@@ -299,7 +296,7 @@ class ExpParser(ParserBase):
     @exp_type('prefixexp')
     def parse_prefixexp(self):
         if ParserUtil.get_type(self.current()) == TokenType.IDENTIFIER:
-            line, name = self.current()[0], ParserUtil.get_token_value(self.current())
+            line, name = self.current().lineno, ParserUtil.get_token_value(self.current())
             self.skip(1)
             exp = can_ast.IdExp(line, name)
         elif ParserUtil.get_type(self.current()) == TokenType.SEPCIFIC_ID_BEG:
@@ -314,7 +311,7 @@ class ExpParser(ParserBase):
         else:
             exp = self.parse_brack_exp()
         return self.finish_prefixexp(exp)
-        
+    
     @exp_type('parens_exp')
     def parse_parens_exp(self):
         self.get_next_token_of_kind(TokenType.SEP_LPAREN, 0)
@@ -357,7 +354,6 @@ class ExpParser(ParserBase):
             self.get_next_token_of_kind(TokenType.SEP_RCURLY, 0)
             return can_ast.MapExp(exps)
         
-
     def finish_prefixexp(self, exp : can_ast.AST):
         while True:
             kind, value = ParserUtil.get_type(self.current()), ParserUtil.get_token_value(self.current())
@@ -375,7 +371,7 @@ class ExpParser(ParserBase):
                 else:
                     self.skip(1)
                     tk = self.get_next_token_of_kind(TokenType.IDENTIFIER, 0)
-                    line, name = tk[0], ParserUtil.get_token_value(tk)
+                    line, name = tk.lineno, ParserUtil.get_token_value(tk)
                     key_exp = can_ast.IdExp(line, name)
                     exp = can_ast.ObjectAccessExp(line, exp, key_exp)
             elif (kind == TokenType.SEP_LPAREN) or \
@@ -389,7 +385,7 @@ class ExpParser(ParserBase):
                 self.skip(1)
                 exp = can_ast.AssignExp(exp, self.parse_exp())
             # TODO: Fix bugs here
-            elif value in [kw_get_value, tr_kw_get_value]:
+            elif value in [kw_get_value]:
                 self.skip(1)
                 exp = can_ast.AssignExp(self.parse_exp(), exp)
             else:
@@ -479,17 +475,17 @@ class ExpParser(ParserBase):
         blocks : list = []
         self.get_next_token_of(kw_do, 0)
         blocks.append(self.parse_exp())
-        self.get_next_token_of([kw_func_end, tr_kw_func_end], 0)
+        self.get_next_token_of(kw_func_end, 0)
         return can_ast.LambdaExp(idlist, blocks)
 
     @exp_type('if_else_expr')
     def parse_if_else_expr(self):
         self.skip(1)
         CondExp : can_ast.AST = self.parse_exp()
-        self.get_next_token_of([kw_do, tr_kw_do], 0)
+        self.get_next_token_of(kw_do, 0)
         IfExp : can_ast.AST = self.parse_exp()
-        self.get_next_token_of([kw_expr_else, tr_kw_expr_else], 0)
-        self.get_next_token_of([kw_do, tr_kw_do], 0)
+        self.get_next_token_of(kw_expr_else, 0)
+        self.get_next_token_of(kw_do, 0)
         ElseExp : can_ast.AST = self.parse_exp()
 
         return can_ast.IfElseExp(CondExp, IfExp, ElseExp)
@@ -541,7 +537,7 @@ class ParExpParser(ExpParser):
 
         if ParserUtil.get_token_value(tk) == '<*>':
             self.skip(1)
-            return can_ast.VarArgExp(tk[0])
+            return can_ast.VarArgExp(tk.lineno)
         
         return self.parse_prefixexp()
 
@@ -549,7 +545,7 @@ class ParExpParser(ExpParser):
     @exp_type('prefixexp')
     def parse_prefixexp(self):
         if ParserUtil.get_type(self.current()) == TokenType.IDENTIFIER:
-            line, name = self.current()[0], ParserUtil.get_token_value(self.current())
+            line, name = self.current().lineno, ParserUtil.get_token_value(self.current())
             self.skip(1)
             exp = can_ast.IdExp(line, name)
             return self.finish_prefixexp(exp)
@@ -587,31 +583,31 @@ class StatParser(ParserBase):
         kind = ParserUtil.get_type(tk)
         tk_value = ParserUtil.get_token_value(tk)
         if kind == TokenType.KEYWORD:
-            if tk_value in [kw_print, tr_kw_print]:
+            if tk_value in [kw_print]:
                 return self.parse_print_stat()
             
-            elif tk_value in [kw_exit, kw_exit_1, kw_exit_2, tr_kw_exit_1, tr_kw_exit_2]:
+            elif tk_value in [kw_exit, kw_exit_1, kw_exit_2]:
                 return self.parse_exit_stat()
             
-            elif tk_value in [kw_assign, tr_kw_assign]:
+            elif tk_value in [kw_assign]:
                 return self.parse_assign_stat()
             
-            elif tk_value in [kw_if, tr_kw_if]:
+            elif tk_value in [kw_if]:
                 return self.parse_if_stat()
             
-            elif tk_value in [kw_import, tr_kw_import]:
+            elif tk_value in [kw_import]:
                 return self.parse_import_stat()
             
             elif tk_value == kw_global_set:
                 return self.parse_global_stat()
             
-            elif tk_value in [kw_break, tr_kw_break]:
+            elif tk_value in [kw_break]:
                 return self.parse_break_stat()
 
-            elif tk_value in [kw_continue, tr_kw_continue]:
+            elif tk_value in [kw_continue]:
                 return self.parse_continue_stat()
             
-            elif tk_value in [kw_while_do, tr_kw_while_do]:
+            elif tk_value in [kw_while_do]:
                 return self.parse_while_stat()
             
             elif tk_value == '|':
@@ -627,19 +623,19 @@ class StatParser(ParserBase):
                 
                 self.get_next_token_of('|', skip_step)
 
-                if ParserUtil.get_token_value(self.look_ahead(skip_step)) in [kw_from, tr_kw_from]:
+                if ParserUtil.get_token_value(self.look_ahead(skip_step)) in [kw_from]:
                     return self.parse_for_stat(prefix_exps, skip_step)
                 
-                elif ParserUtil.get_token_value(self.look_ahead(skip_step)) in [kw_call_begin, tr_kw_call_begin]:
+                elif ParserUtil.get_token_value(self.look_ahead(skip_step)) in [kw_call_begin]:
                     return self.parse_func_call_stat(prefix_exps, skip_step)
                 
-                elif ParserUtil.get_token_value(self.look_ahead(skip_step)) in [kw_lst_assign, tr_kw_lst_assign]:
+                elif ParserUtil.get_token_value(self.look_ahead(skip_step)) in [kw_lst_assign]:
                     return self.parse_list_assign_stat(prefix_exps, skip_step)
 
-                elif ParserUtil.get_token_value(self.look_ahead(skip_step)) in [kw_set_assign, tr_kw_set_assign]:
+                elif ParserUtil.get_token_value(self.look_ahead(skip_step)) in [kw_set_assign]:
                     return self.parse_set_assign_stat(prefix_exps, skip_step)
                 
-                elif ParserUtil.get_token_value(self.look_ahead(skip_step)) in [kw_do, tr_kw_do]:
+                elif ParserUtil.get_token_value(self.look_ahead(skip_step)) in [kw_do]:
                     return self.parse_class_method_call_stat(prefix_exps, skip_step) 
 
             elif tk_value == '<<<':
@@ -654,46 +650,46 @@ class StatParser(ParserBase):
             elif tk_value == '$$':
                 return self.parse_lambda_def_stat()
 
-            elif tk_value in [kw_pass, tr_kw_pass]:
+            elif tk_value in [kw_pass]:
                 return self.parse_pass_stat()
             
-            elif tk_value in [kw_return, tr_kw_return]:
+            elif tk_value in [kw_return]:
                 return self.parse_return_stat()
             
-            elif tk_value in [kw_del, tr_kw_del]:
+            elif tk_value in [kw_del]:
                 return self.parse_del_stat()
 
-            elif tk_value in [kw_type, tr_kw_type]:
+            elif tk_value in [kw_type]:
                 return self.exp_type_stat()
 
-            elif tk_value in [kw_assert, tr_kw_assert]:
+            elif tk_value in [kw_assert]:
                 return self.parse_assert_stat()
 
-            elif tk_value in [kw_try, tr_kw_try]:
+            elif tk_value in [kw_try]:
                 return self.parse_try_stat()
 
-            elif tk_value in [kw_raise, tr_kw_raise]:
+            elif tk_value in [kw_raise]:
                 return self.parse_raise_stat()
 
-            elif tk_value in [kw_cmd, tr_kw_cmd]:
+            elif tk_value in [kw_cmd]:
                 return self.parse_cmd_stat()
 
-            elif tk_value in [kw_class_def, tr_kw_class_def]:
+            elif tk_value in [kw_class_def]:
                 return self.parse_class_def()
 
-            elif tk_value in [kw_call, tr_kw_call]:
+            elif tk_value in [kw_call]:
                 return self.parse_call_stat()
 
-            elif tk_value in [kw_stackinit, tr_kw_stackinit]:
+            elif tk_value in [kw_stackinit]:
                 return self.parse_stack_init_stat()
 
-            elif tk_value in [kw_push, tr_kw_push]:
+            elif tk_value in [kw_push]:
                 return self.parse_stack_push_stat()
 
-            elif tk_value in [kw_pop, tr_kw_pop]:
+            elif tk_value in [kw_pop]:
                 return self.parse_stack_pop_stat()
 
-            elif tk_value in [kw_match, tr_kw_match]:
+            elif tk_value in [kw_match]:
                 return self.parse_match_stat()
 
             elif tk_value == '@@@':
@@ -702,20 +698,20 @@ class StatParser(ParserBase):
             elif tk_value == '&&':
                 return self.parse_for_each_stat()
 
-            elif tk_value in [kw_model, tr_kw_model]:
+            elif tk_value in [kw_model]:
                 return self.parse_model_new_stat()
 
-            elif tk_value in [kw_turtle_beg, tr_kw_turtle_beg]:
+            elif tk_value in [kw_turtle_beg]:
                 return self.parse_turtle_stat()
 
         elif kind == TokenType.IDENTIFIER:
-            if ParserUtil.get_token_value(self.look_ahead(1)) in [kw_from, tr_kw_from]:
+            if ParserUtil.get_token_value(self.look_ahead(1)) in [kw_from]:
                 return self.parse_for_stat()
             
-            elif ParserUtil.get_token_value(self.look_ahead(1)) in [kw_call_begin, tr_kw_call_begin]:
+            elif ParserUtil.get_token_value(self.look_ahead(1)) in [kw_call_begin]:
                 return self.parse_func_call_stat()
 
-            elif ParserUtil.get_token_value(self.look_ahead(1)) in [kw_do, tr_kw_do]:
+            elif ParserUtil.get_token_value(self.look_ahead(1)) in [kw_do]:
                 return self.parse_class_method_call_stat()
 
         elif kind == TokenType.EOF:
@@ -737,7 +733,7 @@ class StatParser(ParserBase):
     def parse_print_stat(self):
         self.skip(1) # skip the kw_print
         args = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_args)
-        self.get_next_token_of([kw_endprint, tr_kw_endprint], step = 0)
+        self.get_next_token_of([kw_endprint], step = 0)
         return can_ast.PrintStat(args)
 
     # Parser for muti-assign
@@ -749,7 +745,7 @@ class StatParser(ParserBase):
         var_list : list = []
         exp_list : list= []
         while ParserUtil.get_type(self.current()) != TokenType.SEP_RCURLY:
-            var_list.append(self.parse_var_list()[0])
+            var_list.append(self.parse_var_list())
             self.get_next_token_of([kw_is, kw_is_2, kw_is_3], 0)
             exp_list.append(ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp_list)[0])
 
@@ -805,7 +801,7 @@ class StatParser(ParserBase):
         else_blocks : list = []
 
         if_exps = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp)
-        self.get_next_token_of([kw_then, tr_kw_then], 0)
+        self.get_next_token_of([kw_then], 0)
         self.get_next_token_of(kw_do, 0)
         self.get_next_token_of_kind(TokenType.SEP_LCURLY, 0)
 
@@ -816,10 +812,10 @@ class StatParser(ParserBase):
             del block_parser # free the memory
         self.skip(1) # Skip the SEP_RCURLY '}'
 
-        while ParserUtil.get_token_value(self.current()) in [kw_elif, tr_kw_elif]:
+        while ParserUtil.get_token_value(self.current()) in [kw_elif]:
             self.skip(1) # skip and try to get the next token
             elif_exps.append(ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp))
-            self.get_next_token_of([kw_then, tr_kw_then], 0)
+            self.get_next_token_of([kw_then], 0)
             self.get_next_token_of(kw_do, 0)
             self.get_next_token_of_kind(TokenType.SEP_LCURLY, 0)
             
@@ -836,7 +832,7 @@ class StatParser(ParserBase):
 
         if ParserUtil.get_token_value(self.current()) == kw_else_or_not:
             self.skip(1) # Skip and try yo get the next token
-            self.get_next_token_of([kw_then, tr_kw_then], 0)
+            self.get_next_token_of([kw_then], 0)
             self.get_next_token_of(kw_do, 0)
             self.get_next_token_of_kind(TokenType.SEP_LCURLY, 0)
             while (ParserUtil.get_type(self.current()) != TokenType.SEP_RCURLY):
@@ -880,7 +876,7 @@ class StatParser(ParserBase):
         self.skip(1) # Skip the kw_while
         
         cond_exps = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp)
-        self.get_next_token_of([kw_whi_end, tr_kw_whi_end], 0)
+        self.get_next_token_of([kw_whi_end], 0)
 
         return can_ast.WhileStat(can_ast.UnopExp(self.get_line(), 'not', cond_exps), blocks)
 
@@ -894,14 +890,14 @@ class StatParser(ParserBase):
             id = prefix_exp[0]
             self.skip(skip_prefix_exp)
         
-        self.get_next_token_of([kw_from, tr_kw_from], 0)
+        self.get_next_token_of([kw_from], 0)
 
         from_exp = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp)
-        self.get_next_token_of([kw_to, tr_kw_to], 0)
+        self.get_next_token_of([kw_to], 0)
 
         to_exp = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp)
 
-        while (ParserUtil.get_token_value(self.current()) not in [kw_endfor, tr_kw_endfor]):
+        while (ParserUtil.get_token_value(self.current()) not in [kw_endfor]):
             block_parse = StatParser(self.tokens[self.pos : ], self.ExpParser)
             blocks.append(block_parse.parse())
             self.skip(block_parse.pos)
@@ -946,7 +942,7 @@ class StatParser(ParserBase):
 
             block_list.append(body)
 
-            self.get_next_token_of([kw_func_end, tr_kw_func_end], 0)
+            self.get_next_token_of([kw_func_end], 0)
         
         return can_ast.MatchModeFuncDefStat(can_ast.IdExp(self.get_line(), name), args_list, block_list)
 
@@ -960,10 +956,10 @@ class StatParser(ParserBase):
         self.skip(exp_parser.pos)
         del exp_parser # free the memory
 
-        self.get_next_token_of([kw_func_begin, tr_kw_func_begin, kw_do], 0)
+        self.get_next_token_of([kw_func_begin, kw_do], 0)
 
         blocks : list = []
-        while (ParserUtil.get_token_value(self.current()) not in [kw_func_end, tr_kw_func_end]):
+        while (ParserUtil.get_token_value(self.current()) not in [kw_func_end]):
             block_parser = StatParser(self.tokens[self.pos : ], self.ExpParser)
             blocks.append(block_parser.parse())
             self.skip(block_parser.pos)
@@ -981,7 +977,7 @@ class StatParser(ParserBase):
             func_name = prefix_exps[0]
             self.skip(skip_step)
 
-        self.get_next_token_of([kw_call_begin, tr_kw_call_begin], 0)
+        self.get_next_token_of([kw_call_begin], 0)
         self.get_next_token_of(kw_do, 0)
 
         exp_parser = self.ExpParser(self.tokens[self.pos : ])
@@ -1021,7 +1017,7 @@ class StatParser(ParserBase):
     
     def parse_list_assign_stat(self, prefix_exp : can_ast.AST, skip_step : int):
         self.skip(skip_step)
-        self.get_next_token_of([kw_lst_assign, tr_kw_lst_assign], 0)
+        self.get_next_token_of([kw_lst_assign], 0)
         self.get_next_token_of(kw_do, 0)
         varlist = self.parse_var_list()
 
@@ -1030,7 +1026,7 @@ class StatParser(ParserBase):
 
     def parse_set_assign_stat(self, prefix_exp : can_ast.AST, skip_step : int):
         self.skip(skip_step)
-        self.get_next_token_of([kw_set_assign, tr_kw_set_assign], 0)
+        self.get_next_token_of([kw_set_assign], 0)
         self.get_next_token_of(kw_do, 0)
         varlist = self.parse_var_list()
 
@@ -1055,8 +1051,6 @@ class StatParser(ParserBase):
     def parse_del_stat(self):
         self.skip(1)
         exps = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp_list)
-        del exp_parser
-
         return can_ast.DelStat(exps)
 
     def parse_try_stat(self):
@@ -1076,14 +1070,14 @@ class StatParser(ParserBase):
             del block_parser
 
         self.skip(1)
-        self.get_next_token_of([kw_except, tr_kw_except], 0)
+        self.get_next_token_of([kw_except], 0)
         
         exp_parser = self.ExpParser(self.tokens[self.pos : ])
         except_exps.append(exp_parser.parse_exp())
         self.skip(exp_parser.pos)
         del exp_parser
 
-        self.get_next_token_of([kw_then, tr_kw_then], 0)
+        self.get_next_token_of([kw_then], 0)
         self.get_next_token_of([kw_do], 0)
         self.get_next_token_of_kind(TokenType.SEP_LCURLY, 0)
 
@@ -1098,8 +1092,8 @@ class StatParser(ParserBase):
         self.skip(1)
         except_blocks.append(except_block)
 
-        while ParserUtil.get_token_value(self.current()) in [kw_except, tr_kw_except]:
-            self.get_next_token_of([kw_then, tr_kw_then], 0)
+        while ParserUtil.get_token_value(self.current()) in [kw_except]:
+            self.get_next_token_of([kw_then], 0)
 
             exp_parser = self.ExpParser(self.tokens[self.pos : ])
             except_exps.append(exp_parser.parse_exp())
@@ -1119,7 +1113,7 @@ class StatParser(ParserBase):
             
             except_blocks.append(except_block)
 
-        if ParserUtil.get_token_value(self.current()) in [kw_finally, tr_kw_finally]:
+        if ParserUtil.get_token_value(self.current()) in [kw_finally]:
             self.skip(1)
             self.get_next_token_of(kw_do, 0)
             self.get_next_token_of_kind(TokenType.SEP_LCURLY, 0)
@@ -1142,7 +1136,7 @@ class StatParser(ParserBase):
         self.skip(exp_parser.pos) # free the memory
         del exp_parser
 
-        self.get_next_token_of([kw_raise_end, tr_kw_raise_end], 0)
+        self.get_next_token_of([kw_raise_end], 0)
         return can_ast.RaiseStat(name_exp)
 
     def exp_type_stat(self):
@@ -1169,7 +1163,7 @@ class StatParser(ParserBase):
         self.skip(exp_parser.pos)
         del exp_parser # free the memory
 
-        self.get_next_token_of([kw_extend, tr_kw_extend], 0)
+        self.get_next_token_of([kw_extend], 0)
         
         exp_parser = self.ExpParser(self.tokens[self.pos : ])
         extend_name : list = exp_parser.parse_exp_list()
@@ -1178,7 +1172,7 @@ class StatParser(ParserBase):
 
         class_blocks = []
         
-        while ParserUtil.get_token_value(self.current()) not in [kw_endclass, tr_kw_endclass]:
+        while ParserUtil.get_token_value(self.current()) not in [kw_endclass]:
             class_block_parser = ClassBlockStatParser(self.tokens[self.pos : ])
             class_blocks.append(class_block_parser.parse())
             self.skip(class_block_parser.pos)
@@ -1268,7 +1262,7 @@ class StatParser(ParserBase):
         self.get_next_token_of_kind(TokenType.SEP_LCURLY, 0)
 
         while ParserUtil.get_type(self.current()) != TokenType.SEP_RCURLY:
-            while ParserUtil.get_token_value(self.current()) in [kw_case, tr_kw_case]:
+            while ParserUtil.get_token_value(self.current()) in [kw_case]:
                 self.skip(1)
                 exp_parser = self.ExpParser(self.tokens[self.pos : ])
                 match_val.append(exp_parser.parse_exp())
@@ -1291,7 +1285,7 @@ class StatParser(ParserBase):
             
             if ParserUtil.get_token_value(self.current()) == kw_else_or_not:
                 self.skip(1)
-                self.get_next_token_of([kw_then, tr_kw_then], 0)
+                self.get_next_token_of([kw_then], 0)
                 self.get_next_token_of(kw_do, 0)
                 self.get_next_token_of_kind(TokenType.SEP_LCURLY, 0)
 
@@ -1319,7 +1313,7 @@ class StatParser(ParserBase):
         self.skip(exp_parser.pos)
         del exp_parser # free the memory
 
-        self.get_next_token_of([kw_in, tr_kw_in], 0)
+        self.get_next_token_of([kw_in], 0)
 
         exp_parser = self.ExpParser(self.tokens[self.pos : ])
         exp_list = exp_parser.parse_exp_list()
@@ -1352,7 +1346,7 @@ class StatParser(ParserBase):
         self.skip(exp_parser.pos)
         del exp_parser # free the memory
 
-        self.get_next_token_of([kw_mod_new, tr_kw_mod_new], 0)
+        self.get_next_token_of([kw_mod_new], 0)
         self.get_next_token_of(kw_do, 0)
 
         exp_parser = self.ExpParser(self.tokens[self.pos : ])
@@ -1399,7 +1393,7 @@ class ClassBlockExpParser(ExpParser):
     # Override
     def parse_exp0(self):
         tk = ParserUtil.get_token_value(self.current())
-        if tk in [kw_self, tr_kw_self, '@@']:
+        if tk in [kw_self, '@@']:
             self.skip(1)
             return can_ast.ClassSelfExp(super().parse_exp0())
         else:
@@ -1424,7 +1418,7 @@ class ClassBlockStatParser(StatParser):
         self.skip(exp_parser.pos)
         del exp_parser # free the memory
 
-        self.get_next_token_of([kw_func_begin, tr_kw_func_begin, kw_do], 0)
+        self.get_next_token_of([kw_func_begin, kw_do], 0)
         
         blocks : list = []
         # '{' ... '}'
@@ -1438,7 +1432,7 @@ class ClassBlockStatParser(StatParser):
         
         # '=> ... '%%'
         else:
-            while (ParserUtil.get_token_value(self.current()) not in [kw_func_end, tr_kw_func_end]):
+            while (ParserUtil.get_token_value(self.current()) not in [kw_func_end]):
                 block_parser = ClassBlockStatParser(self.tokens[self.pos : ], self.ExpParser)
                 blocks.append(block_parser.parse())
                 self.skip(block_parser.pos)
@@ -1477,11 +1471,11 @@ class ClassBlockStatParser(StatParser):
         tk = self.current()
         kind = ParserUtil.get_type(tk)
         tk_value = ParserUtil.get_token_value(tk)
-        if tk_value in [kw_method, tr_kw_method]:
+        if tk_value in [kw_method]:
             return self.parse_method_block()
-        elif tk_value in [kw_class_assign, tr_kw_class_assign]:
+        elif tk_value in [kw_class_assign]:
             return self.parse_class_assign_stat()
-        elif tk_value in [kw_class_init, tr_kw_class_init]:
+        elif tk_value in [kw_class_init]:
             return self.parse_class_init_stat()
         else:
             return super().parse()

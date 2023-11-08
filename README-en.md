@@ -118,7 +118,7 @@ Call the function:
 ```
 ### <a name="8">Throw exception</a>
 ```
-掟个 |ImportError| 来睇下?
+掟个 |ImportError| 嚟睇下?
 ```
 You will get:
 ```

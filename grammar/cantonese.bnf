@@ -84,7 +84,7 @@ stat ::= ';' |
       | '如果' exp '嘅话' '->' '{' block '}' [定系 exp 嘅话 '->' '{' block '}'] ['唔系嘅话' '->' '{' block '}']
       | match下 id '=>' '{' matchblock '}'
       | 用下 explist
-      | '掟个' id '来睇下'
+      | '掟个' id '嚟睇下'
       | '谂下' args
       | '落Order' args
       | '有条仆街叫' ['|'] id ['|']
