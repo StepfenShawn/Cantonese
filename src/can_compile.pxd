@@ -1,7 +1,5 @@
-# distutils: language=c++
-
-import can_parser as can_parser
-cimport can_lexer as can_lexer
+import can_parser
+cimport can_lexer
 import os
 import re
 

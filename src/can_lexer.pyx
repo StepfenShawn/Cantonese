@@ -1,5 +1,5 @@
 import re
-from keywords cimport *
+from can_keywords cimport *
 
 cdef class can_token:
     def __init__(self, int lineno, TokenType typ, str value):
@@ -21,30 +21,6 @@ cdef class lexer:
         self.re_expr = r"[|][\S\s]*?[|]"
         self.re_python_expr = r"[~][\S\s]*?[#]"
         self.re_callfunc = r"[&](.*?)[)]"
-        self.op = r'(?P<op>(相加){1}|(加){1}|(减){1}|(乘){1}|(整除){1}|(除){1}|(余){1}|(异或){1}|(取反){1}|(左移){1}|(右移){1}'\
-        r'(与){1}(或者){1}|(或){1}|(系){1})|(同埋){1}|(自己嘅){1}|(比唔上){1}|(喺){1}'
-        self.op_get_code = re.findall(re.compile(r'[(](.*?)[)]', re.S), self.op[5 : ])
-        self.op_gen_code = ["矩阵.matrix_addition", "+", "-", "*", "//", "/", "%", "^", "~", "<<", ">>",
-            "&", "or", "|", "==", "and", "self.", '<', 'in']
-        self.build_in_funcs = r'(?P<build_in_funcs>(瞓){1}|(加啲){1}|(摞走){1}|(嘅长度){1}|(阵先){1}|' \
-                     r'(畀你){1}|(散水){1})'
-        self.bif_get_code = re.findall(re.compile(r'[(](.*?)[)]', re.S), self.build_in_funcs[19 :])
-        self.bif_gen_code = ["sleep", "append", "remove", ".__len__()", "2", "input", "clear"]
-
-    cdef list make_rep(self, list list1, list list2):
-        # assert len(list1) == len(list2)
-        cdef list ret = []
-        for i in range(len(list1)):
-            ret.append([list1[i], list2[i]])
-        return ret
-    
-    cdef str trans(self, str code, list rep):
-        cdef object p = re.match(r'\|(.*)同(.*)有几衬\|', code, re.M|re.I)
-        if p:
-            code = " corr(" + p.group(1) +", " + p.group(2) + ") "
-        for r in rep:
-            code = code.replace(r[0], r[1])
-        return code
 
     cdef next(self, int n):
         self.code = self.code[n:]
@@ -346,3 +322,6 @@ cpdef list cantonese_token(code : str):
         if token.typ == TokenType.EOF:
             break
     return tokens
+
+cpdef print_token(tk : can_token):
+    print(f"[{tk.lineno}, [{tk.typ}, {tk.value}]")

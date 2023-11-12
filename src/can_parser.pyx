@@ -1,7 +1,7 @@
 from can_lexer cimport *
 from Ast import can_ast
 from parser_base cimport *
-from util import ParserUtil, exp_type
+from can_utils import ParserUtil, exp_type
 
 class ExpParser(ParserBase):
     def __init__(self, token_list : list) -> None:
@@ -99,7 +99,7 @@ class ExpParser(ParserBase):
     def parse_exp8(self):
         exp = self.parse_exp7()
         while ParserUtil.get_type(self.current()) == TokenType.OP_WAVE or \
-            ParserUtil.get_token_value(self.current()) == "异或":
+            ParserUtil.get_token_value(self.current()) == "異或":
             line = self.current().lineno
             self.skip(1)
             exp = can_ast.BinopExp(line, '^', exp, self.parse_exp8())
@@ -109,7 +109,7 @@ class ExpParser(ParserBase):
     def parse_exp7(self):
         exp = self.parse_exp6()
         while ParserUtil.get_type(self.current()) == TokenType.OP_BAND or \
-            ParserUtil.get_token_value(self.current()) == '与':
+            ParserUtil.get_token_value(self.current()) == '與':
             line = self.current().lineno
             self.skip(1)
             exp = can_ast.BinopExp(line, '&', exp, self.parse_exp8())
@@ -166,7 +166,7 @@ class ExpParser(ParserBase):
                 self.skip(1) # skip the op
                 exp = can_ast.BinopExp(line, '+', exp, self.parse_exp3())
             
-            elif ParserUtil.get_token_value(self.current()) == '减':
+            elif ParserUtil.get_token_value(self.current()) == '減':
                 line = self.current().lineno
                 self.skip(1) # skip the op
                 exp = can_ast.BinopExp(line, '-', exp, self.parse_exp3())
@@ -191,7 +191,7 @@ class ExpParser(ParserBase):
                 self.skip(1) # Skip the op
                 exp = can_ast.BinopExp(line, '*', exp, self.parse_exp2())
 
-            elif ParserUtil.get_token_value(self.current()) == '余':
+            elif ParserUtil.get_token_value(self.current()) == '餘':
                 line = self.current().lineno
                 self.skip(1) # Skip the op
                 exp = can_ast.BinopExp(line, '%', exp, self.parse_exp2())
@@ -377,7 +377,7 @@ class ExpParser(ParserBase):
             elif (kind == TokenType.SEP_LPAREN) or \
                 (kind == TokenType.KEYWORD and value == kw_call_begin):
                 exp = self.finish_functioncall_exp(exp)
-            elif value == '嘅长度':
+            elif value == '嘅長度':
                 self.skip(1)
                 key_exp = can_ast.IdExp(self.get_line(), '__len__()')
                 exp = can_ast.ObjectAccessExp(self.get_line(), exp, key_exp)
@@ -745,10 +745,10 @@ class StatParser(ParserBase):
         var_list : list = []
         exp_list : list= []
         while ParserUtil.get_type(self.current()) != TokenType.SEP_RCURLY:
-            var_list.append(self.parse_var_list())
+            var_list.append(self.parse_var_list()[0])
             self.get_next_token_of([kw_is, kw_is_2, kw_is_3], 0)
             exp_list.append(ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp_list)[0])
-
+        
         # Skip the SEP_RCURLY
         self.skip(1)
         return can_ast.AssignBlockStat(self.get_line(), var_list, exp_list)
@@ -788,7 +788,7 @@ class StatParser(ParserBase):
             raise Exception('unreachable!')
 
     def parse_exit_stat(self):
-        tk = self.look_ahead()
+        tk = self.look_ahead(0)
         self.skip(1)
         return can_ast.ExitStat()
 
@@ -866,7 +866,6 @@ class StatParser(ParserBase):
     def parse_while_stat(self):
         self.skip(1) # Skip the kw_while_do
         blocks : list = []
-        cond_exps : list = []
         while (ParserUtil.get_token_value(self.current()) != kw_while):
             block_parser =  StatParser(self.tokens[self.pos : ], self.ExpParser)
             blocks.append(block_parser.parse())
@@ -874,7 +873,7 @@ class StatParser(ParserBase):
             del block_parser # free the memory
 
         self.skip(1) # Skip the kw_while
-        
+       
         cond_exps = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp)
         self.get_next_token_of([kw_whi_end], 0)
 

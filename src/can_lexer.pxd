@@ -1,6 +1,4 @@
-# distutils: language=c++
-
-from keywords cimport *
+from can_keywords cimport *
 
 cdef class can_token:
     cdef:
@@ -22,16 +20,8 @@ cdef class lexer:
         readonly str re_expr
         readonly str re_python_expr
         readonly str re_callfunc
-        readonly str op
-        readonly list op_get_code
-        readonly list op_gen_code
-        readonly object build_in_funcs
-        readonly list bif_get_code
-        readonly list bif_gen_code
 
     cdef:
-        public list make_rep(self, list list1, list list2)
-        public str trans(self, str code, list rep)
         public next(self, int n)
         public check(self, str s)
         
@@ -55,3 +45,4 @@ cdef class lexer:
         cdef bint isChinese(str word)
 
 cpdef list cantonese_token(str code)
+cpdef print_token(can_token tk)

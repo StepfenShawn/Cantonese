@@ -44,7 +44,7 @@ if platform.system() == 'Windows':
         print("Running:" + file_list[i] +  "......")
         #os.system("python ../src/cantonese.py " + file_list[i])
         # If raise an err try to use "python3 ../src/cantonese.py"
-        cmd = "python ../src/cantonese.py " + file_list[i]
+        cmd = "python cantonese.py " + file_list[i]
         # TODO: Get the output in command and compare with all the expectation
         ret = adb_shell(cmd)
         try:
@@ -65,7 +65,7 @@ else:
         with open(源码文件, 'r', encoding = 'utf-8') as f:
             源码 = f.read()
 
-        参数 = ["python", "../src/cantonese.py", 源码文件]
+        参数 = ["python", "cantonese.py", 源码文件]
         return subprocess.Popen(参数, stdout=subprocess.PIPE).communicate()[0]
 
     # 在 test 下运行 `python -m unittest test.py`

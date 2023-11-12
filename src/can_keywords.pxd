@@ -1,5 +1,3 @@
-# distutils: language=c++
-
 cdef enum TokenType:
     EOF = 0
     VARARG = 1         # <*>

@@ -42,7 +42,7 @@ cdef class ParserBase:
         self.pos += step
 
     cpdef int get_line(self):
-        return self.tokens[self.pos][0]
+        return self.tokens[self.pos].lineno
 
     cpdef error(self, object args):
         raise Exception(args)

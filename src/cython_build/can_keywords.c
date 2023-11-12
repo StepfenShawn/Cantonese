@@ -3,13 +3,12 @@
 /* BEGIN: Cython Metadata
 {
     "distutils": {
-        "language": "c++",
-        "name": "compiler.keywords",
+        "name": "can_keywords",
         "sources": [
-            "compiler/keywords.pyx"
+            "can_keywords.pyx"
         ]
     },
-    "module_name": "compiler.keywords"
+    "module_name": "can_keywords"
 }
 END: Cython Metadata */
 
@@ -550,35 +549,19 @@ END: Cython Metadata */
 #endif
 #define __PYX_REINTERPRET_FUNCION(func_pointer, other_pointer) ((func_pointer)(void(*)(void))(other_pointer))
 
-#ifndef __cplusplus
-  #error "Cython files generated with the C++ option must be compiled with a C++ compiler."
-#endif
 #ifndef CYTHON_INLINE
   #if defined(__clang__)
     #define CYTHON_INLINE __inline__ __attribute__ ((__unused__))
-  #else
+  #elif defined(__GNUC__)
+    #define CYTHON_INLINE __inline__
+  #elif defined(_MSC_VER)
+    #define CYTHON_INLINE __inline
+  #elif defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
     #define CYTHON_INLINE inline
+  #else
+    #define CYTHON_INLINE
   #endif
 #endif
-template<typename T>
-void __Pyx_call_destructor(T& x) {
-    x.~T();
-}
-template<typename T>
-class __Pyx_FakeReference {
-  public:
-    __Pyx_FakeReference() : ptr(NULL) { }
-    __Pyx_FakeReference(const T& ref) : ptr(const_cast<T*>(&ref)) { }
-    T *operator->() { return ptr; }
-    T *operator&() { return ptr; }
-    operator T&() { return *ptr; }
-    template<typename U> bool operator ==(const U& other) const { return *ptr == other; }
-    template<typename U> bool operator !=(const U& other) const { return *ptr != other; }
-    template<typename U> bool operator==(const __Pyx_FakeReference<U>& other) const { return *ptr == *other.ptr; }
-    template<typename U> bool operator!=(const __Pyx_FakeReference<U>& other) const { return *ptr != *other.ptr; }
-  private:
-    T *ptr;
-};
 
 #define __PYX_BUILD_PY_SSIZE_T "n"
 #define CYTHON_FORMAT_SSIZE_T "z"
@@ -1165,11 +1148,15 @@ static CYTHON_INLINE float __PYX_NAN() {
     #warning Please do not define the '__PYX_EXTERN_C' macro externally. Use 'CYTHON_EXTERN_C' instead.
     #endif
 #else
-    #define __PYX_EXTERN_C extern "C++"
+  #ifdef __cplusplus
+    #define __PYX_EXTERN_C extern "C"
+  #else
+    #define __PYX_EXTERN_C extern
+  #endif
 #endif
 
-#define __PYX_HAVE__compiler__keywords
-#define __PYX_HAVE_API__compiler__keywords
+#define __PYX_HAVE__can_keywords
+#define __PYX_HAVE_API__can_keywords
 /* Early includes */
 #ifdef _OPENMP
 #include <omp.h>
@@ -1433,7 +1420,7 @@ static const char *__pyx_filename;
 /* #### Code section: filename_table ### */
 
 static const char *__pyx_f[] = {
-  "compiler\\\\keywords.pyx",
+  "can_keywords.pyx",
 };
 /* #### Code section: utility_code_proto_before_types ### */
 /* #### Code section: numeric_typedefs ### */
@@ -1442,54 +1429,52 @@ static const char *__pyx_f[] = {
 
 /*--- Type declarations ---*/
 
-/* "compiler/keywords.pxd":3
- * # distutils: language=c++
- * 
+/* "can_keywords.pxd":1
  * cdef enum TokenType:             # <<<<<<<<<<<<<<
  *     EOF = 0
  *     VARARG = 1         # <*>
  */
-enum __pyx_t_8compiler_8keywords_TokenType {
-  __pyx_e_8compiler_8keywords_EOF = 0,
-  __pyx_e_8compiler_8keywords_VARARG = 1,
-  __pyx_e_8compiler_8keywords_SEP_COMMA = 2,
-  __pyx_e_8compiler_8keywords_SEP_DOT = 3,
-  __pyx_e_8compiler_8keywords_SEP_LPAREN = 4,
-  __pyx_e_8compiler_8keywords_SEP_RPAREN = 5,
-  __pyx_e_8compiler_8keywords_SEP_LBRACK = 6,
-  __pyx_e_8compiler_8keywords_SEP_RBRACK = 7,
-  __pyx_e_8compiler_8keywords_SEP_LCURLY = 8,
-  __pyx_e_8compiler_8keywords_SEP_RCURLY = 9,
-  __pyx_e_8compiler_8keywords_OP_MINUS = 10,
-  __pyx_e_8compiler_8keywords_OP_WAVE = 11,
-  __pyx_e_8compiler_8keywords_OP_ADD = 12,
-  __pyx_e_8compiler_8keywords_OP_MUL = 13,
-  __pyx_e_8compiler_8keywords_OP_DIV = 14,
-  __pyx_e_8compiler_8keywords_OP_POW = 15,
-  __pyx_e_8compiler_8keywords_OP_MOD = 16,
-  __pyx_e_8compiler_8keywords_OP_BAND = 17,
-  __pyx_e_8compiler_8keywords_OP_SHR = 18,
-  __pyx_e_8compiler_8keywords_OP_SHL = 19,
-  __pyx_e_8compiler_8keywords_OP_CONCAT = 20,
-  __pyx_e_8compiler_8keywords_OP_LT = 21,
-  __pyx_e_8compiler_8keywords_OP_LE = 22,
-  __pyx_e_8compiler_8keywords_OP_GT = 23,
-  __pyx_e_8compiler_8keywords_OP_GE = 24,
-  __pyx_e_8compiler_8keywords_OP_EQ = 25,
-  __pyx_e_8compiler_8keywords_OP_ASSIGN = 26,
-  __pyx_e_8compiler_8keywords_OP_NE = 27,
-  __pyx_e_8compiler_8keywords_OP_AND = 28,
-  __pyx_e_8compiler_8keywords_OP_OR = 29,
-  __pyx_e_8compiler_8keywords_OP_NOT = 30,
-  __pyx_e_8compiler_8keywords_OP_BOR = 31,
-  __pyx_e_8compiler_8keywords_OP_IDIV = 32,
-  __pyx_e_8compiler_8keywords_KEYWORD = 33,
-  __pyx_e_8compiler_8keywords_IDENTIFIER = 34,
-  __pyx_e_8compiler_8keywords_STRING = 35,
-  __pyx_e_8compiler_8keywords_NUM = 36,
-  __pyx_e_8compiler_8keywords_EXTEND_EXPR = 37,
-  __pyx_e_8compiler_8keywords_SEPCIFIC_ID_BEG = 38,
-  __pyx_e_8compiler_8keywords_SEPICFIC_ID_END = 39
+enum __pyx_t_12can_keywords_TokenType {
+  __pyx_e_12can_keywords_EOF = 0,
+  __pyx_e_12can_keywords_VARARG = 1,
+  __pyx_e_12can_keywords_SEP_COMMA = 2,
+  __pyx_e_12can_keywords_SEP_DOT = 3,
+  __pyx_e_12can_keywords_SEP_LPAREN = 4,
+  __pyx_e_12can_keywords_SEP_RPAREN = 5,
+  __pyx_e_12can_keywords_SEP_LBRACK = 6,
+  __pyx_e_12can_keywords_SEP_RBRACK = 7,
+  __pyx_e_12can_keywords_SEP_LCURLY = 8,
+  __pyx_e_12can_keywords_SEP_RCURLY = 9,
+  __pyx_e_12can_keywords_OP_MINUS = 10,
+  __pyx_e_12can_keywords_OP_WAVE = 11,
+  __pyx_e_12can_keywords_OP_ADD = 12,
+  __pyx_e_12can_keywords_OP_MUL = 13,
+  __pyx_e_12can_keywords_OP_DIV = 14,
+  __pyx_e_12can_keywords_OP_POW = 15,
+  __pyx_e_12can_keywords_OP_MOD = 16,
+  __pyx_e_12can_keywords_OP_BAND = 17,
+  __pyx_e_12can_keywords_OP_SHR = 18,
+  __pyx_e_12can_keywords_OP_SHL = 19,
+  __pyx_e_12can_keywords_OP_CONCAT = 20,
+  __pyx_e_12can_keywords_OP_LT = 21,
+  __pyx_e_12can_keywords_OP_LE = 22,
+  __pyx_e_12can_keywords_OP_GT = 23,
+  __pyx_e_12can_keywords_OP_GE = 24,
+  __pyx_e_12can_keywords_OP_EQ = 25,
+  __pyx_e_12can_keywords_OP_ASSIGN = 26,
+  __pyx_e_12can_keywords_OP_NE = 27,
+  __pyx_e_12can_keywords_OP_AND = 28,
+  __pyx_e_12can_keywords_OP_OR = 29,
+  __pyx_e_12can_keywords_OP_NOT = 30,
+  __pyx_e_12can_keywords_OP_BOR = 31,
+  __pyx_e_12can_keywords_OP_IDIV = 32,
+  __pyx_e_12can_keywords_KEYWORD = 33,
+  __pyx_e_12can_keywords_IDENTIFIER = 34,
+  __pyx_e_12can_keywords_STRING = 35,
+  __pyx_e_12can_keywords_NUM = 36,
+  __pyx_e_12can_keywords_EXTEND_EXPR = 37,
+  __pyx_e_12can_keywords_SEPCIFIC_ID_BEG = 38,
+  __pyx_e_12can_keywords_SEPICFIC_ID_END = 39
 };
 /* #### Code section: utility_code_proto ### */
 
@@ -1752,82 +1737,82 @@ static int __Pyx_InitStrings(__Pyx_StringTabEntry *t);
 
 /* #### Code section: module_declarations ### */
 
-/* Module declarations from "compiler.keywords" */
-static PyObject *__pyx_v_8compiler_8keywords_keywords = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_print = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_endprint = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_exit = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_in = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_elif = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_turtle_beg = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_type = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_assign = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_class_def = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_else_or_not = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_is = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_if = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_expr_if = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_expr_else = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_then = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_do = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_begin = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_end = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_pass = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_while_do = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_function = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_call = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_import = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_func_begin = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_func_end = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_is_2 = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_assert = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_class_assign = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_while = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_whi_end = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_return = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_try = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_except = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_finally = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_raise = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_raise_end = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_from = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_to = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_endfor = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_extend = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_method = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_endclass = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_cmd = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_break = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_continue = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_lst_assign = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_set_assign = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_global_set = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_is_3 = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_exit_1 = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_exit_2 = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_false = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_true = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_none = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_stackinit = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_push = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_pop = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_model = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_mod_new = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_class_init = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_self = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_call_begin = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_get_value = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_del = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_del2 = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_match = 0;
-static PyObject *__pyx_v_8compiler_8keywords_kw_case = 0;
+/* Module declarations from "can_keywords" */
+static PyObject *__pyx_v_12can_keywords_keywords = 0;
+static PyObject *__pyx_v_12can_keywords_kw_print = 0;
+static PyObject *__pyx_v_12can_keywords_kw_endprint = 0;
+static PyObject *__pyx_v_12can_keywords_kw_exit = 0;
+static PyObject *__pyx_v_12can_keywords_kw_in = 0;
+static PyObject *__pyx_v_12can_keywords_kw_elif = 0;
+static PyObject *__pyx_v_12can_keywords_kw_turtle_beg = 0;
+static PyObject *__pyx_v_12can_keywords_kw_type = 0;
+static PyObject *__pyx_v_12can_keywords_kw_assign = 0;
+static PyObject *__pyx_v_12can_keywords_kw_class_def = 0;
+static PyObject *__pyx_v_12can_keywords_kw_else_or_not = 0;
+static PyObject *__pyx_v_12can_keywords_kw_is = 0;
+static PyObject *__pyx_v_12can_keywords_kw_if = 0;
+static PyObject *__pyx_v_12can_keywords_kw_expr_if = 0;
+static PyObject *__pyx_v_12can_keywords_kw_expr_else = 0;
+static PyObject *__pyx_v_12can_keywords_kw_then = 0;
+static PyObject *__pyx_v_12can_keywords_kw_do = 0;
+static PyObject *__pyx_v_12can_keywords_kw_begin = 0;
+static PyObject *__pyx_v_12can_keywords_kw_end = 0;
+static PyObject *__pyx_v_12can_keywords_kw_pass = 0;
+static PyObject *__pyx_v_12can_keywords_kw_while_do = 0;
+static PyObject *__pyx_v_12can_keywords_kw_function = 0;
+static PyObject *__pyx_v_12can_keywords_kw_call = 0;
+static PyObject *__pyx_v_12can_keywords_kw_import = 0;
+static PyObject *__pyx_v_12can_keywords_kw_func_begin = 0;
+static PyObject *__pyx_v_12can_keywords_kw_func_end = 0;
+static PyObject *__pyx_v_12can_keywords_kw_is_2 = 0;
+static PyObject *__pyx_v_12can_keywords_kw_assert = 0;
+static PyObject *__pyx_v_12can_keywords_kw_class_assign = 0;
+static PyObject *__pyx_v_12can_keywords_kw_while = 0;
+static PyObject *__pyx_v_12can_keywords_kw_whi_end = 0;
+static PyObject *__pyx_v_12can_keywords_kw_return = 0;
+static PyObject *__pyx_v_12can_keywords_kw_try = 0;
+static PyObject *__pyx_v_12can_keywords_kw_except = 0;
+static PyObject *__pyx_v_12can_keywords_kw_finally = 0;
+static PyObject *__pyx_v_12can_keywords_kw_raise = 0;
+static PyObject *__pyx_v_12can_keywords_kw_raise_end = 0;
+static PyObject *__pyx_v_12can_keywords_kw_from = 0;
+static PyObject *__pyx_v_12can_keywords_kw_to = 0;
+static PyObject *__pyx_v_12can_keywords_kw_endfor = 0;
+static PyObject *__pyx_v_12can_keywords_kw_extend = 0;
+static PyObject *__pyx_v_12can_keywords_kw_method = 0;
+static PyObject *__pyx_v_12can_keywords_kw_endclass = 0;
+static PyObject *__pyx_v_12can_keywords_kw_cmd = 0;
+static PyObject *__pyx_v_12can_keywords_kw_break = 0;
+static PyObject *__pyx_v_12can_keywords_kw_continue = 0;
+static PyObject *__pyx_v_12can_keywords_kw_lst_assign = 0;
+static PyObject *__pyx_v_12can_keywords_kw_set_assign = 0;
+static PyObject *__pyx_v_12can_keywords_kw_global_set = 0;
+static PyObject *__pyx_v_12can_keywords_kw_is_3 = 0;
+static PyObject *__pyx_v_12can_keywords_kw_exit_1 = 0;
+static PyObject *__pyx_v_12can_keywords_kw_exit_2 = 0;
+static PyObject *__pyx_v_12can_keywords_kw_false = 0;
+static PyObject *__pyx_v_12can_keywords_kw_true = 0;
+static PyObject *__pyx_v_12can_keywords_kw_none = 0;
+static PyObject *__pyx_v_12can_keywords_kw_stackinit = 0;
+static PyObject *__pyx_v_12can_keywords_kw_push = 0;
+static PyObject *__pyx_v_12can_keywords_kw_pop = 0;
+static PyObject *__pyx_v_12can_keywords_kw_model = 0;
+static PyObject *__pyx_v_12can_keywords_kw_mod_new = 0;
+static PyObject *__pyx_v_12can_keywords_kw_class_init = 0;
+static PyObject *__pyx_v_12can_keywords_kw_self = 0;
+static PyObject *__pyx_v_12can_keywords_kw_call_begin = 0;
+static PyObject *__pyx_v_12can_keywords_kw_get_value = 0;
+static PyObject *__pyx_v_12can_keywords_kw_del = 0;
+static PyObject *__pyx_v_12can_keywords_kw_del2 = 0;
+static PyObject *__pyx_v_12can_keywords_kw_match = 0;
+static PyObject *__pyx_v_12can_keywords_kw_case = 0;
 /* #### Code section: typeinfo ### */
 /* #### Code section: before_global_var ### */
-#define __Pyx_MODULE_NAME "compiler.keywords"
-extern int __pyx_module_is_main_compiler__keywords;
-int __pyx_module_is_main_compiler__keywords = 0;
+#define __Pyx_MODULE_NAME "can_keywords"
+extern int __pyx_module_is_main_can_keywords;
+int __pyx_module_is_main_can_keywords = 0;
 
-/* Implementation of "compiler.keywords" */
+/* Implementation of "can_keywords" */
 /* #### Code section: global_var ### */
 /* #### Code section: string_decls ### */
 static const char __pyx_k_[] = "\347\225\200\346\210\221\347\235\207\344\270\213";
@@ -2859,74 +2844,74 @@ static int __Pyx_modinit_global_init_code(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_modinit_global_init_code", 0);
   /*--- Global init code ---*/
-  __pyx_v_8compiler_8keywords_keywords = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_print = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_endprint = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_exit = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_in = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_elif = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_turtle_beg = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_type = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_assign = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_class_def = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_else_or_not = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_is = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_if = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_expr_if = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_expr_else = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_then = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_do = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_begin = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_end = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_pass = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_while_do = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_function = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_call = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_import = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_func_begin = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_func_end = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_is_2 = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_assert = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_class_assign = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_while = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_whi_end = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_return = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_try = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_except = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_finally = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_raise = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_raise_end = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_from = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_to = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_endfor = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_extend = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_method = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_endclass = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_cmd = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_break = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_continue = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_lst_assign = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_set_assign = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_global_set = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_is_3 = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_exit_1 = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_exit_2 = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_false = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_true = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_none = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_stackinit = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_push = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_pop = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_model = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_mod_new = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_class_init = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_self = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_call_begin = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_get_value = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_del = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_del2 = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_match = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  __pyx_v_8compiler_8keywords_kw_case = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_keywords = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_print = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_endprint = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_exit = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_in = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_elif = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_turtle_beg = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_type = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_assign = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_class_def = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_else_or_not = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_is = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_if = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_expr_if = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_expr_else = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_then = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_do = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_begin = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_end = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_pass = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_while_do = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_function = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_call = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_import = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_func_begin = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_func_end = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_is_2 = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_assert = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_class_assign = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_while = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_whi_end = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_return = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_try = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_except = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_finally = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_raise = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_raise_end = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_from = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_to = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_endfor = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_extend = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_method = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_endclass = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_cmd = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_break = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_continue = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_lst_assign = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_set_assign = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_global_set = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_is_3 = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_exit_1 = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_exit_2 = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_false = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_true = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_none = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_stackinit = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_push = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_pop = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_model = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_mod_new = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_class_init = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_self = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_call_begin = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_get_value = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_del = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_del2 = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_match = ((PyObject*)Py_None); Py_INCREF(Py_None);
+  __pyx_v_12can_keywords_kw_case = ((PyObject*)Py_None); Py_INCREF(Py_None);
   __Pyx_RefNannyFinishContext();
   return 0;
 }
@@ -2938,74 +2923,74 @@ static int __Pyx_modinit_variable_export_code(void) {
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__Pyx_modinit_variable_export_code", 0);
   /*--- Variable export code ---*/
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_keywords, (void *)&__pyx_v_8compiler_8keywords_keywords, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_print, (void *)&__pyx_v_8compiler_8keywords_kw_print, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_endprint, (void *)&__pyx_v_8compiler_8keywords_kw_endprint, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_exit, (void *)&__pyx_v_8compiler_8keywords_kw_exit, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_in, (void *)&__pyx_v_8compiler_8keywords_kw_in, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_elif, (void *)&__pyx_v_8compiler_8keywords_kw_elif, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_turtle_beg, (void *)&__pyx_v_8compiler_8keywords_kw_turtle_beg, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_type, (void *)&__pyx_v_8compiler_8keywords_kw_type, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_assign, (void *)&__pyx_v_8compiler_8keywords_kw_assign, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_class_def, (void *)&__pyx_v_8compiler_8keywords_kw_class_def, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_else_or_not, (void *)&__pyx_v_8compiler_8keywords_kw_else_or_not, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_is, (void *)&__pyx_v_8compiler_8keywords_kw_is, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_if, (void *)&__pyx_v_8compiler_8keywords_kw_if, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_expr_if, (void *)&__pyx_v_8compiler_8keywords_kw_expr_if, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_expr_else, (void *)&__pyx_v_8compiler_8keywords_kw_expr_else, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_then, (void *)&__pyx_v_8compiler_8keywords_kw_then, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_do, (void *)&__pyx_v_8compiler_8keywords_kw_do, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_begin, (void *)&__pyx_v_8compiler_8keywords_kw_begin, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_end, (void *)&__pyx_v_8compiler_8keywords_kw_end, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_pass, (void *)&__pyx_v_8compiler_8keywords_kw_pass, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_while_do, (void *)&__pyx_v_8compiler_8keywords_kw_while_do, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_function, (void *)&__pyx_v_8compiler_8keywords_kw_function, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_call, (void *)&__pyx_v_8compiler_8keywords_kw_call, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_import, (void *)&__pyx_v_8compiler_8keywords_kw_import, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_func_begin, (void *)&__pyx_v_8compiler_8keywords_kw_func_begin, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_func_end, (void *)&__pyx_v_8compiler_8keywords_kw_func_end, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_is_2, (void *)&__pyx_v_8compiler_8keywords_kw_is_2, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_assert, (void *)&__pyx_v_8compiler_8keywords_kw_assert, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_class_assign, (void *)&__pyx_v_8compiler_8keywords_kw_class_assign, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_while, (void *)&__pyx_v_8compiler_8keywords_kw_while, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_whi_end, (void *)&__pyx_v_8compiler_8keywords_kw_whi_end, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_return, (void *)&__pyx_v_8compiler_8keywords_kw_return, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_try, (void *)&__pyx_v_8compiler_8keywords_kw_try, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_except, (void *)&__pyx_v_8compiler_8keywords_kw_except, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_finally, (void *)&__pyx_v_8compiler_8keywords_kw_finally, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_raise, (void *)&__pyx_v_8compiler_8keywords_kw_raise, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_raise_end, (void *)&__pyx_v_8compiler_8keywords_kw_raise_end, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_from, (void *)&__pyx_v_8compiler_8keywords_kw_from, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_to, (void *)&__pyx_v_8compiler_8keywords_kw_to, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_endfor, (void *)&__pyx_v_8compiler_8keywords_kw_endfor, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_extend, (void *)&__pyx_v_8compiler_8keywords_kw_extend, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_method, (void *)&__pyx_v_8compiler_8keywords_kw_method, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_endclass, (void *)&__pyx_v_8compiler_8keywords_kw_endclass, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_cmd, (void *)&__pyx_v_8compiler_8keywords_kw_cmd, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_break, (void *)&__pyx_v_8compiler_8keywords_kw_break, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_continue, (void *)&__pyx_v_8compiler_8keywords_kw_continue, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_lst_assign, (void *)&__pyx_v_8compiler_8keywords_kw_lst_assign, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_set_assign, (void *)&__pyx_v_8compiler_8keywords_kw_set_assign, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_global_set, (void *)&__pyx_v_8compiler_8keywords_kw_global_set, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_is_3, (void *)&__pyx_v_8compiler_8keywords_kw_is_3, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_exit_1, (void *)&__pyx_v_8compiler_8keywords_kw_exit_1, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_exit_2, (void *)&__pyx_v_8compiler_8keywords_kw_exit_2, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_false, (void *)&__pyx_v_8compiler_8keywords_kw_false, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_true, (void *)&__pyx_v_8compiler_8keywords_kw_true, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_none, (void *)&__pyx_v_8compiler_8keywords_kw_none, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_stackinit, (void *)&__pyx_v_8compiler_8keywords_kw_stackinit, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_push, (void *)&__pyx_v_8compiler_8keywords_kw_push, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_pop, (void *)&__pyx_v_8compiler_8keywords_kw_pop, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_model, (void *)&__pyx_v_8compiler_8keywords_kw_model, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_mod_new, (void *)&__pyx_v_8compiler_8keywords_kw_mod_new, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_class_init, (void *)&__pyx_v_8compiler_8keywords_kw_class_init, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_self, (void *)&__pyx_v_8compiler_8keywords_kw_self, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_call_begin, (void *)&__pyx_v_8compiler_8keywords_kw_call_begin, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_get_value, (void *)&__pyx_v_8compiler_8keywords_kw_get_value, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_del, (void *)&__pyx_v_8compiler_8keywords_kw_del, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_del2, (void *)&__pyx_v_8compiler_8keywords_kw_del2, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_match, (void *)&__pyx_v_8compiler_8keywords_kw_match, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_case, (void *)&__pyx_v_8compiler_8keywords_kw_case, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_keywords, (void *)&__pyx_v_12can_keywords_keywords, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_print, (void *)&__pyx_v_12can_keywords_kw_print, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_endprint, (void *)&__pyx_v_12can_keywords_kw_endprint, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_exit, (void *)&__pyx_v_12can_keywords_kw_exit, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_in, (void *)&__pyx_v_12can_keywords_kw_in, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_elif, (void *)&__pyx_v_12can_keywords_kw_elif, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_turtle_beg, (void *)&__pyx_v_12can_keywords_kw_turtle_beg, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_type, (void *)&__pyx_v_12can_keywords_kw_type, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_assign, (void *)&__pyx_v_12can_keywords_kw_assign, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_class_def, (void *)&__pyx_v_12can_keywords_kw_class_def, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_else_or_not, (void *)&__pyx_v_12can_keywords_kw_else_or_not, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_is, (void *)&__pyx_v_12can_keywords_kw_is, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_if, (void *)&__pyx_v_12can_keywords_kw_if, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_expr_if, (void *)&__pyx_v_12can_keywords_kw_expr_if, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_expr_else, (void *)&__pyx_v_12can_keywords_kw_expr_else, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_then, (void *)&__pyx_v_12can_keywords_kw_then, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_do, (void *)&__pyx_v_12can_keywords_kw_do, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_begin, (void *)&__pyx_v_12can_keywords_kw_begin, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_end, (void *)&__pyx_v_12can_keywords_kw_end, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_pass, (void *)&__pyx_v_12can_keywords_kw_pass, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_while_do, (void *)&__pyx_v_12can_keywords_kw_while_do, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_function, (void *)&__pyx_v_12can_keywords_kw_function, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_call, (void *)&__pyx_v_12can_keywords_kw_call, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_import, (void *)&__pyx_v_12can_keywords_kw_import, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_func_begin, (void *)&__pyx_v_12can_keywords_kw_func_begin, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_func_end, (void *)&__pyx_v_12can_keywords_kw_func_end, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_is_2, (void *)&__pyx_v_12can_keywords_kw_is_2, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_assert, (void *)&__pyx_v_12can_keywords_kw_assert, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_class_assign, (void *)&__pyx_v_12can_keywords_kw_class_assign, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_while, (void *)&__pyx_v_12can_keywords_kw_while, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_whi_end, (void *)&__pyx_v_12can_keywords_kw_whi_end, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_return, (void *)&__pyx_v_12can_keywords_kw_return, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_try, (void *)&__pyx_v_12can_keywords_kw_try, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_except, (void *)&__pyx_v_12can_keywords_kw_except, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_finally, (void *)&__pyx_v_12can_keywords_kw_finally, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_raise, (void *)&__pyx_v_12can_keywords_kw_raise, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_raise_end, (void *)&__pyx_v_12can_keywords_kw_raise_end, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_from, (void *)&__pyx_v_12can_keywords_kw_from, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_to, (void *)&__pyx_v_12can_keywords_kw_to, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_endfor, (void *)&__pyx_v_12can_keywords_kw_endfor, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_extend, (void *)&__pyx_v_12can_keywords_kw_extend, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_method, (void *)&__pyx_v_12can_keywords_kw_method, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_endclass, (void *)&__pyx_v_12can_keywords_kw_endclass, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_cmd, (void *)&__pyx_v_12can_keywords_kw_cmd, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_break, (void *)&__pyx_v_12can_keywords_kw_break, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_continue, (void *)&__pyx_v_12can_keywords_kw_continue, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_lst_assign, (void *)&__pyx_v_12can_keywords_kw_lst_assign, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_set_assign, (void *)&__pyx_v_12can_keywords_kw_set_assign, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_global_set, (void *)&__pyx_v_12can_keywords_kw_global_set, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_is_3, (void *)&__pyx_v_12can_keywords_kw_is_3, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_exit_1, (void *)&__pyx_v_12can_keywords_kw_exit_1, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_exit_2, (void *)&__pyx_v_12can_keywords_kw_exit_2, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_false, (void *)&__pyx_v_12can_keywords_kw_false, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_true, (void *)&__pyx_v_12can_keywords_kw_true, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_none, (void *)&__pyx_v_12can_keywords_kw_none, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_stackinit, (void *)&__pyx_v_12can_keywords_kw_stackinit, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_push, (void *)&__pyx_v_12can_keywords_kw_push, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_pop, (void *)&__pyx_v_12can_keywords_kw_pop, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_model, (void *)&__pyx_v_12can_keywords_kw_model, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_mod_new, (void *)&__pyx_v_12can_keywords_kw_mod_new, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_class_init, (void *)&__pyx_v_12can_keywords_kw_class_init, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_self, (void *)&__pyx_v_12can_keywords_kw_self, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_call_begin, (void *)&__pyx_v_12can_keywords_kw_call_begin, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_get_value, (void *)&__pyx_v_12can_keywords_kw_get_value, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_del, (void *)&__pyx_v_12can_keywords_kw_del, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_del2, (void *)&__pyx_v_12can_keywords_kw_del2, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_match, (void *)&__pyx_v_12can_keywords_kw_match, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_kw_case, (void *)&__pyx_v_12can_keywords_kw_case, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -3057,10 +3042,10 @@ static int __Pyx_modinit_function_import_code(void) {
 #if PY_MAJOR_VERSION >= 3
 #if CYTHON_PEP489_MULTI_PHASE_INIT
 static PyObject* __pyx_pymod_create(PyObject *spec, PyModuleDef *def); /*proto*/
-static int __pyx_pymod_exec_keywords(PyObject* module); /*proto*/
+static int __pyx_pymod_exec_can_keywords(PyObject* module); /*proto*/
 static PyModuleDef_Slot __pyx_moduledef_slots[] = {
   {Py_mod_create, (void*)__pyx_pymod_create},
-  {Py_mod_exec, (void*)__pyx_pymod_exec_keywords},
+  {Py_mod_exec, (void*)__pyx_pymod_exec_can_keywords},
   {0, NULL}
 };
 #endif
@@ -3073,7 +3058,7 @@ namespace {
   #endif
   {
       PyModuleDef_HEAD_INIT,
-      "keywords",
+      "can_keywords",
       0, /* m_doc */
     #if CYTHON_PEP489_MULTI_PHASE_INIT
       0, /* m_size */
@@ -3121,11 +3106,11 @@ namespace {
 
 
 #if PY_MAJOR_VERSION < 3
-__Pyx_PyMODINIT_FUNC initkeywords(void) CYTHON_SMALL_CODE; /*proto*/
-__Pyx_PyMODINIT_FUNC initkeywords(void)
+__Pyx_PyMODINIT_FUNC initcan_keywords(void) CYTHON_SMALL_CODE; /*proto*/
+__Pyx_PyMODINIT_FUNC initcan_keywords(void)
 #else
-__Pyx_PyMODINIT_FUNC PyInit_keywords(void) CYTHON_SMALL_CODE; /*proto*/
-__Pyx_PyMODINIT_FUNC PyInit_keywords(void)
+__Pyx_PyMODINIT_FUNC PyInit_can_keywords(void) CYTHON_SMALL_CODE; /*proto*/
+__Pyx_PyMODINIT_FUNC PyInit_can_keywords(void)
 #if CYTHON_PEP489_MULTI_PHASE_INIT
 {
   return PyModuleDef_Init(&__pyx_moduledef);
@@ -3206,7 +3191,7 @@ bad:
 }
 
 
-static CYTHON_SMALL_CODE int __pyx_pymod_exec_keywords(PyObject *__pyx_pyinit_module)
+static CYTHON_SMALL_CODE int __pyx_pymod_exec_can_keywords(PyObject *__pyx_pyinit_module)
 #endif
 #endif
 {
@@ -3223,7 +3208,7 @@ static CYTHON_SMALL_CODE int __pyx_pymod_exec_keywords(PyObject *__pyx_pyinit_mo
   #if CYTHON_PEP489_MULTI_PHASE_INIT
   if (__pyx_m) {
     if (__pyx_m == __pyx_pyinit_module) return 0;
-    PyErr_SetString(PyExc_RuntimeError, "Module 'keywords' has already been imported. Re-initialisation is not supported.");
+    PyErr_SetString(PyExc_RuntimeError, "Module 'can_keywords' has already been imported. Re-initialisation is not supported.");
     return -1;
   }
   #elif PY_MAJOR_VERSION >= 3
@@ -3235,13 +3220,13 @@ static CYTHON_SMALL_CODE int __pyx_pymod_exec_keywords(PyObject *__pyx_pyinit_mo
   Py_INCREF(__pyx_m);
   #else
   #if PY_MAJOR_VERSION < 3
-  __pyx_m = Py_InitModule4("keywords", __pyx_methods, 0, 0, PYTHON_API_VERSION); Py_XINCREF(__pyx_m);
+  __pyx_m = Py_InitModule4("can_keywords", __pyx_methods, 0, 0, PYTHON_API_VERSION); Py_XINCREF(__pyx_m);
   if (unlikely(!__pyx_m)) __PYX_ERR(0, 1, __pyx_L1_error)
   #elif CYTHON_USE_MODULE_STATE
   __pyx_t_1 = PyModule_Create(&__pyx_moduledef); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1, __pyx_L1_error)
   {
     int add_module_result = PyState_AddModule(__pyx_t_1, &__pyx_moduledef);
-    __pyx_t_1 = 0; /* transfer ownership from __pyx_t_1 to keywords pseudovariable */
+    __pyx_t_1 = 0; /* transfer ownership from __pyx_t_1 to can_keywords pseudovariable */
     if (unlikely((add_module_result < 0))) __PYX_ERR(0, 1, __pyx_L1_error)
     pystate_addmodule_run = 1;
   }
@@ -3267,7 +3252,7 @@ if (!__Pyx_RefNanny) {
       Py_FatalError("failed to import 'refnanny' module");
 }
 #endif
-  __Pyx_RefNannySetupContext("__Pyx_PyMODINIT_FUNC PyInit_keywords(void)", 0);
+  __Pyx_RefNannySetupContext("__Pyx_PyMODINIT_FUNC PyInit_can_keywords(void)", 0);
   if (__Pyx_check_binary_version() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #ifdef __Pxy_PyFrame_Initialize_Offsets
   __Pxy_PyFrame_Initialize_Offsets();
@@ -3305,14 +3290,14 @@ if (!__Pyx_RefNanny) {
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
   if (__Pyx_init_sys_getdefaultencoding_params() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
-  if (__pyx_module_is_main_compiler__keywords) {
+  if (__pyx_module_is_main_can_keywords) {
     if (PyObject_SetAttr(__pyx_m, __pyx_n_s_name, __pyx_n_s_main) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   }
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) __PYX_ERR(0, 1, __pyx_L1_error)
-    if (!PyDict_GetItemString(modules, "compiler.keywords")) {
-      if (unlikely((PyDict_SetItemString(modules, "compiler.keywords", __pyx_m) < 0))) __PYX_ERR(0, 1, __pyx_L1_error)
+    if (!PyDict_GetItemString(modules, "can_keywords")) {
+      if (unlikely((PyDict_SetItemString(modules, "can_keywords", __pyx_m) < 0))) __PYX_ERR(0, 1, __pyx_L1_error)
     }
   }
   #endif
@@ -3333,18 +3318,18 @@ if (!__Pyx_RefNanny) {
   if (__Pyx_patch_abc() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
 
-  /* "compiler/keywords.pyx":2
+  /* "can_keywords.pyx":2
  * cdef:
  *     str kw_print = ""             # <<<<<<<<<<<<<<
  *     str kw_endprint = ""
  *     str kw_exit = ""
  */
   __Pyx_INCREF(__pyx_kp_s_);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_print);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_print, __pyx_kp_s_);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_print);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_print, __pyx_kp_s_);
   __Pyx_GIVEREF(__pyx_kp_s_);
 
-  /* "compiler/keywords.pyx":3
+  /* "can_keywords.pyx":3
  * cdef:
  *     str kw_print = ""
  *     str kw_endprint = ""             # <<<<<<<<<<<<<<
@@ -3352,11 +3337,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_in = ""
  */
   __Pyx_INCREF(__pyx_kp_s__2);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_endprint);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_endprint, __pyx_kp_s__2);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_endprint);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_endprint, __pyx_kp_s__2);
   __Pyx_GIVEREF(__pyx_kp_s__2);
 
-  /* "compiler/keywords.pyx":4
+  /* "can_keywords.pyx":4
  *     str kw_print = ""
  *     str kw_endprint = ""
  *     str kw_exit = ""             # <<<<<<<<<<<<<<
@@ -3364,11 +3349,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_elif = ""
  */
   __Pyx_INCREF(__pyx_kp_s__3);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_exit);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_exit, __pyx_kp_s__3);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_exit);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_exit, __pyx_kp_s__3);
   __Pyx_GIVEREF(__pyx_kp_s__3);
 
-  /* "compiler/keywords.pyx":5
+  /* "can_keywords.pyx":5
  *     str kw_endprint = ""
  *     str kw_exit = ""
  *     str kw_in = ""             # <<<<<<<<<<<<<<
@@ -3376,11 +3361,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_turtle_beg = ""
  */
   __Pyx_INCREF(__pyx_kp_s__4);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_in);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_in, __pyx_kp_s__4);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_in);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_in, __pyx_kp_s__4);
   __Pyx_GIVEREF(__pyx_kp_s__4);
 
-  /* "compiler/keywords.pyx":6
+  /* "can_keywords.pyx":6
  *     str kw_exit = ""
  *     str kw_in = ""
  *     str kw_elif = ""             # <<<<<<<<<<<<<<
@@ -3388,11 +3373,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_type = ""
  */
   __Pyx_INCREF(__pyx_kp_s__5);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_elif);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_elif, __pyx_kp_s__5);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_elif);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_elif, __pyx_kp_s__5);
   __Pyx_GIVEREF(__pyx_kp_s__5);
 
-  /* "compiler/keywords.pyx":7
+  /* "can_keywords.pyx":7
  *     str kw_in = ""
  *     str kw_elif = ""
  *     str kw_turtle_beg = ""             # <<<<<<<<<<<<<<
@@ -3400,11 +3385,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_assign = ""
  */
   __Pyx_INCREF(__pyx_kp_s__6);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_turtle_beg);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_turtle_beg, __pyx_kp_s__6);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_turtle_beg);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_turtle_beg, __pyx_kp_s__6);
   __Pyx_GIVEREF(__pyx_kp_s__6);
 
-  /* "compiler/keywords.pyx":8
+  /* "can_keywords.pyx":8
  *     str kw_elif = ""
  *     str kw_turtle_beg = ""
  *     str kw_type = ""             # <<<<<<<<<<<<<<
@@ -3412,11 +3397,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_class_def = ""
  */
   __Pyx_INCREF(__pyx_kp_s__7);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_type);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_type, __pyx_kp_s__7);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_type);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_type, __pyx_kp_s__7);
   __Pyx_GIVEREF(__pyx_kp_s__7);
 
-  /* "compiler/keywords.pyx":9
+  /* "can_keywords.pyx":9
  *     str kw_turtle_beg = ""
  *     str kw_type = ""
  *     str kw_assign = ""             # <<<<<<<<<<<<<<
@@ -3424,11 +3409,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_else_or_not = ""
  */
   __Pyx_INCREF(__pyx_kp_s__8);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_assign);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_assign, __pyx_kp_s__8);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_assign);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_assign, __pyx_kp_s__8);
   __Pyx_GIVEREF(__pyx_kp_s__8);
 
-  /* "compiler/keywords.pyx":10
+  /* "can_keywords.pyx":10
  *     str kw_type = ""
  *     str kw_assign = ""
  *     str kw_class_def = ""             # <<<<<<<<<<<<<<
@@ -3436,11 +3421,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_is = ""
  */
   __Pyx_INCREF(__pyx_kp_s__9);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_class_def);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_class_def, __pyx_kp_s__9);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_class_def);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_class_def, __pyx_kp_s__9);
   __Pyx_GIVEREF(__pyx_kp_s__9);
 
-  /* "compiler/keywords.pyx":11
+  /* "can_keywords.pyx":11
  *     str kw_assign = ""
  *     str kw_class_def = ""
  *     str kw_else_or_not = ""             # <<<<<<<<<<<<<<
@@ -3448,11 +3433,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_if = ""
  */
   __Pyx_INCREF(__pyx_kp_s__10);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_else_or_not);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_else_or_not, __pyx_kp_s__10);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_else_or_not);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_else_or_not, __pyx_kp_s__10);
   __Pyx_GIVEREF(__pyx_kp_s__10);
 
-  /* "compiler/keywords.pyx":12
+  /* "can_keywords.pyx":12
  *     str kw_class_def = ""
  *     str kw_else_or_not = ""
  *     str kw_is = ""             # <<<<<<<<<<<<<<
@@ -3460,11 +3445,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_expr_if = ""
  */
   __Pyx_INCREF(__pyx_kp_s__11);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_is);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_is, __pyx_kp_s__11);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_is);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_is, __pyx_kp_s__11);
   __Pyx_GIVEREF(__pyx_kp_s__11);
 
-  /* "compiler/keywords.pyx":13
+  /* "can_keywords.pyx":13
  *     str kw_else_or_not = ""
  *     str kw_is = ""
  *     str kw_if = ""             # <<<<<<<<<<<<<<
@@ -3472,11 +3457,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_expr_else = ""
  */
   __Pyx_INCREF(__pyx_kp_s__12);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_if);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_if, __pyx_kp_s__12);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_if);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_if, __pyx_kp_s__12);
   __Pyx_GIVEREF(__pyx_kp_s__12);
 
-  /* "compiler/keywords.pyx":14
+  /* "can_keywords.pyx":14
  *     str kw_is = ""
  *     str kw_if = ""
  *     str kw_expr_if = ""             # <<<<<<<<<<<<<<
@@ -3484,11 +3469,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_then = ""
  */
   __Pyx_INCREF(__pyx_kp_s__13);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_expr_if);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_expr_if, __pyx_kp_s__13);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_expr_if);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_expr_if, __pyx_kp_s__13);
   __Pyx_GIVEREF(__pyx_kp_s__13);
 
-  /* "compiler/keywords.pyx":15
+  /* "can_keywords.pyx":15
  *     str kw_if = ""
  *     str kw_expr_if = ""
  *     str kw_expr_else = ""             # <<<<<<<<<<<<<<
@@ -3496,11 +3481,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_do = "->"
  */
   __Pyx_INCREF(__pyx_kp_s__14);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_expr_else);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_expr_else, __pyx_kp_s__14);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_expr_else);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_expr_else, __pyx_kp_s__14);
   __Pyx_GIVEREF(__pyx_kp_s__14);
 
-  /* "compiler/keywords.pyx":16
+  /* "can_keywords.pyx":16
  *     str kw_expr_if = ""
  *     str kw_expr_else = ""
  *     str kw_then = ""             # <<<<<<<<<<<<<<
@@ -3508,11 +3493,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_begin = "{"
  */
   __Pyx_INCREF(__pyx_kp_s__15);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_then);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_then, __pyx_kp_s__15);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_then);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_then, __pyx_kp_s__15);
   __Pyx_GIVEREF(__pyx_kp_s__15);
 
-  /* "compiler/keywords.pyx":17
+  /* "can_keywords.pyx":17
  *     str kw_expr_else = ""
  *     str kw_then = ""
  *     str kw_do = "->"             # <<<<<<<<<<<<<<
@@ -3520,11 +3505,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_end = "}"
  */
   __Pyx_INCREF(__pyx_kp_s__16);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_do);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_do, __pyx_kp_s__16);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_do);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_do, __pyx_kp_s__16);
   __Pyx_GIVEREF(__pyx_kp_s__16);
 
-  /* "compiler/keywords.pyx":18
+  /* "can_keywords.pyx":18
  *     str kw_then = ""
  *     str kw_do = "->"
  *     str kw_begin = "{"             # <<<<<<<<<<<<<<
@@ -3532,11 +3517,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_pass = ""
  */
   __Pyx_INCREF(__pyx_kp_s__17);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_begin);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_begin, __pyx_kp_s__17);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_begin);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_begin, __pyx_kp_s__17);
   __Pyx_GIVEREF(__pyx_kp_s__17);
 
-  /* "compiler/keywords.pyx":19
+  /* "can_keywords.pyx":19
  *     str kw_do = "->"
  *     str kw_begin = "{"
  *     str kw_end = "}"             # <<<<<<<<<<<<<<
@@ -3544,11 +3529,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_while_do = ""
  */
   __Pyx_INCREF(__pyx_kp_s__18);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_end);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_end, __pyx_kp_s__18);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_end);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_end, __pyx_kp_s__18);
   __Pyx_GIVEREF(__pyx_kp_s__18);
 
-  /* "compiler/keywords.pyx":20
+  /* "can_keywords.pyx":20
  *     str kw_begin = "{"
  *     str kw_end = "}"
  *     str kw_pass = ""             # <<<<<<<<<<<<<<
@@ -3556,11 +3541,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_function = "$"
  */
   __Pyx_INCREF(__pyx_kp_s__19);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_pass);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_pass, __pyx_kp_s__19);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_pass);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_pass, __pyx_kp_s__19);
   __Pyx_GIVEREF(__pyx_kp_s__19);
 
-  /* "compiler/keywords.pyx":21
+  /* "can_keywords.pyx":21
  *     str kw_end = "}"
  *     str kw_pass = ""
  *     str kw_while_do = ""             # <<<<<<<<<<<<<<
@@ -3568,11 +3553,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_call = ""
  */
   __Pyx_INCREF(__pyx_kp_s__20);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_while_do);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_while_do, __pyx_kp_s__20);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_while_do);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_while_do, __pyx_kp_s__20);
   __Pyx_GIVEREF(__pyx_kp_s__20);
 
-  /* "compiler/keywords.pyx":22
+  /* "can_keywords.pyx":22
  *     str kw_pass = ""
  *     str kw_while_do = ""
  *     str kw_function = "$"             # <<<<<<<<<<<<<<
@@ -3580,11 +3565,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_import = ""
  */
   __Pyx_INCREF(__pyx_kp_s__21);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_function);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_function, __pyx_kp_s__21);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_function);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_function, __pyx_kp_s__21);
   __Pyx_GIVEREF(__pyx_kp_s__21);
 
-  /* "compiler/keywords.pyx":23
+  /* "can_keywords.pyx":23
  *     str kw_while_do = ""
  *     str kw_function = "$"
  *     str kw_call = ""             # <<<<<<<<<<<<<<
@@ -3592,11 +3577,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_func_begin = ""
  */
   __Pyx_INCREF(__pyx_kp_s__22);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_call);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_call, __pyx_kp_s__22);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_call);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_call, __pyx_kp_s__22);
   __Pyx_GIVEREF(__pyx_kp_s__22);
 
-  /* "compiler/keywords.pyx":24
+  /* "can_keywords.pyx":24
  *     str kw_function = "$"
  *     str kw_call = ""
  *     str kw_import = ""             # <<<<<<<<<<<<<<
@@ -3604,11 +3589,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_func_end = ""
  */
   __Pyx_INCREF(__pyx_kp_s__23);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_import);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_import, __pyx_kp_s__23);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_import);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_import, __pyx_kp_s__23);
   __Pyx_GIVEREF(__pyx_kp_s__23);
 
-  /* "compiler/keywords.pyx":25
+  /* "can_keywords.pyx":25
  *     str kw_call = ""
  *     str kw_import = ""
  *     str kw_func_begin = ""             # <<<<<<<<<<<<<<
@@ -3616,11 +3601,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_is_2 = ""
  */
   __Pyx_INCREF(__pyx_kp_s__24);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_func_begin);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_func_begin, __pyx_kp_s__24);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_func_begin);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_func_begin, __pyx_kp_s__24);
   __Pyx_GIVEREF(__pyx_kp_s__24);
 
-  /* "compiler/keywords.pyx":26
+  /* "can_keywords.pyx":26
  *     str kw_import = ""
  *     str kw_func_begin = ""
  *     str kw_func_end = ""             # <<<<<<<<<<<<<<
@@ -3628,11 +3613,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_assert = ""
  */
   __Pyx_INCREF(__pyx_kp_s__25);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_func_end);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_func_end, __pyx_kp_s__25);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_func_end);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_func_end, __pyx_kp_s__25);
   __Pyx_GIVEREF(__pyx_kp_s__25);
 
-  /* "compiler/keywords.pyx":27
+  /* "can_keywords.pyx":27
  *     str kw_func_begin = ""
  *     str kw_func_end = ""
  *     str kw_is_2 = ""             # <<<<<<<<<<<<<<
@@ -3640,11 +3625,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_class_assign = ""
  */
   __Pyx_INCREF(__pyx_kp_s__26);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_is_2);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_is_2, __pyx_kp_s__26);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_is_2);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_is_2, __pyx_kp_s__26);
   __Pyx_GIVEREF(__pyx_kp_s__26);
 
-  /* "compiler/keywords.pyx":28
+  /* "can_keywords.pyx":28
  *     str kw_func_end = ""
  *     str kw_is_2 = ""
  *     str kw_assert = ""             # <<<<<<<<<<<<<<
@@ -3652,11 +3637,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_while = ""
  */
   __Pyx_INCREF(__pyx_kp_s__27);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_assert);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_assert, __pyx_kp_s__27);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_assert);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_assert, __pyx_kp_s__27);
   __Pyx_GIVEREF(__pyx_kp_s__27);
 
-  /* "compiler/keywords.pyx":29
+  /* "can_keywords.pyx":29
  *     str kw_is_2 = ""
  *     str kw_assert = ""
  *     str kw_class_assign = ""             # <<<<<<<<<<<<<<
@@ -3664,11 +3649,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_whi_end = ""
  */
   __Pyx_INCREF(__pyx_kp_s__28);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_class_assign);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_class_assign, __pyx_kp_s__28);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_class_assign);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_class_assign, __pyx_kp_s__28);
   __Pyx_GIVEREF(__pyx_kp_s__28);
 
-  /* "compiler/keywords.pyx":30
+  /* "can_keywords.pyx":30
  *     str kw_assert = ""
  *     str kw_class_assign = ""
  *     str kw_while = ""             # <<<<<<<<<<<<<<
@@ -3676,11 +3661,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_return = ""
  */
   __Pyx_INCREF(__pyx_kp_s__29);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_while);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_while, __pyx_kp_s__29);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_while);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_while, __pyx_kp_s__29);
   __Pyx_GIVEREF(__pyx_kp_s__29);
 
-  /* "compiler/keywords.pyx":31
+  /* "can_keywords.pyx":31
  *     str kw_class_assign = ""
  *     str kw_while = ""
  *     str kw_whi_end = ""             # <<<<<<<<<<<<<<
@@ -3688,11 +3673,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_try = ""
  */
   __Pyx_INCREF(__pyx_kp_s__30);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_whi_end);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_whi_end, __pyx_kp_s__30);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_whi_end);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_whi_end, __pyx_kp_s__30);
   __Pyx_GIVEREF(__pyx_kp_s__30);
 
-  /* "compiler/keywords.pyx":32
+  /* "can_keywords.pyx":32
  *     str kw_while = ""
  *     str kw_whi_end = ""
  *     str kw_return = ""             # <<<<<<<<<<<<<<
@@ -3700,11 +3685,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_except = ""
  */
   __Pyx_INCREF(__pyx_kp_s__31);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_return);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_return, __pyx_kp_s__31);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_return);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_return, __pyx_kp_s__31);
   __Pyx_GIVEREF(__pyx_kp_s__31);
 
-  /* "compiler/keywords.pyx":33
+  /* "can_keywords.pyx":33
  *     str kw_whi_end = ""
  *     str kw_return = ""
  *     str kw_try = ""             # <<<<<<<<<<<<<<
@@ -3712,11 +3697,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_finally = ""
  */
   __Pyx_INCREF(__pyx_kp_s__32);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_try);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_try, __pyx_kp_s__32);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_try);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_try, __pyx_kp_s__32);
   __Pyx_GIVEREF(__pyx_kp_s__32);
 
-  /* "compiler/keywords.pyx":34
+  /* "can_keywords.pyx":34
  *     str kw_return = ""
  *     str kw_try = ""
  *     str kw_except = ""             # <<<<<<<<<<<<<<
@@ -3724,11 +3709,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_raise = ""
  */
   __Pyx_INCREF(__pyx_kp_s__33);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_except);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_except, __pyx_kp_s__33);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_except);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_except, __pyx_kp_s__33);
   __Pyx_GIVEREF(__pyx_kp_s__33);
 
-  /* "compiler/keywords.pyx":35
+  /* "can_keywords.pyx":35
  *     str kw_try = ""
  *     str kw_except = ""
  *     str kw_finally = ""             # <<<<<<<<<<<<<<
@@ -3736,11 +3721,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_raise_end = ""
  */
   __Pyx_INCREF(__pyx_kp_s__34);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_finally);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_finally, __pyx_kp_s__34);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_finally);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_finally, __pyx_kp_s__34);
   __Pyx_GIVEREF(__pyx_kp_s__34);
 
-  /* "compiler/keywords.pyx":36
+  /* "can_keywords.pyx":36
  *     str kw_except = ""
  *     str kw_finally = ""
  *     str kw_raise = ""             # <<<<<<<<<<<<<<
@@ -3748,11 +3733,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_from = ""
  */
   __Pyx_INCREF(__pyx_kp_s__35);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_raise);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_raise, __pyx_kp_s__35);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_raise);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_raise, __pyx_kp_s__35);
   __Pyx_GIVEREF(__pyx_kp_s__35);
 
-  /* "compiler/keywords.pyx":37
+  /* "can_keywords.pyx":37
  *     str kw_finally = ""
  *     str kw_raise = ""
  *     str kw_raise_end = ""             # <<<<<<<<<<<<<<
@@ -3760,11 +3745,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_to = ""
  */
   __Pyx_INCREF(__pyx_kp_s__36);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_raise_end);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_raise_end, __pyx_kp_s__36);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_raise_end);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_raise_end, __pyx_kp_s__36);
   __Pyx_GIVEREF(__pyx_kp_s__36);
 
-  /* "compiler/keywords.pyx":38
+  /* "can_keywords.pyx":38
  *     str kw_raise = ""
  *     str kw_raise_end = ""
  *     str kw_from = ""             # <<<<<<<<<<<<<<
@@ -3772,11 +3757,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_endfor = ""
  */
   __Pyx_INCREF(__pyx_kp_s__37);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_from);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_from, __pyx_kp_s__37);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_from);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_from, __pyx_kp_s__37);
   __Pyx_GIVEREF(__pyx_kp_s__37);
 
-  /* "compiler/keywords.pyx":39
+  /* "can_keywords.pyx":39
  *     str kw_raise_end = ""
  *     str kw_from = ""
  *     str kw_to = ""             # <<<<<<<<<<<<<<
@@ -3784,11 +3769,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_extend = ""
  */
   __Pyx_INCREF(__pyx_kp_s__38);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_to);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_to, __pyx_kp_s__38);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_to);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_to, __pyx_kp_s__38);
   __Pyx_GIVEREF(__pyx_kp_s__38);
 
-  /* "compiler/keywords.pyx":40
+  /* "can_keywords.pyx":40
  *     str kw_from = ""
  *     str kw_to = ""
  *     str kw_endfor = ""             # <<<<<<<<<<<<<<
@@ -3796,11 +3781,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_method = ""
  */
   __Pyx_INCREF(__pyx_kp_s__39);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_endfor);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_endfor, __pyx_kp_s__39);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_endfor);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_endfor, __pyx_kp_s__39);
   __Pyx_GIVEREF(__pyx_kp_s__39);
 
-  /* "compiler/keywords.pyx":41
+  /* "can_keywords.pyx":41
  *     str kw_to = ""
  *     str kw_endfor = ""
  *     str kw_extend = ""             # <<<<<<<<<<<<<<
@@ -3808,11 +3793,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_endclass = ""
  */
   __Pyx_INCREF(__pyx_kp_s__40);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_extend);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_extend, __pyx_kp_s__40);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_extend);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_extend, __pyx_kp_s__40);
   __Pyx_GIVEREF(__pyx_kp_s__40);
 
-  /* "compiler/keywords.pyx":42
+  /* "can_keywords.pyx":42
  *     str kw_endfor = ""
  *     str kw_extend = ""
  *     str kw_method = ""             # <<<<<<<<<<<<<<
@@ -3820,11 +3805,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_cmd = "Order"
  */
   __Pyx_INCREF(__pyx_kp_s__41);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_method);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_method, __pyx_kp_s__41);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_method);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_method, __pyx_kp_s__41);
   __Pyx_GIVEREF(__pyx_kp_s__41);
 
-  /* "compiler/keywords.pyx":43
+  /* "can_keywords.pyx":43
  *     str kw_extend = ""
  *     str kw_method = ""
  *     str kw_endclass = ""             # <<<<<<<<<<<<<<
@@ -3832,11 +3817,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_break = ""
  */
   __Pyx_INCREF(__pyx_kp_s__42);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_endclass);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_endclass, __pyx_kp_s__42);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_endclass);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_endclass, __pyx_kp_s__42);
   __Pyx_GIVEREF(__pyx_kp_s__42);
 
-  /* "compiler/keywords.pyx":44
+  /* "can_keywords.pyx":44
  *     str kw_method = ""
  *     str kw_endclass = ""
  *     str kw_cmd = "Order"             # <<<<<<<<<<<<<<
@@ -3844,11 +3829,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_continue = "Hea"
  */
   __Pyx_INCREF(__pyx_kp_s_Order);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_cmd);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_cmd, __pyx_kp_s_Order);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_cmd);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_cmd, __pyx_kp_s_Order);
   __Pyx_GIVEREF(__pyx_kp_s_Order);
 
-  /* "compiler/keywords.pyx":45
+  /* "can_keywords.pyx":45
  *     str kw_endclass = ""
  *     str kw_cmd = "Order"
  *     str kw_break = ""             # <<<<<<<<<<<<<<
@@ -3856,11 +3841,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_lst_assign = ""
  */
   __Pyx_INCREF(__pyx_kp_s__43);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_break);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_break, __pyx_kp_s__43);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_break);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_break, __pyx_kp_s__43);
   __Pyx_GIVEREF(__pyx_kp_s__43);
 
-  /* "compiler/keywords.pyx":46
+  /* "can_keywords.pyx":46
  *     str kw_cmd = "Order"
  *     str kw_break = ""
  *     str kw_continue = "Hea"             # <<<<<<<<<<<<<<
@@ -3868,11 +3853,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_set_assign = ""
  */
   __Pyx_INCREF(__pyx_kp_s_Hea);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_continue);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_continue, __pyx_kp_s_Hea);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_continue);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_continue, __pyx_kp_s_Hea);
   __Pyx_GIVEREF(__pyx_kp_s_Hea);
 
-  /* "compiler/keywords.pyx":47
+  /* "can_keywords.pyx":47
  *     str kw_break = ""
  *     str kw_continue = "Hea"
  *     str kw_lst_assign = ""             # <<<<<<<<<<<<<<
@@ -3880,11 +3865,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_global_set = "Share"
  */
   __Pyx_INCREF(__pyx_kp_s__44);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_lst_assign);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_lst_assign, __pyx_kp_s__44);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_lst_assign);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_lst_assign, __pyx_kp_s__44);
   __Pyx_GIVEREF(__pyx_kp_s__44);
 
-  /* "compiler/keywords.pyx":48
+  /* "can_keywords.pyx":48
  *     str kw_continue = "Hea"
  *     str kw_lst_assign = ""
  *     str kw_set_assign = ""             # <<<<<<<<<<<<<<
@@ -3892,11 +3877,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_is_3 = ""
  */
   __Pyx_INCREF(__pyx_kp_s__45);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_set_assign);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_set_assign, __pyx_kp_s__45);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_set_assign);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_set_assign, __pyx_kp_s__45);
   __Pyx_GIVEREF(__pyx_kp_s__45);
 
-  /* "compiler/keywords.pyx":49
+  /* "can_keywords.pyx":49
  *     str kw_lst_assign = ""
  *     str kw_set_assign = ""
  *     str kw_global_set = "Share"             # <<<<<<<<<<<<<<
@@ -3904,11 +3889,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_exit_1 = ""
  */
   __Pyx_INCREF(__pyx_kp_s_Share);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_global_set);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_global_set, __pyx_kp_s_Share);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_global_set);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_global_set, __pyx_kp_s_Share);
   __Pyx_GIVEREF(__pyx_kp_s_Share);
 
-  /* "compiler/keywords.pyx":50
+  /* "can_keywords.pyx":50
  *     str kw_set_assign = ""
  *     str kw_global_set = "Share"
  *     str kw_is_3 = ""             # <<<<<<<<<<<<<<
@@ -3916,11 +3901,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_exit_2 = ""
  */
   __Pyx_INCREF(__pyx_kp_s__46);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_is_3);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_is_3, __pyx_kp_s__46);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_is_3);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_is_3, __pyx_kp_s__46);
   __Pyx_GIVEREF(__pyx_kp_s__46);
 
-  /* "compiler/keywords.pyx":51
+  /* "can_keywords.pyx":51
  *     str kw_global_set = "Share"
  *     str kw_is_3 = ""
  *     str kw_exit_1 = ""             # <<<<<<<<<<<<<<
@@ -3928,11 +3913,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_false = ""
  */
   __Pyx_INCREF(__pyx_kp_s__47);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_exit_1);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_exit_1, __pyx_kp_s__47);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_exit_1);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_exit_1, __pyx_kp_s__47);
   __Pyx_GIVEREF(__pyx_kp_s__47);
 
-  /* "compiler/keywords.pyx":52
+  /* "can_keywords.pyx":52
  *     str kw_is_3 = ""
  *     str kw_exit_1 = ""
  *     str kw_exit_2 = ""             # <<<<<<<<<<<<<<
@@ -3940,11 +3925,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_true = ""
  */
   __Pyx_INCREF(__pyx_kp_s__48);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_exit_2);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_exit_2, __pyx_kp_s__48);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_exit_2);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_exit_2, __pyx_kp_s__48);
   __Pyx_GIVEREF(__pyx_kp_s__48);
 
-  /* "compiler/keywords.pyx":53
+  /* "can_keywords.pyx":53
  *     str kw_exit_1 = ""
  *     str kw_exit_2 = ""
  *     str kw_false = ""             # <<<<<<<<<<<<<<
@@ -3952,11 +3937,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_none = ""
  */
   __Pyx_INCREF(__pyx_kp_s__49);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_false);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_false, __pyx_kp_s__49);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_false);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_false, __pyx_kp_s__49);
   __Pyx_GIVEREF(__pyx_kp_s__49);
 
-  /* "compiler/keywords.pyx":54
+  /* "can_keywords.pyx":54
  *     str kw_exit_2 = ""
  *     str kw_false = ""
  *     str kw_true = ""             # <<<<<<<<<<<<<<
@@ -3964,11 +3949,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_stackinit = ""
  */
   __Pyx_INCREF(__pyx_kp_s__50);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_true);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_true, __pyx_kp_s__50);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_true);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_true, __pyx_kp_s__50);
   __Pyx_GIVEREF(__pyx_kp_s__50);
 
-  /* "compiler/keywords.pyx":55
+  /* "can_keywords.pyx":55
  *     str kw_false = ""
  *     str kw_true = ""
  *     str kw_none = ""             # <<<<<<<<<<<<<<
@@ -3976,11 +3961,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_push = ""
  */
   __Pyx_INCREF(__pyx_kp_s__51);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_none);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_none, __pyx_kp_s__51);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_none);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_none, __pyx_kp_s__51);
   __Pyx_GIVEREF(__pyx_kp_s__51);
 
-  /* "compiler/keywords.pyx":56
+  /* "can_keywords.pyx":56
  *     str kw_true = ""
  *     str kw_none = ""
  *     str kw_stackinit = ""             # <<<<<<<<<<<<<<
@@ -3988,11 +3973,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_pop = ""
  */
   __Pyx_INCREF(__pyx_kp_s__52);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_stackinit);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_stackinit, __pyx_kp_s__52);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_stackinit);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_stackinit, __pyx_kp_s__52);
   __Pyx_GIVEREF(__pyx_kp_s__52);
 
-  /* "compiler/keywords.pyx":57
+  /* "can_keywords.pyx":57
  *     str kw_none = ""
  *     str kw_stackinit = ""
  *     str kw_push = ""             # <<<<<<<<<<<<<<
@@ -4000,11 +3985,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_model = ""
  */
   __Pyx_INCREF(__pyx_kp_s__53);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_push);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_push, __pyx_kp_s__53);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_push);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_push, __pyx_kp_s__53);
   __Pyx_GIVEREF(__pyx_kp_s__53);
 
-  /* "compiler/keywords.pyx":58
+  /* "can_keywords.pyx":58
  *     str kw_stackinit = ""
  *     str kw_push = ""
  *     str kw_pop = ""             # <<<<<<<<<<<<<<
@@ -4012,11 +3997,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_mod_new = ""
  */
   __Pyx_INCREF(__pyx_kp_s__54);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_pop);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_pop, __pyx_kp_s__54);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_pop);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_pop, __pyx_kp_s__54);
   __Pyx_GIVEREF(__pyx_kp_s__54);
 
-  /* "compiler/keywords.pyx":59
+  /* "can_keywords.pyx":59
  *     str kw_push = ""
  *     str kw_pop = ""
  *     str kw_model = ""             # <<<<<<<<<<<<<<
@@ -4024,11 +4009,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_class_init = ""
  */
   __Pyx_INCREF(__pyx_kp_s__55);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_model);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_model, __pyx_kp_s__55);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_model);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_model, __pyx_kp_s__55);
   __Pyx_GIVEREF(__pyx_kp_s__55);
 
-  /* "compiler/keywords.pyx":60
+  /* "can_keywords.pyx":60
  *     str kw_pop = ""
  *     str kw_model = ""
  *     str kw_mod_new = ""             # <<<<<<<<<<<<<<
@@ -4036,11 +4021,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_self = ""
  */
   __Pyx_INCREF(__pyx_kp_s__56);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_mod_new);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_mod_new, __pyx_kp_s__56);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_mod_new);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_mod_new, __pyx_kp_s__56);
   __Pyx_GIVEREF(__pyx_kp_s__56);
 
-  /* "compiler/keywords.pyx":61
+  /* "can_keywords.pyx":61
  *     str kw_model = ""
  *     str kw_mod_new = ""
  *     str kw_class_init = ""             # <<<<<<<<<<<<<<
@@ -4048,11 +4033,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_call_begin = ""
  */
   __Pyx_INCREF(__pyx_kp_s__57);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_class_init);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_class_init, __pyx_kp_s__57);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_class_init);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_class_init, __pyx_kp_s__57);
   __Pyx_GIVEREF(__pyx_kp_s__57);
 
-  /* "compiler/keywords.pyx":62
+  /* "can_keywords.pyx":62
  *     str kw_mod_new = ""
  *     str kw_class_init = ""
  *     str kw_self = ""             # <<<<<<<<<<<<<<
@@ -4060,11 +4045,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_get_value = "@"
  */
   __Pyx_INCREF(__pyx_kp_s__58);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_self);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_self, __pyx_kp_s__58);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_self);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_self, __pyx_kp_s__58);
   __Pyx_GIVEREF(__pyx_kp_s__58);
 
-  /* "compiler/keywords.pyx":63
+  /* "can_keywords.pyx":63
  *     str kw_class_init = ""
  *     str kw_self = ""
  *     str kw_call_begin = ""             # <<<<<<<<<<<<<<
@@ -4072,11 +4057,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_del = ""
  */
   __Pyx_INCREF(__pyx_kp_s__59);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_call_begin);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_call_begin, __pyx_kp_s__59);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_call_begin);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_call_begin, __pyx_kp_s__59);
   __Pyx_GIVEREF(__pyx_kp_s__59);
 
-  /* "compiler/keywords.pyx":64
+  /* "can_keywords.pyx":64
  *     str kw_self = ""
  *     str kw_call_begin = ""
  *     str kw_get_value = "@"             # <<<<<<<<<<<<<<
@@ -4084,11 +4069,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_del2 = ""
  */
   __Pyx_INCREF(__pyx_kp_s__60);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_get_value);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_get_value, __pyx_kp_s__60);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_get_value);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_get_value, __pyx_kp_s__60);
   __Pyx_GIVEREF(__pyx_kp_s__60);
 
-  /* "compiler/keywords.pyx":65
+  /* "can_keywords.pyx":65
  *     str kw_call_begin = ""
  *     str kw_get_value = "@"
  *     str kw_del = ""             # <<<<<<<<<<<<<<
@@ -4096,11 +4081,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_match = "match"
  */
   __Pyx_INCREF(__pyx_kp_s__61);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_del);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_del, __pyx_kp_s__61);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_del);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_del, __pyx_kp_s__61);
   __Pyx_GIVEREF(__pyx_kp_s__61);
 
-  /* "compiler/keywords.pyx":66
+  /* "can_keywords.pyx":66
  *     str kw_get_value = "@"
  *     str kw_del = ""
  *     str kw_del2 = ""             # <<<<<<<<<<<<<<
@@ -4108,11 +4093,11 @@ if (!__Pyx_RefNanny) {
  *     str kw_case = ""
  */
   __Pyx_INCREF(__pyx_kp_s__62);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_del2);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_del2, __pyx_kp_s__62);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_del2);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_del2, __pyx_kp_s__62);
   __Pyx_GIVEREF(__pyx_kp_s__62);
 
-  /* "compiler/keywords.pyx":67
+  /* "can_keywords.pyx":67
  *     str kw_del = ""
  *     str kw_del2 = ""
  *     str kw_match = "match"             # <<<<<<<<<<<<<<
@@ -4120,11 +4105,11 @@ if (!__Pyx_RefNanny) {
  * 
  */
   __Pyx_INCREF(__pyx_kp_s_match);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_match);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_match, __pyx_kp_s_match);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_match);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_match, __pyx_kp_s_match);
   __Pyx_GIVEREF(__pyx_kp_s_match);
 
-  /* "compiler/keywords.pyx":68
+  /* "can_keywords.pyx":68
  *     str kw_del2 = ""
  *     str kw_match = "match"
  *     str kw_case = ""             # <<<<<<<<<<<<<<
@@ -4132,11 +4117,11 @@ if (!__Pyx_RefNanny) {
  *     tuple keywords = (
  */
   __Pyx_INCREF(__pyx_kp_s__63);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_kw_case);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_kw_case, __pyx_kp_s__63);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_kw_case);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_kw_case, __pyx_kp_s__63);
   __Pyx_GIVEREF(__pyx_kp_s__63);
 
-  /* "compiler/keywords.pyx":71
+  /* "can_keywords.pyx":71
  * 
  *     tuple keywords = (
  *         kw_print,             # <<<<<<<<<<<<<<
@@ -4145,213 +4130,213 @@ if (!__Pyx_RefNanny) {
  */
   __pyx_t_2 = PyTuple_New(67); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 71, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_print);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_print);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_v_8compiler_8keywords_kw_print)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_endprint);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_endprint);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 1, __pyx_v_8compiler_8keywords_kw_endprint)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_exit);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_exit);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 2, __pyx_v_8compiler_8keywords_kw_exit)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_in);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_in);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 3, __pyx_v_8compiler_8keywords_kw_in)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_elif);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_elif);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 4, __pyx_v_8compiler_8keywords_kw_elif)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_turtle_beg);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_turtle_beg);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 5, __pyx_v_8compiler_8keywords_kw_turtle_beg)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_type);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_type);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 6, __pyx_v_8compiler_8keywords_kw_type)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_assign);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_assign);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 7, __pyx_v_8compiler_8keywords_kw_assign)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_class_def);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_class_def);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 8, __pyx_v_8compiler_8keywords_kw_class_def)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_else_or_not);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_else_or_not);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 9, __pyx_v_8compiler_8keywords_kw_else_or_not)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_is);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_is);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 10, __pyx_v_8compiler_8keywords_kw_is)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_if);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_if);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 11, __pyx_v_8compiler_8keywords_kw_if)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_expr_if);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_expr_if);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 12, __pyx_v_8compiler_8keywords_kw_expr_if)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_expr_else);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_expr_else);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 13, __pyx_v_8compiler_8keywords_kw_expr_else)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_then);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_then);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 14, __pyx_v_8compiler_8keywords_kw_then)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_do);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_do);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 15, __pyx_v_8compiler_8keywords_kw_do)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_begin);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_begin);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 16, __pyx_v_8compiler_8keywords_kw_begin)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_end);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_end);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 17, __pyx_v_8compiler_8keywords_kw_end)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_pass);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_pass);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 18, __pyx_v_8compiler_8keywords_kw_pass)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_while_do);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_while_do);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 19, __pyx_v_8compiler_8keywords_kw_while_do)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_function);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_function);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 20, __pyx_v_8compiler_8keywords_kw_function)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_call);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_call);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 21, __pyx_v_8compiler_8keywords_kw_call)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_import);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_import);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 22, __pyx_v_8compiler_8keywords_kw_import)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_func_begin);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_func_begin);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 23, __pyx_v_8compiler_8keywords_kw_func_begin)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_func_end);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_func_end);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 24, __pyx_v_8compiler_8keywords_kw_func_end)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_is_2);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_is_2);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 25, __pyx_v_8compiler_8keywords_kw_is_2)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_assert);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_assert);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 26, __pyx_v_8compiler_8keywords_kw_assert)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_class_assign);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_class_assign);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 27, __pyx_v_8compiler_8keywords_kw_class_assign)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_while);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_while);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 28, __pyx_v_8compiler_8keywords_kw_while)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_whi_end);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_whi_end);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 29, __pyx_v_8compiler_8keywords_kw_whi_end)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_return);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_return);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 30, __pyx_v_8compiler_8keywords_kw_return)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_try);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_try);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 31, __pyx_v_8compiler_8keywords_kw_try)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_except);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_except);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 32, __pyx_v_8compiler_8keywords_kw_except)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_finally);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_finally);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 33, __pyx_v_8compiler_8keywords_kw_finally)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_raise);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_raise);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 34, __pyx_v_8compiler_8keywords_kw_raise)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_raise_end);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_raise_end);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 35, __pyx_v_8compiler_8keywords_kw_raise_end)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_from);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_from);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 36, __pyx_v_8compiler_8keywords_kw_from)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_to);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_to);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 37, __pyx_v_8compiler_8keywords_kw_to)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_endfor);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_endfor);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 38, __pyx_v_8compiler_8keywords_kw_endfor)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_extend);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_extend);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 39, __pyx_v_8compiler_8keywords_kw_extend)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_method);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_method);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 40, __pyx_v_8compiler_8keywords_kw_method)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_endclass);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_endclass);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 41, __pyx_v_8compiler_8keywords_kw_endclass)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_cmd);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_cmd);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 42, __pyx_v_8compiler_8keywords_kw_cmd)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_break);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_break);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 43, __pyx_v_8compiler_8keywords_kw_break)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_continue);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_continue);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 44, __pyx_v_8compiler_8keywords_kw_continue)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_lst_assign);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_lst_assign);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 45, __pyx_v_8compiler_8keywords_kw_lst_assign)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_set_assign);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_set_assign);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 46, __pyx_v_8compiler_8keywords_kw_set_assign)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_global_set);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_global_set);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 47, __pyx_v_8compiler_8keywords_kw_global_set)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_is_3);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_is_3);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 48, __pyx_v_8compiler_8keywords_kw_is_3)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_exit_1);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_exit_1);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 49, __pyx_v_8compiler_8keywords_kw_exit_1)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_exit_2);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_exit_2);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 50, __pyx_v_8compiler_8keywords_kw_exit_2)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_false);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_false);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 51, __pyx_v_8compiler_8keywords_kw_false)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_true);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_true);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 52, __pyx_v_8compiler_8keywords_kw_true)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_none);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_none);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 53, __pyx_v_8compiler_8keywords_kw_none)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_stackinit);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_stackinit);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 54, __pyx_v_8compiler_8keywords_kw_stackinit)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_push);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_push);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 55, __pyx_v_8compiler_8keywords_kw_push)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_pop);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_pop);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 56, __pyx_v_8compiler_8keywords_kw_pop)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_model);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_model);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 57, __pyx_v_8compiler_8keywords_kw_model)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_mod_new);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_mod_new);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 58, __pyx_v_8compiler_8keywords_kw_mod_new)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_class_init);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_class_init);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 59, __pyx_v_8compiler_8keywords_kw_class_init)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_self);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_self);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 60, __pyx_v_8compiler_8keywords_kw_self)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_call_begin);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_call_begin);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 61, __pyx_v_8compiler_8keywords_kw_call_begin)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_get_value);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_get_value);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 62, __pyx_v_8compiler_8keywords_kw_get_value)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_match);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_match);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 63, __pyx_v_8compiler_8keywords_kw_match)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_case);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_case);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 64, __pyx_v_8compiler_8keywords_kw_case)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_del);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_del);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 65, __pyx_v_8compiler_8keywords_kw_del)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_INCREF(__pyx_v_8compiler_8keywords_kw_del2);
-  __Pyx_GIVEREF(__pyx_v_8compiler_8keywords_kw_del2);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 66, __pyx_v_8compiler_8keywords_kw_del2)) __PYX_ERR(0, 71, __pyx_L1_error);
-  __Pyx_XGOTREF(__pyx_v_8compiler_8keywords_keywords);
-  __Pyx_DECREF_SET(__pyx_v_8compiler_8keywords_keywords, ((PyObject*)__pyx_t_2));
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_print);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_print);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_v_12can_keywords_kw_print)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_endprint);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_endprint);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 1, __pyx_v_12can_keywords_kw_endprint)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_exit);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_exit);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 2, __pyx_v_12can_keywords_kw_exit)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_in);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_in);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 3, __pyx_v_12can_keywords_kw_in)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_elif);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_elif);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 4, __pyx_v_12can_keywords_kw_elif)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_turtle_beg);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_turtle_beg);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 5, __pyx_v_12can_keywords_kw_turtle_beg)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_type);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_type);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 6, __pyx_v_12can_keywords_kw_type)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_assign);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_assign);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 7, __pyx_v_12can_keywords_kw_assign)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_class_def);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_class_def);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 8, __pyx_v_12can_keywords_kw_class_def)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_else_or_not);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_else_or_not);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 9, __pyx_v_12can_keywords_kw_else_or_not)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_is);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_is);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 10, __pyx_v_12can_keywords_kw_is)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_if);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_if);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 11, __pyx_v_12can_keywords_kw_if)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_expr_if);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_expr_if);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 12, __pyx_v_12can_keywords_kw_expr_if)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_expr_else);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_expr_else);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 13, __pyx_v_12can_keywords_kw_expr_else)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_then);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_then);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 14, __pyx_v_12can_keywords_kw_then)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_do);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_do);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 15, __pyx_v_12can_keywords_kw_do)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_begin);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_begin);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 16, __pyx_v_12can_keywords_kw_begin)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_end);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_end);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 17, __pyx_v_12can_keywords_kw_end)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_pass);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_pass);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 18, __pyx_v_12can_keywords_kw_pass)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_while_do);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_while_do);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 19, __pyx_v_12can_keywords_kw_while_do)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_function);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_function);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 20, __pyx_v_12can_keywords_kw_function)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_call);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_call);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 21, __pyx_v_12can_keywords_kw_call)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_import);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_import);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 22, __pyx_v_12can_keywords_kw_import)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_func_begin);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_func_begin);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 23, __pyx_v_12can_keywords_kw_func_begin)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_func_end);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_func_end);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 24, __pyx_v_12can_keywords_kw_func_end)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_is_2);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_is_2);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 25, __pyx_v_12can_keywords_kw_is_2)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_assert);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_assert);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 26, __pyx_v_12can_keywords_kw_assert)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_class_assign);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_class_assign);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 27, __pyx_v_12can_keywords_kw_class_assign)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_while);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_while);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 28, __pyx_v_12can_keywords_kw_while)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_whi_end);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_whi_end);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 29, __pyx_v_12can_keywords_kw_whi_end)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_return);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_return);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 30, __pyx_v_12can_keywords_kw_return)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_try);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_try);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 31, __pyx_v_12can_keywords_kw_try)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_except);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_except);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 32, __pyx_v_12can_keywords_kw_except)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_finally);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_finally);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 33, __pyx_v_12can_keywords_kw_finally)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_raise);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_raise);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 34, __pyx_v_12can_keywords_kw_raise)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_raise_end);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_raise_end);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 35, __pyx_v_12can_keywords_kw_raise_end)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_from);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_from);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 36, __pyx_v_12can_keywords_kw_from)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_to);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_to);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 37, __pyx_v_12can_keywords_kw_to)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_endfor);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_endfor);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 38, __pyx_v_12can_keywords_kw_endfor)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_extend);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_extend);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 39, __pyx_v_12can_keywords_kw_extend)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_method);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_method);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 40, __pyx_v_12can_keywords_kw_method)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_endclass);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_endclass);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 41, __pyx_v_12can_keywords_kw_endclass)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_cmd);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_cmd);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 42, __pyx_v_12can_keywords_kw_cmd)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_break);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_break);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 43, __pyx_v_12can_keywords_kw_break)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_continue);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_continue);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 44, __pyx_v_12can_keywords_kw_continue)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_lst_assign);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_lst_assign);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 45, __pyx_v_12can_keywords_kw_lst_assign)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_set_assign);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_set_assign);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 46, __pyx_v_12can_keywords_kw_set_assign)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_global_set);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_global_set);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 47, __pyx_v_12can_keywords_kw_global_set)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_is_3);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_is_3);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 48, __pyx_v_12can_keywords_kw_is_3)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_exit_1);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_exit_1);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 49, __pyx_v_12can_keywords_kw_exit_1)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_exit_2);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_exit_2);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 50, __pyx_v_12can_keywords_kw_exit_2)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_false);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_false);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 51, __pyx_v_12can_keywords_kw_false)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_true);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_true);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 52, __pyx_v_12can_keywords_kw_true)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_none);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_none);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 53, __pyx_v_12can_keywords_kw_none)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_stackinit);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_stackinit);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 54, __pyx_v_12can_keywords_kw_stackinit)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_push);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_push);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 55, __pyx_v_12can_keywords_kw_push)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_pop);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_pop);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 56, __pyx_v_12can_keywords_kw_pop)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_model);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_model);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 57, __pyx_v_12can_keywords_kw_model)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_mod_new);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_mod_new);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 58, __pyx_v_12can_keywords_kw_mod_new)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_class_init);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_class_init);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 59, __pyx_v_12can_keywords_kw_class_init)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_self);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_self);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 60, __pyx_v_12can_keywords_kw_self)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_call_begin);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_call_begin);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 61, __pyx_v_12can_keywords_kw_call_begin)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_get_value);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_get_value);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 62, __pyx_v_12can_keywords_kw_get_value)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_match);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_match);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 63, __pyx_v_12can_keywords_kw_match)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_case);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_case);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 64, __pyx_v_12can_keywords_kw_case)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_del);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_del);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 65, __pyx_v_12can_keywords_kw_del)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_12can_keywords_kw_del2);
+  __Pyx_GIVEREF(__pyx_v_12can_keywords_kw_del2);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 66, __pyx_v_12can_keywords_kw_del2)) __PYX_ERR(0, 71, __pyx_L1_error);
+  __Pyx_XGOTREF(__pyx_v_12can_keywords_keywords);
+  __Pyx_DECREF_SET(__pyx_v_12can_keywords_keywords, ((PyObject*)__pyx_t_2));
   __Pyx_GIVEREF(__pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "compiler/keywords.pyx":1
+  /* "can_keywords.pyx":1
  * cdef:             # <<<<<<<<<<<<<<
  *     str kw_print = ""
  *     str kw_endprint = ""
@@ -4368,7 +4353,7 @@ if (!__Pyx_RefNanny) {
   __Pyx_XDECREF(__pyx_t_2);
   if (__pyx_m) {
     if (__pyx_d && stringtab_initialized) {
-      __Pyx_AddTraceback("init compiler.keywords", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("init can_keywords", __pyx_clineno, __pyx_lineno, __pyx_filename);
     }
     #if !CYTHON_USE_MODULE_STATE
     Py_CLEAR(__pyx_m);
@@ -4382,7 +4367,7 @@ if (!__Pyx_RefNanny) {
     }
     #endif
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init compiler.keywords");
+    PyErr_SetString(PyExc_ImportError, "init can_keywords");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();

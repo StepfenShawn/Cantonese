@@ -1,5 +1,3 @@
-# distutils: language=c++
-
 from can_lexer cimport TokenType, can_token
 
 # The root(father) of all Parser classes

@@ -1,5 +1,5 @@
-import can_parser as can_parser
-cimport can_lexer as can_lexer
+import can_parser
+cimport can_lexer
 import os
 import re
 
@@ -23,7 +23,10 @@ class CanPyCompile:
                 found = True
         if found == False:
             raise ImportError(lib_name + '.cantonese not found.')
-    
+        
+        from zhconv import convert
+        code = convert(code, 'zh-hk').replace("僕", "仆")
+        
         tokens = can_lexer.cantonese_token(code)
         stats = can_parser.StatParser(tokens).parse_stats()
         code_gen = Codegen(stats, path)
@@ -131,7 +134,7 @@ class Codegen(object):
             s += ', ' + self.codegen_expr(arg)
         return "self, " + s[2 : ]
 
-    def codegen_lib_list(self, lib_list : list) -> str:
+    def codegen_lib_list(self, lib_list : list) -> tuple:
         s = ''
         user_lib = []
         for lib in lib_list:
@@ -142,6 +145,7 @@ class Codegen(object):
                 user_lib.append(self.codegen_expr(lib))
 
         return s[2 : ], user_lib
+
     def codegen_build_in_method_or_id(self, exp : can_parser.can_ast) -> str:
         list_build_in_method = {
             "加啲" : "append",

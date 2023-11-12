@@ -8,15 +8,13 @@ import sys
 import zhconv
 import argparse
 
-import sys
-sys.path.append("./compiler/")
+from can_error import *
 
-from can_error import 濑啲咩嘢
-import can_compile
 import can_lexer
 import can_parser
+import can_compile
 
-from compiler.libraries.can_lib import *
+from libraries.can_lib import *
 from web_core.can_web_parser import *
 from vm.can_codegen import *
 
@@ -40,13 +38,13 @@ def cantonese_run(code : str, is_to_py : bool, file : str,
     global TO_PY_CODE
     global variable
 
-    code = zhconv.convert(code, 'zh-hk')
-        
+    code = zhconv.convert(code, 'zh-hk').replace("僕", "仆")
+    
     tokens = can_lexer.cantonese_token(code)
     # TODO: update for v1.0.8
     if Options.dump_lex:
         for token in tokens:
-            print("line " + str(token[0]) + ": " + str(token[1]))
+            can_lexer.print_token(token)
 
     stats = can_parser.StatParser(tokens).parse_stats()
     code_gen = can_compile.Codegen(stats, file)
@@ -121,7 +119,7 @@ class 交互(cmd.Cmd):
         global kw_exit
 
         if code is not None:
-            if code == kw_exit or code == kw_exit_2 or code == kw_exit_1:
+            if code == ".quit":
                 sys.exit(1)
             c = cantonese_run(code, False, '【标准输入】', 
                 REPL = True, get_py_code = True)
@@ -144,7 +142,7 @@ def main():
     arg_parser.add_argument("-讲翻py", action = "store_true", help = "Translate Cantonese to Python")
     arg_parser.add_argument("-to_web", action = "store_true")
     arg_parser.add_argument("-倾偈", action = "store_true")
-    arg_parser.add_argument("-compile", action = "store_true")
+    arg_parser.add_argument("-update", action = "store_true")
     arg_parser.add_argument("-讲白啲", action = "store_true")
     arg_parser.add_argument("-build", action = "store_true")
     arg_parser.add_argument("-ast", action = "store_true")
