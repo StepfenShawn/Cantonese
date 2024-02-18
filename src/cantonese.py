@@ -7,7 +7,9 @@ import re
 import sys
 import zhconv
 import argparse
+import os
 
+from printree import ptree
 from can_error import *
 
 import can_lexer
@@ -16,16 +18,14 @@ import can_compile
 
 from libraries.can_lib import *
 from web_core.can_web_parser import *
-from vm.can_codegen import *
 
-_version_ = "Cantonese 1.0.8 Copyright (C) 2020-2023 StepfenShawn"
+
+
+_version_ = "Cantonese\033[5;33m 1.0.8\033[0m Copyright (C) 2020-2024\033[5;35m StepfenShawn\033[0m"
 
 class Options:
     dump_ast = False
     dump_lex = False
-    to_js = False
-    to_cpp = False
-    _S = False
     mkfile = False
     _to_llvm = False
     debug = False
@@ -51,7 +51,7 @@ def cantonese_run(code : str, is_to_py : bool, file : str,
 
     if Options.dump_ast:
         for stat in stats:
-            print(stat)
+            ptree({"%s" % stat.__class__.__name__: stat.__dict__}, depth=10)
     
     TO_PY_CODE = ''
     for stat in stats:
@@ -196,4 +196,8 @@ def main():
         print("濑嘢!: 揾唔到你嘅文件 :(")
 
 if __name__ == '__main__':
+    # Support colorful fonts on windows
+    if os.name == "nt":
+        os.system("")
+
     main()

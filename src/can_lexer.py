@@ -1,8 +1,8 @@
 import re
-from can_keywords cimport *
+from can_keywords import *
 
-cdef class can_token:
-    def __init__(self, int lineno, TokenType typ, str value):
+class can_token:
+    def __init__(self, lineno: int, typ: TokenType, value: str):
         self.lineno = lineno
         self.typ = typ
         self.value = value
@@ -10,7 +10,7 @@ cdef class can_token:
 """
     Get the Cantonese Token List
 """
-cdef class lexer:
+class lexer:
     def __init__(self, code: str, keywords: tuple):
         self.code = code
         self.keywords = keywords
@@ -22,28 +22,28 @@ cdef class lexer:
         self.re_python_expr = r"[~][\S\s]*?[#]"
         self.re_callfunc = r"[&](.*?)[)]"
 
-    cdef next(self, int n):
+    def next(self, n: int):
         self.code = self.code[n:]
 
-    cdef check(self, str s):
+    def check(self, s: str):
         return self.code.startswith(s)
 
     @staticmethod
-    cdef bint is_white_space(str c):
+    def is_white_space(c: str):
         return c in ('\t', '\n', '\v', '\f', '\r', ' ')
 
     @staticmethod
-    cdef bint is_new_line(str c):
+    def is_new_line(c: str):
         return c in ('\r', '\n')
 
     @staticmethod
-    cdef bint isChinese(str word):
+    def isChinese(word: str):
         for ch in word:
             if '\u4e00' <= ch <= '\u9fff':
                 return True
         return False
 
-    cdef skip_space(self):
+    def skip_space(self):
         while len(self.code) > 0:
             if self.check('\r\n') or self.check('\n\r'):
                 self.next(2)
@@ -60,29 +60,29 @@ cdef class lexer:
             else:
                 break
 
-    cdef str scan(self, str pattern):
-        cdef object m = re.match(pattern, self.code)
+    def scan(self, pattern: str):
+        m = re.match(pattern, self.code)
         if m:
             token = m.group()
             self.next(len(token))
             return token
     
-    cdef str scan_identifier(self):
+    def scan_identifier(self):
         return self.scan(self.re_id)
 
-    cdef str scan_expr(self):
+    def scan_expr(self):
         return self.scan(self.re_expr)
 
-    cdef str scan_python_expr(self):
+    def scan_python_expr(self):
         return self.scan(self.re_python_expr)
 
-    cdef str scan_number(self):
+    def scan_number(self):
         return self.scan(self.re_number)
 
-    cdef str scan_callfunc(self):
+    def scan_callfunc(self):
         return self.scan(self.re_callfunc)
 
-    cdef str scan_short_string(self):
+    def scan_short_string(self):
         m = re.match(self.re_str, self.code)
         if m:
             s = m.group()
@@ -90,11 +90,11 @@ cdef class lexer:
             return s
         self.error('unfinished string')
 
-    cdef error(self, str args):
-        cdef str err = '{0}: {1}'.format(self.line, args)
+    def error(self, args: str):
+        err = '{0}: {1}'.format(self.line, args)
         raise Exception(err)
 
-    cdef can_token get_token(self):
+    def get_token(self) -> can_token:
         self.skip_space()
         if len(self.code) == 0:
             return can_token(self.line, TokenType.EOF, 'EOF')
@@ -312,9 +312,9 @@ cdef class lexer:
 
         self.error("睇唔明嘅Token: " + c)
 
-cpdef list cantonese_token(code : str):
-    cdef lexer lex = lexer(code, keywords)
-    cdef list tokens = []
+def cantonese_token(code : str) -> list:
+    lex: lexer = lexer(code, keywords)
+    tokens: list = []
     
     while True:
         token = lex.get_token()
@@ -323,5 +323,5 @@ cpdef list cantonese_token(code : str):
             break
     return tokens
 
-cpdef print_token(tk : can_token):
+def print_token(tk : can_token):
     print(f"[{tk.lineno}, [{tk.typ}, {tk.value}]")

@@ -1,5 +1,5 @@
 import can_parser
-cimport can_lexer
+import can_lexer
 import os
 import re
 
@@ -115,7 +115,7 @@ class Codegen(object):
 
         elif isinstance(exp, can_parser.can_ast.SpecificIdExp):
             s = ''
-            p_corr = re.match(r'(.*)同(.*)有几衬', exp.id, re.M|re.I)
+            p_corr = re.match(r'(.*)同(.*)有幾襯', exp.id, re.M|re.I)
             if p_corr:
                 s = " corr(" + p_corr.group(1) +", " + p_corr.group(2) + ") "
             return s
