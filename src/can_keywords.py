@@ -1,4 +1,6 @@
-class TokenType:
+from enum import Enum
+
+class TokenType(Enum):
     EOF = 0
     VARARG = 1         # <*>
     SEP_COMMA = 2      # ,

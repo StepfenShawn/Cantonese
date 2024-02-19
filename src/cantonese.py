@@ -4,10 +4,10 @@
 """
 import cmd
 import re
-import sys
+import sys, os
 import zhconv
 import argparse
-import os
+from collections import defaultdict
 
 from printree import ptree
 from can_error import *
@@ -19,9 +19,15 @@ import can_compile
 from libraries.can_lib import *
 from web_core.can_web_parser import *
 
-
-
 _version_ = "Cantonese\033[5;33m 1.0.8\033[0m Copyright (C) 2020-2024\033[5;35m StepfenShawn\033[0m"
+logo = "\033[0;34m" + r"""
+   ______            __                           
+  / ________ _____  / /_____  ____  ___  ________ 
+ / /   / __ `/ __ \/ __/ __ \/ __ \/ _ \/ ___/ _ \
+/ /___/ /_/ / / / / /_/ /_/ / / / /  __(__  /  __/
+\____/\__,_/_/ /_/\__/\____/_/ /_/\___/____/\___/ 
+         
+""" + "\033[0m" + "Hope you enjoy it!!!" 
 
 class Options:
     dump_ast = False
@@ -32,27 +38,46 @@ class Options:
 
 TO_PY_CODE = ''
 
+def show_pretty_lex(tokens):
+    lines_tracker = defaultdict(list)
+    for token in tokens:
+        lines_tracker[f"line {token.lineno}"].append(str(token))
+    ptree(lines_tracker)
+
+def show_pretty_ast(stats):
+    def class_to_dict(obj):
+        if isinstance(obj, dict):
+            return {k: class_to_dict(v) for k, v in obj.items()}
+        if isinstance(obj, can_parser.can_ast.Stat):
+            return class_to_dict(vars(obj))
+        elif isinstance(obj, (list, tuple, set)):
+            return type(obj)(class_to_dict(x) for x in obj)
+        else:
+            return obj
+
+    for stat in stats:
+        ptree({"%s" % stat.__class__.__name__: class_to_dict(stat)}, depth=10)
+
 def cantonese_run(code : str, is_to_py : bool, file : str, 
                     REPL = False, get_py_code = False) -> None:
     
     global TO_PY_CODE
     global variable
 
-    code = zhconv.convert(code, 'zh-hk').replace("僕", "仆")
-    
+    code = zhconv.convert(code, 'zh-hk').replace("僕", "仆")    
     tokens = can_lexer.cantonese_token(code)
-    # TODO: update for v1.0.8
+
     if Options.dump_lex:
-        for token in tokens:
-            can_lexer.print_token(token)
+        show_pretty_lex(tokens)
+        exit()
 
     stats = can_parser.StatParser(tokens).parse_stats()
-    code_gen = can_compile.Codegen(stats, file)
 
     if Options.dump_ast:
-        for stat in stats:
-            ptree({"%s" % stat.__class__.__name__: stat.__dict__}, depth=10)
+        show_pretty_ast(stats)
+        exit()
     
+    code_gen = can_compile.Codegen(stats, file)    
     TO_PY_CODE = ''
     for stat in stats:
         TO_PY_CODE += code_gen.codegen_stat(stat)
@@ -157,7 +182,7 @@ def main():
     global _version_
 
     if args.v:
-        print(_version_)
+        print(_version_, logo)
         sys.exit(1)
 
     if not args.file:

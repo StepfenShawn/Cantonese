@@ -3,6 +3,16 @@ require 'test/unit'
 
 RUN = "python cantonese.py "
 
+puts "OK sir! Ready to test!!!"
+puts %q{
+     ______            __                           
+    / ________ _____  / /_____  ____  ___  ________ 
+   / /   / __ `/ __ \/ __/ __ \/ __ \/ _ \/ ___/ _ \
+  / /___/ /_/ / / / / /_/ /_/ / / / /  __(__  /  __/
+  \____/\__,_/_/ /_/\__/\____/_/ /_/\___/____/\___/ 
+        
+}
+
 class BasicTest < Test::Unit::TestCase
 
   def test_hello_world
@@ -82,7 +92,7 @@ class BasicTest < Test::Unit::TestCase
 
   def test_set
     res = %x(#{RUN} ../examples/basic/set.cantonese).encode("UTF-8")
-    assert (not res.include?("濑嘢!"))
+    assert (not res.include?("濑嘢!")) and res != ""
   end
 
   def test_try_finally
@@ -145,32 +155,32 @@ class AlgoTest < Test::Unit::TestCase
 
   def test_Tower_of_Hanoi
     res = %x(#{RUN} ../examples/algorithms/Tower_of_Hanoi.cantonese).encode("UTF-8")
-    assert (not res.include?("濑嘢!"))
+    assert (not res.include?("濑嘢!")) and res != ""
   end
 
   def test_climbStairs
     res = %x(#{RUN} ../examples/leetcode/climbStairs.cantonese).encode("UTF-8")
-    assert (not res.include?("濑嘢!"))
+    assert (not res.include?("濑嘢!")) and res != ""
   end
 
   def test_getSum
     res = %x(#{RUN} ../examples/leetcode/getSum.cantonese).encode("UTF-8")
-    assert (not res.include?("濑嘢!"))
+    assert (not res.include?("濑嘢!")) and res != ""
   end
 
   def test_numIdenticalPairs
     res = %x(#{RUN} ../examples/leetcode/numIdenticalPairs.cantonese).encode("UTF-8")
-    assert (not res.include?("濑嘢!"))
+    assert (not res.include?("濑嘢!")) and res != ""
   end
 
   def test_rotateString
     res = %x(#{RUN} ../examples/leetcode/rotateString.cantonese).encode("UTF-8")
-    assert (not res.include?("濑嘢!"))
+    assert (not res.include?("濑嘢!")) and res != ""
   end
 
   def test_singleNumber
     res = %x(#{RUN} ../examples/leetcode/singleNumber.cantonese).encode("UTF-8")
-    assert (not res.include?("濑嘢!"))
+    assert (not res.include?("濑嘢!")) and res != ""
   end
 
 end
@@ -198,3 +208,29 @@ class MiscTest < Test::Unit::TestCase
   end
 
 end
+
+class LibTest < Test::Unit::TestCase
+  
+  def test_csv_parse
+    res = %x(#{RUN} ../examples/lib_sample/csv_parse.cantonese).encode("UTF-8")
+    assert res == "['id', 'name', ' age', 'gender', 'class_num']\n['1001', '张三', '18', 'male', '01']\n['1002', '李四', '19', 'male', '01']\n['1003', '王五', '19', 'famale', '01']\n['1004', '李华', '18', 'male', '01']\n"
+  end
+
+  def test_file
+    res = %x(#{RUN} ../examples/lib_sample/file.cantonese).encode("UTF-8")
+    assert (not res.include?("濑嘢!")) and res != ""
+  end
+
+  def test_random
+    res = %x(#{RUN} ../examples/lib_sample/random.cantonese).encode("UTF-8")
+    assert (not res.include?("濑嘢!")) and res != ""
+  end
+
+  def test_re
+    res = %x(#{RUN} ../examples/lib_sample/re.cantonese).encode("UTF-8")
+    assert res == "(0, 3)\nNone\n"
+  end
+
+end
+
+# AppGUITest

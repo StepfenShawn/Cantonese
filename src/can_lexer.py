@@ -7,6 +7,9 @@ class can_token:
         self.typ = typ
         self.value = value
 
+    def __repr__(self) -> str:
+        return f"{self.value} ({self.typ.name})"
+
 """
     Get the Cantonese Token List
 """
@@ -322,6 +325,3 @@ def cantonese_token(code : str) -> list:
         if token.typ == TokenType.EOF:
             break
     return tokens
-
-def print_token(tk : can_token):
-    print(f"[{tk.lineno}, [{tk.typ}, {tk.value}]")

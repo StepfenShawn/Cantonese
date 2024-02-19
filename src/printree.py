@@ -1,6 +1,6 @@
 """
-The printree library
-refer to https://github.com/chrizzFTD/printree (MIT License)
+    The printree library
+    refer to https://github.com/chrizzFTD/printree (MIT License)
 """
 
 import textwrap
