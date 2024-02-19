@@ -1,5 +1,6 @@
 import re
 from can_keywords import *
+from printree import ptree
 
 class can_token:
     def __init__(self, lineno: int, typ: TokenType, value: str):
@@ -18,6 +19,7 @@ class lexer:
         self.code = code
         self.keywords = keywords
         self.line = 1
+        self.buffer = ""
         self.re_number = r"^0[xX][0-9a-fA-F]*(\.[0-9a-fA-F]*)?([pP][+\-]?[0-9]+)?|^[0-9]*(\.[0-9]*)?([eE][+\-]?[0-9]+)?"
         self.re_id = r"^[_\d\w]+|^[\u4e00-\u9fa5]+"
         self.re_str = r"(?s)(^'(\\\\|\\'|\\\n|\\z\s*|[^'\n])*')|(^\"(\\\\|\\\"|\\\n|\\z\s*|[^\"\n])*\")"
@@ -94,8 +96,10 @@ class lexer:
         self.error('unfinished string')
 
     def error(self, args: str):
-        err = '{0}: {1}'.format(self.line, args)
-        raise Exception(err)
+        print("Error occurred!")
+        err = {args: {f"On line {self.line}\n -> {self.code[:30]}...\n..."}}
+        ptree(err, sprout_str='')
+        exit()
 
     def get_token(self) -> can_token:
         self.skip_space()
@@ -174,10 +178,6 @@ class lexer:
                 self.next(3)
                 return can_token(self.line, TokenType.OP_CONCAT, '<->')
 
-            elif self.check('<<<'):
-                self.next(3)
-                return can_token(self.line, TokenType.KEYWORD, '<<<')
-
             elif self.check('<$>'):
                 self.next(3)
                 return can_token(self.line, TokenType.KEYWORD, '<$>')
@@ -199,10 +199,7 @@ class lexer:
                 return can_token(self.line, TokenType.OP_LT, '<')
         
         if c == '>':
-            if self.check('>>>'):
-                self.next(3)
-                return can_token(self.line, TokenType.KEYWORD, '>>>')
-            elif self.check('>='):
+            if self.check('>='):
                 self.next(2)
                 return can_token(self.line, TokenType.OP_GE, '>=')
             elif self.check('>>'):
@@ -313,7 +310,7 @@ class lexer:
                 self.next(2)
                 return can_token(self.line, TokenType.KEYWORD, '##')
 
-        self.error("睇唔明嘅Token: " + c)
+        self.error(f"\033[0;31m濑嘢!!!\033[0m:睇唔明嘅Token: `{c}`")
 
 def cantonese_token(code : str) -> list:
     lex: lexer = lexer(code, keywords)

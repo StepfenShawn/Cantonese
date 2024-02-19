@@ -21,7 +21,7 @@ class TokenType(Enum):
     OP_BAND = 17       # &
     OP_SHR = 18        # >>
     OP_SHL = 19        # <<
-    OP_CONCAT = 20     # ---> or <---
+    OP_CONCAT = 20     # <->
     OP_LT = 21         # <
     OP_LE = 22         # <=
     OP_GT = 23         # >
@@ -109,6 +109,8 @@ kw_del = "冇鳩用"
 kw_del2 = "冇撚用"
 kw_match = "match下"
 kw_case = "撞見"
+kw_func_ty_define = "有條計仔"
+kw_func_ty_end = "話你知"
 
 keywords = (
     kw_print,
@@ -177,5 +179,7 @@ keywords = (
     kw_match,
     kw_case,
     kw_del,
-    kw_del2
+    kw_del2,
+    kw_func_ty_define,
+    kw_func_ty_end
 )

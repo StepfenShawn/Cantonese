@@ -9,7 +9,7 @@ stat ::= ';' |
       | importstmt
       | functioncall ['@' idlist]
       | '落操场玩跑步' block '玩到' exp '为止'
-      | ['<<<' parlist '收皮' parlist  '>>>'] function_def_stmt
+      | ['有條計仔' parlist '=>' parlist '話你知'] function_def_stmt
       | lambda_functoindef ['@' idlist]
       | '&&' idlist '喺' explist '=>' '{' block '}'
       | id '从' exp '行到' exp block '行晒'

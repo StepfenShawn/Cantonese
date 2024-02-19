@@ -3,7 +3,6 @@
     The interpreter for Cantonese    
 """
 import cmd
-import re
 import sys, os
 import zhconv
 import argparse
@@ -11,6 +10,7 @@ from collections import defaultdict
 
 from printree import ptree
 from can_error import *
+from can_utils import remove_comment
 
 import can_lexer
 import can_parser
@@ -188,37 +188,40 @@ def main():
     if not args.file:
         sys.exit(开始交互())
 
-    try:
+    if not os.path.exists(args.file):
+        print("Error occurred when checking the path of file!")
+        ptree({f"File `{args.file}`": ["\033[0;31m濑嘢!!!\033[0m: 揾唔到你嘅文件 :("]},
+                sprout_str='> ')
+    else: 
+        is_to_py = False
+        code = ""
         with open(args.file, encoding = "utf-8") as f:
             code = f.read()
-            # Skip the comment
-            code = re.sub(re.compile(r'/\*.*?\*/', re.S), ' ', code)
-            is_to_py = False
-            if args.build:
-                cantonese_lib_init()
-                exec(code, variable)
-                exit()
-            if args.to_py or args.讲翻py:
-                is_to_py = True
-            if args.to_web or args.倾偈:
-                if args.compile or args.讲白啲:
-                    cantonese_web_run(code, args.file, False)
-                else:
-                    cantonese_web_run(code, args.file, True)
-            if args.ast:
-                Options.dump_ast = True
-            if args.lex:
-                Options.dump_lex = True
-            if args.debug:
-                Options.debug = True
-            if args.mkfile:
-                Options.mkfile = True
-            if args.llvm or args.l:
-                Options._to_llvm = True
-            
-            cantonese_run(code, is_to_py, args.file)
-    except FileNotFoundError:
-        print("濑嘢!: 揾唔到你嘅文件 :(")
+            code = remove_comment(code)
+
+        if args.build:
+            cantonese_lib_init()
+            exec(code, variable)
+            exit()
+        if args.to_py or args.讲翻py:
+            is_to_py = True
+        if args.to_web or args.倾偈:
+            if args.compile or args.讲白啲:
+                cantonese_web_run(code, args.file, False)
+            else:
+                cantonese_web_run(code, args.file, True)
+        if args.ast:
+            Options.dump_ast = True
+        if args.lex:
+            Options.dump_lex = True
+        if args.debug:
+            Options.debug = True
+        if args.mkfile:
+            Options.mkfile = True
+        if args.llvm or args.l:
+            Options._to_llvm = True
+        
+        cantonese_run(code, is_to_py, args.file)
 
 if __name__ == '__main__':
     # Support colorful fonts on windows
