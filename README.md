@@ -1,4 +1,5 @@
-![logo](img/logo.jpg)  
+<img src="img/logo.jpg" width="300px">
+
 ### Read this in other languages: [English](README-en.md)  
 [![pypi](https://img.shields.io/pypi/dm/Cantonese)](https://pypi.org/project/Cantonese/)
 [![pypi](https://img.shields.io/pypi/v/Cantonese)](https://pypi.org/project/Cantonese/)   
@@ -283,12 +284,12 @@ y=0.530960991635149x+189.75347155122432
 }
 ```  
 運行結果：    
-![turtle_result](img/turtle_etc.jpg)  
+<img src="img/turtle_etc.jpg" width="300px">
 
 ### <a name="21">迷宮遊戲仔</a>
 [代碼](examples/games/game.cantonese)  
 運行結果：  
-![game_result](img/game_result.jpg)
+<img src="img/game_result.jpg" width="300px">
 
 ### <a name="22">各種排序同查找算法</a>
 * [二分查找](examples/algorithms/binary_search.cantonese)
@@ -308,7 +309,7 @@ y=0.530960991635149x+189.75347155122432
 ```
 cantonese examples/web/hello_web.cantonese -to_web 
 ```
-![web_result](img/web_result.jpg)
+<img src="img/web_result.jpg" width="300px">
 
 ### <a href="#24">用粵語開發一隻 App</a>
 首先安裝 `kivy`：
@@ -328,7 +329,7 @@ pip install kivy
 
 |App运行| 下 -> |HelloApp, HelloApp().HelloWorld|
 ```
-![App](img/HelloApp.jpg)  
+<img src="img/HelloApp.jpg" width="300px">
 
 ### <a href="#25">數據庫編程都得(開發緊)</a>
 select語句:

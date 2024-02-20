@@ -1,3 +1,26 @@
+_ARROW = '-->'
+_BAR = ' | '
+
+class ErrorPrinter:
+
+    def __init__(self, info, pos, ctx, suggest, _file, _len = 1):
+        self.info = info
+        self.pos = pos
+        self.ctx = ctx
+        self.suggest = suggest
+        self.len = _len
+        self.file = _file
+
+    def show(self) -> None:
+        strformat = (
+f"""{self.info}
+ {_ARROW} {self.file} {self.pos.line}:{self.pos.offset}
+ {_BAR} {self.ctx}
+""" +
+' ' * (5+self.pos.offset) + '^' * self.len + self.suggest
+)
+        print(strformat)
+        exit()
 """
     The printree library
     refer to https://github.com/chrizzFTD/printree (MIT License)
@@ -53,16 +76,6 @@ class TreePrinter:
                 print(i)
         contextvars.copy_context().run(f)
 
-
-class AsciiPrinter(TreePrinter):
-    """A printer that uses ASCII characters only."""
-    ROOT = '.'
-    EDGE = '|   '
-    BRANCH_NEXT = '|-- '
-    BRANCH_LAST = '`-- '
-    ARROW = '->'
-
-
 def ptree(obj, depth: int = None, annotated: bool = False, sprout_str=': ') -> None:
     TreePrinter(depth=depth, annotated=annotated).ptree(obj, sprout_str)
 
@@ -73,10 +86,6 @@ def _newline_repr(obj_repr, prefix) -> str:
 
 
 def _itree(obj, formatter, subscription, prefix="", last=False, level=0, depth=0, sprout_str=': '):
-    
-    if isinstance(subscription, int) and sprout_str != ': ':
-        subscription = ""
-
     formatter.level = level
     sprout = level > 0
     children = []

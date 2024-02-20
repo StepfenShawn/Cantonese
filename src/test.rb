@@ -47,7 +47,7 @@ class BasicTest < Test::Unit::TestCase
 
   def test_exit
     res = %x(#{RUN} ../examples/basic/exit.cantonese).encode("UTF-8")
-    assert res == "執行exit\n"
+    assert res == "执行exit\n"
   end
 
   def test_for
@@ -67,7 +67,7 @@ class BasicTest < Test::Unit::TestCase
 
   def test_import
     res = %x(#{RUN} ../examples/basic/import.cantonese).encode("UTF-8")
-    assert res == "1\n3\n5.0\n1\n測試成功\n"
+    assert res == "1\n3\n5.0\n1\n测试成功\n"
   end
 
   def test_lambda
@@ -97,7 +97,7 @@ class BasicTest < Test::Unit::TestCase
 
   def test_try_finally
     res = %x(#{RUN} ../examples/basic/try_finally.cantonese).encode("UTF-8")
-    assert res == "揾到NameError\n執手尾: \n1 1\n"
+    assert res == "揾到NameError\n执手尾: \n1 1\n"
   end
 
   def test_type
@@ -199,7 +199,7 @@ class MiscTest < Test::Unit::TestCase
 
   def test_knn
     res = %x(#{RUN} ../examples/machine_learning/KNN.cantonese).encode("UTF-8")
-    assert res == "動作片\n"
+    assert res == "动作片\n"
   end
 
   def test_linear_regression

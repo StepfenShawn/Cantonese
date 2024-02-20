@@ -1,15 +1,6 @@
 from can_lexer import can_token, TokenType
 from parser_base import ParserBase
 import functools
-import re
-
-def remove_comment(code: str) -> str:
-    match_search = re.search(re.compile(r'/\*.*?\*/', re.S), code)
-    while match_search:
-        comment = match_search.group()
-        code = code.replace(match_search.group(), "\n" * (comment.count("\n")), 1)
-        match_search = re.search(re.compile(r'/\*.*?\*/', re.S), code)
-    return code
 
 def exp_type(type):
     def decorator(func):

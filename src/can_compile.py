@@ -27,7 +27,7 @@ class CanPyCompile:
         from zhconv import convert
         code = convert(code, 'zh-hk').replace("僕", "仆")
         
-        tokens = can_lexer.cantonese_token(code)
+        tokens = can_lexer.cantonese_token(path, code)
         stats = can_parser.StatParser(tokens).parse_stats()
         code_gen = Codegen(stats, path)
         code = ''

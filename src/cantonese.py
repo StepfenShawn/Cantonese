@@ -4,13 +4,11 @@
 """
 import cmd
 import sys, os
-import zhconv
 import argparse
 from collections import defaultdict
 
-from printree import ptree
+from infoprinter import ptree
 from can_error import *
-from can_utils import remove_comment
 
 import can_lexer
 import can_parser
@@ -41,7 +39,7 @@ TO_PY_CODE = ''
 def show_pretty_lex(tokens):
     lines_tracker = defaultdict(list)
     for token in tokens:
-        lines_tracker[f"line {token.lineno}"].append(str(token))
+        lines_tracker[f"line {token.pos.line}"].append(str(token))
     ptree(lines_tracker)
 
 def show_pretty_ast(stats):
@@ -58,14 +56,13 @@ def show_pretty_ast(stats):
     for stat in stats:
         ptree({"%s" % stat.__class__.__name__: class_to_dict(stat)}, depth=10)
 
-def cantonese_run(code : str, is_to_py : bool, file : str, 
+def cantonese_run(code: str, is_to_py : bool, file : str, 
                     REPL = False, get_py_code = False) -> None:
     
     global TO_PY_CODE
     global variable
-
-    code = zhconv.convert(code, 'zh-hk').replace("僕", "仆")    
-    tokens = can_lexer.cantonese_token(code)
+  
+    tokens = can_lexer.cantonese_token(file, code)
 
     if Options.dump_lex:
         show_pretty_lex(tokens)
@@ -197,7 +194,6 @@ def main():
         code = ""
         with open(args.file, encoding = "utf-8") as f:
             code = f.read()
-            code = remove_comment(code)
 
         if args.build:
             cantonese_lib_init()
