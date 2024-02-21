@@ -22,7 +22,7 @@ pip install Cantonese
 &emsp;&emsp;<a href="#8">掟出異常</a>  
 &emsp;&emsp;<a href="#9">斷言語句</a>  
 &emsp;&emsp;<a href="#10">錯誤捕捉語句</a>  
-&emsp;&emsp;<a href="#11">調用 Python 庫</a>  
+&emsp;&emsp;<a href="#11">調用 Python</a>  
 &emsp;&emsp;<a href="#12">面向對象編程</a>  
 &emsp;&emsp;<a href="#13">棧嘅使用</a>  
 <a href="#14">更多例子</a>  
@@ -172,10 +172,20 @@ try-except-finally:
     畀我睇下 |A, B| 点样先？
 }
 ``` 
-### <a name="11">調用 Python 庫</a>
+### <a name="11">調用 Python</a>
+調用 Python 庫:  
 ```
 使下 python_os
 使下 python_math
+```
+調用 Python 代碼:  
+```
+我係二五仔 #XD
+def add(a, b):
+    return a + b
+二五仔係我
+
+畀我睇下 |add 下 -> (8, 2)| 点样先 /* 輸出10 */
 ```
 ### <a name="12">面向對象編程</a>
 聲明對象 `duck`，繼承至 `object`，分別有兩個方法 `游水` 同埋 `睡觉` ，仲有一個屬性 `性别`：  

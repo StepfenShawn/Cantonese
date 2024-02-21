@@ -131,8 +131,8 @@ class StatParser(ParserBase):
             elif tk_value == kw_match:
                 return self.parse_match_stat()
 
-            elif tk_value == '@@@':
-                return self.parse_extend_stat()
+            elif tk_value == kw_call_native:
+                return self.parse_call_native_stat()
 
             elif tk_value == '&&':
                 return self.parse_for_each_stat()
@@ -772,10 +772,10 @@ class StatParser(ParserBase):
 
         return can_ast.ForEachStat(id_list, exp_list, blocks)
 
-    def parse_extend_stat(self):
+    def parse_call_native_stat(self):
         self.skip(1)
-        tk = self.get_next_token_of_kind(TokenType.EXTEND_EXPR, 0)
-        return can_ast.ExtendStat(ParserUtil.get_token_value(tk)[1 : -1])
+        tk = self.get_next_token_of_kind(TokenType.CALL_NATIVE_EXPR, 0)
+        return can_ast.ExtendStat(ParserUtil.get_token_value(tk)[3 : -5])
 
     def parse_model_new_stat(self):
         self.skip(1)

@@ -52,7 +52,7 @@ class lexer:
         self.re_id = r"^[_\d\w]+|^[\u4e00-\u9fa5]+"
         self.re_str = r"(?s)(^'(\\\\|\\'|\\\n|\\z\s*|[^'\n])*')|(^\"(\\\\|\\\"|\\\n|\\z\s*|[^\"\n])*\")"
         self.re_expr = r"[|][\S\s]*?[|]"
-        self.re_python_expr = r"[~][\S\s]*?[#]"
+        self.re_python_expr = r"#XD[\S\s]*?二五仔係我"
         self.re_callfunc = r"[&](.*?)[)]"
 
     def getCurPos(self):
@@ -181,7 +181,7 @@ class lexer:
         if c == '~':
             start_pos = self.getCurPos()
             token = self.scan_python_expr()
-            return can_token(start_pos, TokenType.EXTEND_EXPR, token)
+            return can_token(start_pos, TokenType.CALL_NATIVE_EXPR, token)
 
         if c == '-':
             start_pos = self.getCurPos()
@@ -382,6 +382,10 @@ class lexer:
             if self.check('##'):
                 self.next(2)
                 return can_token(start_pos, TokenType.KEYWORD, '##')
+
+            if self.check('#XD'):
+                token = self.scan_python_expr()
+                return can_token(start_pos, TokenType.CALL_NATIVE_EXPR, token)
 
         self.error(f"\033[0;31m濑嘢!!!\033[0m:睇唔明嘅Token: `{c}`")
 

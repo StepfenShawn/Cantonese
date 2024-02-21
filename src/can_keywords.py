@@ -38,7 +38,7 @@ class TokenType(Enum):
     IDENTIFIER = 34
     STRING = 35
     NUM = 36
-    EXTEND_EXPR = 37 # Call the other language,
+    CALL_NATIVE_EXPR = 37 # Call the other language,
     SEPCIFIC_ID_BEG = 38 # <|
     SEPICFIC_ID_END = 39 # |>
 
@@ -111,6 +111,7 @@ kw_match = "match下"
 kw_case = "撞見"
 kw_func_ty_define = "有條計仔"
 kw_func_ty_end = "話你知"
+kw_call_native = "我係二五仔"
 
 keywords = (
     kw_print,
@@ -181,7 +182,8 @@ keywords = (
     kw_del,
     kw_del2,
     kw_func_ty_define,
-    kw_func_ty_end
+    kw_func_ty_end,
+    kw_call_native
 )
 
 syms = {'&', '&&', '|', '|>', '%', 

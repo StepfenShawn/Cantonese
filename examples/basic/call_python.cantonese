@@ -1,6 +1,6 @@
-@@@ ~
+我係二五仔 #XD
 def add(a, b):
-    print(a + b)
-#
-畀我睇下 "Hello World" 点样先
-用下 |add(8, 2)|
+    return a + b
+二五仔係我
+
+畀我睇下 |add 下 -> (8, 2)| 点样先 /* 輸出10 */
