@@ -25,7 +25,7 @@ logo = "\033[0;34m" + r"""
 / /___/ /_/ / / / / /_/ /_/ / / / /  __(__  /  __/
 \____/\__,_/_/ /_/\__/\____/_/ /_/\___/____/\___/ 
          
-""" + "\033[0m" + "Hope you enjoy it!!!" 
+""" + "\033[0m" + "Hope you enjoy it.\nSource: https://github.com/StepfenShawn/Cantonese\n鐘意嘅話star埋我啊! Thank you!" 
 
 class Options:
     dump_ast = False
@@ -68,7 +68,7 @@ def cantonese_run(code: str, is_to_py : bool, file : str,
         show_pretty_lex(tokens)
         exit()
 
-    stats = can_parser.StatParser(tokens).parse_stats()
+    stats = can_parser.StatParser(tokens, file=file).parse_stats()
 
     if Options.dump_ast:
         show_pretty_ast(stats)
@@ -165,6 +165,7 @@ def main():
     arg_parser.add_argument("-to_web", action = "store_true")
     arg_parser.add_argument("-倾偈", action = "store_true")
     arg_parser.add_argument("-update", action = "store_true")
+    arg_parser.add_argument("-compile", action = "store_true")
     arg_parser.add_argument("-讲白啲", action = "store_true")
     arg_parser.add_argument("-build", action = "store_true")
     arg_parser.add_argument("-ast", action = "store_true")

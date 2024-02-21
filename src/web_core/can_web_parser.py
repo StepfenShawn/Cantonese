@@ -238,8 +238,8 @@ def get_html_file(name : str) -> str:
     return name[ : len(name) - len('cantonese')] + 'html'
 
 class WebLexer(lexer):
-    def __init__(self, code, keywords):
-        super().__init__(code, keywords)
+    def __init__(self, file, code, keywords):
+        super().__init__(file, code, keywords)
         self.re_callfunc, self.re_expr, self.op,\
         self.op_get_code, self.op_gen_code, \
         self.build_in_funcs, self.bif_get_code, \
@@ -303,7 +303,7 @@ class WebLexer(lexer):
 def cantonese_web_run(code : str, file_name : str, open_serv = True) -> None:
     global TO_HTML
     keywords = ("老作一下", "要点画", "搞掂", "执嘢")
-    lex = WebLexer(code, keywords)
+    lex = WebLexer(file_name, code, keywords)
     tokens = []
     while True:
         token = lex.get_token()

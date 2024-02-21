@@ -349,15 +349,7 @@ select語句:
 所有關鍵字: https://github.com/Cantonese-community/Keywords  
 
 # <a name="26">点样运行?</a>
-Cantonese 可以用多種方式運行，用自己嘅虛擬機，用 `LLVM`，或者翻譯成 Python 同 HTML 都得！
-使用虛擬機執行（僅支援部分語句）：   
-```shell
-cantonese [-文件名] -stack_vm
-```
-查睇生產嘅指令：
-```shell
-cantonese [-文件名] -stack_vm -debug
-```
+Cantonese 可以用多種方式運行，用 `LLVM`，或者翻譯成 Python 同 HTML 都得！
 使用`LLVM`執行 (需安装`llvmlite`同`clang`, 僅支援部分語句):  
 ```shell
 cantonese [-文件名] -llvm
@@ -403,4 +395,4 @@ send PR 前請睇 [貢獻指南](./CONTRIBUTING.md)
 * 完善自己嘅虛擬機
 * 完全支持`LLVM`同`JIT`
 
-Copyright (C) 2020-2023 StepfenShawn
+Copyright (C) 2020-2024 StepfenShawn

@@ -5,8 +5,8 @@ from can_utils import ParserUtil, exp_type
 from exp_parser import ExpParser, ClassBlockExpParser
 
 class StatParser(ParserBase):
-    def __init__(self, token_list : list, expParser = ExpParser) -> None:
-        super(StatParser, self).__init__(token_list)
+    def __init__(self, token_list : list, expParser = ExpParser, file = "") -> None:
+        super(StatParser, self).__init__(token_list, file=file)
         self.pos = 0
         self.tokens = token_list
 

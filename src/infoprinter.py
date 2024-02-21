@@ -3,21 +3,29 @@ _BAR = ' | '
 
 class ErrorPrinter:
 
-    def __init__(self, info, pos, ctx, suggest, _file, _len = 1):
+    def __init__(self, info, pos, ctx, tips, _file, _len = 1):
         self.info = info
         self.pos = pos
         self.ctx = ctx
-        self.suggest = suggest
+        self.tips = tips
         self.len = _len
         self.file = _file
+
+        self.print_offset = pos.offset
+        for i in range(0, pos.offset):
+            # because some chars may occurpy 2-bits when printing
+            self.print_offset += (len(self.ctx[i].encode('gbk')) - 1)
+
+    def whitespace(self, num) -> str:
+        return ' ' * num
 
     def show(self) -> None:
         strformat = (
 f"""{self.info}
- {_ARROW} {self.file} {self.pos.line}:{self.pos.offset}
- {_BAR} {self.ctx}
-""" +
-' ' * (5+self.pos.offset) + '^' * self.len + self.suggest
+ {_ARROW} {self.file} \033[1;34m{self.pos.line}:{self.pos.offset}\033[0m
+ {_BAR}{self.ctx}
+    {self.whitespace(self.print_offset)}{'^'*self.len} Tips:{self.tips}
+"""
 )
         print(strformat)
         exit()
