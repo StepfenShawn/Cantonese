@@ -146,7 +146,12 @@ $$ x -> |x * x| 搞掂 @ f
 ```
 運行結果：
 ```
-濑嘢: ImportError()!
+濑嘢!!!: ImportError:
+ 喺runtime察覺到錯誤!
+ --> ../examples/basic/raise.cantonese 4:0
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^ Tips:  緊你只不過有心無力:(
+
+:D 不如跟住我嘅tips繼續符碌下?
 ```
 ### <a name="9">斷言語句</a>
 ```
@@ -154,7 +159,13 @@ $$ x -> |x * x| 搞掂 @ f
 ```  
 運行結果：  
 ```
-濑嘢: AssertionError()!
+濑嘢!!!: AssertionError:
+ 喺runtime察覺到錯誤!
+ --> ../examples/basic/assert.cantonese 6:0
+  | 谂下: |1 - 1 == 1| ?
+    ^^^^^^^^^^^^^^^^^^^^ Tips:  緊你只不過有心無力:(
+
+:D 不如跟住我嘅tips繼續符碌下?
 ```
 ### <a name="10">錯誤捕捉語句</a>
 try-except-finally:  

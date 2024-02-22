@@ -96,6 +96,11 @@ class StatParser(ParserBase):
                 elif ParserUtil.get_token_value(self.look_ahead(skip_step)) in [kw_do]:
                     return self.parse_class_method_call_stat(prefix_exps, skip_step) 
 
+                else:
+                    tk = self.current()
+                    self.error(tk, info="\033[0;31m濑嘢!!!\033[0m: 個`{tk.value}`好似有D唔三唔四", 
+                        tips=f" 幫緊你只不過有心無力 :(")
+
             elif tk_value == kw_func_ty_define:
                 return self.parse_func_def_with_type_stat()
 
@@ -172,12 +177,19 @@ class StatParser(ParserBase):
             elif ParserUtil.get_token_value(self.look_ahead(1)) in [kw_do]:
                 return self.parse_class_method_call_stat()
 
+            else:
+                tk = self.current()
+                self.error(tk, info="\033[0;31m濑嘢!!!\033[0m: 個`{tk.value}`好似有D唔三唔四", 
+                    tips=f" 幫緊你只不過有心無力 :(")
+                
         elif kind == TokenType.EOF:
             return
         
         else:
-            raise Exception("Unknown grammer in %s" % (str(self.get_line())))
-            
+            tk = self.current()
+            self.error(tk, info="\033[0;31m濑嘢!!!\033[0m: 個`{tk.value}`好似有D唔三唔四", 
+                tips=f" 幫緊你只不過有心無力 :(")
+                
     def parse_stats(self):
         stats = []
         while True:

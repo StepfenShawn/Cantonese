@@ -23,7 +23,7 @@ def error_catch(e, line_ctx):
         line_loc = line_ctx[info.lineno]
         ctx = getCtxByLine(line_loc)
         p = ErrorPrinter(info=" 喺runtime察覺到錯誤!",
-                        pos=Pos(line_loc,0), tips=" 暫時未諗唔到:(", 
+                        pos=Pos(line_loc,0), tips="  緊你只不過有心無力:(", 
                         ctx=ctx,
                         _file=info.filename,
                         _len=len(ctx.encode("gbk")))
