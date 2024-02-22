@@ -1,5 +1,5 @@
-from can_lexer import TokenType, can_token, getCtxByLine
-from infoprinter import ErrorPrinter
+from can_lexer import TokenType, can_token, getCtxByLine, Pos
+from util.infoprinter import ErrorPrinter
 
 # The root(father) of all Parser classes.
 class ParserBase:
@@ -14,6 +14,9 @@ class ParserBase:
 
     def current(self) -> can_token:
         return self.look_ahead(0)
+
+    def filepos(self) -> Pos:
+        return self.current().pos
 
     def get_next_token_of_kind(self, k: TokenType, step: int) -> can_token:
         tk = self.look_ahead(step)

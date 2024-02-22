@@ -1,7 +1,7 @@
 from can_lexer import *
 from Ast import can_ast
 from parser_base import *
-from can_utils import ParserUtil, exp_type
+from util.can_utils import ParserUtil, exp_type
 
 class ExpParser(ParserBase):
     def __init__(self, token_list : list) -> None:

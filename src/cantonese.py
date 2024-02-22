@@ -7,7 +7,7 @@ import sys, os
 import argparse
 from collections import defaultdict
 
-from infoprinter import ptree
+from util.infoprinter import ptree, format_color, textwrap
 from can_error import *
 
 import can_lexer
@@ -93,7 +93,10 @@ def cantonese_run(code: str, is_to_py : bool, file : str,
 
     cantonese_lib_init()
     if is_to_py:
-        print(TO_PY_CODE)
+        print("-> To python:")
+        out_format = textwrap.indent(format_color(TO_PY_CODE, 'Python'), '  ') 
+        print(out_format)
+        print("->")
 
     if Options.mkfile:
         f = open(file[: len(file) - 10] + '.py', 'w', encoding = 'utf-8')

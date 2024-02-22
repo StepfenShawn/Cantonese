@@ -1,9 +1,10 @@
+tree = <<-EOF
 block ::= {stat} [retstat]
 stat ::= ';' |
       | '饮茶先啦'
       | '收工'
       | 'Share下' idlist
-      | '讲嘢' varlist '系' explist
+      | '讲嘢' varlist '係' explist
       | '讲嘢' '=>' '{' assignblock '}'
       | printstmt ['@' idlist]
       | importstmt
@@ -112,3 +113,6 @@ unop ::= not
 assignblock ::= varlist '系' explist [ assignblock ]
 
 matchblock ::= '撞见' exp '->' '{' block '}' [ matchblock ]
+EOF
+
+puts tree

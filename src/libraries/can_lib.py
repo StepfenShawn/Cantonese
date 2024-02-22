@@ -507,13 +507,13 @@ def cantonese_pygame_init() -> None:
 
     @define_func("揾位")
     def direction(obj, dir):
-        if dir == "左邊" or dir == "left":
+        if dir == "左邊" or dir == "left" or dir == "左边":
             return obj.left
-        if dir == "右邊" or dir == "right":
+        if dir == "右邊" or dir == "right" or dir == "右边":
             return obj.right
-        if dir == "上邊" or dir == "top":
+        if dir == "上邊" or dir == "top" or dir == "上边":
             return obj.top
-        if dir == "下邊" or dir == "bottom":
+        if dir == "下邊" or dir == "bottom" or dir == "下边":
             return obj.bottom
 
     @define_func("睇表")

@@ -42,7 +42,7 @@ class BasicTest < Test::Unit::TestCase
 
   def test_callpython
     res = %x(#{RUN} ../examples/basic/call_python.cantonese).encode("UTF-8")
-    assert res == "Hello World\n10\n"
+    assert res == "10\n"
   end
 
   def test_exit

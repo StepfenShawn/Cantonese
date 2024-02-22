@@ -1,3 +1,27 @@
+from pygments import highlight
+from pygments.formatters import TerminalFormatter
+from pygments.lexers import PythonLexer
+from pygments.lexer import RegexLexer
+from pygments.token import *
+
+class CantoneseLexer(RegexLexer):
+    tokens = {
+        'root': [
+            (r'\d+', Number),
+            (r'[_\d\w]+|[\u4e00-\u9fa5]+', Name),
+            (r'/\*.*?\*/', Comment),
+            (r"(?s)('(\\\\|\\'|\\\n|\\z\s*|[^'\n])*')|(\"(\\\\|\\\"|\\\n|\\z\s*|[^\"\n])*\")", String),
+            (r'\s+', Whitespace),
+            (r".", Generic)
+        ]
+}
+
+def format_color(code, type="Python"):
+    if type == "Python":
+        return highlight(code=code, lexer=PythonLexer(), formatter=TerminalFormatter()).strip('\n')
+    else:
+        return highlight(code=code, lexer=CantoneseLexer(), formatter=TerminalFormatter()).strip('\n')
+
 _ARROW = '-->'
 _BAR = ' | '
 
@@ -15,6 +39,7 @@ class ErrorPrinter:
         for i in range(0, pos.offset):
             # because some chars may occurpy 2-bits when printing
             self.print_offset += (len(self.ctx[i].encode('gbk')) - 1)
+        self.hightlight = "cantonese"
 
     def whitespace(self, num) -> str:
         return ' ' * num
@@ -23,7 +48,7 @@ class ErrorPrinter:
         strformat = (
 f"""{self.info}
  {_ARROW} {self.file} \033[1;34m{self.pos.line}:{self.pos.offset}\033[0m
- {_BAR}{self.ctx}
+ {_BAR}{format_color(self.ctx, self.hightlight)}
     {self.whitespace(self.print_offset)}{'^'*self.len} Tips:{self.tips}
 """
 )

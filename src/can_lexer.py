@@ -1,7 +1,7 @@
 import re
 import zlib
 from can_keywords import *
-from infoprinter import ErrorPrinter
+from util.infoprinter import ErrorPrinter
 from collections import namedtuple
 import zhconv
 
