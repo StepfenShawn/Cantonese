@@ -8,11 +8,11 @@ import argparse
 from collections import defaultdict
 
 from util.infoprinter import ptree, format_color, textwrap
-from can_error import *
 
 import can_lexer
 import can_parser
 import can_compile
+import can_sys
 
 from libraries.can_lib import *
 from web_core.can_web_parser import *
@@ -78,7 +78,7 @@ def cantonese_run(code: str, is_to_py : bool, file : str,
     TO_PY_CODE = ''
     for stat in stats:
         TO_PY_CODE += code_gen.codegen_stat(stat)
-
+    py_line_ctx = code_gen.line_mmap
     
     if Options._to_llvm:
         import llvm_core.can_llvm_build as can_llvm_build
@@ -117,9 +117,10 @@ def cantonese_run(code: str, is_to_py : bool, file : str,
                 TO_PY_CODE = "" # reset the global variable in REPL mode
             if get_py_code:
                 return c
-            exec(TO_PY_CODE, variable)
+            code = compile(TO_PY_CODE, file, 'exec')
+            exec(code, variable)
         except Exception as e:
-            print("濑嘢!" + "\n".join(濑啲咩嘢(e)))
+            can_sys.error_catch(e, py_line_ctx)
 
 class 交互(cmd.Cmd):
     def __init__(self):
@@ -135,7 +136,7 @@ class 交互(cmd.Cmd):
         try:
             exec(code, variable)
         except Exception as e:
-            print("濑嘢!" + "\n".join(濑啲咩嘢(e)))
+            can_sys.error_catch(e, "")
 
     def default(self, code):
         

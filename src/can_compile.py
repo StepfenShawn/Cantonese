@@ -5,6 +5,7 @@ import re
 
 from libraries.can_lib import cantonese_lib_import, cantonese_model_new,\
     cantonese_turtle_init
+from collections import defaultdict
 
 class CanPyCompile:
     def __init__(self):
@@ -19,14 +20,10 @@ class CanPyCompile:
         for dirpath,dirnames,files in os.walk(pa):
             if lib_name + '.cantonese' in files:
                 code = open(pa + '/' + lib_name + '.cantonese', encoding = 'utf-8').read()
-                code = re.sub(re.compile(r'/\*.*?\*/', re.S), ' ', code)
                 found = True
         if found == False:
             raise ImportError(lib_name + '.cantonese not found.')
-        
-        from zhconv import convert
-        code = convert(code, 'zh-hk').replace("僕", "仆")
-        
+                
         tokens = can_lexer.cantonese_token(path, code)
         stats = can_parser.StatParser(tokens).parse_stats()
         code_gen = Codegen(stats, path)
@@ -41,6 +38,16 @@ class Codegen(object):
         self.nodes = nodes
         self.path = path
         self.tab = ''
+        self.line = 1
+        self.line_mmap = defaultdict(int) # Python line mapping to Cantonese line
+
+    def update_line_map(self, stat: can_parser.can_ast.Stat, s: str):
+        start = self.line
+        self.line += s.count('\n')
+        end = self.line
+        for lno in range(start, end):
+            self.line_mmap[lno] = stat.pos.line
+
 
     def codegen_expr(self, exp) -> str:
         if isinstance(exp, can_parser.can_ast.StringExp):
@@ -169,30 +176,42 @@ class Codegen(object):
 
     def codegen_stat(self, stat):
         if isinstance(stat, can_parser.can_ast.PrintStat):
-            return self.tab + 'print(' + self.codegen_args(stat.args) + ')\n'
-        
+            s = self.tab + 'print(' + self.codegen_args(stat.args) + ')\n'
+            self.update_line_map(stat, s)
+            return s
+
         elif isinstance(stat, can_parser.can_ast.AssignStat):
             s = ''
             s += self.tab + self.codegen_args(stat.var_list) + ' = ' + self.codegen_args(stat.exp_list) + '\n'
+            self.update_line_map(stat, s)
             return s
 
         elif isinstance(stat, can_parser.can_ast.AssignBlockStat):
             s = ''
             for i in range(len(stat.var_list)):
                 s += self.tab + self.codegen_expr(stat.var_list[i]) + ' = ' + self.codegen_expr(stat.exp_list[i]) + '\n'
+            self.update_line_map(stat, s)
             return s
 
         elif isinstance(stat, can_parser.can_ast.ExitStat):
-            return self.tab + 'exit()\n'
+            s = self.tab + 'exit()\n'
+            self.update_line_map(stat, s)
+            return s
 
         elif isinstance(stat, can_parser.can_ast.PassStat):
-            return self.tab + 'pass\n'
+            s = self.tab + 'pass\n'
+            self.update_line_map(stat, s)
+            return s
 
         elif isinstance(stat, can_parser.can_ast.BreakStat):
-            return self.tab + 'break\n'
+            s = self.tab + 'break\n'
+            self.update_line_map(stat, s)
+            return s
 
         elif isinstance(stat, can_parser.can_ast.ContinueStat):
-            return self.tab + 'continue\n'
+            s = self.tab + 'continue\n'
+            self.update_line_map(stat, s)
+            return s
 
         elif isinstance(stat, can_parser.can_ast.IfStat):
             s = ''
@@ -207,6 +226,7 @@ class Codegen(object):
                 s += self.tab + 'else:\n'
                 s += self.codegen_block(stat.else_blocks)
             
+            self.update_line_map(stat, s)
             return s
 
         elif isinstance(stat, can_parser.can_ast.TryStat):
@@ -222,17 +242,22 @@ class Codegen(object):
                 s += self.tab + 'finally:\n'
                 s += self.codegen_block(stat.finally_blocks)
 
+            self.update_line_map(stat, s)
             return s
 
         elif isinstance(stat, can_parser.can_ast.RaiseStat):
             s = ''
             s += self.tab + 'raise ' + self.codegen_expr(stat.name_exp) + '\n'
+            
+            self.update_line_map(stat, s)
             return s
 
         elif isinstance(stat, can_parser.can_ast.WhileStat):
             s = ''
             s += self.tab + 'while ' + self.codegen_expr(stat.cond_exp) + ':\n'
             s += self.codegen_block(stat.blocks)
+
+            self.update_line_map(stat, s)
             return s
 
         elif isinstance(stat, can_parser.can_ast.ForStat):
@@ -240,6 +265,8 @@ class Codegen(object):
             s += self.tab + 'for ' + self.codegen_expr(stat.var) + ' in range('+ self.codegen_expr(stat.from_exp) \
                         + ', ' + self.codegen_expr(stat.to_exp) + '):\n'
             s += self.codegen_block(stat.blocks)
+
+            self.update_line_map(stat, s)
             return s
 
         elif isinstance(stat, can_parser.can_ast.FunctionDefStat):
@@ -255,12 +282,16 @@ class Codegen(object):
                 s += self.tab + 'def ' + self.codegen_expr(stat.name_exp) + '(' + arg_decl + ') -> ' + '"'  + self.codegen_args(stat.ret_type) + '"' \
                      + ':\n'
                 s += self.codegen_block(stat.blocks)
+
+                self.update_line_map(stat, s)
                 return s
 
             else:
                 s = ''
                 s += self.tab + 'def ' + self.codegen_expr(stat.name_exp) + '(' + self.codegen_args(stat.args) + '):\n'
                 s += self.codegen_block(stat.blocks)
+                
+                self.update_line_map(stat, s)
                 return s
 
         elif isinstance(stat, can_parser.can_ast.MatchModeFuncDefStat):
@@ -276,13 +307,15 @@ class Codegen(object):
                     elif isinstance(args[0], can_parser.can_ast.IdExp):
                         # TODO: use re.sub here
                         s += self.tab + '\t' +'return ' + self.codegen_expr(blocks).replace(args[0].name, "args[0]") + '\n'
-                    
+            
+            self.update_line_map(stat, s)
             return s
 
 
         elif isinstance(stat, can_parser.can_ast.FuncCallStat):
             s = ''
             s += self.tab + self.codegen_expr(stat.func_name) + '(' + self.codegen_args(stat.args) + ')' + '\n'
+            self.update_line_map(stat, s)
             return s
 
         elif isinstance(stat, can_parser.can_ast.ImportStat):
@@ -293,64 +326,76 @@ class Codegen(object):
             if len(user_lib):
                 for l in user_lib:
                     s += self.tab + CanPyCompile.cantonese_lib_run(l, self.path)
+            self.update_line_map(stat, s)
             return s
 
         elif isinstance(stat, can_parser.can_ast.ReturnStat):
             s = ''
             s += self.tab + 'return ' + self.codegen_args(stat.exps) + '\n'
+            self.update_line_map(stat, s)
             return s
 
         elif isinstance(stat, can_parser.can_ast.DelStat):
             s = ''
             s += self.tab + 'del ' + self.codegen_args(stat.exps) + '\n'
+            self.update_line_map(stat, s)
             return s
 
         elif isinstance(stat, can_parser.can_ast.TypeStat):
             s = ''
             s += self.tab + 'print(type(' + self.codegen_expr(stat.exps) + '))\n'
+            self.update_line_map(stat, s)
             return s
 
         elif isinstance(stat, can_parser.can_ast.AssertStat):
             s = ''
             s += self.tab + 'assert ' + self.codegen_expr(stat.exps) + '\n'
+            self.update_line_map(stat, s)
             return s
 
         elif isinstance(stat, can_parser.can_ast.ClassDefStat):
             s = ''
             s += self.tab + 'class ' + self.codegen_expr(stat.class_name) + '(' + self.codegen_args(stat.class_extend) + '):\n'
             s += self.codegen_block(stat.class_blocks)
+            self.update_line_map(stat, s)
             return s
 
         elif isinstance(stat, can_parser.can_ast.MethodDefStat):
             s = ''
             s += self.tab + 'def ' + self.codegen_expr(stat.name_exp) + '(' + self.codegen_method_args(stat.args) + '):\n'
             s += self.codegen_block(stat.class_blocks)
+            self.update_line_map(stat, s)
             return s
 
         elif isinstance(stat, can_parser.can_ast.MethodCallStat):
             s = ''
             s += self.tab + self.codegen_expr(stat.name_exp) + '.' + self.codegen_build_in_method_or_id(stat.method) + \
                  '(' + self.codegen_args(stat.args) + ')\n'
+            self.update_line_map(stat, s)
             return s
 
         elif isinstance(stat, can_parser.can_ast.CmdStat):
             s = ''
             s += self.tab + 'os.system(' + self.codegen_args(stat.args) + ')\n'
+            self.update_line_map(stat, s)
             return s
 
         elif isinstance(stat, can_parser.can_ast.CallStat):
             s = ''
             s += self.tab + self.codegen_expr(stat.exp) + '\n'
+            self.update_line_map(stat, s)
             return s
 
         elif isinstance(stat, can_parser.can_ast.GlobalStat):
             s = ''
             s += self.tab + 'global ' + self.codegen_args(stat.idlist) + '\n'
+            self.update_line_map(stat, s)
             return s
 
         elif isinstance(stat, can_parser.can_ast.ExtendStat):
             s = ''
             s += self.tab + stat.code + '\n'
+            self.update_line_map(stat, s)
             return s
 
         elif isinstance(stat, can_parser.can_ast.MatchStat):
@@ -369,6 +414,7 @@ class Codegen(object):
                 s += self.tab + 'else:\n'
                 s += self.codegen_block(stat.default_match_block)
 
+            self.update_line_map(stat, s)
             return s
 
         elif isinstance(stat, can_parser.can_ast.ForEachStat):
@@ -376,6 +422,7 @@ class Codegen(object):
             s += self.tab + 'for ' + self.codegen_args(stat.id_list) + ' in ' + self.codegen_args(stat.exp_list) + ':\n'
             s += self.codegen_block(stat.blocks)
 
+            self.update_line_map(stat, s)
             return s
 
         elif isinstance(stat, can_parser.can_ast.ModelNewStat):
@@ -383,6 +430,8 @@ class Codegen(object):
             model = self.codegen_expr(stat.model)
             dataset = self.codegen_expr(stat.dataset)
             s += cantonese_model_new(model, dataset, self.tab, s)
+            
+            self.update_line_map(stat, s)
             return s
 
         elif isinstance(stat, can_parser.can_ast.TurtleStat):
@@ -390,6 +439,8 @@ class Codegen(object):
             cantonese_turtle_init()
             for item in stat.exp_blocks:
                 s += self.tab + self.codegen_expr(item) + '\n'
+            
+            self.update_line_map(stat, s)
             return s
 
     def codegen_block(self, blocks):

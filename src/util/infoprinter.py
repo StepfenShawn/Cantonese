@@ -14,7 +14,7 @@ class CantoneseLexer(RegexLexer):
             (r'\s+', Whitespace),
             (r".", Generic)
         ]
-}
+    }
 
 def format_color(code, type="Python"):
     if type == "Python":
@@ -44,16 +44,17 @@ class ErrorPrinter:
     def whitespace(self, num) -> str:
         return ' ' * num
 
-    def show(self) -> None:
+    def show(self, arrow_char='^') -> None:
         strformat = (
 f"""{self.info}
  {_ARROW} {self.file} \033[1;34m{self.pos.line}:{self.pos.offset}\033[0m
  {_BAR}{format_color(self.ctx, self.hightlight)}
-    {self.whitespace(self.print_offset)}{'^'*self.len} Tips:{self.tips}
+    {self.whitespace(self.print_offset)}{arrow_char*self.len} Tips:{self.tips}
 """
 )
         print(strformat)
-        exit()
+        print(f":D 不如跟住我嘅tips繼續符碌下?")
+
 """
     The printree library
     refer to https://github.com/chrizzFTD/printree (MIT License)
@@ -116,7 +117,6 @@ def _newline_repr(obj_repr, prefix) -> str:
     counter = count()
     newline = lambda x: next(counter) != 0
     return textwrap.indent(obj_repr, prefix, newline)
-
 
 def _itree(obj, formatter, subscription, prefix="", last=False, level=0, depth=0, sprout_str=': '):
     formatter.level = level

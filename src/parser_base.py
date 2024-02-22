@@ -22,8 +22,8 @@ class ParserBase:
         tk = self.look_ahead(step)
         err = ""
         if k != tk.typ:
-            err = f"\033[0;31m濑嘢!!!\033[0m: {tk.value}附近睇唔明啊大佬!!! Excepted: {str(k)}"
-            self.error(tk, err)
+            err = f"\033[0;31m濑嘢!!!\033[0m: `{tk.value}`好似有D唔三唔四"
+            self.error(tk, err, f" 不妨嘗試下`{k.name}`類型??")
         self.pos += 1
         return tk
     

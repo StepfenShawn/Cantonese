@@ -143,6 +143,7 @@ class lexer:
                 info=args, pos=self.getCurPos(), ctx=ctx,
                 tips=f" 係咪`\033[5;33m{get_tips(ctx[self.getCurPos().offset])}\033[0m` ??", _file=self.file)
         p.show()
+        exit()
 
     def get_token(self) -> can_token:
         self.skip_space()

@@ -250,7 +250,7 @@ class StatParser(ParserBase):
         self.get_next_token_of_kind(TokenType.SEP_LCURLY, 0)
 
         while (ParserUtil.get_type(self.current()) != TokenType.SEP_RCURLY):
-            block_parser = StatParser(self.tokens[self.pos : ], self.ExpParser)
+            block_parser = StatParser(self.tokens[self.pos : ], self.ExpParser, self.file)
             if_blocks.append(block_parser.parse())
             self.skip(block_parser.pos)
             del block_parser # free the memory
@@ -266,7 +266,7 @@ class StatParser(ParserBase):
             elif_block : list = []
             
             while (ParserUtil.get_type(self.current()) != TokenType.SEP_RCURLY):
-                block_parser = StatParser(self.tokens[self.pos : ], self.ExpParser)
+                block_parser = StatParser(self.tokens[self.pos : ], self.ExpParser, self.file)
                 elif_block.append(block_parser.parse())
                 self.skip(block_parser.pos)
                 del block_parser # free the memory
@@ -280,7 +280,7 @@ class StatParser(ParserBase):
             self.get_next_token_of(kw_do, 0)
             self.get_next_token_of_kind(TokenType.SEP_LCURLY, 0)
             while (ParserUtil.get_type(self.current()) != TokenType.SEP_RCURLY):
-                block_parser = StatParser(self.tokens[self.pos : ], self.ExpParser)
+                block_parser = StatParser(self.tokens[self.pos : ], self.ExpParser, self.file)
                 else_blocks.append(block_parser.parse())
                 self.skip(block_parser.pos)
                 del block_parser # free the memory
@@ -315,7 +315,7 @@ class StatParser(ParserBase):
         self.skip(1) # Skip the kw_while_do
         blocks : list = []
         while (ParserUtil.get_token_value(self.current()) != kw_while):
-            block_parser =  StatParser(self.tokens[self.pos : ], self.ExpParser)
+            block_parser =  StatParser(self.tokens[self.pos : ], self.ExpParser, self.file)
             blocks.append(block_parser.parse())
             self.skip(block_parser.pos)
             del block_parser # free the memory
@@ -346,7 +346,7 @@ class StatParser(ParserBase):
         to_exp = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp)
 
         while (ParserUtil.get_token_value(self.current()) not in [kw_endfor]):
-            block_parse = StatParser(self.tokens[self.pos : ], self.ExpParser)
+            block_parse = StatParser(self.tokens[self.pos : ], self.ExpParser, self.file)
             blocks.append(block_parse.parse())
             self.skip(block_parse.pos)
             del block_parse # free the memory
@@ -412,7 +412,7 @@ class StatParser(ParserBase):
 
         blocks : list = []
         while (ParserUtil.get_token_value(self.current()) not in [kw_func_end]):
-            block_parser = StatParser(self.tokens[self.pos : ], self.ExpParser)
+            block_parser = StatParser(self.tokens[self.pos : ], self.ExpParser, self.file)
             blocks.append(block_parser.parse())
             self.skip(block_parser.pos)
             del block_parser
@@ -527,7 +527,7 @@ class StatParser(ParserBase):
         finally_blocks : list = []
 
         while ParserUtil.get_type(self.current()) != TokenType.SEP_RCURLY:
-            block_parser = StatParser(self.tokens[self.pos : ], self.ExpParser)
+            block_parser = StatParser(self.tokens[self.pos : ], self.ExpParser, self.file)
             try_blocks.append(block_parser.parse())
             self.skip(block_parser.pos)
             del block_parser
@@ -547,7 +547,7 @@ class StatParser(ParserBase):
         # a temp list to save the block
         except_block = []
         while ParserUtil.get_type(self.current()) != TokenType.SEP_RCURLY:
-            block_parser = StatParser(self.tokens[self.pos : ], self.ExpParser)
+            block_parser = StatParser(self.tokens[self.pos : ], self.ExpParser, self.file)
             except_block.append(block_parser.parse())
             self.skip(block_parser.pos)
             del block_parser
@@ -569,7 +569,7 @@ class StatParser(ParserBase):
             # clear the list
             except_block = []
             while ParserUtil.get_type(self.current()) != TokenType.SEP_RCURLY:
-                block_parser = StatParser(self.tokens[self.pos : ], self.ExpParser)
+                block_parser = StatParser(self.tokens[self.pos : ], self.ExpParser, self.file)
                 except_block.append(block_parser.parse())
                 self.skip(block_parser.pos)
                 del block_parser
@@ -582,7 +582,7 @@ class StatParser(ParserBase):
             self.get_next_token_of_kind(TokenType.SEP_LCURLY, 0)
 
             while ParserUtil.get_type(self.current()) != TokenType.SEP_RCURLY:
-                block_parser = StatParser(self.tokens[self.pos : ], self.ExpParser)
+                block_parser = StatParser(self.tokens[self.pos : ], self.ExpParser, self.file)
                 finally_blocks.append(block_parser.parse())
                 self.skip(block_parser.pos)
                 del block_parser
@@ -640,7 +640,7 @@ class StatParser(ParserBase):
         class_blocks = []
         
         while ParserUtil.get_token_value(self.current()) not in [kw_endclass]:
-            class_block_parser = ClassBlockStatParser(self.tokens[self.pos : ])
+            class_block_parser = ClassBlockStatParser(self.tokens[self.pos : ], file=self.file)
             class_blocks.append(class_block_parser.parse())
             self.skip(class_block_parser.pos)
 
@@ -748,7 +748,7 @@ class StatParser(ParserBase):
                 block : list = []
 
                 while ParserUtil.get_type(self.current()) != TokenType.SEP_RCURLY:
-                    stat_parser = StatParser(self.tokens[self.pos : ], self.ExpParser)
+                    stat_parser = StatParser(self.tokens[self.pos : ], self.ExpParser, self.file)
                     block.append(stat_parser.parse())
                     self.skip(stat_parser.pos)
                     del stat_parser # free the memory
@@ -763,7 +763,7 @@ class StatParser(ParserBase):
                 self.get_next_token_of_kind(TokenType.SEP_LCURLY, 0)
 
                 while ParserUtil.get_type(self.current()) != TokenType.SEP_RCURLY:
-                    stat_parser = StatParser(self.tokens[self.pos : ], self.ExpParser)
+                    stat_parser = StatParser(self.tokens[self.pos : ], self.ExpParser, self.file)
                     default_match_block.append(stat_parser.parse())
                     self.skip(stat_parser.pos)
                     del stat_parser # free the memory
@@ -798,7 +798,7 @@ class StatParser(ParserBase):
         self.get_next_token_of_kind(TokenType.SEP_LCURLY, 0)
 
         while (ParserUtil.get_type(self.current()) != TokenType.SEP_RCURLY):
-            stat_parser = StatParser(self.tokens[self.pos : ], self.ExpParser)
+            stat_parser = StatParser(self.tokens[self.pos : ], self.ExpParser, self.file)
             blocks.append(stat_parser.parse())
             self.skip(stat_parser.pos)
             del stat_parser # free the memory
@@ -857,8 +857,8 @@ class StatParser(ParserBase):
         return can_ast.TurtleStat(exp_blocks, start_pos)
 
 class ClassBlockStatParser(StatParser):
-    def __init__(self, token_list: list, ExpParser = ClassBlockExpParser) -> None:
-        super().__init__(token_list, ExpParser)
+    def __init__(self, token_list: list, ExpParser = ClassBlockExpParser, file="") -> None:
+        super().__init__(token_list, ExpParser, file)
 
     def parse_method_block(self):
         start_pos = self.filepos()
@@ -882,7 +882,7 @@ class ClassBlockStatParser(StatParser):
         if ParserUtil.get_type(self.current()) == TokenType.SEP_LCURLY:
             self.skip(1)
             while ParserUtil.get_type(self.current()) != TokenType.SEP_RCURLY:
-                block_parser = ClassBlockStatParser(self.tokens[self.pos : ], self.ExpParser)
+                block_parser = ClassBlockStatParser(self.tokens[self.pos : ], self.ExpParser, self.file)
                 blocks.append(block_parser.parse())
                 self.skip(block_parser.pos)
                 del block_parser
@@ -890,7 +890,7 @@ class ClassBlockStatParser(StatParser):
         # '=> ... '%%'
         else:
             while (ParserUtil.get_token_value(self.current()) not in [kw_func_end]):
-                block_parser = ClassBlockStatParser(self.tokens[self.pos : ], self.ExpParser)
+                block_parser = ClassBlockStatParser(self.tokens[self.pos : ], self.ExpParser, self.file)
                 blocks.append(block_parser.parse())
                 self.skip(block_parser.pos)
                 del block_parser        
@@ -913,7 +913,7 @@ class ClassBlockStatParser(StatParser):
 
         blocks : list = []
         while (ParserUtil.get_type(self.current()) != TokenType.SEP_RCURLY):
-            block_parser = StatParser(self.tokens[self.pos : ], self.ExpParser)
+            block_parser = StatParser(self.tokens[self.pos : ], self.ExpParser, self.file)
             blocks.append(block_parser.parse())
             self.skip(block_parser.pos)
             del block_parser # free the memory
