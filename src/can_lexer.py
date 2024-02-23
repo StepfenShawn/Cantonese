@@ -133,14 +133,12 @@ class lexer:
         self.error('unfinished string')
 
     def error(self, args: str):
-        print("Error occurred!")
-        
         from difflib import get_close_matches
         
         ctx = getCtxByLine(self.getCurPos().line)
         get_tips = lambda s: ','.join(get_close_matches(s, syms))
         p = ErrorPrinter(
-                info=args, pos=self.getCurPos(), ctx=ctx,
+                info=f"{args}\n 喺 lexer 中察覺到有D痴线", pos=self.getCurPos(), ctx=ctx,
                 tips=f" 係咪`\033[5;33m{get_tips(ctx[self.getCurPos().offset])}\033[0m` ??", _file=self.file)
         p.show()
         exit()

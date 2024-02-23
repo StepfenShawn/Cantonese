@@ -51,7 +51,7 @@ class ParserBase:
 
     def error(self, tk, info, tips):
         ctx = getCtxByLine(tk.lineno)
-        p = ErrorPrinter(info=info, pos=tk.pos, 
+        p = ErrorPrinter(info=f'{info}\n 畀 parser 不經意"莊"到:', pos=tk.pos, 
             ctx=ctx, tips=tips, _file=self.file, _len=len(tk.value.encode("gbk")))
         p.show()
         exit()
