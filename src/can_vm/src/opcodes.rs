@@ -1,5 +1,4 @@
 use crate::can_object::CanObject;
-
 pub enum Opcode {
     //ends program
     Exit,
@@ -7,7 +6,6 @@ pub enum Opcode {
     //stack manipulation
     Push(CanObject),
     Pop,
-    Dup,
 
     //heap store/load
     Store(String),

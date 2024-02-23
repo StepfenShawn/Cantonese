@@ -12,7 +12,11 @@ impl fmt::Display for CanObject {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let outline = match *self {
             CanObject::Num(num) => {
-                num.to_string()
+                if num % 1.0 == 0.0 {
+                    (num as i32).to_string()
+                } else {
+                    num.to_string()
+                }
             },
             CanObject::Ref(_ref) => {
                 "Reference".to_string()
@@ -121,7 +125,7 @@ impl cmp::PartialEq for CanObject {
         match self {
             CanObject::Num(arg1) => {
                 match right {
-                    CanObject::Num(arg2) => (arg1 == arg2),
+                    CanObject::Num(arg2) => arg1 == arg2,
                     _ => panic!("Cannot perform operations on refs (yet)"),
                 }
             }
