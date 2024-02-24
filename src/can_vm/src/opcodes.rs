@@ -1,10 +1,10 @@
 use crate::can_object::CanObject;
-pub enum Opcode {
+pub enum Opcode<'a> {
     //ends program
     Exit,
 
     //stack manipulation
-    Push(CanObject),
+    Push(CanObject<'a>),
     Pop,
 
     //heap store/load

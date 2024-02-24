@@ -21,7 +21,11 @@ mod tests {
     #[test]
     fn it_works() {
         let programm = [
+            Opcode::Push(CanObject::Str("Hello World")),
+            Opcode::Print,
             Opcode::Push(CanObject::Num(1 as f32)),
+            Opcode::Push(CanObject::Num(1 as f32)),
+            Opcode::Add,
             Opcode::Print
         ];
         let mut m = Machine::new(&programm);

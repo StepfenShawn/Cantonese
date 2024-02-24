@@ -1,14 +1,15 @@
 use std::{fmt, ops, cmp};
 
 #[derive(Copy, Clone)]
-pub enum CanObject {
+pub enum CanObject<'a> {
     Bool(bool),
     Num(f32),
     Ref(u32),
+    Str(&'a str)
 }
 
 /* To string */
-impl fmt::Display for CanObject {
+impl fmt::Display for CanObject<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let outline = match *self {
             CanObject::Num(num) => {
@@ -24,14 +25,17 @@ impl fmt::Display for CanObject {
             CanObject::Bool(b) => {
                 b.to_string()
             }
+            CanObject::Str(s) => {
+                s.to_string()
+            }
         };
         write!(f, "{}", outline)
     }
 }
 
-impl ops::Add for CanObject {
-    type Output = CanObject;
-    fn add(self, right: CanObject) -> CanObject {
+impl<'a> ops::Add for CanObject<'a> {
+    type Output = CanObject<'a>;
+    fn add(self, right: CanObject<'a>) -> CanObject<'a> {
         match self {
             CanObject::Num(arg1) => {
                 match right {
@@ -45,9 +49,9 @@ impl ops::Add for CanObject {
 }
 
 
-impl ops::Sub for CanObject {
-    type Output = CanObject;
-    fn sub(self, right: CanObject) -> CanObject {
+impl<'a> ops::Sub for CanObject<'a> {
+    type Output = CanObject<'a>;
+    fn sub(self, right: CanObject<'a>) -> CanObject<'a> {
         match self {
             CanObject::Num(arg1) => {
                 match right {
@@ -60,9 +64,9 @@ impl ops::Sub for CanObject {
     }
 }
 
-impl ops::Mul for CanObject {
-    type Output = CanObject;
-    fn mul(self, right: CanObject) -> CanObject {
+impl<'a> ops::Mul for CanObject<'a> {
+    type Output = CanObject<'a>;
+    fn mul(self, right: CanObject<'a>) -> CanObject<'a> {
         match self {
             CanObject::Num(arg1) => {
                 match right {
@@ -75,9 +79,9 @@ impl ops::Mul for CanObject {
     }
 }
 
-impl ops::Div for CanObject {
-    type Output = CanObject;
-    fn div(self, right: CanObject) -> CanObject {
+impl<'a> ops::Div for CanObject<'a> {
+    type Output = CanObject<'a>;
+    fn div(self, right: CanObject<'a>) -> CanObject<'a> {
         match self {
             CanObject::Num(arg1) => {
                 match right {
@@ -90,9 +94,9 @@ impl ops::Div for CanObject {
     }
 }
 
-impl ops::BitAnd for CanObject {
-    type Output = CanObject;
-    fn bitand(self, right: CanObject) -> CanObject {
+impl<'a> ops::BitAnd for CanObject<'a> {
+    type Output = CanObject<'a>;
+    fn bitand(self, right: CanObject<'a>) -> CanObject<'a> {
         match self {
             CanObject::Bool(arg1) => {
                 match right {
@@ -105,9 +109,9 @@ impl ops::BitAnd for CanObject {
     }
 }
 
-impl ops::BitOr for CanObject {
-    type Output = CanObject;
-    fn bitor(self, right: CanObject) -> CanObject {
+impl<'a> ops::BitOr for CanObject<'a> {
+    type Output = CanObject<'a>;
+    fn bitor(self, right: CanObject<'a>) -> CanObject<'a> {
         match self {
             CanObject::Bool(arg1) => {
                 match right {
@@ -120,7 +124,7 @@ impl ops::BitOr for CanObject {
     }
 }
 
-impl cmp::PartialEq for CanObject {
+impl cmp::PartialEq for CanObject<'_> {
     fn eq(&self, right: &CanObject) -> bool {
         match self {
             CanObject::Num(arg1) => {
@@ -134,7 +138,7 @@ impl cmp::PartialEq for CanObject {
     }
 }
 
-impl cmp::PartialOrd for CanObject {
+impl cmp::PartialOrd for CanObject<'_> {
     fn partial_cmp(&self, right: &CanObject) -> Option<cmp::Ordering> {
         match self {
             CanObject::Num(arg1) => {

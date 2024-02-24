@@ -4,14 +4,14 @@ use super::frame::Frame;
 use super::can_object::CanObject;
 
 pub struct Machine<'a> {
-    program: &'a [Opcode],
+    program: &'a [Opcode<'a>],
     ip: i32,
-    stack: VecDeque<CanObject>,
+    stack: VecDeque<CanObject<'a>>,
     exited: bool,
     frames: VecDeque<Frame<'a>>
 }
 
-impl <'a> Machine<'a> {
+impl<'a> Machine<'a> {
     pub fn run(&mut self) {
         while !self.exited {
             self.step();
@@ -91,7 +91,7 @@ impl <'a> Machine<'a> {
         }
     }
 
-    pub fn new(program: &[Opcode]) -> Machine {
+    pub fn new(program: &'a [Opcode<'a>]) -> Machine<'a> {
         let top_frame = Frame {
             vars: HashMap::new(),
             ret_addr: 0,
