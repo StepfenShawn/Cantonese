@@ -1,4 +1,3 @@
-tree = <<-EOF
 block ::= {stat} [retstat]
 stat ::= ';' |
       | '饮茶先啦'
@@ -113,6 +112,3 @@ unop ::= not
 assignblock ::= varlist '系' explist [ assignblock ]
 
 matchblock ::= '撞见' exp '->' '{' block '}' [ matchblock ]
-EOF
-
-puts tree

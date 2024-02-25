@@ -7,7 +7,7 @@ import sys, os
 import argparse
 from collections import defaultdict
 
-from util.infoprinter import ptree, format_color, textwrap
+from util.infoprinter import format_color, textwrap, show_more
 
 import can_lexer
 import can_parser
@@ -40,21 +40,10 @@ def show_pretty_lex(tokens):
     lines_tracker = defaultdict(list)
     for token in tokens:
         lines_tracker[f"line {token.pos.line}"].append(str(token))
-    ptree(lines_tracker)
+    show_more(list(lines_tracker.items()))
 
 def show_pretty_ast(stats):
-    def class_to_dict(obj):
-        if isinstance(obj, dict):
-            return {k: class_to_dict(v) for k, v in obj.items()}
-        if isinstance(obj, can_parser.can_ast.Stat):
-            return class_to_dict(vars(obj))
-        elif isinstance(obj, (list, tuple, set)):
-            return type(obj)(class_to_dict(x) for x in obj)
-        else:
-            return obj
-
-    for stat in stats:
-        ptree({"%s" % stat.__class__.__name__: class_to_dict(stat)}, depth=10)
+    show_more(stats)
 
 def cantonese_run(code: str, is_to_py : bool, file : str, 
                     REPL = False, get_py_code = False) -> None:
@@ -192,8 +181,9 @@ def main():
 
     if not os.path.exists(args.file):
         print("Error occurred when checking the path of file!")
-        ptree({f"File `{args.file}`": ["\033[0;31m濑嘢!!!\033[0m: 揾唔到你嘅文件 :("]},
-                sprout_str='> ')
+        print(f' File {args.file}')
+        print( '      ' + '^' * len(args.file.encode("gbk")))  
+        print("\033[0;31m濑嘢!!!\033[0m: 揾唔到你嘅文件 :(")
     else: 
         is_to_py = False
         code = ""

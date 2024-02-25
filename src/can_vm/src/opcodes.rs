@@ -37,4 +37,7 @@ pub enum Opcode<'a> {
 
     //io
     Print,
+
+    LoadList(Vec<CanObject<'a>>),
+    LoadSet(Vec<CanObject<'a>>),
 }

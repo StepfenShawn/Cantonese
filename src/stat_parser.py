@@ -98,7 +98,7 @@ class StatParser(ParserBase):
 
                 else:
                     tk = self.current()
-                    self.error(tk, info="\033[0;31m濑嘢!!!\033[0m: 個`{tk.value}`好似有D唔三唔四", 
+                    self.error(tk, info=f"\033[0;31m濑嘢!!!\033[0m: 個`{tk.value}`好似有D唔三唔四", 
                         tips=f" 幫緊你只不過有心無力 :(")
 
             elif tk_value == kw_func_ty_define:
@@ -179,7 +179,7 @@ class StatParser(ParserBase):
 
             else:
                 tk = self.current()
-                self.error(tk, info="\033[0;31m濑嘢!!!\033[0m: 個`{tk.value}`好似有D唔三唔四", 
+                self.error(tk, info=f"\033[0;31m濑嘢!!!\033[0m: 個`{tk.value}`好似有D唔三唔四", 
                     tips=f" 幫緊你只不過有心無力 :(")
                 
         elif kind == TokenType.EOF:
@@ -187,7 +187,7 @@ class StatParser(ParserBase):
         
         else:
             tk = self.current()
-            self.error(tk, info="\033[0;31m濑嘢!!!\033[0m: 個`{tk.value}`好似有D唔三唔四", 
+            self.error(tk, info=f"\033[0;31m濑嘢!!!\033[0m: 個`{tk.value}`好似有D唔三唔四", 
                 tips=f" 幫緊你只不過有心無力 :(")
                 
     def parse_stats(self):

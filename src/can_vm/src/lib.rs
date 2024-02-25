@@ -6,11 +6,18 @@ mod machine;
 use opcodes::Opcode;
 use can_object::CanObject;
 use machine::Machine;
-use pyo3::prelude::*;
+use pyo3::{prelude::*};
+use pyo3::types::*;
+
+#[pyfunction]
+fn exec_print_stat(py: Python, args: PyObject) -> PyResult<()> {
+    // let args: PyObject = stat.getattr(py, "args").unwrap();
+    Ok(())
+}
 
 #[pymodule]
-fn can_vm(py: Python,  m: &PyModule) -> PyResult<()> {
-    // m.add_function(fun)
+fn can_vm(py: Python,  module: &PyModule) -> PyResult<()> {
+    module.add_function(wrap_pyfunction!(exec_print_stat, module)?);
     Ok(())
 }
 
