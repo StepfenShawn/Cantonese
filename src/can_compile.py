@@ -1,39 +1,42 @@
 import can_parser
 import can_lexer
-import os
 import re
+import os
 
-from libraries.can_lib import cantonese_lib_import, cantonese_model_new,\
+from util.can_utils import Codegen_tag
+from libraries.can_lib import fix_lib_name, cantonese_model_new,\
     cantonese_turtle_init
 from collections import defaultdict
+from libraries.can_lib import fix_lib_name
 
-class CanPyCompile:
-    def __init__(self):
-        pass
+import importlib
 
-    @staticmethod
-    def cantonese_lib_run(lib_name : str, path : str) -> str:
-        pa = os.path.dirname(path) # Return the last file Path
-        tokens = []
-        code = ""
-        found = False
-        for dirpath,dirnames,files in os.walk(pa):
-            if lib_name + '.cantonese' in files:
-                code = open(pa + '/' + lib_name + '.cantonese', encoding = 'utf-8').read()
-                found = True
-        if found == False:
-            raise ImportError(lib_name + '.cantonese not found.')
-                
-        tokens = can_lexer.cantonese_token(path, code)
-        stats = can_parser.StatParser(tokens).parse_stats()
-        code_gen = Codegen(stats, path)
-        code = ''
-        for stat in stats:
-            code += code_gen.codegen_stat(stat)
-        
-        return code
+importlib.machinery.SOURCE_SUFFIXES.insert(0, ".cantonese")
+_py_source_to_code = importlib.machinery.SourceFileLoader.source_to_code
 
-class Codegen(object):
+def _can_source_to_code(self, data, path, _optimize=-1):
+
+    source = data.decode("utf-8")
+    if path.endswith(".py"):
+        return _py_source_to_code(self, source, path, _optimize=_optimize)
+    _code = ''
+    
+    cur_file = os.environ["CUR_FILE"]
+    os.environ["CUR_FILE"] = path
+
+    tokens = can_lexer.cantonese_token(path, source)
+    stats = can_parser.StatParser(tokens).parse_stats()
+    code_gen = Codegen(stats, path=path)
+    for stat in stats:
+        _code += code_gen.codegen_stat(stat)
+    
+    os.environ["CUR_FILE"] = cur_file
+    return _py_source_to_code(self, _code, path, _optimize=_optimize)
+
+importlib.machinery.SourceFileLoader.source_to_code = _can_source_to_code
+
+@Codegen_tag
+class Codegen:
     def __init__(self, nodes : list, path : str):
         self.nodes = nodes
         self.path = path
@@ -47,7 +50,6 @@ class Codegen(object):
         end = self.line
         for lno in range(start, end):
             self.line_mmap[lno] = stat.pos.line
-
 
     def codegen_expr(self, exp) -> str:
         if isinstance(exp, can_parser.can_ast.StringExp):
@@ -141,17 +143,10 @@ class Codegen(object):
             s += ', ' + self.codegen_expr(arg)
         return "self, " + s[2 : ]
 
-    def codegen_lib_list(self, lib_list : list) -> tuple:
-        s = ''
-        user_lib = []
-        for lib in lib_list:
-            import_res = cantonese_lib_import(self.codegen_expr(lib))
-            if import_res != "Not found":
-                s += ', ' + import_res
-            else:
-                user_lib.append(self.codegen_expr(lib))
-
-        return s[2 : ], user_lib
+    def codegen_lib_list(self, lib_list : list) -> str:
+        return ','.join(list(
+            map(lambda _: fix_lib_name(self.codegen_expr(_)), lib_list
+        )))
 
     def codegen_build_in_method_or_id(self, exp : can_parser.can_ast) -> str:
         list_build_in_method = {
@@ -320,12 +315,8 @@ class Codegen(object):
 
         elif isinstance(stat, can_parser.can_ast.ImportStat):
             s = ''
-            libs, user_lib = self.codegen_lib_list(stat.idlist)
-            if len(libs):
-                s += self.tab + 'import ' + libs + '\n'
-            if len(user_lib):
-                for l in user_lib:
-                    s += self.tab + CanPyCompile.cantonese_lib_run(l, self.path)
+            libs = self.codegen_lib_list(stat.idlist)
+            s += self.tab + 'import ' + libs + '\n'
             self.update_line_map(stat, s)
             return s
 

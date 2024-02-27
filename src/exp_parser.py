@@ -511,7 +511,7 @@ class ExpParser(ParserBase):
 """
 
 class ParExpParser(ExpParser):
-    def __init__(self, token_list: list) -> None:
+    def __init__(self, token_list: list, file="") -> None:
         super().__init__(token_list)
 
     # override

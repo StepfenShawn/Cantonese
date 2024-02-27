@@ -371,6 +371,14 @@ select語句:
 所有關鍵字: https://github.com/Cantonese-community/Keywords  
 
 # <a name="26">点样运行?</a>
+查看當前版本:  
+```shell
+cantonese -v
+```
+如果發覺輸出怪怪地, 咁啱又喺 windows, 咁請先用管理員身份運行指令嚟支援ANSI颜色顯示:    
+```cmd
+reg add HKCU\Console /v VirtualTerminalLevel /t REG_DWORD /d 1
+```
 Cantonese 可以用多種方式運行，用 `LLVM`，或者翻譯成 Python 同 HTML 都得！
 使用`LLVM`執行 (需安装`llvmlite`同`clang`, 僅支援部分語句):  
 ```shell

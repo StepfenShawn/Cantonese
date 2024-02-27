@@ -2,11 +2,11 @@ import re
 import zlib
 from can_keywords import *
 from util.infoprinter import ErrorPrinter
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 import zhconv
 
 Pos = namedtuple('Pos', ['line', 'offset'])
-MMap = []
+MMap_fs = defaultdict(list)
 
 def remove_comment(code: str) -> str:
     match_search = re.search(re.compile(r'/\*.*?\*/', re.S), code)
@@ -16,8 +16,11 @@ def remove_comment(code: str) -> str:
         match_search = re.search(re.compile(r'/\*.*?\*/', re.S), code)
     return code
 
-def getCtxByLine(line: int) -> str:
-    return zlib.decompress(MMap[line]).decode('utf-8')
+def getCtxByLine(path: str, line: int) -> str:
+    if path not in MMap_fs:
+        print("Error in getCtxByLine")
+        exit()
+    return zlib.decompress(MMap_fs[path][line]).decode('utf-8')
 
 class can_token:
     def __init__(self, pos: Pos, typ: TokenType, value: str):
@@ -135,7 +138,7 @@ class lexer:
     def error(self, args: str):
         from difflib import get_close_matches
         
-        ctx = getCtxByLine(self.getCurPos().line)
+        ctx = getCtxByLine(self.file, self.getCurPos().line)
         get_tips = lambda s: ','.join(get_close_matches(s, syms))
         p = ErrorPrinter(
                 info=f"{args}\n 喺 lexer 中察覺到有D痴线", pos=self.getCurPos(), ctx=ctx,
@@ -389,10 +392,11 @@ class lexer:
         self.error(f"\033[0;31m濑嘢!!!\033[0m:睇唔明嘅Token: `{c}`")
 
 def cantonese_token(file: str, code: str) -> list:
-    
-    global MMap, file_name
+
+    global MMap_fs, file_name
     MMap = list(map(lambda _ : zlib.compress(bytes(_, 'utf-8')), code.split('\n')))
     MMap.insert(0, "")
+    MMap_fs[file] = MMap
 
     code = remove_comment(code)
     lex: lexer = lexer(file, code, keywords)

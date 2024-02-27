@@ -6,8 +6,9 @@ import cmd
 import sys, os
 import argparse
 from collections import defaultdict
+import textwrap
 
-from util.infoprinter import format_color, textwrap, show_more
+from util.infoprinter import format_color, show_more
 
 import can_lexer
 import can_parser
@@ -17,7 +18,7 @@ import can_sys
 from libraries.can_lib import *
 from web_core.can_web_parser import *
 
-_version_ = "Cantonese\033[5;33m 1.0.8\033[0m Copyright (C) 2020-2024\033[5;35m StepfenShawn\033[0m"
+_version_ = "Cantonese\033[5;33m 1.0.9\033[0m Copyright (C) 2020-2024\033[5;35m StepfenShawn\033[0m"
 logo = "\033[0;34m" + r"""
    ______            __                           
   / ________ _____  / /_____  ____  ___  ________ 
@@ -51,23 +52,23 @@ def cantonese_run(code: str, is_to_py : bool, file : str,
     global TO_PY_CODE
     global variable
   
+    os.environ["CUR_FILE"] = file
     tokens = can_lexer.cantonese_token(file, code)
 
     if Options.dump_lex:
         show_pretty_lex(tokens)
         exit()
 
-    stats = can_parser.StatParser(tokens, file=file).parse_stats()
+    stats = can_parser.StatParser(tokens).parse_stats()
 
     if Options.dump_ast:
         show_pretty_ast(stats)
         exit()
     
-    code_gen = can_compile.Codegen(stats, file)    
+    code_gen = can_compile.Codegen(stats, path=file)    
     TO_PY_CODE = ''
     for stat in stats:
         TO_PY_CODE += code_gen.codegen_stat(stat)
-    py_line_ctx = code_gen.line_mmap
     
     if Options._to_llvm:
         import llvm_core.can_llvm_build as can_llvm_build
@@ -81,6 +82,7 @@ def cantonese_run(code: str, is_to_py : bool, file : str,
         exit()
 
     cantonese_lib_init()
+    
     if is_to_py:
         print("-> To python:")
         out_format = textwrap.indent(format_color(TO_PY_CODE, 'Python'), '  ') 
@@ -109,7 +111,7 @@ def cantonese_run(code: str, is_to_py : bool, file : str,
             code = compile(TO_PY_CODE, file, 'exec')
             exec(code, variable)
         except Exception as e:
-            can_sys.error_catch(e, py_line_ctx)
+            can_sys.error_catch(e)
 
 class 交互(cmd.Cmd):
     def __init__(self):
@@ -136,12 +138,11 @@ class 交互(cmd.Cmd):
         if code is not None:
             if code == ".quit":
                 sys.exit(1)
-            c = cantonese_run(code, False, '【标准输入】', 
+            c = cantonese_run(code, False, '【標準輸入】', 
                 REPL = True, get_py_code = True)
             if len(c) == 0:
                 c = code
             self.run(c)
-
 
 def 开始交互():
     global _version_
@@ -184,7 +185,11 @@ def main():
         print(f' File {args.file}')
         print( '      ' + '^' * len(args.file.encode("gbk")))  
         print("\033[0;31m濑嘢!!!\033[0m: 揾唔到你嘅文件 :(")
-    else: 
+    else:
+
+        can_sys.set_work_env(args.file)
+        sys.path.insert(0, "./")
+
         is_to_py = False
         code = ""
         with open(args.file, encoding = "utf-8") as f:

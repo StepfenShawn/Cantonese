@@ -655,15 +655,19 @@ lib_list = [
 """
     Built-in library for Cantonese
 """
-def cantonese_lib_import(name : str) -> str:
+def fix_lib_name(name : str) -> str:
     global lib_list
 
+    # Call function library
     if name[ : 7] == "python_":
         return name[7 : ]
 
+    # Call cantonese build-in library
     for lib in lib_list:
         if name in lib.names:
             if lib.f_init is not None:
                 lib.f_init()
             return lib.import_res
-    return "Not found"
+    
+    # Call other library
+    return name

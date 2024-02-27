@@ -1,13 +1,13 @@
+import os
 from can_lexer import TokenType, can_token, getCtxByLine, Pos
 from util.infoprinter import ErrorPrinter
 
 # The root(father) of all Parser classes.
 class ParserBase:
 
-    def __init__(self, token_list : list, file = "") -> None:
+    def __init__(self, token_list : list) -> None:
         self.pos = 0
         self.tokens = token_list
-        self.file = file
 
     def look_ahead(self, step: int) -> can_token:
         return self.tokens[self.pos + step]
@@ -50,8 +50,8 @@ class ParserBase:
         return self.tokens[self.pos].lineno
 
     def error(self, tk, info, tips):
-        ctx = getCtxByLine(tk.lineno)
+        ctx = getCtxByLine(os.environ["CUR_FILE"], tk.lineno)
         p = ErrorPrinter(info=f'{info}\n 畀 parser 不經意"莊"到:', pos=tk.pos, 
-            ctx=ctx, tips=tips, _file=self.file, _len=len(tk.value.encode("gbk")))
+            ctx=ctx, tips=tips, _file=os.environ["CUR_FILE"], _len=len(tk.value.encode("gbk")))
         p.show()
         exit()
