@@ -1,13 +1,13 @@
-import can_parser
-import can_lexer
+import can_source.can_parser as can_parser
+import can_source.can_lexer as can_lexer
 import re
 import os
 
-from util.can_utils import Codegen_tag
-from libraries.can_lib import fix_lib_name, cantonese_model_new,\
+from can_source.util.can_utils import Codegen_tag
+from can_source.libraries.can_lib import fix_lib_name, cantonese_model_new,\
     cantonese_turtle_init
 from collections import defaultdict
-from libraries.can_lib import fix_lib_name
+from can_source.libraries.can_lib import fix_lib_name
 
 import importlib
 

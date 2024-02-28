@@ -1,6 +1,6 @@
 import sys
 
-from can_lexer import *
+from can_source.can_lexer import *
 
 class WebParser(object):
     def __init__(self, tokens : list, Node : list) -> None:

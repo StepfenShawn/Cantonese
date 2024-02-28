@@ -3,7 +3,6 @@ from pygments.formatters import TerminalFormatter
 from pygments.lexers import PythonLexer
 from pygments.lexer import RegexLexer
 from pygments.token import *
-import textwrap
 from pprint import pprint
 
 class CantoneseLexer(RegexLexer):
@@ -50,8 +49,8 @@ class ErrorPrinter:
         strformat = (
 f"""{self.info}
  {_ARROW} {self.file} \033[1;34m{self.pos.line}:{self.pos.offset}\033[0m
- {_BAR}{format_color(self.ctx, self.hightlight)}
-    {self.whitespace(self.print_offset)}{arrow_char*self.len} Tips:{self.tips}
+ {_BAR}{self.pos.line}: {format_color(self.ctx, self.hightlight)}
+    {self.whitespace(self.print_offset + len(str(self.pos.line)) + 2)}{arrow_char*self.len} Tips:{self.tips}
 """
 )
         print(strformat)

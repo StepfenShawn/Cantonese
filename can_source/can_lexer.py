@@ -1,7 +1,7 @@
 import re
 import zlib
-from can_keywords import *
-from util.infoprinter import ErrorPrinter
+from can_source.can_keywords import *
+from can_source.util.infoprinter import ErrorPrinter
 from collections import namedtuple, defaultdict
 import zhconv
 
@@ -56,7 +56,6 @@ class lexer:
         self.re_str = r"(?s)(^'(\\\\|\\'|\\\n|\\z\s*|[^'\n])*')|(^\"(\\\\|\\\"|\\\n|\\z\s*|[^\"\n])*\")"
         self.re_expr = r"[|][\S\s]*?[|]"
         self.re_python_expr = r"#XD[\S\s]*?二五仔係我"
-        self.re_callfunc = r"[&](.*?)[)]"
 
     def getCurPos(self):
         return Pos(line=self.line, offset=self.offset)
@@ -123,9 +122,6 @@ class lexer:
 
     def scan_number(self):
         return self.scan(self.re_number)
-
-    def scan_callfunc(self):
-        return self.scan(self.re_callfunc)
 
     def scan_short_string(self):
         m = re.match(self.re_str, self.code)

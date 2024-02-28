@@ -2,9 +2,9 @@ import re
 import sys, traceback, os
 
 from collections import namedtuple
-from can_lexer import getCtxByLine, Pos
-from util.infoprinter import ErrorPrinter
-from util.can_utils import codegens
+from can_source.can_lexer import getCtxByLine, Pos
+from can_source.util.infoprinter import ErrorPrinter
+from can_source.util.can_utils import codegens
 
 error = namedtuple("layer", ["lineno", "filename"])
 

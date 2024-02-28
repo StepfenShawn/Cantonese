@@ -1,6 +1,6 @@
 import os
-from can_lexer import TokenType, can_token, getCtxByLine, Pos
-from util.infoprinter import ErrorPrinter
+from can_source.can_lexer import TokenType, can_token, getCtxByLine, Pos
+from can_source.util.infoprinter import ErrorPrinter
 
 # The root(father) of all Parser classes.
 class ParserBase:

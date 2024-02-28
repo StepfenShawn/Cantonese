@@ -1,8 +1,8 @@
-from can_lexer import *
-from Ast import can_ast
-from parser_base import *
-from util.can_utils import ParserUtil, exp_type
-from exp_parser import ExpParser, ClassBlockExpParser
+from can_source.can_lexer import *
+from can_source.Ast import can_ast
+from can_source.parser_base import *
+from can_source.util.can_utils import ParserUtil, exp_type
+from can_source.exp_parser import ExpParser, ClassBlockExpParser
 
 class StatParser(ParserBase):
     def __init__(self, token_list : list, expParser = ExpParser) -> None:

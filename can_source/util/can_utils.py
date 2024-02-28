@@ -1,5 +1,5 @@
-from can_lexer import can_token, TokenType
-from parser_base import ParserBase
+from can_source.can_lexer import can_token, TokenType
+from can_source.parser_base import ParserBase
 import functools
 from collections import defaultdict
 

@@ -8,15 +8,17 @@ import argparse
 from collections import defaultdict
 import textwrap
 
-from util.infoprinter import format_color, show_more
+sys.path.append(os.getcwd())
 
-import can_lexer
-import can_parser
-import can_compile
-import can_sys
+from can_source.util.infoprinter import format_color, show_more
 
-from libraries.can_lib import *
-from web_core.can_web_parser import *
+import can_source.can_lexer as can_lexer
+import can_source.can_parser as can_parser
+import can_source.can_compile as can_compile
+import can_source.can_sys as can_sys
+
+from can_source.libraries.can_lib import *
+from can_source.web_core.can_web_parser import *
 
 _version_ = "Cantonese\033[5;33m 1.0.9\033[0m Copyright (C) 2020-2024\033[5;35m StepfenShawn\033[0m"
 logo = "\033[0;34m" + r"""
