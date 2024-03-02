@@ -10,7 +10,7 @@ SayHello 下 -> ||
 $SayHello2 => 畀我睇下 "Hello" 点样先？ %%
 SayHello2 下 -> ||
 
-有條計仔 str => None 話你知
+有條計仔 str => 桔 話你知
 $output string 要做咩:
     畀我睇下 string 点样先？
 搞掂

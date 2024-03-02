@@ -47,12 +47,12 @@ The first program written in Cantonese: `Hello World`:
 ```
 ### <a name="3">Assignment statement </a>
 ```
-讲嘢 |A| 系 1
-讲嘢 |B| 系 2
+介紹返 |A| 係 1
+介紹返 |B| 係 2
 ```
 ### <a name="4">Get the type of variable</a>
 ```
-讲嘢 |A| 系 1
+介紹返 |A| 係 1
 起底: |A|
 ```
 You will get:  
@@ -62,10 +62,10 @@ You will get:
 ### <a name="5">Loop</a>
 Print numbers from 1 to 100:  
 ```
-讲嘢: |start| 系 0
-讲嘢: |结束| 系 唔啱
+介紹返: |start| 係 0
+介紹返: |结束| 係 唔啱
 落操场玩跑步
-    讲嘢: |start| 系 |start + 1|
+    介紹返: |start| 係 |start + 1|
     畀我睇下 |start| 点样先?
     如果 |start >= 100| 嘅话 -> {
         饮茶先啦
@@ -81,22 +81,22 @@ You can also use `For` Loop:
 ```
 ### <a name="6">If statement</a>
 ```
-讲嘢: |A| 系 2
-如果 |A 系 2| 嘅话 -> {
-    畀我睇下 "A 系 2" 点样先?
+介紹返: |A| 係 2
+如果 |A 係 2| 嘅话 -> {
+    畀我睇下 "A 係 2" 点样先?
 }
-唔系 嘅话 -> {
-    畀我睇下 "A 唔系 2" 点样先?
+唔係 嘅话 -> {
+    畀我睇下 "A 唔係 2" 点样先?
 }
 ```
 ### <a name="7">Function</a>
 Factorial algorithm in Cantonese:  
 ```
 $factorial |项数| 要做咩:
-    如果 |项数 系 0| 嘅话 -> {
+    如果 |项数 係 0| 嘅话 -> {
         还数 1
     }
-    唔系 嘅话 -> {
+    唔係 嘅话 -> {
         还数 |factorial(项数 减 1) 乘 项数|
     }
 搞掂
@@ -107,7 +107,7 @@ $get_max |数字1, 数字2| 要做咩:
     如果 |数字1 比唔上 数字2| 嘅话 -> {
         还数 |数字2|
     }
-    唔系 嘅话 -> {
+    唔係 嘅话 -> {
         还数 |数字1|
     }
 搞掂
@@ -136,15 +136,15 @@ You will get:
 try-except-finally:  
 ```
 执嘢 -> {
-    讲嘢: |A| 系 |B|
+    介紹返: |A| 係 |B|
 }
 揾到 |NameError| 嘅话 -> {
     畀我睇下 "揾到NameError" 点样先？
 }
 执手尾 -> {
     畀我睇下 "执手尾" 点样先？
-    讲嘢: |A| 系 1
-    讲嘢: |B| 系 1
+    介紹返: |A| 係 1
+    介紹返: |B| 係 1
     畀我睇下 |A, B| 点样先？
 }
 ``` 
@@ -156,9 +156,9 @@ try-except-finally:
 ### <a name="12">object-oriented programming</a>
 Declare object `duck` and extend from `object`, define two methods:  `游水` and `睡觉`, and attribute: `性别`
 ```
-咩系 |duck|?
+咩係 |duck|?
     佢个老豆叫 |object|
-    佢嘅 |性别| 系 "公"
+    佢嘅 |性别| 係 "公"
     佢识得 |游水| -> {
         畀我睇下 "Duck is swimming" 点样先？
     }
@@ -207,7 +207,7 @@ You will get:
 ### <a name="17">Get the random number</a>
 ```
 使下 random
-讲嘢: |A| 就 |求其啦()|
+介紹返: |A| 就 |求其啦()|
 ```
 You will get:  
 ```
@@ -231,7 +231,7 @@ KNN algorithm in Cantonese:
 使下 math
 |[5, 1], [4, 0], [1, 3], [0, 4]| 拍住上 -> |数据|
 |'动作片', '动作片', '科幻片', '科幻片'| 拍住上 -> |标签|
-讲嘢: |K| 系 3
+介紹返: |K| 係 3
 嗌 KNN 过嚟估下 -> |[3, 0]|
 ```
 You will get:
@@ -295,7 +295,7 @@ pip install kivy
 The first App `HelloWord` in Cantonese:  
 ```
 使下 kivy
-咩系 HelloApp?
+咩係 HelloApp?
     佢个老豆叫 App
     佢识得 |HelloWorld| -> {
         |同我show| 下 -> "Hello World" @ |做嘢|

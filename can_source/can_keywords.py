@@ -46,16 +46,17 @@ kw_print = "畀我睇下"
 kw_endprint = "點樣先"
 kw_exit = "收工"
 kw_in = "喺"
-kw_elif = "定系"
+kw_elif = "定係"
 kw_turtle_beg = "老作一下"
 kw_type = "起底"
-kw_assign = "講嘢"
-kw_class_def = "咩系"
-kw_else_or_not = "唔系"
-kw_is = "系"
+kw_assign = "介紹返"
+kw_end_assign = "先喇"
+kw_class_def = "咩係"
+kw_else_or_not = "唔係"
+kw_is = "係"
 kw_if = "如果"
 kw_expr_if = "若然"
-kw_expr_else = "唔系咁就"
+kw_expr_else = "唔係咁就"
 kw_then = "嘅話"
 kw_do = "->"
 kw_begin = "{"
@@ -93,9 +94,6 @@ kw_global_set = "Share下"
 kw_is_3 = "係"
 kw_exit_1 = "辛苦曬啦"
 kw_exit_2 = "同我躝"
-kw_false = "唔啱"
-kw_true = "啱"
-kw_none = "冇"
 kw_stackinit = "有條仆街叫"
 kw_push = "頂你"
 kw_pop = "丟你"
@@ -107,7 +105,7 @@ kw_call_begin = "下"
 kw_get_value = "@"
 kw_del = "冇鳩用"
 kw_del2 = "冇撚用"
-kw_match = "match下"
+kw_match = "睇L住"
 kw_case = "撞見"
 kw_func_ty_define = "有條計仔"
 kw_func_ty_end = "話你知"
@@ -122,6 +120,7 @@ keywords = (
     kw_turtle_beg,
     kw_type,
     kw_assign,
+    kw_end_assign,
     kw_class_def,
     kw_else_or_not,
     kw_is,
@@ -165,9 +164,6 @@ keywords = (
     kw_is_3,
     kw_exit_1,
     kw_exit_2,
-    kw_false,
-    kw_true,
-    kw_none,
     kw_stackinit,
     kw_push,
     kw_pop,

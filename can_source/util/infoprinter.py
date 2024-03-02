@@ -49,8 +49,10 @@ class ErrorPrinter:
         strformat = (
 f"""{self.info}
  {_ARROW} {self.file} \033[1;34m{self.pos.line}:{self.pos.offset}\033[0m
+ {_BAR}
  {_BAR}{self.pos.line}: {format_color(self.ctx, self.hightlight)}
     {self.whitespace(self.print_offset + len(str(self.pos.line)) + 2)}{arrow_char*self.len} Tips:{self.tips}
+ {_BAR}
 """
 )
         print(strformat)

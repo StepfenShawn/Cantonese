@@ -93,6 +93,7 @@ def cantonese_lib_init() -> None:
 
     cantonese_func_def("唔啱", False)
     cantonese_func_def("啱", True)
+    cantonese_func_def("桔", None)
 
     cantonese_func_def("畀你啲嘢", input)
 
@@ -641,7 +642,7 @@ lib_list = [
     LibRegister(["smtplib", "郵箱"], cantonese_smtplib_init, "stmplib"),
     LibRegister(["xml", "xml解析"], cantonese_xml_init, "xml"),
     LibRegister(["csv", "csv解析"], cantonese_csv_init, "csv"),
-    LibRegister(["os", "系統"], None, "os"),
+    LibRegister(["os", "係統"], None, "os"),
     LibRegister(["re", "正則匹配"], cantonese_re_init, "re"),
     LibRegister(["urllib", "網頁獲取"], cantonese_urllib_init, "urllib"),
     LibRegister(["requests", "網絡請求"], cantonese_requests_init, "requests"),

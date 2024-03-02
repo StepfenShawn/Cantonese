@@ -211,12 +211,12 @@ class StatParser(ParserBase):
     def parse_assign_block(self):
         start_pos = self.filepos()
         # Nothing in assignment block
-        if ParserUtil.get_type(self.current()) == TokenType.SEP_RCURLY:
+        if ParserUtil.get_token_value(self.current()) == kw_end_assign:
             self.skip(1)
             return can_ast.PassStat(start_pos)
         var_list : list = []
         exp_list : list= []
-        while ParserUtil.get_type(self.current()) != TokenType.SEP_RCURLY:
+        while ParserUtil.get_token_value(self.current()) != kw_end_assign:
             var_list.append(self.parse_var_list()[0])
             self.get_next_token_of([kw_is, kw_is_2, kw_is_3], 0)
             exp_list.append(ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp_list)[0])
@@ -237,7 +237,6 @@ class StatParser(ParserBase):
         else:
             # Skip the kw_do
             self.skip(1)
-            self.get_next_token_of_kind(TokenType.SEP_LCURLY, 0)
             return self.parse_assign_block()
             # The SEP_RCURLY will be checked in self.parse_assign_block()
 

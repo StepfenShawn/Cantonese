@@ -62,7 +62,7 @@ class BasicTest < Test::Unit::TestCase
 
   def test_if
     res = %x(#{RUN} examples/basic/if.cantonese).encode("UTF-8")
-    assert res == "A 系 3\nB 系 1\n"
+    assert res == "A 係 3\nB 係 1\n"
   end
 
   def test_import

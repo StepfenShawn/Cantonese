@@ -23,6 +23,7 @@ def getCtxByLine(path: str, line: int) -> str:
     return zlib.decompress(MMap_fs[path][line]).decode('utf-8')
 
 class can_token:
+    __slots__ = ("pos", "typ", "value")
     def __init__(self, pos: Pos, typ: TokenType, value: str):
         self.pos = pos
         self.typ = typ
@@ -389,7 +390,7 @@ class lexer:
 
 def cantonese_token(file: str, code: str) -> list:
 
-    global MMap_fs, file_name
+    global MMap_fs
     MMap = list(map(lambda _ : zlib.compress(bytes(_, 'utf-8')), code.split('\n')))
     MMap.insert(0, "")
     MMap_fs[file] = MMap

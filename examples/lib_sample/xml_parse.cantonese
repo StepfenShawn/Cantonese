@@ -2,14 +2,14 @@
  * Cantonese 读取xml文件
  */
 使下 xml
-讲嘢: |Dom| 系 剪樖Dom树("../examples/lib_sample/movies.xml")
+介紹返: |Dom| 係 剪樖Dom树("../examples/lib_sample/movies.xml")
 如果 Dom有嘢(Dom, "shelf") 嘅话 -> {
     |睇Dom有咩| 下 -> (Dom, "shelf")
 }
 畀我睇下 |Dom| 点样先?
 |用Tag揾| 下 -> (Dom, "movie", 1)
 
-讲嘢: |数据| 系 用Tag揾(Dom, "movie")
+介紹返: |数据| 係 用Tag揾(Dom, "movie")
 
 i 从 0 行到 |数据 嘅长度|
     如果 Dom有嘢(Dom, "title") 嘅话 -> {

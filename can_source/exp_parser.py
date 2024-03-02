@@ -233,17 +233,17 @@ class ExpParser(ParserBase):
             self.skip(1)
             return can_ast.VarArgExp()
         
-        elif ParserUtil.get_token_value(tk) in [kw_false, "False"]:
-            self.skip(1)
-            return can_ast.FalseExp()
+        # elif ParserUtil.get_token_value(tk) in [kw_false, "False"]:
+        #     self.skip(1)
+        #     return can_ast.FalseExp()
         
-        elif ParserUtil.get_token_value(tk) in [kw_true, "True"]:
-            self.skip(1)
-            return can_ast.TrueExp()
+        # elif ParserUtil.get_token_value(tk) in [kw_true, "True"]:
+        #     self.skip(1)
+        #     return can_ast.TrueExp()
         
-        elif ParserUtil.get_token_value(tk) in [kw_none, "None"]:
-            self.skip(1)
-            return can_ast.NullExp()
+        # elif ParserUtil.get_token_value(tk) in ["桔"]:
+        #     self.skip(1)
+        #     return can_ast.NullExp()
         
         elif ParserUtil.get_type(tk) == TokenType.NUM:
             self.skip(1)

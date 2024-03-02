@@ -3,8 +3,8 @@ stat ::= ';' |
       | '饮茶先啦'
       | '收工'
       | 'Share下' idlist
-      | '讲嘢' varlist '係' explist
-      | '讲嘢' '=>' '{' assignblock '}'
+      | '介紹返' varlist '係' explist
+      | '介紹返' '=>' '{' assignblock '}'
       | printstmt ['@' idlist]
       | importstmt
       | functioncall ['@' idlist]
@@ -14,8 +14,8 @@ stat ::= ';' |
       | '&&' idlist '喺' explist '=>' '{' block '}'
       | id '从' exp '行到' exp block '行晒'
       | '起底' args
-      | '如果' exp '嘅话' '->' '{' block '}' [定系 exp 嘅话 '->' '{' block '}'] ['唔系嘅话' '->' '{' block '}']
-      | match下 id '=>' '{' matchblock '}'
+      | '如果' exp '嘅话' '->' '{' block '}' [定係 exp 嘅话 '->' '{' block '}'] ['唔係嘅话' '->' '{' block '}']
+      | 睇L住 id '=>' '{' matchblock '}'
       | 用下 explist
       | '掟个' id '嚟睇下'
       | '谂下' args
@@ -38,7 +38,7 @@ lambda_functoindef ::= '$$' [parlist] '->' block '搞掂'
 
 try_stmt ::= '执嘢' '->' '{' block '}' ['揾到' exp '嘅话' '->' '{' block '}']* ['执手尾' '-> '{' block '}']
 
-class_def_stmt ::= '咩系' exp [佢个老豆叫 id] class_def_block '明白未啊'
+class_def_stmt ::= '咩係' exp [佢个老豆叫 id] class_def_block '明白未啊'
 
 class_def_block ::= '佢嘅' classvarlist 係 explist
               | '佢识得' id [parlist] '=>' block '%%'
@@ -59,7 +59,7 @@ exp ::= null
     | exp binop exp
     | unop exp
     | '<*>'
-    | '若然' exp "=>" exp "唔系咁就" "=>" exp
+    | '若然' exp "=>" exp "唔係咁就" "=>" exp
 
 prefixexp ::= var
           | '|' exp '|'
@@ -109,6 +109,6 @@ binop ::= '+' | '-' | '*' | '/' | '^' | '%' | '<->' |
 
 unop ::= not
 
-assignblock ::= varlist '系' explist [ assignblock ]
+assignblock ::= varlist '係' explist [ assignblock ]
 
 matchblock ::= '撞见' exp '->' '{' block '}' [ matchblock ]
