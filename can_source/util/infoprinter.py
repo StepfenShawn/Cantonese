@@ -52,7 +52,6 @@ f"""{self.info}
  {_BAR}
  {_BAR}{self.pos.line}: {format_color(self.ctx, self.hightlight)}
     {self.whitespace(self.print_offset + len(str(self.pos.line)) + 2)}{arrow_char*self.len} Tips:{self.tips}
- {_BAR}
 """
 )
         print(strformat)

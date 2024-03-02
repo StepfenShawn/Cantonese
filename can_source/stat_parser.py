@@ -167,6 +167,11 @@ class StatParser(ParserBase):
             elif tk_value == kw_turtle_beg:
                 return self.parse_turtle_stat()
 
+            else:
+                tk = self.current()
+                self.error(tk, info=f"\033[0;31m濑嘢!!!\033[0m: 個`{tk.value}`好似有D唔三唔四", 
+                    tips=f" 幫緊你只不過有心無力 :(")
+
         elif kind == TokenType.IDENTIFIER:
             if ParserUtil.get_token_value(self.look_ahead(1)) in [kw_from]:
                 return self.parse_for_stat()
@@ -184,7 +189,7 @@ class StatParser(ParserBase):
                 
         elif kind == TokenType.EOF:
             return
-        
+
         else:
             tk = self.current()
             self.error(tk, info=f"\033[0;31m濑嘢!!!\033[0m: 個`{tk.value}`好似有D唔三唔四", 

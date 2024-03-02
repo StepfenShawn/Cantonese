@@ -110,6 +110,9 @@ kw_case = "撞見"
 kw_func_ty_define = "有條計仔"
 kw_func_ty_end = "話你知"
 kw_call_native = "我係二五仔"
+kw_macro_def = "macro你個rules"
+kw_macro_end = "就咁部署"
+kw_use_marco = "講經"
 
 keywords = (
     kw_print,
