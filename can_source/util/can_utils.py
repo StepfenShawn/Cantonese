@@ -1,19 +1,6 @@
 from can_source.can_lexer import can_token, TokenType
 from can_source.parser_base import ParserBase
 import functools
-from collections import defaultdict
-
-# Mapping file to code
-codegens = defaultdict(object)
-
-def Codegen_tag(cls):
-    global codegens
-
-    def wrapper(*args, **kw):
-        new_cls = cls(*args, **kw)
-        codegens[kw["path"]] = new_cls
-        return new_cls
-    return wrapper
 
 def exp_type(type):
     def decorator(func):

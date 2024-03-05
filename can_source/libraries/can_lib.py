@@ -2,6 +2,7 @@ import sys
 import re
 import functools
 from collections import namedtuple
+from typing import Tuple
 
 variable: dict = {}
 
@@ -656,19 +657,19 @@ lib_list = [
 """
     Built-in library for Cantonese
 """
-def fix_lib_name(name : str) -> str:
+def fix_lib_name(name : str) -> Tuple[str, bool]:
     global lib_list
 
     # Call function library
     if name[ : 7] == "python_":
-        return name[7 : ]
+        return name[7 : ], False
 
     # Call cantonese build-in library
     for lib in lib_list:
         if name in lib.names:
             if lib.f_init is not None:
                 lib.f_init()
-            return lib.import_res
+            return lib.import_res, False
     
     # Call other library
-    return name
+    return name, True

@@ -65,7 +65,7 @@ def show_more(data: object):
         cursor = 0
         pprint(data[cursor : cursor + MAX_LENGTH])
         cursor += MAX_LENGTH
-        while cursor + MAX_LENGTH < len(data):
+        while cursor < len(data):
             ready_show = data[cursor : cursor + MAX_LENGTH]
             cursor += MAX_LENGTH
             choice = input("--- More --- ? (y/n) ")

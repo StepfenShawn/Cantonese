@@ -68,10 +68,9 @@ def cantonese_run(code: str, is_to_py : bool, file : str,
         exit()
     
     code_gen = can_compile.Codegen(stats, path=file)    
-    TO_PY_CODE = ''
-    for stat in stats:
-        TO_PY_CODE += code_gen.codegen_stat(stat)
-    
+    TO_PY_CODE = code_gen.to_py()
+    py_ast = code_gen.build_ast()
+
     if Options._to_llvm:
         import llvm_core.can_llvm_build as can_llvm_build
         import llvm_core.llvm_evaluator as llvm_evaluator
@@ -110,7 +109,7 @@ def cantonese_run(code: str, is_to_py : bool, file : str,
                 TO_PY_CODE = "" # reset the global variable in REPL mode
             if get_py_code:
                 return c
-            code = compile(TO_PY_CODE, file, 'exec')
+            code = compile(py_ast, file, 'exec')
             exec(code, variable)
         except Exception as e:
             can_sys.error_catch(e)

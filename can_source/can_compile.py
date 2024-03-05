@@ -1,9 +1,9 @@
 import can_source.can_parser as can_parser
 import can_source.can_lexer as can_lexer
 import re
-import os
+import sys, os
+import ast
 
-from can_source.util.can_utils import Codegen_tag
 from can_source.libraries.can_lib import fix_lib_name, cantonese_model_new,\
     cantonese_turtle_init
 from collections import defaultdict
@@ -19,7 +19,6 @@ def _can_source_to_code(self, data, path, _optimize=-1):
     source = data.decode("utf-8")
     if path.endswith(".py"):
         return _py_source_to_code(self, source, path, _optimize=_optimize)
-    _code = ''
     
     cur_file = os.environ["CUR_FILE"]
     os.environ["CUR_FILE"] = path
@@ -27,15 +26,13 @@ def _can_source_to_code(self, data, path, _optimize=-1):
     tokens = can_lexer.cantonese_token(path, source)
     stats = can_parser.StatParser(tokens).parse_stats()
     code_gen = Codegen(stats, path=path)
-    for stat in stats:
-        _code += code_gen.codegen_stat(stat)
-    
+    _code = code_gen.to_py()
+
     os.environ["CUR_FILE"] = cur_file
     return _py_source_to_code(self, _code, path, _optimize=_optimize)
 
 importlib.machinery.SourceFileLoader.source_to_code = _can_source_to_code
 
-@Codegen_tag
 class Codegen:
     def __init__(self, nodes : list, path : str):
         self.nodes = nodes
@@ -43,6 +40,36 @@ class Codegen:
         self.tab = ''
         self.line = 1
         self.line_mmap = defaultdict(int) # Python line mapping to Cantonese line
+
+    def to_py(self):
+        code = ''
+        for node in self.nodes:
+            code += self.codegen_stat(node)
+        return code
+
+    def build_ast(self):
+        tree = ast.parse(self.to_py())
+        tree.body = list(map(self.fix_lineno, tree.body))
+        return tree
+
+    def fix_lineno(self, _node: ast.AST):
+        if not isinstance(_node, ast.AST):
+            if isinstance(_node, (list, set)):
+                for _ in _node:
+                    self.fix_lineno(_)        
+            return
+
+        if hasattr(_node, "lineno"):
+            py_line = _node.lineno
+            _node.lineno = self.line_mmap[py_line]
+            _node.col_offset = 0
+            _node.end_lineno = _node.lineno
+            _node.end_col_offset = 0
+
+        for attr in dir(_node):
+            self.fix_lineno(getattr(_node, attr))
+
+        return _node
 
     def update_line_map(self, stat: can_parser.can_ast.Stat, s: str):
         start = self.line
@@ -144,9 +171,16 @@ class Codegen:
         return "self, " + s[2 : ]
 
     def codegen_lib_list(self, lib_list : list) -> str:
-        return ','.join(list(
-            map(lambda _: fix_lib_name(self.codegen_expr(_)), lib_list
-        )))
+        res = []
+        for _ in lib_list:
+            name, need_load = fix_lib_name(self.codegen_expr(_))
+            if need_load:
+                for pa in sys.path:
+                    if os.path.exists(f'{pa}/{name}.cantonese'):
+                        with open(f"{pa}/{name}.cantonese", encoding="utf-8") as f:
+                            os.environ[f"{pa}/{name}.cantonese_SOURCE"] = f.read()
+            res.append(name)
+        return ','.join(res)
 
     def codegen_build_in_method_or_id(self, exp : can_parser.can_ast) -> str:
         list_build_in_method = {

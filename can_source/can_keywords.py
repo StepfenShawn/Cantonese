@@ -112,7 +112,6 @@ kw_func_ty_end = "話你知"
 kw_call_native = "我係二五仔"
 kw_macro_def = "macro你個rules"
 kw_macro_end = "就咁部署"
-kw_use_marco = "講經"
 
 keywords = (
     kw_print,
@@ -182,7 +181,9 @@ keywords = (
     kw_del2,
     kw_func_ty_define,
     kw_func_ty_end,
-    kw_call_native
+    kw_call_native,
+    kw_macro_def,
+    kw_macro_end,
 )
 
 syms = {'&', '&&', '|', '|>', '%', 

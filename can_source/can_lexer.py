@@ -1,12 +1,11 @@
 import re
-import zlib
 from can_source.can_keywords import *
 from can_source.util.infoprinter import ErrorPrinter
 from collections import namedtuple, defaultdict
 import zhconv
+import os
 
 Pos = namedtuple('Pos', ['line', 'offset'])
-MMap_fs = defaultdict(list)
 
 def remove_comment(code: str) -> str:
     match_search = re.search(re.compile(r'/\*.*?\*/', re.S), code)
@@ -16,11 +15,13 @@ def remove_comment(code: str) -> str:
         match_search = re.search(re.compile(r'/\*.*?\*/', re.S), code)
     return code
 
+# Lazy options
 def getCtxByLine(path: str, line: int) -> str:
-    if path not in MMap_fs:
-        print("Error in getCtxByLine")
-        exit()
-    return zlib.decompress(MMap_fs[path][line]).decode('utf-8')
+    source = os.environ[f"{path}_SOURCE"]
+    gen = (s for s in source.split('\n'))
+    for _ in range(line):
+        source = next(gen)
+    return source
 
 class can_token:
     __slots__ = ("pos", "typ", "value")
@@ -57,6 +58,7 @@ class lexer:
         self.re_str = r"(?s)(^'(\\\\|\\'|\\\n|\\z\s*|[^'\n])*')|(^\"(\\\\|\\\"|\\\n|\\z\s*|[^\"\n])*\")"
         self.re_expr = r"[|][\S\s]*?[|]"
         self.re_python_expr = r"#XD[\S\s]*?二五仔係我"
+        self.re_comment = re.compile(r'/\*.*?\*/', re.S)
 
     def getCurPos(self):
         return Pos(line=self.line, offset=self.offset)
@@ -123,6 +125,9 @@ class lexer:
 
     def scan_number(self):
         return self.scan(self.re_number)
+
+    def scan_comment(self):
+        return self.scan(self.re_comment)
 
     def scan_short_string(self):
         m = re.match(self.re_str, self.code)
@@ -389,12 +394,7 @@ class lexer:
         self.error(f"\033[0;31m濑嘢!!!\033[0m:睇唔明嘅Token: `{c}`")
 
 def cantonese_token(file: str, code: str) -> list:
-
-    global MMap_fs
-    MMap = list(map(lambda _ : zlib.compress(bytes(_, 'utf-8')), code.split('\n')))
-    MMap.insert(0, "")
-    MMap_fs[file] = MMap
-
+    os.environ[f"{file}_SOURCE"] = code
     code = remove_comment(code)
     lex: lexer = lexer(file, code, keywords)
     tokens: list = []

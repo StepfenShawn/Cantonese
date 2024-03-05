@@ -4,7 +4,6 @@ import sys, traceback, os
 from collections import namedtuple
 from can_source.can_lexer import getCtxByLine, Pos
 from can_source.util.infoprinter import ErrorPrinter
-from can_source.util.can_utils import codegens
 
 error = namedtuple("layer", ["lineno", "filename"])
 
@@ -23,17 +22,12 @@ def error_catch(e):
     tback = traceback.extract_tb(tback)
     infos = list(map(lambda x: error(x.lineno, x.filename), tback))[1:]
     
-    # errors in > 1 files
-    if len(infos) > 1:
-        pass
-
     err_ty = e.__class__.__name__
     print(f"\033[0;31m濑嘢!!!\033[0m: {show(err_ty, str(e))}")
     for info in infos:
-        line_loc = codegens[info.filename].line_mmap[info.lineno]
-        ctx = getCtxByLine(info.filename, line_loc)
+        ctx = getCtxByLine(info.filename, info.lineno)
         p = ErrorPrinter(info=" 喺runtime察覺到錯誤!",
-                        pos=Pos(line_loc,0), tips="  幫緊你只不過有心無力:(", 
+                        pos=Pos(info.lineno, 0), tips="  幫緊你只不過有心無力:(", 
                         ctx=ctx,
                         _file=info.filename,
                         _len=len(ctx.encode("gbk")))
