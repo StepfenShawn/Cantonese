@@ -1,19 +1,26 @@
 import re
 from can_source.can_keywords import *
 from can_source.util.infoprinter import ErrorPrinter
-from collections import namedtuple, defaultdict
+from collections import namedtuple
+
 import zhconv
 import os
 
-Pos = namedtuple('Pos', ['line', 'offset'])
+Pos = namedtuple('Pos', ['line', 'offset', 'end_line', 'end_offset'])
 
-def remove_comment(code: str) -> str:
-    match_search = re.search(re.compile(r'/\*.*?\*/', re.S), code)
-    while match_search:
-        comment = match_search.group()
-        code = code.replace(match_search.group(), '  ' + "\n" * (comment.count("\n")) + '  ', 1)
-        match_search = re.search(re.compile(r'/\*.*?\*/', re.S), code)
-    return code
+def pos_tracker(func):
+    def wrapper(self, *args, **kwargs): 
+        
+        self.skip_space_or_comment()
+
+        start_line = self.line
+        offset = self.offset
+        tk = func(self, *args, **kwargs)
+        end_line = self.line
+        end_offset = self.offset
+        tk.pos = Pos(line=start_line, offset=offset, end_line=end_line, end_offset=end_offset)
+        return tk
+    return wrapper
 
 # Lazy options
 def getCtxByLine(path: str, line: int) -> str:
@@ -49,9 +56,9 @@ class lexer:
         self.file = file
         self.code = code
         self.keywords = keywords
+
         self.line = 1
         self.offset = 0
-        self.buffer = ""
 
         self.re_number = r"^0[xX][0-9a-fA-F]*(\.[0-9a-fA-F]*)?([pP][+\-]?[0-9]+)?|^[0-9]*(\.[0-9]*)?([eE][+\-]?[0-9]+)?"
         self.re_id = r"^[_\d\w]+|^[\u4e00-\u9fa5]+"
@@ -60,11 +67,16 @@ class lexer:
         self.re_python_expr = r"#XD[\S\s]*?二五仔係我"
         self.re_comment = re.compile(r'/\*.*?\*/', re.S)
 
-    def getCurPos(self):
-        return Pos(line=self.line, offset=self.offset)
+    def getCurPos(self) -> Pos:
+        return Pos(line=self.line, 
+                   offset=self.offset,
+                   end_line=None,
+                   end_offset=None)
 
     def next(self, n: int):
-        self.offset += n
+        sth = self.code[:n]
+        self.line += sth.count('\n')
+        self.offset = len(sth.split('\n')[-1])
         self.code = self.code[n:]
 
     def check(self, s: str):
@@ -85,16 +97,12 @@ class lexer:
                 return True
         return False
 
-    def skip_space(self):
+    def skip_space_or_comment(self):
         while len(self.code) > 0:
-            if self.check('\r\n') or self.check('\n\r'):
-                self.next(2)
-                self.line += 1
-                self.offset = 0
+            if self.check('/*'):
+                _ = self.scan_comment()
             elif lexer.is_new_line(self.code[0]):
                 self.next(1)
-                self.line += 1
-                self.offset = 0
             elif self.check('?') or self.check(':') or self.check('：') or self.check('？'):
                 self.next(1)
             elif self.check('「') or self.check('」'):
@@ -108,9 +116,6 @@ class lexer:
         m = re.match(pattern, self.code)
         if m:
             token = m.group()
-            cnt_newline = token.count('\n')
-            if cnt_newline:
-                self.line += cnt_newline
             self.next(len(token))
             return token
     
@@ -148,254 +153,224 @@ class lexer:
         p.show()
         exit()
 
+    @pos_tracker
     def get_token(self) -> can_token:
-        self.skip_space()
         if len(self.code) == 0:
             return can_token(self.getCurPos(), TokenType.EOF, 'EOF')
 
         c = self.code[0]
         
         if c == '&':
-            start_pos = self.getCurPos()
             if self.check('&&'):
                 self.next(2)
-                return can_token(start_pos, TokenType.KEYWORD, '&&')
+                return can_token(None, TokenType.KEYWORD, '&&')
             else:
                 self.next(1)
-                return can_token(start_pos, TokenType.OP_BAND, '&')
+                return can_token(None, TokenType.OP_BAND, '&')
 
         if c == '|':
-            start_pos = self.getCurPos()
             if self.check('|>'):
                 self.next(2)
-                return can_token(start_pos, TokenType.SEPICFIC_ID_END, '|>')
+                return can_token(None, TokenType.SEPICFIC_ID_END, '|>')
             else:
                 self.next(1)
-                return can_token(start_pos, TokenType.KEYWORD, '|')
+                return can_token(None, TokenType.KEYWORD, '|')
 
         if c == '%':
-            start_pos = self.getCurPos()
             if self.check('%%'):
                 self.next(2)
-                return can_token(start_pos, TokenType.KEYWORD, kw_func_end)
+                return can_token(None, TokenType.KEYWORD, kw_func_end)
             else:
                 self.next(1)
-                return can_token(start_pos, TokenType.OP_MOD, '%')
+                return can_token(None, TokenType.OP_MOD, '%')
 
         if c == '~':
-            start_pos = self.getCurPos()
             token = self.scan_python_expr()
-            return can_token(start_pos, TokenType.CALL_NATIVE_EXPR, token)
+            return can_token(None, TokenType.CALL_NATIVE_EXPR, token)
 
         if c == '-':
-            start_pos = self.getCurPos()
             if self.check('->'):
                 self.next(2)
-                return can_token(start_pos, TokenType.KEYWORD, kw_do)
+                return can_token(None, TokenType.KEYWORD, kw_do)
             else:
                 self.next(1)
-                return can_token(start_pos, TokenType.OP_MINUS, '-')
+                return can_token(None, TokenType.OP_MINUS, '-')
 
         if c == '=':
-            start_pos = self.getCurPos()
             if self.check('=>'):
                 self.next(2)
-                return can_token(start_pos, TokenType.KEYWORD, kw_do)
+                return can_token(None, TokenType.KEYWORD, kw_do)
             elif self.check('==>'):
                 self.next(3)
-                return can_token(start_pos, TokenType.KEYWORD, '==>')
+                return can_token(None, TokenType.KEYWORD, '==>')
             elif self.check('=='):
                 self.next(2)
-                return can_token(start_pos, TokenType.OP_EQ, '==')
+                return can_token(None, TokenType.OP_EQ, '==')
             else:
                 self.next(1)
-                return can_token(start_pos, TokenType.OP_ASSIGN, '=')
+                return can_token(None, TokenType.OP_ASSIGN, '=')
             
         if c == '$':
-            start_pos = self.getCurPos()
             if self.check('$$'):
                 self.next(2)
-                return can_token(start_pos, TokenType.KEYWORD, '$$')
+                return can_token(None, TokenType.KEYWORD, '$$')
             self.next(1)
-            return can_token(start_pos, TokenType.KEYWORD, '$')
+            return can_token(None, TokenType.KEYWORD, '$')
 
         if c == '<':
-            start_pos = self.getCurPos()
             if self.check('<*>'):
                 self.next(3)
-                return can_token(start_pos, TokenType.KEYWORD, '<*>')
+                return can_token(None, TokenType.KEYWORD, '<*>')
 
             elif self.check('<|>'):
                 self.next(3)
-                return can_token(start_pos, TokenType.OP_BOR, '<|>')
+                return can_token(None, TokenType.OP_BOR, '<|>')
 
             elif self.check('<->'):
                 self.next(3)
-                return can_token(start_pos, TokenType.OP_CONCAT, '<->')
+                return can_token(None, TokenType.OP_CONCAT, '<->')
 
             elif self.check('<$>'):
                 self.next(3)
-                return can_token(start_pos, TokenType.KEYWORD, '<$>')
+                return can_token(None, TokenType.KEYWORD, '<$>')
 
             elif self.check('<='):
                 self.next(2)
-                return can_token(start_pos, TokenType.OP_LE, '<=')
+                return can_token(None, TokenType.OP_LE, '<=')
             
             elif self.check('<<'):
                 self.next(2)
-                return can_token(start_pos, TokenType.OP_SHL, '<<')
+                return can_token(None, TokenType.OP_SHL, '<<')
 
             elif self.check('<|'):
                 self.next(2)
-                return can_token(start_pos, TokenType.SEPCIFIC_ID_BEG, '<|')
+                return can_token(None, TokenType.SEPCIFIC_ID_BEG, '<|')
 
             else:
                 self.next(1)
-                return can_token(start_pos, TokenType.OP_LT, '<')
+                return can_token(None, TokenType.OP_LT, '<')
         
         if c == '>':
-            start_pos = self.getCurPos()
             if self.check('>='):
                 self.next(2)
-                return can_token(start_pos, TokenType.OP_GE, '>=')
+                return can_token(None, TokenType.OP_GE, '>=')
             elif self.check('>>'):
                 self.next(2)
-                return can_token(start_pos, TokenType.OP_SHR, '>>')
+                return can_token(None, TokenType.OP_SHR, '>>')
             else:
                 self.next(1)
-                return can_token(start_pos, TokenType.OP_GT, '>')
+                return can_token(None, TokenType.OP_GT, '>')
 
         if c == '!':
-            start_pos = self.getCurPos()
             if self.check('!='):
                 self.next(2)
-                return can_token(start_pos, TokenType.OP_NE, '!=')
+                return can_token(None, TokenType.OP_NE, '!=')
             else:
                 self.next(1)
-                return can_token(start_pos, TokenType.OP_NOT, '!')
+                return can_token(None, TokenType.OP_NOT, '!')
 
         if c == '@':
-            start_pos = self.getCurPos()
             if self.check('@@@'):
                 self.next(3)
-                return can_token(start_pos, TokenType.KEYWORD, '@@@')
+                return can_token(None, TokenType.KEYWORD, '@@@')
             elif self.check('@@'):
                 self.next(2)
-                return can_token(start_pos, TokenType.KEYWORD, '@@')
+                return can_token(None, TokenType.KEYWORD, '@@')
             else:
                 self.next(1)
-                return can_token(start_pos, TokenType.KEYWORD, '@')
+                return can_token(None, TokenType.KEYWORD, '@')
         
         if c == '{':
-            start_pos = self.getCurPos()
             self.next(1)
-            return can_token(start_pos, TokenType.SEP_LCURLY, '{')
+            return can_token(None, TokenType.SEP_LCURLY, '{')
         
         if c == '}':
-            start_pos = self.getCurPos()
             self.next(1)
-            return can_token(start_pos, TokenType.SEP_RCURLY, '}')
+            return can_token(None, TokenType.SEP_RCURLY, '}')
 
         if c == '(':
-            start_pos = self.getCurPos()
             self.next(1)
-            return can_token(start_pos, TokenType.SEP_LPAREN, '(')
+            return can_token(None, TokenType.SEP_LPAREN, '(')
 
         if c == ')':
-            start_pos = self.getCurPos()
             self.next(1)
-            return can_token(start_pos, TokenType.SEP_RPAREN, ')')
+            return can_token(None, TokenType.SEP_RPAREN, ')')
 
         if c == '[':
-            start_pos = self.getCurPos()
             self.next(1)
-            return can_token(start_pos, TokenType.SEP_LBRACK, '[')
+            return can_token(None, TokenType.SEP_LBRACK, '[')
 
         if c == ']':
-            start_pos = self.getCurPos()
             self.next(1)
-            return can_token(start_pos, TokenType.SEP_RBRACK, ']')
+            return can_token(None, TokenType.SEP_RBRACK, ']')
 
         if c == '.':
-            start_pos = self.getCurPos()
             self.next(1)
-            return can_token(start_pos, TokenType.SEP_DOT, c)
+            return can_token(None, TokenType.SEP_DOT, c)
 
         if lexer.isChinese(c) or c == '_' or c.isalpha():
-            start_pos = self.getCurPos()
             token = self.scan_identifier()
             token = zhconv.convert(token, 'zh-hk').replace("僕", "仆") 
             if token in self.keywords:
-                return can_token(start_pos, TokenType.KEYWORD, token)
-            return can_token(start_pos, TokenType.IDENTIFIER, token)
+                return can_token(None, TokenType.KEYWORD, token)
+            return can_token(None, TokenType.IDENTIFIER, token)
         
         if c in ('\'', '"'):
-            start_pos = self.getCurPos()
-            return can_token(start_pos, TokenType.STRING, self.scan_short_string())
+            return can_token(None, TokenType.STRING, self.scan_short_string())
         
         if c.isdigit():
-            start_pos = self.getCurPos()
             token = self.scan_number()
-            return can_token(start_pos, TokenType.NUM, token)
+            return can_token(None, TokenType.NUM, token)
 
         if c == '+':
-            start_pos = self.getCurPos()
             self.next(1)
-            return can_token(start_pos, TokenType.OP_ADD, c)
+            return can_token(None, TokenType.OP_ADD, c)
 
         if c == '-':
-            start_pos = self.getCurPos()
             self.next(1)
-            return can_token(start_pos, TokenType.OP_MINUS, c)
+            return can_token(None, TokenType.OP_MINUS, c)
 
         if c == '*':
-            start_pos = self.getCurPos()
             if self.check('**'):
                 self.next(2)
-                return can_token(start_pos, TokenType.OP_POW, c)
+                return can_token(None, TokenType.OP_POW, c)
             else:
                 self.next(1)
-                return can_token(start_pos, TokenType.OP_MUL, c)
+                return can_token(None, TokenType.OP_MUL, c)
 
         if c == '/':
-            start_pos = self.getCurPos()
             if self.check('//'):
                 self.next(2)
-                return can_token(start_pos, TokenType.OP_IDIV, '//')
+                return can_token(None, TokenType.OP_IDIV, '//')
             else:
                 self.next(1)
-                return can_token(start_pos, TokenType.OP_DIV, c)
+                return can_token(None, TokenType.OP_DIV, c)
 
         if c == '&':
-            start_pos = self.getCurPos()
             self.next(1)
-            return can_token(start_pos, TokenType.OP_BAND, c)
+            return can_token(None, TokenType.OP_BAND, c)
 
         if c == '^':
-            start_pos = self.getCurPos()
             self.next(1)
-            return can_token(start_pos, TokenType.OP_WAVE, c)
+            return can_token(None, TokenType.OP_WAVE, c)
 
         if c == ',':
-            start_pos = self.getCurPos()
             self.next(1)
-            return can_token(start_pos, TokenType.SEP_COMMA, ',')
+            return can_token(None, TokenType.SEP_COMMA, ',')
 
         if c == '#':
-            start_pos = self.getCurPos()
             if self.check('##'):
                 self.next(2)
-                return can_token(start_pos, TokenType.KEYWORD, '##')
+                return can_token(None, TokenType.KEYWORD, '##')
 
             if self.check('#XD'):
                 token = self.scan_python_expr()
-                return can_token(start_pos, TokenType.CALL_NATIVE_EXPR, token)
+                return can_token(None, TokenType.CALL_NATIVE_EXPR, token)
 
         self.error(f"\033[0;31m濑嘢!!!\033[0m:睇唔明嘅Token: `{c}`")
 
 def cantonese_token(file: str, code: str) -> list:
     os.environ[f"{file}_SOURCE"] = code
-    code = remove_comment(code)
     lex: lexer = lexer(file, code, keywords)
     tokens: list = []
 
