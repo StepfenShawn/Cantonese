@@ -14,19 +14,9 @@ def exp_type(type):
 class ParserUtil:
 
     @staticmethod
-    def get_type(token : can_token) -> TokenType:
-        return token.typ
-
-    @staticmethod
-    def get_token_value(token : can_token) -> str:
-        return token.value
-
-    @staticmethod
-    def parse_exp(cur_parser: ParserBase, parser: ParserBase, by, dontskip=False):
+    def parse_exp(cur_parser: ParserBase, parser: ParserBase, by):
         if (hasattr(parser, "parse_%s" % by.__type__)):
             res_exp = getattr(parser, "parse_%s" % by.__type__)()
-            if not dontskip:
-                cur_parser.skip(parser.pos)
             return res_exp
         else:
             raise Exception(\

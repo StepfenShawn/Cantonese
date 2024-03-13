@@ -67,7 +67,7 @@ Print numbers from 1 to 100:
 落操场玩跑步
     介紹返: |start| 係 |start + 1|
     畀我睇下 |start| 点样先?
-    如果 |start >= 100| 嘅话 -> {
+    如果 |start >= 100| 嘅话 => {
         饮茶先啦
     }
 玩到 |结束| 为止
@@ -77,15 +77,15 @@ You can also use `For` Loop:
 ```
 |A| 从 1 行到 100
     畀我睇下 |A| 点样先?
-行晒
+到步
 ```
 ### <a name="6">If statement</a>
 ```
 介紹返: |A| 係 2
-如果 |A 係 2| 嘅话 -> {
+如果 |A 係 2| 嘅话 => {
     畀我睇下 "A 係 2" 点样先?
 }
-唔係 嘅话 -> {
+唔係 嘅话 => {
     畀我睇下 "A 唔係 2" 点样先?
 }
 ```
@@ -217,8 +217,8 @@ You will get:
 Define two list and calculate the correlation coefficient:  
 ```
 使下 math
-|2.165, 1.688, 1.651, 2.229| 拍住上 -> |A|
-|2.060, 1.822, 1.834, 2.799| 拍住上 -> |B|
+|2.165, 1.688, 1.651, 2.229| 拍住上 => |A|
+|2.060, 1.822, 1.834, 2.799| 拍住上 => |B|
 畀我睇下 |A同B有几衬| 点样先？
 ```
 You will get:  
@@ -232,7 +232,7 @@ KNN algorithm in Cantonese:
 |[5, 1], [4, 0], [1, 3], [0, 4]| 拍住上 -> |数据|
 |'动作片', '动作片', '科幻片', '科幻片'| 拍住上 -> |标签|
 介紹返: |K| 係 3
-嗌 KNN 过嚟估下 -> |[3, 0]|
+嗌 KNN 过嚟估下 => |[3, 0]|
 ```
 You will get:
 ```
@@ -243,7 +243,7 @@ Linear regression:
 使下 math
 |300.0 , 400.0 , 400.0 , 550.0 , 720.0 , 850.0 , 900.0 , 950.0| 拍住上 -> |X|
 |300.0 , 350.0 , 490.0 , 500.0 , 600.0 , 610.0 , 700.0 , 660.0| 拍住上 -> |Y|
-嗌 L_REG 过嚟估下 -> |900.0|
+嗌 L_REG 过嚟估下 => |900.0|
 ```
 You will get:
 ```
@@ -297,13 +297,13 @@ The first App `HelloWord` in Cantonese:
 使下 kivy
 咩係 HelloApp?
     佢个老豆叫 App
-    佢识得 |HelloWorld| -> {
-        |同我show| 下 -> "Hello World" @ |做嘢|
+    佢识得 |HelloWorld| => {
+        |同我show| 下 => "Hello World" @ |做嘢|
         还数 |做嘢|
     }
 明白未啊?
 
-|App运行| 下 -> |HelloApp, HelloApp().HelloWorld|
+|App运行| 下 => |HelloApp, HelloApp().HelloWorld|
 ```
 ![App](img/HelloApp.jpg)  
 

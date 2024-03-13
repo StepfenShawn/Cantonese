@@ -61,7 +61,7 @@ def cantonese_run(code: str, is_to_py : bool, file : str,
         show_pretty_lex(tokens)
         exit()
 
-    stats = can_parser.StatParser(tokens).parse_stats()
+    stats = can_parser.StatParser((tokens, [])).parse_stats()
 
     if Options.dump_ast:
         show_pretty_ast(stats)

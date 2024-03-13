@@ -1,26 +1,14 @@
 import re
-from can_source.can_keywords import *
-from can_source.util.infoprinter import ErrorPrinter
+from typing import Generator
 from collections import namedtuple
-
+from contextlib import contextmanager
 import zhconv
 import os
 
+from can_source.can_keywords import *
+from can_source.util.infoprinter import ErrorPrinter
+
 Pos = namedtuple('Pos', ['line', 'offset', 'end_line', 'end_offset'])
-
-def pos_tracker(func):
-    def wrapper(self, *args, **kwargs): 
-        
-        self.skip_space_or_comment()
-
-        start_line = self.line
-        offset = self.offset
-        tk = func(self, *args, **kwargs)
-        end_line = self.line
-        end_offset = self.offset
-        tk.pos = Pos(line=start_line, offset=offset, end_line=end_line, end_offset=end_offset)
-        return tk
-    return wrapper
 
 # Lazy options
 def getCtxByLine(path: str, line: int) -> str:
@@ -72,6 +60,10 @@ class lexer:
                    offset=self.offset,
                    end_line=None,
                    end_offset=None)
+
+    @property
+    def line_and_offset(self):
+        return self.line, self.offset
 
     def next(self, n: int):
         sth = self.code[:n]
@@ -153,8 +145,16 @@ class lexer:
         p.show()
         exit()
 
-    @pos_tracker
-    def get_token(self) -> can_token:
+    @contextmanager
+    def get_token(self):
+        self.skip_space_or_comment()
+        start_line, offset = self.line_and_offset
+        tk = self.consume_token()
+        end_line, end_offset = self.line_and_offset
+        tk.pos = Pos(line=start_line, offset=offset, end_line=end_line, end_offset=end_offset)
+        yield tk
+
+    def consume_token(self) -> can_token:
         if len(self.code) == 0:
             return can_token(self.getCurPos(), TokenType.EOF, 'EOF')
 
@@ -191,7 +191,7 @@ class lexer:
         if c == '-':
             if self.check('->'):
                 self.next(2)
-                return can_token(None, TokenType.KEYWORD, kw_do)
+                return can_token(None, TokenType.KEYWORD, kw_dot)
             else:
                 self.next(1)
                 return can_token(None, TokenType.OP_MINUS, '-')
@@ -369,14 +369,12 @@ class lexer:
 
         self.error(f"\033[0;31m濑嘢!!!\033[0m:睇唔明嘅Token: `{c}`")
 
-def cantonese_token(file: str, code: str) -> list:
+def cantonese_token(file: str, code: str) -> Generator:
     os.environ[f"{file}_SOURCE"] = code
     lex: lexer = lexer(file, code, keywords)
-    tokens: list = []
 
     while True:
-        token = lex.get_token()
-        tokens.append(token)
-        if token.typ == TokenType.EOF:
-            break
-    return tokens
+        with lex.get_token() as token:
+            yield token
+            if token.typ == TokenType.EOF:
+                break

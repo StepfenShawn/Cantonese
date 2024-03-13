@@ -12,7 +12,7 @@ stat ::= ';' |
       | ['有條計仔' parlist '=>' parlist '話你知'] function_def_stmt
       | lambda_functoindef ['@' idlist]
       | '&&' idlist '喺' explist '=>' '{' block '}'
-      | id '从' exp '行到' exp block '行晒'
+      | id '从' exp '行到' exp block '到步'
       | '起底' args
       | '如果' exp '嘅话' '->' '{' block '}' [定係 exp 嘅话 '->' '{' block '}'] ['唔係嘅话' '->' '{' block '}']
       | 睇L住 id '=>' '{' matchblock '}'
