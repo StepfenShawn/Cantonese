@@ -243,7 +243,7 @@ class ExpParser(ParserBase):
             return self.parse_mapcons()
 
         # lambda function
-        elif tk.value == '$$':
+        elif tk.value == "$$":
             self.skip_once()
             return self.parse_functiondef_expr()
 
@@ -273,11 +273,6 @@ class ExpParser(ParserBase):
             name = next_tk.value
             self.skip_once()
             exp = can_ast.IdExp(name)
-        elif next_tk.typ == TokenType.SEPCIFIC_ID_BEG:
-            self.skip_once()
-            name = self.get_next_token_of_kind(TokenType.IDENTIFIER).value
-            exp = can_ast.SpecificIdExp(name)
-            self.get_next_token_of_kind(TokenType.SEPICFIC_ID_END)
         # '(' exp ')'
         elif next_tk.typ == TokenType.SEP_LPAREN:
             exp = self.parse_parens_exp()
@@ -327,7 +322,7 @@ class ExpParser(ParserBase):
             return can_ast.MapExp("")
         else:
             exps = self.parse_exp_list()
-            self.get_next_token_of_kind(TokenType.SEP_RCURLY, 0)
+            self.get_next_token_of_kind(TokenType.SEP_RCURLY)
             return can_ast.MapExp(exps)
         
     def finish_prefixexp(self, exp : can_ast.AST):
@@ -356,10 +351,6 @@ class ExpParser(ParserBase):
             elif kind == TokenType.OP_ASSIGN:
                 self.skip_once()
                 exp = can_ast.AssignExp(exp, self.parse_exp())
-            # TODO: Fix bugs here
-            elif value in [kw_get_value]:
-                self.skip_once()
-                exp = can_ast.AssignExp(self.parse_exp(), exp)
             else:
                 break
         return exp
@@ -426,17 +417,19 @@ class ExpParser(ParserBase):
                         self.look_ahead().value))
             self.get_next_token_of('|')
             return ids
+        
+        else:
+            return None
 
     """
-    lambda_functoindef ::= '$$' idlist '->' block '搞掂'
+    lambda_functoindef ::= '$$' idlist '->' exp
     """
     @exp_type('functiondef_expr')
     def parse_functiondef_expr(self):
         idlist : list = self.parse_idlist()
         blocks : list = []
         self.get_next_token_of(kw_dot)
-        blocks.append(self.parse_exp())
-        self.get_next_token_of(kw_func_end)
+        blocks = [self.parse_exp()]
         return can_ast.LambdaExp(idlist, blocks)
 
     @exp_type('if_else_expr')

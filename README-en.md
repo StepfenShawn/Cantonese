@@ -43,7 +43,7 @@ The computer can read the Cantonese you write and you can operate (abuse) the co
 ### <a name="2">Hello World</a>
 The first program written in Cantonese: `Hello World`:  
 ```
-畀我睇下 " Hello World! " 点样先?
+畀我睇下 " Hello World! " 點樣先?
 ```
 ### <a name="3">Assignment statement </a>
 ```
@@ -66,7 +66,7 @@ Print numbers from 1 to 100:
 介紹返: |结束| 係 唔啱
 落操场玩跑步
     介紹返: |start| 係 |start + 1|
-    畀我睇下 |start| 点样先?
+    畀我睇下 |start| 點樣先?
     如果 |start >= 100| 嘅话 => {
         饮茶先啦
     }
@@ -76,23 +76,23 @@ Print numbers from 1 to 100:
 You can also use `For` Loop:  
 ```
 |A| 从 1 行到 100
-    畀我睇下 |A| 点样先?
+    畀我睇下 |A| 點樣先?
 到步
 ```
 ### <a name="6">If statement</a>
 ```
 介紹返: |A| 係 2
 如果 |A 係 2| 嘅话 => {
-    畀我睇下 "A 係 2" 点样先?
+    畀我睇下 "A 係 2" 點樣先?
 }
 唔係 嘅话 => {
-    畀我睇下 "A 唔係 2" 点样先?
+    畀我睇下 "A 唔係 2" 點樣先?
 }
 ```
 ### <a name="7">Function</a>
 Factorial algorithm in Cantonese:  
 ```
-$factorial |项数| 要做咩:
+$factorial |项数| 點部署:
     如果 |项数 係 0| 嘅话 -> {
         还数 1
     }
@@ -103,7 +103,7 @@ $factorial |项数| 要做咩:
 ```  
 Get the max value:  
 ```
-$get_max |数字1, 数字2| 要做咩:
+$get_max |数字1, 数字2| 點部署:
     如果 |数字1 比唔上 数字2| 嘅话 -> {
         还数 |数字2|
     }
@@ -139,13 +139,13 @@ try-except-finally:
     介紹返: |A| 係 |B|
 }
 揾到 |NameError| 嘅话 -> {
-    畀我睇下 "揾到NameError" 点样先？
+    畀我睇下 "揾到NameError" 點樣先？
 }
 执手尾 -> {
-    畀我睇下 "执手尾" 点样先？
+    畀我睇下 "执手尾" 點樣先？
     介紹返: |A| 係 1
     介紹返: |B| 係 1
-    畀我睇下 |A, B| 点样先？
+    畀我睇下 |A, B| 點樣先？
 }
 ``` 
 ### <a name="11">Call Python library</a>
@@ -157,13 +157,13 @@ try-except-finally:
 Declare object `duck` and extend from `object`, define two methods:  `游水` and `睡觉`, and attribute: `性别`
 ```
 咩係 |duck|?
-    佢个老豆叫 |object|
+    佢個老豆叫 |object|
     佢嘅 |性别| 係 "公"
-    佢识得 |游水| -> {
-        畀我睇下 "Duck is swimming" 点样先？
+    佢識得 |游水| -> {
+        畀我睇下 "Duck is swimming" 點樣先？
     }
-    佢识得 |睡觉| -> {
-        畀我睇下 "Duck is sleeping" 点样先？
+    佢識得 |睡觉| -> {
+        畀我睇下 "Duck is sleeping" 點樣先？
     }
 明白未啊?
 ```  
@@ -193,7 +193,7 @@ Stack: [1,2]
 ### <a name="15">Get the time</a>
 ```
 使下 datetime
-畀我睇下 |宜家几点()| 点样先？
+畀我睇下 |宜家几点()| 點樣先？
 ```
 You will get:  
 ```
@@ -219,7 +219,7 @@ Define two list and calculate the correlation coefficient:
 使下 math
 |2.165, 1.688, 1.651, 2.229| 拍住上 => |A|
 |2.060, 1.822, 1.834, 2.799| 拍住上 => |B|
-畀我睇下 |A同B有几衬| 点样先？
+畀我睇下 |A同B有几衬| 點樣先？
 ```
 You will get:  
 ```
@@ -296,8 +296,8 @@ The first App `HelloWord` in Cantonese:
 ```
 使下 kivy
 咩係 HelloApp?
-    佢个老豆叫 App
-    佢识得 |HelloWorld| => {
+    佢個老豆叫 App
+    佢識得 |HelloWorld| => {
         |同我show| 下 => "Hello World" @ |做嘢|
         还数 |做嘢|
     }

@@ -7,6 +7,7 @@ import os
 
 from can_source.can_keywords import *
 from can_source.util.infoprinter import ErrorPrinter
+from can_source.can_marcos import explore_all_marcos
 
 Pos = namedtuple('Pos', ['line', 'offset', 'end_line', 'end_offset'])
 
@@ -169,20 +170,12 @@ class lexer:
                 return can_token(None, TokenType.OP_BAND, '&')
 
         if c == '|':
-            if self.check('|>'):
-                self.next(2)
-                return can_token(None, TokenType.SEPICFIC_ID_END, '|>')
-            else:
-                self.next(1)
-                return can_token(None, TokenType.KEYWORD, '|')
+            self.next(1)
+            return can_token(None, TokenType.BRACK, '|')
 
         if c == '%':
-            if self.check('%%'):
-                self.next(2)
-                return can_token(None, TokenType.KEYWORD, kw_func_end)
-            else:
-                self.next(1)
-                return can_token(None, TokenType.OP_MOD, '%')
+            self.next(1)
+            return can_token(None, TokenType.OP_MOD, '%')
 
         if c == '~':
             token = self.scan_python_expr()
@@ -230,10 +223,6 @@ class lexer:
                 self.next(3)
                 return can_token(None, TokenType.OP_CONCAT, '<->')
 
-            elif self.check('<$>'):
-                self.next(3)
-                return can_token(None, TokenType.KEYWORD, '<$>')
-
             elif self.check('<='):
                 self.next(2)
                 return can_token(None, TokenType.OP_LE, '<=')
@@ -241,10 +230,6 @@ class lexer:
             elif self.check('<<'):
                 self.next(2)
                 return can_token(None, TokenType.OP_SHL, '<<')
-
-            elif self.check('<|'):
-                self.next(2)
-                return can_token(None, TokenType.SEPCIFIC_ID_BEG, '<|')
 
             else:
                 self.next(1)
@@ -370,6 +355,7 @@ class lexer:
         self.error(f"\033[0;31m濑嘢!!!\033[0m:睇唔明嘅Token: `{c}`")
 
 def cantonese_token(file: str, code: str) -> Generator:
+    code = explore_all_marcos(code)
     os.environ[f"{file}_SOURCE"] = code
     lex: lexer = lexer(file, code, keywords)
 

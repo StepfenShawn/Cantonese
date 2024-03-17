@@ -108,10 +108,6 @@ class LambdaExp(Exp):
     blocks: List[Exp]
 
 @dataclass
-class SpecificIdExp(Exp):
-    id: Exp
-
-@dataclass
 class ClassSelfExp(Exp):
     exp: Exp
 

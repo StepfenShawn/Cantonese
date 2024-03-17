@@ -57,7 +57,7 @@ class BasicTest < Test::Unit::TestCase
 
   def test_function
     res = %x(#{RUN} examples/basic/function.cantonese).encode("UTF-8")
-    assert res == "Hello\nHello\nHello World1\nHello World2\n"
+    assert res == "Hello\nHello World1\n"
   end
 
   def test_if

@@ -28,7 +28,7 @@ logo = "\033[0;34m" + r"""
 / /___/ /_/ / / / / /_/ /_/ / / / /  __(__  /  __/
 \____/\__,_/_/ /_/\__/\____/_/ /_/\___/____/\___/ 
          
-""" + "\033[0m" + "Hope you enjoy it.\nSource: https://github.com/StepfenShawn/Cantonese\n鐘意嘅話star埋我啊! Thank you!" 
+""" + "\033[0m" + "Keep cantonese alive!\nSource: https://github.com/StepfenShawn/Cantonese\n鐘意嘅話star埋我啊! Thank you!" 
 
 class Options:
     dump_ast = False

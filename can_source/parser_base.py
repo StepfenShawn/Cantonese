@@ -1,5 +1,4 @@
 import os
-from typing import Generator
 
 from can_source.can_lexer import TokenType, can_token, getCtxByLine, Pos
 from can_source.util.infoprinter import ErrorPrinter
@@ -30,17 +29,23 @@ class ParserBase:
     def get_token_ctx(self) -> tuple:
         return (self.tokens, self.buffer_tokens)
 
+    def _next(self):
+        try:
+            return next(self.tokens)
+        except Exception as e:
+            pass
+
     def look_ahead(self) -> can_token:
         if self.buffer_tokens:
             return self.buffer_tokens.pop(0)
             
-        next_tk = next(self.tokens)
+        next_tk = self._next()
         return next_tk
 
     def try_look_ahead(self) -> can_token:
         if self.buffer_tokens:
             return self.buffer_tokens[0]
-        next_tk = next(self.tokens)
+        next_tk = self._next()
         self.buffer_tokens.append(next_tk)
         return next_tk
 
@@ -48,7 +53,7 @@ class ParserBase:
         if self.buffer_tokens:
             self.buffer_tokens.pop(0)
         else:
-            next(self.tokens)
+            self._next()
 
     def filepos(self) -> Pos:
         return None

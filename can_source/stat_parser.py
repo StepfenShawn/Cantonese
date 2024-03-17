@@ -18,7 +18,6 @@ class StatParser(ParserBase):
     def parse_var_list(self):
         exp = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_prefixexp)
         var_list : list = [self.check_var(exp)]
-    
         while self.try_look_ahead().typ == TokenType.SEP_COMMA:
             self.skip_once()
             exp = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_prefixexp)
@@ -36,159 +35,115 @@ class StatParser(ParserBase):
     
     @pos_tracker
     def parse(self):
-        tk = self.look_ahead()
+        tk = self.try_look_ahead()
         kind, tk_value = tk.typ, tk.value
 
         if kind == TokenType.KEYWORD:
             if tk_value == kw_print:
-                return self.parse_print_stat()
+                self.skip_once(); return self.parse_print_stat()
             
             elif tk_value in [kw_exit, kw_exit_1, kw_exit_2]:
-                return self.parse_exit_stat()
+                self.skip_once(); return self.parse_exit_stat()
             
             elif tk_value == kw_assign:
-                return self.parse_assign_stat()
+                self.skip_once(); return self.parse_assign_stat()
             
             elif tk_value == kw_if:
-                return self.parse_if_stat()
+                self.skip_once(); return self.parse_if_stat()
             
             elif tk_value == kw_import:
-                return self.parse_import_stat()
+                self.skip_once(); return self.parse_import_stat()
             
             elif tk_value == kw_global_set:
-                return self.parse_global_stat()
+                self.skip_once(); return self.parse_global_stat()
             
             elif tk_value == kw_break:
-                return self.parse_break_stat()
+                self.skip_once(); return self.parse_break_stat()
 
             elif tk_value == kw_continue:
-                return self.parse_continue_stat()
+                self.skip_once(); return self.parse_continue_stat()
             
             elif tk_value == kw_while_do:
-                return self.parse_while_stat()
-            
-            elif tk_value == '|':
-                if self.try_look_ahead().value == '|':
-                    prefix_exps = []
-                else:
-                    exp_parser = self.ExpParser(self.get_token_ctx())
-                    prefix_exps = exp_parser.parse_exp_list()
-                    del exp_parser
-                
-                self.get_next_token_of('|')
-                next_tk = self.try_look_ahead()
-                if next_tk.value in [kw_from]:
-                    return self.parse_for_stat(prefix_exps)
-                
-                elif next_tk.value in [kw_call_begin]:
-                    return self.parse_func_call_stat(prefix_exps)
-                
-                elif next_tk.value in [kw_lst_assign]:
-                    return self.parse_list_assign_stat(prefix_exps)
-
-                elif next_tk.value in [kw_set_assign]:
-                    return self.parse_set_assign_stat(prefix_exps)
-                
-                elif next_tk.value == kw_do:
-                    return self.parse_class_method_call_stat(prefix_exps) 
-
-                else:
-                    self.error(next_tk, info=f"\033[0;31m濑嘢!!!\033[0m: 個`{next_tk.value}`好似有D唔三唔四", 
-                        tips=f" 幫緊你只不過有心無力 :(")
-
-            elif tk_value == kw_func_ty_define:
-                return self.parse_func_def_with_type_stat()
-
-            elif tk_value == '<$>':
-                return self.parse_match_mode_func_def_stat()
-
-            elif tk_value == kw_function:
-                return self.parse_func_def_stat()
-
-            elif tk_value == '$$':
-                return self.parse_lambda_def_stat()
+                self.skip_once(); return self.parse_while_stat()
 
             elif tk_value == kw_pass:
-                return self.parse_pass_stat()
+                self.skip_once(); return self.parse_pass_stat()
             
             elif tk_value == kw_return:
-                return self.parse_return_stat()
+                self.skip_once(); return self.parse_return_stat()
             
             elif tk_value == kw_del:
-                return self.parse_del_stat()
+                self.skip_once(); return self.parse_del_stat()
 
             elif tk_value == kw_type:
-                return self.exp_type_stat()
+                self.skip_once(); return self.exp_type_stat()
 
             elif tk_value == kw_assert:
-                return self.parse_assert_stat()
+                self.skip_once(); return self.parse_assert_stat()
 
             elif tk_value == kw_try:
-                return self.parse_try_stat()
+                self.skip_once(); return self.parse_try_stat()
 
             elif tk_value == kw_raise:
-                return self.parse_raise_stat()
+                self.skip_once(); return self.parse_raise_stat()
 
             elif tk_value == kw_cmd:
-                return self.parse_cmd_stat()
-
-            elif tk_value == kw_class_def:
-                return self.parse_class_def()
-
-            elif tk_value == kw_call:
-                return self.parse_call_stat()
+                self.skip_once(); return self.parse_cmd_stat()
 
             elif tk_value == kw_stackinit:
-                return self.parse_stack_init_stat()
+                self.skip_once(); return self.parse_stack_init_stat()
 
             elif tk_value == kw_push:
-                return self.parse_stack_push_stat()
+                self.skip_once(); return self.parse_stack_push_stat()
 
             elif tk_value == kw_pop:
-                return self.parse_stack_pop_stat()
+                self.skip_once(); return self.parse_stack_pop_stat()
 
             elif tk_value == kw_match:
-                return self.parse_match_stat()
+                self.skip_once(); return self.parse_match_stat()
 
             elif tk_value == kw_call_native:
-                return self.parse_call_native_stat()
+                self.skip_once(); return self.parse_call_native_stat()
 
             elif tk_value == '&&':
-                return self.parse_for_each_stat()
+                self.skip_once(); return self.parse_for_each_stat()
 
             elif tk_value == kw_model:
-                return self.parse_model_new_stat()
+                self.skip_once(); return self.parse_model_new_stat()
 
             elif tk_value == kw_turtle_beg:
-                return self.parse_turtle_stat()
+                self.skip_once(); return self.parse_turtle_stat()
+
+            elif tk_value == kw_pls:
+                self.skip_once(); return self.parse_pls_stat()
 
             else:
                 self.error(tk, info=f"\033[0;31m濑嘢!!!\033[0m: 個`{tk.value}`好似有D唔三唔四", 
                     tips=f" 幫緊你只不過有心無力 :(")
 
-        elif kind == TokenType.IDENTIFIER:
-            next_tk = self.try_look_ahead()
-            prefix_exps = [can_ast.IdExp(tk.value)]
-            if next_tk.value in [kw_from]:
-                return self.parse_for_stat(prefix_exps)
-            
-            elif next_tk.value in [kw_call_begin]:
-                return self.parse_func_call_stat(prefix_exps)
-
-            elif next_tk.value in [kw_do]:
-                return self.parse_class_method_call_stat(prefix_exps)
-
-            else:
-                self.error(next_tk, info=f"\033[0;31m濑嘢!!!\033[0m: 個`{next_tk.value}`好似有D唔三唔四", 
-                    tips=f" 幫緊你只不過有心無力 :(")
                 
         elif kind == TokenType.EOF:
             return "EOF"
 
         else:
-            self.error(tk, info=f"\033[0;31m濑嘢!!!\033[0m: 個`{tk.value}`好似有D唔三唔四", 
-                tips=f" 幫緊你只不過有心無力 :(")
-                
+            exp_parser = self.ExpParser(self.get_token_ctx())
+            prefix_exp = exp_parser.parse_exp()
+            next_tk = self.try_look_ahead()
+            if next_tk.value == kw_from:
+                return self.parse_for_stat(prefix_exp)
+            
+            elif next_tk.value == kw_get_value:
+                return self.parse_suffix_assign_stat(prefix_exp)
+            
+            elif next_tk.value in [kw_lst_assign]:
+                return self.parse_list_assign_stat(prefix_exp)
+
+            elif next_tk.value in [kw_set_assign]:
+                return self.parse_set_assign_stat(prefix_exp)
+            # kw_laa1
+            else:
+                return self.parse_class_method_call_stat(prefix_exp)
+    
     def parse_stats(self):
         stats = []
         while True:
@@ -214,7 +169,7 @@ class StatParser(ParserBase):
         exp_list : list= []
         while self.try_look_ahead().value != kw_end_assign:
             var_list.append(self.parse_var_list()[0])
-            self.get_next_token_of([kw_is, kw_is_2, kw_is_3])
+            self.get_next_token_of(kw_is)
             exp_list.append(ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp_list)[0])
         
         # Skip the SEP_RCURLY
@@ -222,16 +177,21 @@ class StatParser(ParserBase):
         return can_ast.AssignBlockStat(var_list, exp_list, self.cur_lexer_pos)
 
     def parse_assign_stat(self):
-        if self.try_look_ahead().value != kw_do:
-            var_list = self.parse_var_list()
-            self.get_next_token_of([kw_is, kw_is_2, kw_is_3])
-            exp_list = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp_list)
-            return can_ast.AssignStat(var_list, exp_list, self.cur_lexer_pos)
-        else:
+        if self.try_look_ahead().value == kw_do:
             # Skip the kw_do
             self.skip_once()
             return self.parse_assign_block()
-            # The SEP_RCURLY will be checked in self.parse_assign_block()
+        elif self.try_look_ahead().value == kw_function:
+            self.skip_once()
+            return self.parse_func_def_stat()
+        else:
+            var_list = self.parse_var_list()
+            self.get_next_token_of(kw_is)
+            if self.try_look_ahead().value == kw_class_def:
+                self.skip_once(); return self.parse_class_def(class_name=var_list[0])
+            else:            
+                exp_list = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp_list)
+                return can_ast.AssignStat(var_list, exp_list, self.cur_lexer_pos)
 
     def parse_exit_stat(self):
         return can_ast.ExitStat(self.cur_lexer_pos)
@@ -311,7 +271,7 @@ class StatParser(ParserBase):
     def parse_for_stat(self, prefix_exp : ExpParser):
         blocks : list = []
 
-        id = prefix_exp[0]
+        id = prefix_exp
         
         self.get_next_token_of(kw_from)
 
@@ -328,46 +288,7 @@ class StatParser(ParserBase):
 
         return can_ast.ForStat(id, from_exp, to_exp, blocks, self.cur_lexer_pos)
 
-    def parse_func_def_with_type_stat(self):
-        args_type : list = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_parlist)
-        args_type = [] if args_type == None else args_type
-
-        self.get_next_token_of(kw_do)
-        
-        rets_type = None
-        if self.try_look_ahead().value != kw_func_ty_end:
-            rets_type = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_idlist)
-
-        rets_type = [] if rets_type == None else rets_type
-
-        self.get_next_token_of(kw_func_ty_end)
-        self.get_next_token_of(kw_function)
-
-        return self.parse_func_def_stat(decl_args_type=args_type, decl_ret_type=rets_type)
-
-    def parse_match_mode_func_def_stat(self):
-        args_list : list = []
-        block_list : list = []
-        while self.try_look_ahead().value == '<$>':
-            self.skip_once()
-
-            name = self.get_next_token_of_kind(TokenType.IDENTIFIER).value           
-            args : list = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp_list)
-            args = [] if args == None else args
-
-            args_list.append(args)
-
-            self.get_next_token_of("即係")
-            self.get_next_token_of([kw_do])
-            body = ParserUtil.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp)
-
-            block_list.append(body)
-
-            self.get_next_token_of([kw_func_end])
-        
-        return can_ast.MatchModeFuncDefStat(can_ast.IdExp(name), args_list, block_list, self.cur_lexer_pos)
-
-    def parse_func_def_stat(self, decl_args_type = [], decl_ret_type = []):
+    def parse_func_def_stat(self):
         name = self.get_next_token_of_kind(TokenType.IDENTIFIER).value        
         exp_parser = self.ExpParser(self.get_token_ctx())
         args : list = exp_parser.parse_parlist()
@@ -383,55 +304,35 @@ class StatParser(ParserBase):
         self.skip_once()
 
         return can_ast.FunctionDefStat(can_ast.IdExp(name), args, blocks, 
-                                    decl_args_type, decl_ret_type, self.cur_lexer_pos)
+                                    self.cur_lexer_pos)
 
-    def parse_func_call_stat(self, prefix_exps : can_ast.AST):
-        func_name = prefix_exps[0]
-
-        self.get_next_token_of(kw_call_begin)
-        self.get_next_token_of(kw_do)
-
-        exp_parser = self.getExpParser()
-        args = exp_parser.parse_args()
-
-        if self.try_look_ahead().value == kw_get_value:
-            self.skip_once()
-            var_list = self.parse_var_list()
-            return can_ast.AssignStat(var_list,
-                    [can_ast.FuncCallExp(func_name, args)],
-                    self.cur_lexer_pos)
-        else:
-            return can_ast.FuncCallStat(func_name, args, self.cur_lexer_pos)
-
-    def parse_class_method_call_stat(self, prefix_exps : can_ast.AST):
-        name_exp = prefix_exps[0]
-
-        self.get_next_token_of(kw_do)
-
-        exp_parser = self.getExpParser()
-        method : can_ast.AST = exp_parser.parse_exp()
-
-        exp_parser = self.getExpParser()
-        args : list = exp_parser.parse_args()
+    def parse_suffix_assign_stat(self, prefix_exp: can_ast.AST):
+        self.skip_once()
+        var_list = self.parse_var_list()
+        return can_ast.AssignStat(var_list,
+                [prefix_exp],
+                self.cur_lexer_pos)
     
-        return can_ast.MethodCallStat(name_exp, method, args, self.cur_lexer_pos)
-    
-    def parse_list_assign_stat(self, prefix_exp : can_ast.AST):
-        self.get_next_token_of([kw_lst_assign])
+    def parse_class_method_call_stat(self, prefix_exp: can_ast.AST):
+        self.get_next_token_of(kw_laa1)
+        return can_ast.CallStat(prefix_exp, self.cur_lexer_pos)
+
+    def parse_list_assign_stat(self, prefix_exp: can_ast.AST):
+        self.get_next_token_of(kw_lst_assign)
         self.get_next_token_of(kw_do)
         varlist = self.parse_var_list()
 
         return can_ast.AssignStat(varlist, 
-                [can_ast.ListExp(prefix_exp)],
+                [prefix_exp],
                 self.cur_lexer_pos)
 
     def parse_set_assign_stat(self, prefix_exp : can_ast.AST):
-        self.get_next_token_of([kw_set_assign])
+        self.get_next_token_of(kw_set_assign)
         self.get_next_token_of(kw_do)
         varlist = self.parse_var_list()
 
         return can_ast.AssignStat(varlist, 
-                [can_ast.MapExp(prefix_exp)],
+                [prefix_exp],
                 self.cur_lexer_pos)
 
     def parse_pass_stat(self):
@@ -528,10 +429,8 @@ class StatParser(ParserBase):
 
         return can_ast.CmdStat(args, self.cur_lexer_pos)
 
-    def parse_class_def(self):        
-        exp_parser = self.getExpParser()
-        class_name : can_ast.AST = exp_parser.parse_exp()
-        
+    def parse_class_def(self, class_name: can_ast.AST):      
+        self.get_next_token_of_kind(TokenType.SEP_LCURLY)
         self.get_next_token_of([kw_extend])
         
         exp_parser = self.getExpParser()
@@ -539,19 +438,13 @@ class StatParser(ParserBase):
 
         class_blocks = []
         
-        while self.try_look_ahead().value not in [kw_endclass]:
+        while self.try_look_ahead().typ != TokenType.SEP_RCURLY:
             class_block_parser = ClassBlockStatParser(self.get_token_ctx())
             class_blocks.append(class_block_parser.parse())
 
         self.skip_once()
 
         return can_ast.ClassDefStat(class_name, extend_name, class_blocks, self.cur_lexer_pos)
-
-    def parse_call_stat(self):
-        exp_parser = self.getExpParser()
-        exps = exp_parser.parse_exp()
-
-        return can_ast.CallStat(exps, self.cur_lexer_pos)
 
     def parse_stack_init_stat(self):
         exp_parser = self.getExpParser()
@@ -695,6 +588,11 @@ class StatParser(ParserBase):
         self.skip_once()
 
         return can_ast.TurtleStat(exp_blocks, self.cur_lexer_pos)
+
+    def parse_pls_stat(self):
+        func_name = self.getExpParser().parse_exp()
+        self.get_next_token_of(kw_laa1)
+        return can_ast.FuncCallStat(func_name, [], self.cur_lexer_pos)
 
 class ClassBlockStatParser(StatParser):
     def __init__(self, token_ctx: tuple, ExpParser = ClassBlockExpParser) -> None:

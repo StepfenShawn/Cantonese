@@ -71,8 +71,6 @@ class FunctionDefStat(Stat):
     name_exp: Exp
     args: List[Exp]
     blocks: List[Stat]
-    args_type: List[Exp]
-    ret_type: List[Exp]
     pos: object
 
 @dataclass
@@ -105,13 +103,6 @@ class ClassDefStat(Stat):
     class_name: Exp
     class_extend: List[Exp]
     class_blocks: List[Stat]
-    pos: object
-
-@dataclass
-class MatchModeFuncDefStat(Stat):
-    func_name: Exp
-    args_list: List[Exp]
-    block_list: List[Stat]
     pos: object
 
 @dataclass

@@ -149,15 +149,6 @@ class Codegen:
             s = self.codegen_expr(exp.exp1) + ' = ' + self.codegen_expr(exp.exp2)
             return s
 
-        elif isinstance(exp, can_parser.can_ast.SpecificIdExp):
-            s = ''
-            p_corr = re.match(r'(.*)同(.*)有幾襯', exp.id, re.M|re.I)
-            if p_corr:
-                s = " corr(" + p_corr.group(1) +", " + p_corr.group(2) + ") "
-            return s
-        else:
-            return ''
-
     def codegen_args(self, args : list) -> str:
         s = ''
         for arg in args:
@@ -182,17 +173,8 @@ class Codegen:
             res.append(name)
         return ','.join(res)
 
-    def codegen_build_in_method_or_id(self, exp : can_parser.can_ast) -> str:
-        list_build_in_method = {
-            "加啲" : "append",
-            "摞走" : "remove",
-            "散水" : "clear"
-        }
-
+    def codegen_build_in_method_or_id(self, exp: can_parser.can_ast) -> str:
         if (isinstance(exp, can_parser.can_ast.IdExp)):
-            if exp.name in list_build_in_method:
-                return list_build_in_method[exp.name]
-            else:
                 return exp.name
         else:
             return self.codegen_expr(exp)
@@ -299,43 +281,9 @@ class Codegen:
             return s
 
         elif isinstance(stat, can_parser.can_ast.FunctionDefStat):
-            if stat.args_type != [] and\
-                stat.ret_type != []:
-                # remove the '<*>'
-                stat.args_type = list(filter(lambda x : not isinstance(x, can_parser.can_ast.VarArgExp), stat.args_type))
-                assert stat.args.__len__() == stat.args_type.__len__()
-                s = ''
-                arg_decl = ''
-                for arg, arg_ty in zip(stat.args, stat.args_type):
-                    arg_decl += self.codegen_expr(arg) + " : " + '"'  + self.codegen_expr(arg_ty) + '"' + ','
-                s += self.tab + 'def ' + self.codegen_expr(stat.name_exp) + '(' + arg_decl + ') -> ' + '"'  + self.codegen_args(stat.ret_type) + '"' \
-                     + ':\n'
-                s += self.codegen_block(stat.blocks)
-
-                self.update_line_map(stat, s)
-                return s
-
-            else:
-                s = ''
-                s += self.tab + 'def ' + self.codegen_expr(stat.name_exp) + '(' + self.codegen_args(stat.args) + '):\n'
-                s += self.codegen_block(stat.blocks)
-                
-                self.update_line_map(stat, s)
-                return s
-
-        elif isinstance(stat, can_parser.can_ast.MatchModeFuncDefStat):
             s = ''
-            s += self.tab + 'def ' + self.codegen_expr(stat.func_name) + '(*args):\n'
-            for args, blocks in zip(stat.args_list, stat.block_list):
-                # TODO: support more args
-                if len(args) == 1:
-                    if isinstance(args[0], (can_parser.can_ast.NumeralExp, can_parser.can_ast.StringExp, 
-                                        can_parser.can_ast.ListExp)):
-                        s += self.tab + '\t' + 'if args[0] == '+ self.codegen_expr(args[0])  + ':\n';
-                        s += self.tab + '\t\t' + 'return ' + self.codegen_expr(blocks) + '\n'
-                    elif isinstance(args[0], can_parser.can_ast.IdExp):
-                        # TODO: use re.sub here
-                        s += self.tab + '\t' +'return ' + self.codegen_expr(blocks).replace(args[0].name, "args[0]") + '\n'
+            s += self.tab + 'def ' + self.codegen_expr(stat.name_exp) + '(' + self.codegen_args(stat.args) + '):\n'
+            s += self.codegen_block(stat.blocks)
             
             self.update_line_map(stat, s)
             return s

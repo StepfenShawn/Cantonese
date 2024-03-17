@@ -20,6 +20,10 @@ def define_func(name):
     return decorator
 
 def cantonese_lib_init() -> None:
+    
+    class aa:
+        def __getattr__(self, x):
+            return eval(x, variable)
 
     @define_func("開份文件")
     def cantonese_open(file, 模式 = 'r', 解碼 = None):
@@ -95,7 +99,7 @@ def cantonese_lib_init() -> None:
     cantonese_func_def("唔啱", False)
     cantonese_func_def("啱", True)
     cantonese_func_def("桔", None)
-
+    cantonese_func_def("阿", aa())
     cantonese_func_def("畀你啲嘢", input)
 
     cantonese_stack_init()
@@ -357,7 +361,7 @@ def cantonese_socket_init() -> None:
     def s_connect(s, port, host = socket.gethostname()):
         s.connect((host, port))
         return s
-    
+
     @define_func("收風")
     def s_recv(s, i : int):
         return s.recv(i)
@@ -643,7 +647,7 @@ lib_list = [
     LibRegister(["smtplib", "郵箱"], cantonese_smtplib_init, "stmplib"),
     LibRegister(["xml", "xml解析"], cantonese_xml_init, "xml"),
     LibRegister(["csv", "csv解析"], cantonese_csv_init, "csv"),
-    LibRegister(["os", "係統"], None, "os"),
+    LibRegister(["os", "系統"], None, "os"),
     LibRegister(["re", "正則匹配"], cantonese_re_init, "re"),
     LibRegister(["urllib", "網頁獲取"], cantonese_urllib_init, "urllib"),
     LibRegister(["requests", "網絡請求"], cantonese_requests_init, "requests"),

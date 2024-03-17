@@ -32,15 +32,14 @@ class TokenType(Enum):
     OP_AND = 28        # and
     OP_OR = 29         # or
     OP_NOT = 30        # not
-    OP_BOR = 31        # |
+    OP_BOR = 31        # <|>
     OP_IDIV = 32       # //
     KEYWORD = 33
     IDENTIFIER = 34
     STRING = 35
     NUM = 36
     CALL_NATIVE_EXPR = 37 # Call the other language,
-    SEPCIFIC_ID_BEG = 38 # <|
-    SEPICFIC_ID_END = 39 # |>
+    BRACK = 38 # |
 
 kw_print = "畀我睇下"
 kw_endprint = "點樣先"
@@ -50,8 +49,8 @@ kw_elif = "定係"
 kw_turtle_beg = "老作一下"
 kw_type = "起底"
 kw_assign = "介紹返"
-kw_end_assign = "先喇"
-kw_class_def = "咩係"
+kw_end_assign = "先啦"
+kw_class_def = "乜X"
 kw_else_or_not = "唔係"
 kw_is = "係"
 kw_if = "如果"
@@ -65,11 +64,11 @@ kw_end = "}"
 kw_pass = "咩都唔做"
 kw_while_do = "落操場玩跑步"
 kw_function = "$"
-kw_call = "用下"
+kw_pls = "好心"
+kw_laa1 = "啦"
 kw_import = "使下"
-kw_func_begin = "要做咩"
+kw_func_begin = "點部署"
 kw_func_end = "搞掂"
-kw_is_2 = "就"
 kw_assert = "諗下"
 kw_class_assign = "佢嘅"
 kw_while = "玩到"
@@ -85,14 +84,12 @@ kw_to = "行到"
 kw_endfor = "到步"
 kw_extend = "佢個老豆叫"
 kw_method = "佢識得"
-kw_endclass = "明白未啊"
 kw_cmd = "落Order"
 kw_break = "飲茶先啦"
 kw_continue = "Hea陣先"
 kw_lst_assign = "拍住上"
 kw_set_assign = "埋堆"
 kw_global_set = "Share下"
-kw_is_3 = "係"
 kw_exit_1 = "辛苦曬啦"
 kw_exit_2 = "同我躝"
 kw_stackinit = "有條仆街叫"
@@ -103,18 +100,14 @@ kw_mod_new = "過嚟估下"
 kw_class_init = "佢有啲咩"
 kw_self = "自己嘅"
 kw_call_begin = "下"
-kw_get_value = "@"
+kw_get_value = "就係"
 kw_del = "冇鳩用"
 kw_del2 = "冇撚用"
 kw_match = "睇L住"
 kw_case = "撞見"
-kw_func_ty_define = "有條計仔"
-kw_func_ty_end = "話你知"
 kw_call_native = "我係二五仔"
-kw_macro_def = "macro你個rules"
-kw_macro_end = "就咁部署"
 
-keywords = (
+keywords = [
     kw_print,
     kw_endprint,
     kw_exit,
@@ -137,11 +130,11 @@ keywords = (
     kw_pass,
     kw_while_do,
     kw_function,
-    kw_call,
+    kw_pls,
+    kw_laa1,
     kw_import,
     kw_func_begin,
     kw_func_end,
-    kw_is_2,
     kw_assert,
     kw_class_assign,
     kw_while,
@@ -157,14 +150,12 @@ keywords = (
     kw_endfor,
     kw_extend,
     kw_method,
-    kw_endclass,
     kw_cmd,
     kw_break,
     kw_continue,
     kw_lst_assign,
     kw_set_assign,
     kw_global_set,
-    kw_is_3,
     kw_exit_1,
     kw_exit_2,
     kw_stackinit,
@@ -180,17 +171,13 @@ keywords = (
     kw_case,
     kw_del,
     kw_del2,
-    kw_func_ty_define,
-    kw_func_ty_end,
     kw_call_native,
-    kw_macro_def,
-    kw_macro_end,
-)
+]
 
 syms = {'&', '&&', '|', '|>', '%', 
-    '%%', '~', '-', '->', '=', '=>',
+    '~', '-', '->', '=', '=>',
     '==>', '==', '$', '$$', '<', 
-    '<*>', '<|>', '<->', '<$>', '<=',
+    '<*>', '<|>', '<->', '<=',
     '<<', '<|', '>', '>=', '>>', '!',
     '!=', '@', '@@@', '@@', '{', '}',
     '(', ')', '[', ']', '.', '+', '-',
