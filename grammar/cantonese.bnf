@@ -6,11 +6,9 @@ stat ::= ';' |
       | '介紹返' varlist '係' (explist | class_def_stmt)
       | '介紹返' '=>' assignblock '先啦'
       | '介紹返' function_def_stmt
-      | printstmt ['@' idlist]
+      | printstmt
       | importstmt
-      | functioncall ['@' idlist]
       | '落操场玩跑步' block '玩到' exp '为止'
-      | lambda_functoindef ['@' idlist]
       | '&&' idlist '喺' explist '=>' '{' block '}'
       | id '从' exp '行到' exp block '到步'
       | '起底' args
@@ -24,9 +22,10 @@ stat ::= ';' |
       | '丢你' '=>' ['|'] id ['|']
       | '嗌' exp 过嚟估下 '=>' exp
       | '老作一下' '=>' '{' exp_list '}'
-      | exp 拍住上 '=>' ['|'] id ['|']
-      | exp 啦!
-      | 好心 exp 啦!
+      | exp '拍住上' '=>' ['|'] id ['|']
+      | exp ['啦' | '咁啦']!
+      | exp '就係' idlist
+      | 好心 exp '啦'!
       | try_stmt
       | class_def_stmt
 
@@ -34,7 +33,7 @@ function_def_stmt ::=  '$' id [parlist] '點部署' block '搞掂'
 
 lambda_functoindef ::= '$$' [parlist] '->' block '搞掂'
 
-try_stmt ::= '执嘢' '=>' '{' block '}' ['揾到' exp '嘅话' '->' '{' block '}']* ['执手尾' '-> '{' block '}']
+try_stmt ::= '执嘢' '=>' '{' block '}' ['揾到' exp '嘅话' '=>' '{' block '}']* ['执手尾' '=>' '{' block '}']
 
 class_def_stmt ::= '' '{' exp [佢個老豆叫 idlist] class_def_block '}'
 

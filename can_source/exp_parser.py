@@ -195,8 +195,7 @@ class ExpParser(ParserBase):
 
     # unop exp
     def parse_exp2(self):
-        if  self.try_look_ahead().typ == TokenType.OP_NOT or \
-            self.try_look_ahead().value == 'not' or \
+        if  self.try_look_ahead().value == 'not' or \
             self.try_look_ahead().value == '-' or \
             self.try_look_ahead().value == '~':
             
@@ -351,6 +350,10 @@ class ExpParser(ParserBase):
             elif kind == TokenType.OP_ASSIGN:
                 self.skip_once()
                 exp = can_ast.AssignExp(exp, self.parse_exp())
+            elif kind == TokenType.COLON:
+                self.skip_once()
+                exp = can_ast.AnnotationExp(exp, self.parse_exp())
+                break
             else:
                 break
         return exp

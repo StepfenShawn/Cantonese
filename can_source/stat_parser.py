@@ -28,7 +28,7 @@ class StatParser(ParserBase):
     def check_var(self, exp : can_ast.AST):
         if isinstance(exp, (can_ast.IdExp, can_ast.ObjectAccessExp, 
                             can_ast.ListAccessExp, can_ast.MappingExp,
-                            can_ast.ClassSelfExp)):
+                            can_ast.ClassSelfExp, can_ast.AnnotationExp)):
            return exp
         else:
             raise Exception('unreachable!')
@@ -314,7 +314,7 @@ class StatParser(ParserBase):
                 self.cur_lexer_pos)
     
     def parse_class_method_call_stat(self, prefix_exp: can_ast.AST):
-        self.get_next_token_of(kw_laa1)
+        self.get_next_token_of([kw_laa1, kw_gamlaa1])
         return can_ast.CallStat(prefix_exp, self.cur_lexer_pos)
 
     def parse_list_assign_stat(self, prefix_exp: can_ast.AST):

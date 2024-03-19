@@ -1,13 +1,13 @@
 /*
     函数语句示例
 */
-介紹返 $SayHello 點部署:
+介紹返 $SayHello 點部署
     畀我睇下 "Hello" 點樣先？
 搞掂
 
 |SayHello| 下 -> || 啦
 
-介紹返 $output |string| 點部署:
+介紹返 $output |string| 點部署
     畀我睇下 string 點樣先？
 搞掂
 

@@ -67,7 +67,13 @@ class BinopExp(Exp):
 class AssignExp(Exp):
     exp1: Exp
     exp2: Exp
-    
+
+# exp1: tyid
+@dataclass
+class AnnotationExp(Exp):
+    exp: Exp
+    tyid: Exp
+
 # exp1 ==> exp2
 @dataclass
 class MappingExp(Exp):

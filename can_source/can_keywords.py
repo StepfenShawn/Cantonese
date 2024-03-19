@@ -40,6 +40,7 @@ class TokenType(Enum):
     NUM = 36
     CALL_NATIVE_EXPR = 37 # Call the other language,
     BRACK = 38 # |
+    COLON = 39 # :
 
 kw_print = "畀我睇下"
 kw_endprint = "點樣先"
@@ -66,6 +67,7 @@ kw_while_do = "落操場玩跑步"
 kw_function = "$"
 kw_pls = "好心"
 kw_laa1 = "啦"
+kw_gamlaa1 = "咁啦"
 kw_import = "使下"
 kw_func_begin = "點部署"
 kw_func_end = "搞掂"
@@ -132,6 +134,7 @@ keywords = [
     kw_function,
     kw_pls,
     kw_laa1,
+    kw_gamlaa1,
     kw_import,
     kw_func_begin,
     kw_func_end,
@@ -174,12 +177,11 @@ keywords = [
     kw_call_native,
 ]
 
-syms = {'&', '&&', '|', '|>', '%', 
+syms = {'&', '&&', '|', '%', 
     '~', '-', '->', '=', '=>',
     '==>', '==', '$', '$$', '<', 
     '<*>', '<|>', '<->', '<=',
-    '<<', '<|', '>', '>=', '>>', '!',
-    '!=', '@', '@@@', '@@', '{', '}',
+    '<<', '>', '>=', '>>', '!',
+    '!=', '@', '@@', '{', '}',
     '(', ')', '[', ']', '.', '+', '-',
-    '*', '**', '/', '//', '&', '^', ',',
-    '##'}
+    '*', '**', '/', '//', '&', '^', ','}

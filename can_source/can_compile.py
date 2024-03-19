@@ -96,6 +96,9 @@ class Codegen:
         
         elif isinstance(exp, can_parser.can_ast.NullExp):
             return "None"
+        
+        elif isinstance(exp, can_parser.can_ast.AnnotationExp):
+            return self.codegen_expr(exp.exp) + ":" + exp.tyid.name
 
         elif isinstance(exp, can_parser.can_ast.BinopExp):
             return '(' + self.codegen_expr(exp.exp1) + exp.op + self.codegen_expr(exp.exp2) + ')'

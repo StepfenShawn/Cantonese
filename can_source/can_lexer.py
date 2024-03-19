@@ -55,6 +55,7 @@ class lexer:
         self.re_expr = r"[|][\S\s]*?[|]"
         self.re_python_expr = r"#XD[\S\s]*?二五仔係我"
         self.re_comment = re.compile(r'/\*.*?\*/', re.S)
+        self.re_single_comment = r"#[^\n]*"
 
     def getCurPos(self) -> Pos:
         return Pos(line=self.line, 
@@ -94,9 +95,11 @@ class lexer:
         while len(self.code) > 0:
             if self.check('/*'):
                 _ = self.scan_comment()
+            elif self.check("#") and not self.check("#XD"):
+                _ = self.scan_single_comment()
             elif lexer.is_new_line(self.code[0]):
                 self.next(1)
-            elif self.check('?') or self.check(':') or self.check('：') or self.check('？'):
+            elif self.check('?') or self.check('：') or self.check('？'):
                 self.next(1)
             elif self.check('「') or self.check('」'):
                 self.next(1)
@@ -126,6 +129,9 @@ class lexer:
 
     def scan_comment(self):
         return self.scan(self.re_comment)
+
+    def scan_single_comment(self):
+        return self.scan(self.re_single_comment)
 
     def scan_short_string(self):
         m = re.match(self.re_str, self.code)
@@ -172,6 +178,10 @@ class lexer:
         if c == '|':
             self.next(1)
             return can_token(None, TokenType.BRACK, '|')
+
+        if c == ':':
+            self.next(1)
+            return can_token(None, TokenType.COLON, ':')        
 
         if c == '%':
             self.next(1)
@@ -252,19 +262,13 @@ class lexer:
                 return can_token(None, TokenType.OP_NE, '!=')
             else:
                 self.next(1)
-                return can_token(None, TokenType.OP_NOT, '!')
+                return can_token(None, TokenType.KEYWORD, '!')
 
         if c == '@':
-            if self.check('@@@'):
-                self.next(3)
-                return can_token(None, TokenType.KEYWORD, '@@@')
-            elif self.check('@@'):
+            if self.check('@@'):
                 self.next(2)
                 return can_token(None, TokenType.KEYWORD, '@@')
-            else:
-                self.next(1)
-                return can_token(None, TokenType.KEYWORD, '@')
-        
+
         if c == '{':
             self.next(1)
             return can_token(None, TokenType.SEP_LCURLY, '{')
@@ -344,10 +348,6 @@ class lexer:
             return can_token(None, TokenType.SEP_COMMA, ',')
 
         if c == '#':
-            if self.check('##'):
-                self.next(2)
-                return can_token(None, TokenType.KEYWORD, '##')
-
             if self.check('#XD'):
                 token = self.scan_python_expr()
                 return can_token(None, TokenType.CALL_NATIVE_EXPR, token)
