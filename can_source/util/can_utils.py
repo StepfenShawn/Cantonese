@@ -17,6 +17,7 @@ class ParserUtil:
     def parse_exp(cur_parser: ParserBase, parser: ParserBase, by):
         if (hasattr(parser, "parse_%s" % by.__type__)):
             res_exp = getattr(parser, "parse_%s" % by.__type__)()
+            cur_parser.last_tk = parser.last_tk
             return res_exp
         else:
             raise Exception(\

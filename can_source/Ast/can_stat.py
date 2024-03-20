@@ -9,7 +9,7 @@ class Stat:
 class FuncCallStat(Stat):
     func_name: Exp
     args: List[Exp]
-    pos: object
+    pos: object = None
 
 @dataclass
 class IfStat(Stat):
@@ -18,28 +18,28 @@ class IfStat(Stat):
     elif_exps: List[Exp]
     elif_blocks: List[Stat]
     else_blocks: List[Stat]
-    pos: object
+    pos: object = None
     
 @dataclass
 class PrintStat(Stat):
     args: List[Exp]
-    pos: object
+    pos: object = None
 
 @dataclass
 class PassStat(Stat):
-    pos: object
+    pos: object = None
 
 @dataclass
 class AssignStat(Stat):
     var_list: List[Exp]
     exp_list: List[Exp]
-    pos: object
+    pos: object = None
 
 @dataclass
 class AssignBlockStat(Stat):
     var_list: List[List[Exp]]
     exp_list: List[List[Exp]]
-    pos: object
+    pos: object = None
 
 @dataclass
 class ForStat(Stat):
@@ -47,73 +47,73 @@ class ForStat(Stat):
     from_exp: Exp
     to_exp: Exp
     blocks: List[Exp]
-    pos: object
+    pos: object = None
 
 @dataclass
 class ForEachStat(Stat):
     id_list: List[Exp]
     exp_list: List[Exp]
     blocks: List[Stat]
-    pos: object
+    pos: object = None
 
 @dataclass
 class WhileStat(Stat):
     cond_exp: Exp
     blocks: List[Stat]
-    pos: object
+    pos: object = None
 
 @dataclass
 class ListInitStat(Stat):
-    pos: object
+    pos: object = None
 
 @dataclass
 class FunctionDefStat(Stat):
     name_exp: Exp
     args: List[Exp]
     blocks: List[Stat]
-    pos: object
+    pos: object = None
 
 @dataclass
 class FuncTypeDefStat(Stat):
     func_name: Exp
     args_type: List[Exp]
     return_type: List[Exp]
-    pos: object
+    pos: object = None
 
 @dataclass
 class MethodDefStat(Stat):
     name_exp: Exp
     args: List[Exp]
     class_blocks: List[Stat]
-    pos: object
+    pos: object = None
 
 @dataclass
 class AttrDefStat(Stat):
     class_var_list: List[Exp]
     class_exp_list: List[Exp]
-    pos: object
+    pos: object = None
 
 @dataclass
 class ClassInitStat(Stat):
     class_var_list: List[Exp]
-    pos: object
+    pos: object = None
 
 @dataclass
 class ClassDefStat(Stat):
     class_name: Exp
     class_extend: List[Exp]
     class_blocks: List[Stat]
-    pos: object
+    pos: object = None
 
 @dataclass
 class ImportStat(Stat):
     idlist: List[Exp]
-    pos: object
+    pos: object = None
 
 @dataclass
 class RaiseStat(Stat):
     name_exp: Exp
-    pos: object
+    pos: object = None
 
 @dataclass
 class TryStat(Stat):
@@ -121,58 +121,58 @@ class TryStat(Stat):
     except_exps: List[Exp]
     except_blocks: List[Stat]
     finally_blocks: List[Stat]
-    pos: object
+    pos: object = None
 
 @dataclass
 class GlobalStat(Stat):
     idlist: List[Exp]
-    pos: object
+    pos: object = None
 
 @dataclass
 class BreakStat(Stat):
-    pos: object
+    pos: object = None
 
 @dataclass
 class ContinueStat(Stat):
-    pos: object
+    pos: object = None
 
 @dataclass
 class TypeStat(Stat):
     exps: List[Exp]
-    pos: object
+    pos: object = None
 
 @dataclass
 class AssertStat(Stat):
     exps: Exp
-    pos: object
+    pos: object = None
 
 @dataclass
 class ReturnStat(Stat):
     exps: List[Exp]
-    pos: object
+    pos: object = None
 
 @dataclass
 class DelStat(Stat):
     exps: List[Exp]
-    pos: object
+    pos: object = None
 
 @dataclass
 class CmdStat(Stat):
     args: List[Exp]
-    pos: object
+    pos: object = None
 
 @dataclass
 class MethodCallStat(Stat):
     name_exp: Exp
     method: Exp
     args: List[Exp]
-    pos: object
+    pos: object = None
 
 
 @dataclass
 class CallStat(Stat):
     exp: Exp
-    pos: object
+    pos: object = None
 
 @dataclass
 class MatchStat(Stat):
@@ -180,24 +180,24 @@ class MatchStat(Stat):
     match_val: Exp
     match_block_exp: Exp
     default_match_block: List[Stat]
-    pos: object
+    pos: object = None
 
 @dataclass
 class ExtendStat(Stat):
     code: str
-    pos: object
+    pos: object = None
 
 @dataclass
 class ModelNewStat(Stat):
     model: Exp
     dataset: Exp
-    pos: object
+    pos: object = None
 
 @dataclass
 class TurtleStat(Stat):
     exp_blocks: List[Exp]
-    pos: object
+    pos: object = None
 
 @dataclass
 class ExitStat(Stat):
-    pos: object
+    pos: object = None

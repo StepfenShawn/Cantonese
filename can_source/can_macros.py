@@ -31,7 +31,7 @@ marcos = [
     lclear
 ]
 
-def explore_all_marcos(code: str):
+def explore_all_macros(code: str):
     match_search = re.search(re.compile(r'\<\|.*?\|\>', re.S), code)
     while match_search:
         case_marco = match_search.group()[2:-2]

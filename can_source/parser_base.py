@@ -1,22 +1,18 @@
 import os
-
 from can_source.can_lexer import TokenType, can_token, getCtxByLine, Pos
 from can_source.util.infoprinter import ErrorPrinter
 
 def pos_tracker(func):
     def wrapper(self, *args, **kwargs):
-        # start_pos = self.cur_lexer_pos
+        start_pos = self.next_lexer_pos
         ast = func(self, *args, **kwargs)
         if ast == "EOF":
             return
-                
-        # end_line = ast.pos.line
-        # end_offset = ast.pos.offset
-        # ast.pos = Pos(line=start_pos.line,
-        #               offset=start_pos.offset,
-        #               end_line=end_line,
-        #               end_offset=end_offset)
-
+        end_pos = self.last_tk.pos
+        ast.pos = Pos(line=start_pos.line,
+                      offset=start_pos.offset,
+                      end_line=end_pos.end_line,
+                      end_offset=end_pos.end_offset)
         return ast
     return wrapper
 
@@ -25,6 +21,7 @@ class ParserBase:
     __slots__ = ("tokens", "buffer_tokens")
     def __init__(self, token_ctx: tuple) -> None:
         self.tokens, self.buffer_tokens = token_ctx
+        self.last_tk = None
 
     def get_token_ctx(self) -> tuple:
         return (self.tokens, self.buffer_tokens)
@@ -32,7 +29,7 @@ class ParserBase:
     def _next(self):
         try:
             return next(self.tokens)
-        except Exception as e:
+        except StopIteration as e:
             pass
 
     def look_ahead(self) -> can_token:
@@ -40,6 +37,7 @@ class ParserBase:
             return self.buffer_tokens.pop(0)
             
         next_tk = self._next()
+        self.last_tk = next_tk
         return next_tk
 
     def try_look_ahead(self) -> can_token:
@@ -51,16 +49,13 @@ class ParserBase:
 
     def skip_once(self) -> None:
         if self.buffer_tokens:
-            self.buffer_tokens.pop(0)
+            self.last_tk = self.buffer_tokens.pop(0)
         else:
-            self._next()
-
-    def filepos(self) -> Pos:
-        return None
+            self.last_tk = self._next()
 
     @property
-    def cur_lexer_pos(self) -> Pos:
-        return Pos(0,0,0,0)
+    def next_lexer_pos(self) -> Pos:
+        return self.try_look_ahead().pos
 
     def get_next_token_of_kind(self, k: TokenType) -> can_token:
         tk = self.look_ahead()

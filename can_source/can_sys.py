@@ -23,14 +23,21 @@ def error_catch(e):
     infos = list(map(lambda x: error(x.lineno, x.filename), tback))[1:]
     
     err_ty = e.__class__.__name__
+    
     print(f"\033[0;31m濑嘢!!!\033[0m: {show(err_ty, str(e))}")
-    for info in infos:
-        ctx = getCtxByLine(info.filename, info.lineno)
-        p = ErrorPrinter(info=" 喺runtime察覺到錯誤!",
-                        pos=Pos(info.lineno, 0, info.lineno, 0), tips="  幫緊你只不過有心無力:(", 
-                        ctx=ctx,
-                        _file=info.filename,
-                        _len=len(ctx.encode("gbk")))
 
-        p.show(arrow_char="^")
+    for info in infos:
+        from can_source.can_compile import line_map
+
+        lines = line_map[info.filename][info.lineno]
+        
+        for lineno in lines:
+            ctx = getCtxByLine(info.filename, lineno)
+            p = ErrorPrinter(info=" 喺runtime察覺到錯誤!",
+                            pos=Pos(lineno, 0, lineno, 0), tips="  幫緊你只不過有心無力:(", 
+                            ctx=ctx,
+                            _file=info.filename,
+                            _len=len(ctx.encode("gbk")))
+
+            p.show(arrow_char="^")
     exit()

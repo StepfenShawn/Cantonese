@@ -7,7 +7,7 @@ import os
 
 from can_source.can_keywords import *
 from can_source.util.infoprinter import ErrorPrinter
-from can_source.can_marcos import explore_all_marcos
+from can_source.can_macros import explore_all_macros
 
 Pos = namedtuple('Pos', ['line', 'offset', 'end_line', 'end_offset'])
 
@@ -70,7 +70,10 @@ class lexer:
     def next(self, n: int):
         sth = self.code[:n]
         self.line += sth.count('\n')
-        self.offset = len(sth.split('\n')[-1])
+        if '\n' in sth:
+            self.offset = len(sth.split('\n')[-1])
+        else:
+            self.offset += n
         self.code = self.code[n:]
 
     def check(self, s: str):
@@ -355,7 +358,7 @@ class lexer:
         self.error(f"\033[0;31m濑嘢!!!\033[0m:睇唔明嘅Token: `{c}`")
 
 def cantonese_token(file: str, code: str) -> Generator:
-    code = explore_all_marcos(code)
+    code = explore_all_macros(code)
     os.environ[f"{file}_SOURCE"] = code
     lex: lexer = lexer(file, code, keywords)
 

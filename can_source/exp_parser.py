@@ -5,7 +5,7 @@ from can_source.util.can_utils import exp_type
 
 class ExpParser(ParserBase):
     def __init__(self, token_ctx: tuple) -> None:
-        super(ExpParser, self).__init__(token_ctx)
+        ParserBase.__init__(self, token_ctx)
         self.tokens, self.buffer_tokens = token_ctx
 
     @exp_type('exp_list')
@@ -524,7 +524,7 @@ class ParExpParser(ExpParser):
 
 class ClassBlockExpParser(ExpParser):
     def __init__(self, token_ctx: tuple) -> None:
-        super().__init__(token_ctx)
+        ExpParser.__init__(self, token_ctx)
 
     # Override
     def parse_exp0(self):

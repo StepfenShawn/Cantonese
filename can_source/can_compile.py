@@ -1,8 +1,7 @@
 import can_source.can_parser as can_parser
 import can_source.can_lexer as can_lexer
-import re
 import sys, os
-import ast
+from typing import Generator
 
 from can_source.libraries.can_lib import fix_lib_name, cantonese_model_new,\
     cantonese_turtle_init
@@ -33,50 +32,34 @@ def _can_source_to_code(self, data, path, _optimize=-1):
 
 importlib.machinery.SourceFileLoader.source_to_code = _can_source_to_code
 
+line_map = {}
 class Codegen:
-    def __init__(self, nodes : list, path : str):
+    def __init__(self, nodes: Generator, path : str):
         self.nodes = nodes
         self.path = path
         self.tab = ''
         self.line = 1
-        self.line_mmap = defaultdict(int) # Python line mapping to Cantonese line
+        self.line_mmap = defaultdict(list) # Python line mapping to Cantonese line
+        self.code = ''
 
     def to_py(self):
-        code = ''
         for node in self.nodes:
-            code += self.codegen_stat(node)
-        return code
-
-    def build_ast(self):
-        tree = ast.parse(self.to_py())
-        tree.body = list(map(self.fix_lineno, tree.body))
-        return tree
-
-    def fix_lineno(self, _node: ast.AST):
-        if not isinstance(_node, ast.AST):
-            if isinstance(_node, (list, set)):
-                for _ in _node:
-                    self.fix_lineno(_)        
-            return
-
-        if hasattr(_node, "lineno"):
-            py_line = _node.lineno
-            _node.lineno = self.line_mmap[py_line]
-            _node.col_offset = 0
-            _node.end_lineno = _node.lineno
-            _node.end_col_offset = 0
-
-        for attr in dir(_node):
-            self.fix_lineno(getattr(_node, attr))
-
-        return _node
+            self.codegen_stat(node)
+        line_map[os.environ["CUR_FILE"]] = self.line_mmap
+        return self.code
 
     def update_line_map(self, stat: can_parser.can_ast.Stat, s: str):
         start = self.line
         self.line += s.count('\n')
         end = self.line
-        for lno in range(start, end):
-            self.line_mmap[lno] = stat.pos.line
+        for py_lineno in range(start, end):
+            for can_lineno in range(stat.pos.line, stat.pos.end_line+1):
+                self.line_mmap[py_lineno].append(can_lineno)
+
+    def emit(self, s, stat):
+        s = self.tab + s
+        self.update_line_map(stat, s)
+        self.code += s
 
     def codegen_expr(self, exp) -> str:
         if isinstance(exp, can_parser.can_ast.StringExp):
@@ -190,216 +173,150 @@ class Codegen:
 
     def codegen_stat(self, stat):
         if isinstance(stat, can_parser.can_ast.PrintStat):
-            s = self.tab + 'print(' + self.codegen_args(stat.args) + ')\n'
-            self.update_line_map(stat, s)
-            return s
+            self.emit('print(' + self.codegen_args(stat.args) + ')\n',
+                    stat)
 
         elif isinstance(stat, can_parser.can_ast.AssignStat):
-            s = ''
-            s += self.tab + self.codegen_args(stat.var_list) + ' = ' + self.codegen_args(stat.exp_list) + '\n'
-            self.update_line_map(stat, s)
-            return s
+            self.emit(self.codegen_args(stat.var_list) + ' = ' + self.codegen_args(stat.exp_list) + '\n',
+                       stat)
 
         elif isinstance(stat, can_parser.can_ast.AssignBlockStat):
-            s = ''
             for i in range(len(stat.var_list)):
-                s += self.tab + self.codegen_expr(stat.var_list[i]) + ' = ' + self.codegen_expr(stat.exp_list[i]) + '\n'
-            self.update_line_map(stat, s)
-            return s
+                self.emit(self.codegen_expr(stat.var_list[i]) + ' = ' + self.codegen_expr(stat.exp_list[i]) + '\n',
+                          stat)
 
         elif isinstance(stat, can_parser.can_ast.ExitStat):
-            s = self.tab + 'exit()\n'
-            self.update_line_map(stat, s)
-            return s
+            self.emit('exit()\n', stat)
 
         elif isinstance(stat, can_parser.can_ast.PassStat):
-            s = self.tab + 'pass\n'
-            self.update_line_map(stat, s)
-            return s
+            self.emit('pass\n', stat)
 
         elif isinstance(stat, can_parser.can_ast.BreakStat):
-            s = self.tab + 'break\n'
-            self.update_line_map(stat, s)
-            return s
+            self.emit('break\n', stat)
 
         elif isinstance(stat, can_parser.can_ast.ContinueStat):
-            s = self.tab + 'continue\n'
-            self.update_line_map(stat, s)
-            return s
+            self.emit('continue\n', stat)
 
         elif isinstance(stat, can_parser.can_ast.IfStat):
-            s = ''
-            s += self.tab + 'if ' + self.codegen_expr(stat.if_exp) + ':\n'
-            s += self.codegen_block(stat.if_block)
+            self.emit('if ' + self.codegen_expr(stat.if_exp) + ':\n', 
+                      stat)
+            self.codegen_block(stat.if_block)
             
             for i in range(len(stat.elif_exps)):
-                s += self.tab + 'elif ' + self.codegen_expr(stat.elif_exps[i]) + ':\n'
-                s += self.codegen_block(stat.elif_blocks[i])
+                self.emit('elif ' + self.codegen_expr(stat.elif_exps[i]) + ':\n',
+                            stat)
+                self.codegen_block(stat.elif_blocks[i])
 
             if len(stat.else_blocks):
-                s += self.tab + 'else:\n'
-                s += self.codegen_block(stat.else_blocks)
-            
-            self.update_line_map(stat, s)
-            return s
+                self.emit('else:\n', stat)
+                self.codegen_block(stat.else_blocks)
 
         elif isinstance(stat, can_parser.can_ast.TryStat):
-            s = ''
-            s += self.tab + 'try: \n'
-            s += self.codegen_block(stat.try_blocks)
+            self.emit('try: \n', stat)
+            self.codegen_block(stat.try_blocks)
 
             for i in range(len(stat.except_exps)):
-                s += self.tab + 'except ' + self.codegen_expr(stat.except_exps[i]) + ':\n'
-                s += self.codegen_block(stat.except_blocks[i])
+                self.emit('except ' + self.codegen_expr(stat.except_exps[i]) + ':\n',
+                          stat)
+                self.codegen_block(stat.except_blocks[i])
 
             if len(stat.finally_blocks):
-                s += self.tab + 'finally:\n'
-                s += self.codegen_block(stat.finally_blocks)
-
-            self.update_line_map(stat, s)
-            return s
+                self.emit('finally:\n', stat)
+                self.codegen_block(stat.finally_blocks)
 
         elif isinstance(stat, can_parser.can_ast.RaiseStat):
-            s = ''
-            s += self.tab + 'raise ' + self.codegen_expr(stat.name_exp) + '\n'
-            
-            self.update_line_map(stat, s)
-            return s
+            self.emit('raise ' + self.codegen_expr(stat.name_exp) + '\n',
+                      stat)
 
         elif isinstance(stat, can_parser.can_ast.WhileStat):
-            s = ''
-            s += self.tab + 'while ' + self.codegen_expr(stat.cond_exp) + ':\n'
-            s += self.codegen_block(stat.blocks)
-
-            self.update_line_map(stat, s)
-            return s
+            self.emit('while ' + self.codegen_expr(stat.cond_exp) + ':\n',
+                      stat)
+            self.codegen_block(stat.blocks)
 
         elif isinstance(stat, can_parser.can_ast.ForStat):
-            s = ''
-            s += self.tab + 'for ' + self.codegen_expr(stat.var) + ' in range('+ self.codegen_expr(stat.from_exp) \
-                        + ', ' + self.codegen_expr(stat.to_exp) + '):\n'
-            s += self.codegen_block(stat.blocks)
-
-            self.update_line_map(stat, s)
-            return s
+            self.emit('for ' + self.codegen_expr(stat.var) + ' in range('+ self.codegen_expr(stat.from_exp) \
+                        + ', ' + self.codegen_expr(stat.to_exp) + '):\n',
+                        stat)
+            self.codegen_block(stat.blocks)
 
         elif isinstance(stat, can_parser.can_ast.FunctionDefStat):
-            s = ''
-            s += self.tab + 'def ' + self.codegen_expr(stat.name_exp) + '(' + self.codegen_args(stat.args) + '):\n'
-            s += self.codegen_block(stat.blocks)
+            self.emit('def ' + self.codegen_expr(stat.name_exp) + '(' + self.codegen_args(stat.args) + '):\n',
+                      stat)
+            self.codegen_block(stat.blocks)
             
-            self.update_line_map(stat, s)
-            return s
-
-
         elif isinstance(stat, can_parser.can_ast.FuncCallStat):
-            s = ''
-            s += self.tab + self.codegen_expr(stat.func_name) + '(' + self.codegen_args(stat.args) + ')' + '\n'
-            self.update_line_map(stat, s)
-            return s
+            self.emit(self.codegen_expr(stat.func_name) + '(' + self.codegen_args(stat.args) + ')' + '\n',
+                      stat)
 
         elif isinstance(stat, can_parser.can_ast.ImportStat):
-            s = ''
             libs = self.codegen_lib_list(stat.idlist)
-            s += self.tab + 'import ' + libs + '\n'
-            self.update_line_map(stat, s)
-            return s
+            self.emit('import ' + libs + '\n', stat)
 
         elif isinstance(stat, can_parser.can_ast.ReturnStat):
-            s = ''
-            s += self.tab + 'return ' + self.codegen_args(stat.exps) + '\n'
-            self.update_line_map(stat, s)
-            return s
+            self.emit('return ' + self.codegen_args(stat.exps) + '\n',
+                      stat)
 
         elif isinstance(stat, can_parser.can_ast.DelStat):
-            s = ''
-            s += self.tab + 'del ' + self.codegen_args(stat.exps) + '\n'
-            self.update_line_map(stat, s)
-            return s
+            self.emit(self.tab + 'del ' + self.codegen_args(stat.exps) + '\n',
+                      stat)
 
         elif isinstance(stat, can_parser.can_ast.TypeStat):
-            s = ''
-            s += self.tab + 'print(type(' + self.codegen_expr(stat.exps) + '))\n'
-            self.update_line_map(stat, s)
-            return s
+            self.emit('print(type(' + self.codegen_expr(stat.exps) + '))\n',
+                      stat)
 
         elif isinstance(stat, can_parser.can_ast.AssertStat):
-            s = ''
-            s += self.tab + 'assert ' + self.codegen_expr(stat.exps) + '\n'
-            self.update_line_map(stat, s)
-            return s
+            self.emit('assert ' + self.codegen_expr(stat.exps) + '\n',
+                      stat)
 
         elif isinstance(stat, can_parser.can_ast.ClassDefStat):
-            s = ''
-            s += self.tab + 'class ' + self.codegen_expr(stat.class_name) + '(' + self.codegen_args(stat.class_extend) + '):\n'
-            s += self.codegen_block(stat.class_blocks)
-            self.update_line_map(stat, s)
-            return s
-
+            self.emit('class ' + self.codegen_expr(stat.class_name) + '(' + self.codegen_args(stat.class_extend) + '):\n',
+                      stat)
+            self.codegen_block(stat.class_blocks)
+            
         elif isinstance(stat, can_parser.can_ast.MethodDefStat):
-            s = ''
-            s += self.tab + 'def ' + self.codegen_expr(stat.name_exp) + '(' + self.codegen_method_args(stat.args) + '):\n'
-            s += self.codegen_block(stat.class_blocks)
-            self.update_line_map(stat, s)
-            return s
+            self.emit('def ' + self.codegen_expr(stat.name_exp) + '(' + self.codegen_method_args(stat.args) + '):\n',
+                      stat)
+            self.codegen_block(stat.class_blocks)
 
         elif isinstance(stat, can_parser.can_ast.MethodCallStat):
-            s = ''
-            s += self.tab + self.codegen_expr(stat.name_exp) + '.' + self.codegen_build_in_method_or_id(stat.method) + \
-                 '(' + self.codegen_args(stat.args) + ')\n'
-            self.update_line_map(stat, s)
-            return s
+            self.emit(self.tab + self.codegen_expr(stat.name_exp) + '.' + self.codegen_build_in_method_or_id(stat.method) + \
+                 '(' + self.codegen_args(stat.args) + ')\n',
+                 stat)
 
         elif isinstance(stat, can_parser.can_ast.CmdStat):
-            s = ''
-            s += self.tab + 'os.system(' + self.codegen_args(stat.args) + ')\n'
-            self.update_line_map(stat, s)
-            return s
+            self.emit('os.system(' + self.codegen_args(stat.args) + ')\n',
+                      stat)
 
         elif isinstance(stat, can_parser.can_ast.CallStat):
-            s = ''
-            s += self.tab + self.codegen_expr(stat.exp) + '\n'
-            self.update_line_map(stat, s)
-            return s
+            self.emit(self.codegen_expr(stat.exp) + '\n',
+                        stat)
 
         elif isinstance(stat, can_parser.can_ast.GlobalStat):
-            s = ''
-            s += self.tab + 'global ' + self.codegen_args(stat.idlist) + '\n'
-            self.update_line_map(stat, s)
-            return s
+            self.emit('global ' + self.codegen_args(stat.idlist) + '\n',
+                      stat)
 
         elif isinstance(stat, can_parser.can_ast.ExtendStat):
-            s = ''
-            s += self.tab + stat.code + '\n'
-            self.update_line_map(stat, s)
-            return s
+            self.emit(stat.code + '\n', stat)
 
         elif isinstance(stat, can_parser.can_ast.MatchStat):
-            s = ''
-            enum = ['if ', 'elif ']
             for i in range(len(stat.match_val)):
                 if i == 0:
                     elif_or_if = 'if '
                 else:
                     elif_or_if = 'elif '
-                s += self.tab + elif_or_if + self.codegen_expr(stat.match_id) + ' == ' + \
-                     self.codegen_expr(stat.match_val[i]) + ':\n'
-                s += self.codegen_block(stat.match_block_exp[i])
+                self.emit(elif_or_if + self.codegen_expr(stat.match_id) + ' == ' + \
+                     self.codegen_expr(stat.match_val[i]) + ':\n',
+                     stat)
+                self.codegen_block(stat.match_block_exp[i])
 
             if len(stat.default_match_block):
-                s += self.tab + 'else:\n'
-                s += self.codegen_block(stat.default_match_block)
-
-            self.update_line_map(stat, s)
-            return s
+                self.emit('else:\n', stat)
+                self.codegen_block(stat.default_match_block)
 
         elif isinstance(stat, can_parser.can_ast.ForEachStat):
-            s = ''
-            s += self.tab + 'for ' + self.codegen_args(stat.id_list) + ' in ' + self.codegen_args(stat.exp_list) + ':\n'
-            s += self.codegen_block(stat.blocks)
-
-            self.update_line_map(stat, s)
-            return s
+            self.emit('for ' + self.codegen_args(stat.id_list) + ' in ' + self.codegen_args(stat.exp_list) + ':\n',
+                      stat)
+            self.codegen_block(stat.blocks)
 
         elif isinstance(stat, can_parser.can_ast.ModelNewStat):
             s = ''
@@ -407,23 +324,16 @@ class Codegen:
             dataset = self.codegen_expr(stat.dataset)
             s += cantonese_model_new(model, dataset, self.tab, s)
             
-            self.update_line_map(stat, s)
-            return s
+            self.emit(s, stat)
 
         elif isinstance(stat, can_parser.can_ast.TurtleStat):
-            s = ''
             cantonese_turtle_init()
             for item in stat.exp_blocks:
-                s += self.tab + self.codegen_expr(item) + '\n'
-            
-            self.update_line_map(stat, s)
-            return s
+                self.emit(self.codegen_expr(item) + '\n', stat)
 
     def codegen_block(self, blocks):
         save = self.tab
         self.tab += '\t'
-        s = ''
         for block in blocks:
-            s += self.codegen_stat(block)
+            self.codegen_stat(block)
         self.tab = save
-        return s
