@@ -406,9 +406,8 @@ class StatParser(ParserBase):
         return can_ast.TryStat(try_blocks, except_exps, except_blocks, finally_blocks)
 
     def parse_raise_stat(self):
-        exp_parser = self.getExpParser()
-        name_exp = exp_parser.parse_exp()
-        self.get_next_token_of([kw_raise_end])
+        name_exp = F.parse_exp(self, self.getExpParser(), self.ExpParser.parse_exp)
+        self.get_next_token_of(kw_raise_end)
         return can_ast.RaiseStat(name_exp)
 
     def exp_type_stat(self):
@@ -416,17 +415,16 @@ class StatParser(ParserBase):
         return can_ast.TypeStat(name_exp)
 
     def parse_cmd_stat(self):
-        exp_parser = self.getExpParser()
-        args = exp_parser.parse_args()
-
+        args = F.parse_exp(self, self.getExpParser(), self.ExpParser.parse_args)
         return can_ast.CmdStat(args)
 
     def parse_class_def(self, class_name: can_ast.AST):      
         self.get_next_token_of_kind(TokenType.SEP_LCURLY)
-        self.get_next_token_of([kw_extend])
-        
-        exp_parser = self.getExpParser()
-        extend_name : list = exp_parser.parse_exp_list()
+
+        extend_name = None
+        if self.try_look_ahead().value == kw_extend:
+            self.skip_once()
+            extend_name : list = F.parse_exp(self, self.getExpParser(), self.ExpParser.parse_exp_list)
 
         class_blocks = []
         
@@ -439,8 +437,7 @@ class StatParser(ParserBase):
         return can_ast.ClassDefStat(class_name, extend_name, class_blocks)
 
     def parse_stack_init_stat(self):
-        exp_parser = self.getExpParser()
-        exps = exp_parser.parse_exp()
+        exps = F.parse_exp(self, self.getExpParser(), self.ExpParser.parse_exp)
 
         return can_ast.AssignStat([exps], [
             can_ast.FuncCallExp(can_ast.IdExp('stack'), [])
@@ -449,21 +446,17 @@ class StatParser(ParserBase):
     def parse_stack_push_stat(self):
         self.get_next_token_of(kw_do)
 
-        exp_parser = self.getExpParser()
-        exps = exp_parser.parse_exp()
-
-        exp_parser = self.getExpParser()
-        args = exp_parser.parse_args()
+        exps = F.parse_exp(self, self.getExpParser(), self.ExpParser.parse_exp)
+        args = F.parse_exp(self, self.getExpParser(), self.ExpParser.parse_args)
 
         return can_ast.MethodCallStat(exps, can_ast.IdExp('push'), 
                     args)
 
     def parse_stack_pop_stat(self):
         self.get_next_token_of(kw_do)
-
-        exp_parser = self.getExpParser()
-        exps = exp_parser.parse_exp()
-
+        
+        exps = F.parse_exp(self, self.getExpParser(), self.ExpParser.parse_exp)
+        
         return can_ast.MethodCallStat(exps, can_ast.IdExp('pop'), 
                     [])
 
@@ -574,15 +567,15 @@ class StatParser(ParserBase):
                 self.try_look_ahead().typ == TokenType.IDENTIFIER:
                 self.skip_once()
             else:
-                exp_parser = self.getExpParser()
-                exp_blocks.append(exp_parser.parse_exp())
+                exp_blocks.append(
+                    F.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp))
 
         self.skip_once()
 
         return can_ast.TurtleStat(exp_blocks)
 
     def parse_pls_stat(self):
-        func_name = self.getExpParser().parse_exp()
+        func_name = F.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp)
         self.get_next_token_of(kw_laa1)
         return can_ast.FuncCallStat(func_name, [])
 

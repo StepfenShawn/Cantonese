@@ -9,6 +9,7 @@ from collections import defaultdict
 import textwrap
 
 sys.path.append(os.getcwd())
+sys.dont_write_bytecode = True
 
 from can_source.util.infoprinter import format_color, show_more
 
@@ -158,7 +159,7 @@ def main():
     arg_parser.add_argument("-讲翻py", action = "store_true", help = "Translate Cantonese to Python")
     arg_parser.add_argument("-to_web", action = "store_true")
     arg_parser.add_argument("-倾偈", action = "store_true")
-    arg_parser.add_argument("-update", action = "store_true")
+    arg_parser.add_argument("-allow_pyc", action = "store_true")
     arg_parser.add_argument("-compile", action = "store_true")
     arg_parser.add_argument("-讲白啲", action = "store_true")
     arg_parser.add_argument("-build", action = "store_true")
@@ -216,6 +217,8 @@ def main():
             Options.mkfile = True
         if args.llvm or args.l:
             Options._to_llvm = True
+        if args.allow_pyc:
+            sys.dont_write_bytecode = False
         
         cantonese_run(code, is_to_py, args.file)
 

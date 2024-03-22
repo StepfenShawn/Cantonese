@@ -269,7 +269,10 @@ class Codegen:
                       stat)
 
         elif isinstance(stat, can_parser.can_ast.ClassDefStat):
-            self.emit('class ' + self.codegen_expr(stat.class_name) + '(' + self.codegen_args(stat.class_extend) + '):\n',
+            extend_classes = ""
+            if stat.class_extend != None:
+                extend_classes = self.codegen_args(stat.class_extend)
+            self.emit('class ' + self.codegen_expr(stat.class_name) + '(' + extend_classes + '):\n',
                       stat)
             self.codegen_block(stat.class_blocks)
             
