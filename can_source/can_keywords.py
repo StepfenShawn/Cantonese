@@ -108,6 +108,7 @@ kw_del2 = "冇撚用"
 kw_match = "睇L住"
 kw_case = "撞見"
 kw_call_native = "我係二五仔"
+kw_macro_def = "袋仔的法寶"
 
 keywords = [
     kw_print,
@@ -175,6 +176,7 @@ keywords = [
     kw_del,
     kw_del2,
     kw_call_native,
+    kw_macro_def
 ]
 
 syms = {'&', '&&', '|', '%', 

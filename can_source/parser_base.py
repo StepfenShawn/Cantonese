@@ -17,7 +17,7 @@ def pos_tracker(func):
     return wrapper
 
 # The root(father) of all Parser classes.
-class ParserBase:
+class ParserBase():
     __slots__ = ("tokens", "buffer_tokens")
     def __init__(self, token_ctx: tuple) -> None:
         self.tokens, self.buffer_tokens = token_ctx
@@ -57,7 +57,14 @@ class ParserBase:
     def next_lexer_pos(self) -> Pos:
         return self.try_look_ahead().pos
 
-    def get_next_token_of_kind(self, k: TokenType) -> can_token:
+    def eats(self, tk_list):
+        for v in tk_list:
+            if isinstance(v, str):
+                self.eat_tk_by_value(v)
+            else:
+                self.eat_tk_by_kind(v)
+        
+    def eat_tk_by_kind(self, k: TokenType) -> can_token:
         tk = self.look_ahead()
         err = ""
         if k != tk.typ:
@@ -65,7 +72,7 @@ class ParserBase:
             self.error(tk, err, f" 不妨嘗試下`{k.name}`類型??")
         return tk
     
-    def get_next_token_of(self, expectation) -> can_token:
+    def eat_tk_by_value(self, expectation) -> can_token:
         tk = self.look_ahead()
         err = ""
         if isinstance(expectation, list):

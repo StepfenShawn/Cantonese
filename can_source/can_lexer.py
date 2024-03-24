@@ -265,7 +265,7 @@ class lexer:
                 return can_token(None, TokenType.OP_NE, '!=')
             else:
                 self.next(1)
-                return can_token(None, TokenType.KEYWORD, '!')
+                return can_token(None, TokenType.OP_NOT, '!')
 
         if c == '@':
             if self.check('@@'):

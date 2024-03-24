@@ -241,11 +241,6 @@ class ExpParser(ParserBase):
         elif tk.typ == TokenType.SEP_LCURLY:
             return self.parse_mapcons()
 
-        # lambda function
-        elif tk.value == "$$":
-            self.skip_once()
-            return self.parse_functiondef_expr()
-
         # If-Else expr
         elif tk.value in [kw_expr_if]:
             self.skip_once()
@@ -275,23 +270,28 @@ class ExpParser(ParserBase):
         # '(' exp ')'
         elif next_tk.typ == TokenType.SEP_LPAREN:
             exp = self.parse_parens_exp()
+        # lambda function
+        elif next_tk.value == "$$":
+            self.skip_once()
+            exp = self.parse_functiondef_expr()
         # '|' exp '|'
         else:
             exp = self.parse_brack_exp()
+        
         return self.finish_prefixexp(exp)
     
     @exp_type('parens_exp')
     def parse_parens_exp(self):
-        self.get_next_token_of_kind(TokenType.SEP_LPAREN)
+        self.eat_tk_by_kind(TokenType.SEP_LPAREN)
         exp = self.parse_exp()
-        self.get_next_token_of_kind(TokenType.SEP_RPAREN)
+        self.eat_tk_by_kind(TokenType.SEP_RPAREN)
         return exp
 
     @exp_type('brack_exp')
     def parse_brack_exp(self):
-        self.get_next_token_of('|')
+        self.eat_tk_by_value('|')
         exp = self.parse_exp()
-        self.get_next_token_of('|')
+        self.eat_tk_by_value('|')
         return exp
 
     """
@@ -299,14 +299,14 @@ class ExpParser(ParserBase):
     """
     @exp_type('listcons')
     def parse_listcons(self):
-        self.get_next_token_of_kind(TokenType.SEP_LBRACK)
+        self.eat_tk_by_kind(TokenType.SEP_LBRACK)
         next_tk = self.try_look_ahead()
         if next_tk.typ == TokenType.SEP_RBRACK: # []
             self.skip_once()
             return can_ast.ListExp("")
         else:
             exps = self.parse_exp_list()
-            self.get_next_token_of_kind(TokenType.SEP_RBRACK)
+            self.eat_tk_by_kind(TokenType.SEP_RBRACK)
             return can_ast.ListExp(exps)
 
     """
@@ -314,14 +314,14 @@ class ExpParser(ParserBase):
     """
     @exp_type('mapcons')
     def parse_mapcons(self):
-        self.get_next_token_of_kind(TokenType.SEP_LCURLY)
+        self.eat_tk_by_kind(TokenType.SEP_LCURLY)
         next_tk = self.try_look_ahead()
         if next_tk.typ == TokenType.SEP_RCURLY: # {}
             self.skip_once()
             return can_ast.MapExp("")
         else:
             exps = self.parse_exp_list()
-            self.get_next_token_of_kind(TokenType.SEP_RCURLY)
+            self.eat_tk_by_kind(TokenType.SEP_RCURLY)
             return can_ast.MapExp(exps)
         
     def finish_prefixexp(self, exp : can_ast.AST):
@@ -331,12 +331,12 @@ class ExpParser(ParserBase):
             if kind == TokenType.SEP_LBRACK:
                 self.skip_once()
                 key_exp : can_ast.AST = self.parse_exp()
-                self.get_next_token_of_kind(TokenType.SEP_RBRACK)
+                self.eat_tk_by_kind(TokenType.SEP_RBRACK)
                 exp = can_ast.ListAccessExp(exp, key_exp)
             elif kind == TokenType.SEP_DOT or \
                 (kind == TokenType.KEYWORD and value == kw_dot):
                     self.skip_once()
-                    tk = self.get_next_token_of_kind(TokenType.IDENTIFIER)
+                    tk = self.eat_tk_by_kind(TokenType.IDENTIFIER)
                     name = tk.value
                     key_exp = can_ast.IdExp(name)
                     exp = can_ast.ObjectAccessExp(exp, key_exp)
@@ -365,7 +365,7 @@ class ExpParser(ParserBase):
     def finish_functioncall_exp(self, prefix_exp : can_ast.AST):
         if self.try_look_ahead().value == kw_call_begin:
             self.skip_once()
-            self.get_next_token_of(kw_dot)
+            self.eat_tk_by_value(kw_dot)
             args = self.parse_args()
             return can_ast.FuncCallExp(prefix_exp, args)
         else:
@@ -385,7 +385,7 @@ class ExpParser(ParserBase):
             self.skip_once()
             par_parser = ParExpParser(self.get_token_ctx())
             exps = par_parser.parse_exp_list()
-            self.get_next_token_of('|')
+            self.eat_tk_by_value('|')
             return exps
         
         else:
@@ -411,37 +411,38 @@ class ExpParser(ParserBase):
 
         elif self.try_look_ahead().value == '|':
             self.skip_once()
-            ids = [can_ast.IdExp((self.get_next_token_of_kind(TokenType.IDENTIFIER)).value)]
+            ids = [can_ast.IdExp((self.eat_tk_by_kind(TokenType.IDENTIFIER)).value)]
             while self.try_look_ahead().typ == TokenType.SEP_COMMA:
                 self.skip_once()
                 if self.try_look_ahead().typ != TokenType.IDENTIFIER:
                     self.error("Excepted identifier type in idlist!")
                 ids.append(can_ast.IdExp( 
                         self.look_ahead().value))
-            self.get_next_token_of('|')
+            self.eat_tk_by_value('|')
             return ids
         
         else:
             return None
 
     """
-    lambda_functoindef ::= '$$' idlist '->' exp
+    lambda_functoindef ::= '$$' idlist '{' exp_list '}'
     """
     @exp_type('functiondef_expr')
     def parse_functiondef_expr(self):
         idlist : list = self.parse_idlist()
         blocks : list = []
-        self.get_next_token_of(kw_dot)
-        blocks = [self.parse_exp()]
+        self.eat_tk_by_kind(TokenType.SEP_LCURLY)
+        blocks = self.parse_exp_list()
+        self.eat_tk_by_kind(TokenType.SEP_RCURLY)
         return can_ast.LambdaExp(idlist, blocks)
 
     @exp_type('if_else_expr')
     def parse_if_else_expr(self):
         CondExp : can_ast.AST = self.parse_exp()
-        self.get_next_token_of(kw_dot)
+        self.eat_tk_by_value(kw_dot)
         IfExp : can_ast.AST = self.parse_exp()
-        self.get_next_token_of(kw_expr_else)
-        self.get_next_token_of(kw_dot)
+        self.eat_tk_by_value(kw_expr_else)
+        self.eat_tk_by_value(kw_dot)
         ElseExp : can_ast.AST = self.parse_exp()
 
         return can_ast.IfElseExp(CondExp, IfExp, ElseExp)
@@ -463,15 +464,15 @@ class ExpParser(ParserBase):
             next_tk = self.try_look_ahead()
             if next_tk.value != ')':
                 args = self.parse_exp_list()
-            self.get_next_token_of_kind(TokenType.SEP_RPAREN)
+            self.eat_tk_by_kind(TokenType.SEP_RPAREN)
         elif tk.value == '|':
             self.skip_once()
             next_tk = self.try_look_ahead()
             if next_tk.value != '|':
                 args = self.parse_exp_list()
-            self.get_next_token_of('|')
+            self.eat_tk_by_value('|')
         else:
-            args = [self.parse_exp()]
+            args = self.parse_exp_list()
         return args
 
 """

@@ -102,7 +102,7 @@ class Codegen:
             return self.codegen_expr(exp.prefix_exp) + '(' + self.codegen_args(exp.args) + ')'
 
         elif isinstance(exp, can_parser.can_ast.LambdaExp):
-            return ' lambda ' + self.codegen_args(exp.id_list) + ' : ' + self.codegen_args(exp.blocks)
+            return '(lambda ' + self.codegen_args(exp.id_list) + ' : ' + self.codegen_args(exp.blocks) + ")"
 
         elif isinstance(exp, can_parser.can_ast.IfElseExp):
             return '(' + self.codegen_expr(exp.if_exp) + ' if ' + self.codegen_expr(exp.if_cond_exp) + ' else ' + self.codegen_expr(exp.else_exp) + ')'
@@ -257,7 +257,7 @@ class Codegen:
                       stat)
 
         elif isinstance(stat, can_parser.can_ast.DelStat):
-            self.emit(self.tab + 'del ' + self.codegen_args(stat.exps) + '\n',
+            self.emit('del ' + self.codegen_args(stat.exps) + '\n',
                       stat)
 
         elif isinstance(stat, can_parser.can_ast.TypeStat):
@@ -282,7 +282,7 @@ class Codegen:
             self.codegen_block(stat.class_blocks)
 
         elif isinstance(stat, can_parser.can_ast.MethodCallStat):
-            self.emit(self.tab + self.codegen_expr(stat.name_exp) + '.' + self.codegen_build_in_method_or_id(stat.method) + \
+            self.emit(self.codegen_expr(stat.name_exp) + '.' + self.codegen_build_in_method_or_id(stat.method) + \
                  '(' + self.codegen_args(stat.args) + ')\n',
                  stat)
 
@@ -337,6 +337,9 @@ class Codegen:
     def codegen_block(self, blocks):
         save = self.tab
         self.tab += '\t'
-        for block in blocks:
-            self.codegen_stat(block)
+        if len(blocks) == 0:
+            self.emit("pass", stat=None)
+        else:        
+            for block in blocks:
+                self.codegen_stat(block)
         self.tab = save
