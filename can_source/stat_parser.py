@@ -3,6 +3,7 @@ from can_source.Ast import can_ast
 from can_source.parser_base import *
 from can_source.util.can_utils import ParserF as F
 from can_source.exp_parser import ExpParser, ClassBlockExpParser
+from can_source.macros_parser import MacroParser
 
 class StatParser(ParserBase):
     def __init__(self, token_ctx: tuple, expParser = ExpParser) -> None:
@@ -168,8 +169,7 @@ class StatParser(ParserBase):
             self.eat_tk_by_value(kw_is)
             exp_list.append(F.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp_list)[0])
         
-        # Skip the SEP_RCURLY
-        self.skip_once()
+        self.eat_tk_by_value(kw_end_assign)
         return can_ast.AssignBlockStat(var_list, exp_list)
 
     def parse_assign_stat(self):
@@ -185,6 +185,8 @@ class StatParser(ParserBase):
             self.eat_tk_by_value(kw_is)
             if self.try_look_ahead().value == kw_class_def:
                 self.skip_once(); return self.parse_class_def(class_name=var_list[0])
+            elif self.try_look_ahead().value == kw_macro_def:
+                self.skip_once(); return self.parse_macro_def(macro_name=var_list[0])
             else:            
                 exp_list = F.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp_list)
                 return can_ast.AssignStat(var_list, exp_list)
@@ -373,7 +375,7 @@ class StatParser(ParserBase):
             block_parser = StatParser(self.get_token_ctx(), self.ExpParser)
             except_block.append(block_parser.parse())
         
-        self.skip_once()
+        self.eat_tk_by_kind(TokenType.SEP_RCURLY)
         except_blocks.append(except_block)
 
         while self.try_look_ahead().value == kw_except:
@@ -419,6 +421,30 @@ class StatParser(ParserBase):
     def parse_cmd_stat(self):
         args = F.parse_exp(self, self.getExpParser(), self.ExpParser.parse_args)
         return can_ast.CmdStat(args)
+
+    def parse_macro_def(self, macro_name: can_ast.AST):
+        self.eat_tk_by_kind(TokenType.SEP_LCURLY)
+        match_rules : list = []
+        match_blocks : list = []
+
+        while self.try_look_ahead().typ != TokenType.SEP_RCURLY:
+            while self.try_look_ahead().value in [kw_case]:
+                self.skip_once()
+                _marcoParser = MacroParser(self.get_token_ctx())
+                match_rules.append(_marcoParser.parse_macro_rule()[1:-1])
+                self.eats((kw_do, TokenType.SEP_LCURLY))
+
+                block : list = []
+
+                while self.try_look_ahead().typ != TokenType.SEP_RCURLY:
+                    stat_parser = StatParser(self.get_token_ctx(), self.ExpParser)
+                    block.append(stat_parser.parse())
+
+                self.eat_tk_by_kind(TokenType.SEP_RCURLY)
+                match_blocks.append(block)
+
+        self.eat_tk_by_kind(TokenType.SEP_RCURLY)
+        return can_ast.MacroDefStat(match_rules, match_blocks)
 
     def parse_class_def(self, class_name: can_ast.AST):      
         self.eat_tk_by_kind(TokenType.SEP_LCURLY)
@@ -479,39 +505,42 @@ class StatParser(ParserBase):
         match_id = exp_parser.parse_exp()
 
         self.eat_tk_by_value(kw_do)
-        self.eat_tk_by_kind(TokenType.SEP_LCURLY)
 
-        while self.try_look_ahead().typ != TokenType.SEP_RCURLY:
-            while self.try_look_ahead().value in [kw_case]:
+        while self.try_look_ahead().value != kw_func_end:
+            while self.try_look_ahead().value == '|':
                 self.skip_once()
-                exp_parser = self.getExpParser()
-                match_val.append(exp_parser.parse_exp())
+                if self.try_look_ahead().value == kw_case:
+                    self.skip_once()
+                    exp_parser = self.getExpParser()
+                    match_val.append(exp_parser.parse_exp())
 
-                self.eat_tk_by_value(kw_do)
-                self.eat_tk_by_kind(TokenType.SEP_LCURLY)
+                    self.eat_tk_by_value(kw_do)
+                    self.eat_tk_by_kind(TokenType.SEP_LCURLY)
 
-                block : list = []
+                    block : list = []
 
-                while self.try_look_ahead().typ != TokenType.SEP_RCURLY:
-                    stat_parser = StatParser(self.get_token_ctx(), self.ExpParser)
-                    block.append(stat_parser.parse())
+                    while self.try_look_ahead().typ != TokenType.SEP_RCURLY:
+                        stat_parser = StatParser(self.get_token_ctx(), self.ExpParser)
+                        block.append(stat_parser.parse())
 
-                self.skip_once()
-                match_block.append(block)
+                    self.skip_once()
+                    match_block.append(block)
             
-            if self.try_look_ahead().value == kw_else_or_not:
-                self.skip_once()
-                self.eat_tk_by_value([kw_then])
-                self.eat_tk_by_value(kw_do)
-                self.eat_tk_by_kind(TokenType.SEP_LCURLY)
+                elif self.try_look_ahead().value == '_':
+                    self.skip_once()
+                    self.eat_tk_by_value(kw_do)
+                    self.eat_tk_by_kind(TokenType.SEP_LCURLY)
 
-                while self.try_look_ahead().typ != TokenType.SEP_RCURLY:
-                    stat_parser = StatParser(self.get_token_ctx(), self.ExpParser)
-                    default_match_block.append(stat_parser.parse())
+                    while self.try_look_ahead().typ != TokenType.SEP_RCURLY:
+                        stat_parser = StatParser(self.get_token_ctx(), self.ExpParser)
+                        default_match_block.append(stat_parser.parse())
 
-                self.skip_once()
-        
-        self.skip_once()
+                    self.eat_tk_by_kind(TokenType.SEP_RCURLY)
+                
+                else:
+                    self.error(self.try_look_ahead(), info="MatchBlock只允許`撞見`同`_`")
+
+        self.eat_tk_by_value(kw_func_end)
 
         return can_ast.MatchStat(match_id, match_val, match_block, default_match_block)
 
@@ -535,7 +564,7 @@ class StatParser(ParserBase):
             stat_parser = StatParser(self.get_token_ctx(), self.ExpParser)
             blocks.append(stat_parser.parse())
         
-        self.skip_once()
+        self.eat_tk_by_kind(TokenType.SEP_RCURLY)
 
         return can_ast.ForEachStat(id_list, exp_list, blocks)
 
@@ -548,8 +577,7 @@ class StatParser(ParserBase):
         exp_parser = self.getExpParser()
         model_name = exp_parser.parse_exp()
 
-        self.eat_tk_by_value([kw_mod_new])
-        self.eat_tk_by_value(kw_do)
+        self.eats((kw_mod_new, kw_do))
 
         exp_parser = self.getExpParser()
         dataset = exp_parser.parse_exp()
@@ -558,9 +586,7 @@ class StatParser(ParserBase):
 
     def parse_turtle_stat(self):
         instruction_ident : list = ["首先", "跟住", "最尾"]
-        self.eat_tk_by_value(kw_do)
-        self.eat_tk_by_kind(TokenType.SEP_LCURLY)
-
+        self.eats((kw_do, TokenType.SEP_LCURLY))
         exp_blocks : list = []
 
         while self.try_look_ahead().typ != TokenType.SEP_RCURLY:
@@ -571,7 +597,7 @@ class StatParser(ParserBase):
                 exp_blocks.append(
                     F.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp))
 
-        self.skip_once()
+        self.eat_tk_by_kind(TokenType.SEP_RCURLY)
 
         return can_ast.TurtleStat(exp_blocks)
 
@@ -600,21 +626,20 @@ class ClassBlockStatParser(StatParser):
                 block_parser = ClassBlockStatParser(self.get_token_ctx(), self.ExpParser)
                 blocks.append(block_parser.parse())
         
-        self.skip_once()
+        self.eat_tk_by_kind(TokenType.SEP_RCURLY)
         
         return can_ast.MethodDefStat(name_exp, args, blocks)
 
     def parse_class_init_stat(self):
         args = F.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_parlist)
-        self.eat_tk_by_value(kw_do)
-        self.eat_tk_by_kind(TokenType.SEP_LCURLY)
+        self.eats((kw_do, TokenType.SEP_LCURLY))
 
         blocks : list = []
         while self.try_look_ahead().typ != TokenType.SEP_RCURLY:
             block_parser = StatParser(self.get_token_ctx(), self.ExpParser)
             blocks.append(block_parser.parse())
 
-        self.skip_once()
+        self.eat_tk_by_kind(TokenType.SEP_RCURLY)
 
         return can_ast.MethodDefStat(can_ast.IdExp('__init__'), args, blocks)
         
@@ -633,3 +658,14 @@ class ClassBlockStatParser(StatParser):
             self.skip_once(); return self.parse_class_init_stat()
         else:
             return super().parse()
+        
+class MacroBlockStatParser(StatParser):
+    def __init__(self, token_ctx: tuple, ExpParser = ClassBlockExpParser) -> None:
+        StatParser.__init__(self, token_ctx, ExpParser)
+
+    @pos_tracker
+    def parse(self):
+        tk = self.try_look_ahead()
+        kind, tk_value = tk.typ, tk.value
+        if tk_value == '@':
+            pass

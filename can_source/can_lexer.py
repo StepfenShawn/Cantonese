@@ -102,8 +102,10 @@ class lexer:
                 _ = self.scan_single_comment()
             elif lexer.is_new_line(self.code[0]):
                 self.next(1)
-            elif self.check('?') or self.check('：') or self.check('？'):
+            elif self.check('：') or self.check('？'):
                 self.next(1)
+            elif self.check("??"):
+                self.next(2)
             elif self.check('「') or self.check('」'):
                 self.next(1)
             elif lexer.is_white_space(self.code[0]):
@@ -181,6 +183,10 @@ class lexer:
         if c == '|':
             self.next(1)
             return can_token(None, TokenType.BRACK, '|')
+        
+        if c == '?':
+            self.next(1)
+            return can_token(None, TokenType.MARK, '?')
 
         if c == ':':
             self.next(1)
@@ -265,12 +271,15 @@ class lexer:
                 return can_token(None, TokenType.OP_NE, '!=')
             else:
                 self.next(1)
-                return can_token(None, TokenType.OP_NOT, '!')
+                return can_token(None, TokenType.EXCL, '!')
 
         if c == '@':
             if self.check('@@'):
                 self.next(2)
                 return can_token(None, TokenType.KEYWORD, '@@')
+            else:
+                self.next(1)
+                return can_token(None, TokenType.KEYWORD, '@')
 
         if c == '{':
             self.next(1)

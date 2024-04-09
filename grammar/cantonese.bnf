@@ -13,7 +13,7 @@ stat ::= ';' |
       | id '从' exp '行到' exp block '到步'
       | '起底' args
       | '如果' exp '嘅话' '->' '{' block '}' [定係 exp 嘅话 '->' '{' block '}'] ['唔係嘅话' '->' '{' block '}']
-      | 睇L住 id '=>' '{' matchblock '}'
+      | '睇撚住' id '=>' '{' matchblock '}'
       | '掟个' id '嚟睇下'
       | '谂下' args
       | '落Order' args
@@ -42,7 +42,7 @@ class_def_block ::= '佢嘅' classvarlist 係 explist
               | '佢識得' id [parlist] '=>' '{' block '}'
               | '佢有啲咩' '=>' '{' assignblock '}'
 
-macro_def_block ::= '撞见' macro_rules '=>' '{' macro_block '}'
+macro_def_block ::= '|' '撞见' macro_rules '=>' '{' macro_block '}'
                 | macro_def_block*
 
 macro_rules :=
@@ -53,13 +53,14 @@ macro_rulesr :=
 
 MacroMatch :=
       Token排除 @ 和 定界符
-   | MacroMatcher
    | '@' id ':' MacroFragSpec
-   | '@' ( MacroMatch+ )? MacroRepOp
-MacroFragSpec :
+   | '@' ( MacroMatch+ )? MacroRepSep? MacroRepOp
+MacroFragSpec :=
       block | expr | expr_list | ident | str | num
-MacroRepOp :
+MacroRepOp :=
    * | + | ?
+MacroRepSep :=
+      Token排除定界符
 
 # macro_block ::= block with meta_var 
 
@@ -77,6 +78,7 @@ exp ::= null
     | unop exp
     | '<*>'
     | '若然' exp "->" exp "唔係咁就" "=>" exp
+    | exp ':' exp
 
 prefixexp ::= var
           | '|' exp '|'
@@ -129,4 +131,6 @@ binop ::= '+' | '-' | '*' | '/' | '^' | '%' | '<->' |
 unop ::= not
 
 assignblock ::= varlist '係' explist [ assignblock ]
-matchblock ::= '撞见' exp '=>' '{' block '}' [ matchblock ]
+matchblock ::= '|' '撞见' exp '=>' '{' block '}'
+            | '|' '_' exp '=>' '{' block '}'
+            | matchblock*

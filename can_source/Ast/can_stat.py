@@ -186,6 +186,7 @@ class MatchStat(Stat):
 class MacroDefStat(Stat):
     match_pats: List[Exp]
     match_block: List[Stat]
+    pos: object = None
 
 @dataclass
 class ExtendStat(Stat):

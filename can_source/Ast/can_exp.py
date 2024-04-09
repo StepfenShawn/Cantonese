@@ -94,12 +94,21 @@ class ObjectAccessExp(Exp):
     prefix_exp: Exp
     key_exp: Exp
 
-TokenTree = object
-
 @dataclass
 class MacroCallExp(Exp):
     prefix_exp: Exp
-    token_trees: List[TokenTree]
+    token_trees: List[object]
+
+@dataclass
+class MacroMetaId(Exp):
+    _id: Exp
+    frag_spec: Exp
+
+@dataclass
+class MacroMetaExp(Exp):
+    token_trees: List[object]
+    rep_sep: Exp
+    rep_op: Exp
 
 @dataclass
 class ListAccessExp(Exp):

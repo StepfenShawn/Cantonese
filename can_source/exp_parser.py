@@ -2,6 +2,7 @@ from can_source.can_lexer import *
 from can_source.Ast import can_ast
 from can_source.parser_base import *
 from can_source.util.can_utils import exp_type
+from can_source.macros_parser import MacroParser
 
 class ExpParser(ParserBase):
     def __init__(self, token_ctx: tuple) -> None:
@@ -353,6 +354,11 @@ class ExpParser(ParserBase):
             elif kind == TokenType.COLON:
                 self.skip_once()
                 exp = can_ast.AnnotationExp(exp, self.parse_exp())
+                break
+            elif kind == TokenType.EXCL:
+                self.skip_once()
+                macroParser = MacroParser(self.get_token_ctx())
+                exp = can_ast.MacroCallExp(exp, macroParser.parse_tokentrees()[1:-1])
                 break
             else:
                 break

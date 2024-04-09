@@ -41,6 +41,8 @@ class TokenType(Enum):
     CALL_NATIVE_EXPR = 37 # Call the other language,
     BRACK = 38 # |
     COLON = 39 # :
+    MARK = 40 # ?
+    EXCL = 41 # !
 
 kw_print = "畀我睇下"
 kw_endprint = "點樣先"
@@ -105,7 +107,7 @@ kw_call_begin = "下"
 kw_get_value = "就係"
 kw_del = "冇鳩用"
 kw_del2 = "冇撚用"
-kw_match = "睇L住"
+kw_match = "睇撚住"
 kw_case = "撞見"
 kw_call_native = "我係二五仔"
 kw_macro_def = "袋仔的法寶"

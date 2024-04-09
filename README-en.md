@@ -43,7 +43,7 @@ The computer can read the Cantonese you write and you can operate (abuse) the co
 ### <a name="2">Hello World</a>
 The first program written in Cantonese: `Hello World`:  
 ```
-畀我睇下 " Hello World! " 點樣先?
+畀我睇下 " Hello World! " 點樣先??
 ```
 ### <a name="3">Assignment statement </a>
 ```
@@ -66,7 +66,7 @@ Print numbers from 1 to 100:
 介紹返: |结束| 係 唔啱
 落操场玩跑步
     介紹返: |start| 係 |start + 1|
-    畀我睇下 |start| 點樣先?
+    畀我睇下 |start| 點樣先??
     如果 |start >= 100| 嘅话 => {
         饮茶先啦
     }
@@ -76,17 +76,17 @@ Print numbers from 1 to 100:
 You can also use `For` Loop:  
 ```
 |A| 从 1 行到 100
-    畀我睇下 |A| 點樣先?
+    畀我睇下 |A| 點樣先??
 到步
 ```
 ### <a name="6">If statement</a>
 ```
 介紹返: |A| 係 2
 如果 |A 係 2| 嘅话 => {
-    畀我睇下 "A 係 2" 點樣先?
+    畀我睇下 "A 係 2" 點樣先??
 }
 唔係 嘅话 => {
-    畀我睇下 "A 唔係 2" 點樣先?
+    畀我睇下 "A 唔係 2" 點樣先??
 }
 ```
 ### <a name="7">Function</a>

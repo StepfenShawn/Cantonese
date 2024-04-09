@@ -6,7 +6,7 @@
 如果 Dom有嘢(Dom, "shelf") 嘅话 => {
     |睇Dom有咩| 下 -> (Dom, "shelf") 啦
 }
-畀我睇下 |Dom| 點樣先?
+畀我睇下 |Dom| 點樣先??
 |用Tag揾| 下 -> (Dom, "movie", 1) 啦
 
 介紹返 |数据| 係 用Tag揾(Dom, "movie")

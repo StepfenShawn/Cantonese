@@ -299,7 +299,8 @@ class Codegen:
                       stat)
 
         elif isinstance(stat, can_parser.can_ast.ExtendStat):
-            self.emit(stat.code + '\n', stat)
+            for s in stat.code.split('\n'):
+                self.emit(s + '\n', stat)
 
         elif isinstance(stat, can_parser.can_ast.MatchStat):
             for i in range(len(stat.match_val)):

@@ -1,13 +1,8 @@
 #todo
 
-介紹返 sayhello 係 袋仔的法寶 {
-    撞见 () => {
-        畀我睇下 'Hello' 點樣先?
-    }
+介紹返 sayhello 係 袋仔的法寶 =>
+    | 撞見 (@s: str) => { 畀我睇下 "Hello" + @s 點樣先?? }
+    | 撞見 () => { 畀我睇下 "Hello" 點樣先?? }
+搞掂
 
-    撞见 (@s: str) => {
-        畀我睇下 'Hello' + @s 點樣先?
-    }
-}
-
-hellosay!{"dd"} 咁啦
+sayhello!{"dd"} 咁啦
