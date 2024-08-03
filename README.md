@@ -211,15 +211,32 @@ def add(a, b):
 聲明對象 `duck`，繼承至 `object`，分別有兩個方法 `游水` 同埋 `睡觉` ，仲有一個屬性 `性别`：  
 ```
 介紹返 duck 係 乜X {
-    佢個老豆叫 |object|
-    佢嘅 |性别| 係 "公"
-    佢識得 |游下水| => {
-        畀我睇下 "Duck is swimming" 點樣先？
-    }
-    佢識得 |睡下觉| => {
-        畀我睇下 "Duck is sleeping" 點樣先？
-    }
+    性别: 公家嘢,
+    年龄: 私家嘢  
 }
+
+介绍返 duck_trait 想点濑 {
+    佢識得 游下水 |自己| => ...
+    佢識得 睡下觉 |自己| => ...
+}
+
+畀 duck 濑下 |duck_trait| {
+    介绍返 $游下水 |自己| 点部署
+        畀我睇下 "Duck is swimming" 點樣先？
+    搞掂
+    
+    介绍返 $睡下觉 |自己| 点部署
+        畀我睇下 "Duck is sleeping" 點樣先？
+    搞掂
+}
+
+畀 duck 濑下 {
+    介绍返 $饮啖水 |自己| 点部署
+        畀我睇下 "Duck is drinking" 点样先?
+    搞掂
+}
+
+介绍返 duck 嘅老豆系 object
 ```
 創建object:  
 ```
@@ -235,6 +252,7 @@ myduck -> 游下水() 啦!
 Duck is swimming
 Duck is sleeping
 ```
+
 ### <a name="13">棧嘅使用</a>
 首先創建一個Stack:  
 ```
