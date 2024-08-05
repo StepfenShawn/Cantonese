@@ -2,7 +2,7 @@ import sys
 sys.path.append("..")
 
 from llvmlite import ir
-import can_source.Ast.can_ast as can_ast
+import can_source.can_ast as can_ast
 
 class llvmUtils:
     @staticmethod

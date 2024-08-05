@@ -1,5 +1,5 @@
 from can_source.can_lexer import *
-from can_source.Ast import can_ast
+import can_source.can_ast as can_ast
 from can_source.parser_base import *
 from can_source.util.can_utils import ParserF as F
 
