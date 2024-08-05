@@ -1,6 +1,7 @@
 import os
 from can_source.can_lexer import TokenType, can_token, getCtxByLine, Pos
 from can_source.util.infoprinter import ErrorPrinter
+from can_source.can_sys import can_context
 
 def pos_tracker(func):
     def wrapper(self, *args, **kwargs):
@@ -16,40 +17,37 @@ def pos_tracker(func):
         return ast
     return wrapper
 
-# The root(father) of all Parser classes.
-class ParserBase():
-    __slots__ = ("tokens", "buffer_tokens")
-    def __init__(self, token_ctx: tuple) -> None:
-        self.tokens, self.buffer_tokens = token_ctx
+class Parser_base:
+    """
+       The root(father) of all Parser classes. 
+    """
+    def __init__(self) -> None:
         self.last_tk = None
-
-    def get_token_ctx(self) -> tuple:
-        return (self.tokens, self.buffer_tokens)
 
     def _next(self):
         try:
-            return next(self.tokens)
+            return next(can_context.tokens)
         except StopIteration as e:
             pass
 
     def look_ahead(self) -> can_token:
-        if self.buffer_tokens:
-            return self.buffer_tokens.pop(0)
+        if can_context.buffer_tokens:
+            return can_context.buffer_tokens.pop(0)
             
         next_tk = self._next()
         self.last_tk = next_tk
         return next_tk
 
     def try_look_ahead(self) -> can_token:
-        if self.buffer_tokens:
-            return self.buffer_tokens[0]
+        if can_context.buffer_tokens:
+            return can_context.buffer_tokens[0]
         next_tk = self._next()
-        self.buffer_tokens.append(next_tk)
+        can_context.buffer_tokens.append(next_tk)
         return next_tk
 
     def skip_once(self) -> None:
-        if self.buffer_tokens:
-            self.last_tk = self.buffer_tokens.pop(0)
+        if can_context.buffer_tokens:
+            self.last_tk = can_context.buffer_tokens.pop(0)
         else:
             self.last_tk = self._next()
 

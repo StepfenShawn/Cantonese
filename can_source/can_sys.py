@@ -5,12 +5,29 @@ from collections import namedtuple
 from can_source.can_lexer import getCtxByLine, Pos
 from can_source.util.infoprinter import ErrorPrinter
 
-error = namedtuple("layer", ["lineno", "filename"])
-
 def set_work_env(file: str):
     pa = os.path.dirname(file) # Return the last file Path
     pa = "./" if len(pa) == 0 else pa
     sys.path.insert(0, pa)
+
+class Can_context:
+    """
+        A class to hold global values in runtime
+    """
+    def __init__(self):
+        pass
+
+    def set_token_ctx(self, token_ctx: tuple):
+        # we need a buffer_tokens in lazy parser 
+        # because the first token maybe not case in `look_ahead` mode.
+        self.tokens, self.buffer_tokens = token_ctx
+
+    def get_token_ctx(self) -> tuple:
+        return (self.tokens, self.buffer_tokens)
+
+can_context = Can_context()
+
+error = namedtuple("layer", ["lineno", "filename"])
 
 def error_catch(e):
     def show(ty, info):

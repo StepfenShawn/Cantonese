@@ -3,10 +3,7 @@ from can_source.Ast import can_ast
 from can_source.parser_base import *
 from can_source.util.can_utils import ParserF as F
 
-class MacroParser(ParserBase):
-    def __init__(self, token_ctx: tuple) -> None:
-        ParserBase.__init__(self, token_ctx)
-        self.tokens, self.buffer_tokens = token_ctx
+class MacroParser(Parser_base):
 
     def parse_meta_exp(self):
         self.skip_once()

@@ -18,6 +18,7 @@ import can_source.can_parser as can_parser
 import can_source.can_compile as can_compile
 import can_source.can_sys as can_sys
 
+from can_source.can_sys import can_context
 from can_source.libraries.can_lib import *
 from can_source.web_core.can_web_parser import *
 
@@ -56,13 +57,15 @@ def cantonese_run(code: str, is_to_py : bool, file : str,
     global variable
   
     os.environ["CUR_FILE"] = file
+
     tokens = can_lexer.cantonese_token(file, code)
+    can_context.set_token_ctx((tokens, []))
 
     if Options.dump_lex:
         show_pretty_lex(tokens)
         exit()
 
-    stats = can_parser.StatParser((tokens, [])).parse_stats()
+    stats = can_parser.StatParser().parse_stats()
 
     if Options.dump_ast:
         show_pretty_ast(stats)

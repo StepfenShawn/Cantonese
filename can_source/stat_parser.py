@@ -5,16 +5,14 @@ from can_source.util.can_utils import ParserF as F
 from can_source.exp_parser import ExpParser, ClassBlockExpParser
 from can_source.macros_parser import MacroParser
 
-class StatParser(ParserBase):
-    def __init__(self, token_ctx: tuple, expParser = ExpParser) -> None:
-        ParserBase.__init__(self, token_ctx)
-        self.tokens, self.buffer_tokens = token_ctx
+class StatParser(Parser_base):
+    def __init__(self, expParser = ExpParser) -> None:
         # Function address type:
         # We can choose the class `ExpParser` Or `ClassBlockExpParser`
         self.ExpParser = expParser
 
     def getExpParser(self):
-        return self.ExpParser(self.get_token_ctx())
+        return self.ExpParser()
 
     def parse_var_list(self):
         exp = F.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_prefixexp)
@@ -205,7 +203,7 @@ class StatParser(ParserBase):
         self.eats((kw_then, kw_do, TokenType.SEP_LCURLY))
 
         if_blocks = F.many(self,
-                     parser=lambda _ctx: StatParser(_ctx, self.ExpParser),
+                     parser=self,
                      by="parse",
                      util_cond=lambda: self.try_look_ahead().typ == TokenType.SEP_RCURLY)
         
@@ -219,7 +217,7 @@ class StatParser(ParserBase):
             self.eats((kw_then, kw_do, TokenType.SEP_LCURLY))
             
             elif_block = F.many(self,
-                                parser=lambda _ctx: StatParser(_ctx, self.ExpParser),
+                                parser=self,
                                 by="parse",
                                 util_cond=lambda: self.try_look_ahead().typ == TokenType.SEP_RCURLY)
             
@@ -231,7 +229,7 @@ class StatParser(ParserBase):
             self.eats((kw_else_or_not, kw_then, kw_do, TokenType.SEP_LCURLY))
             
             else_blocks = F.many(self,
-                                 parser=lambda _ctx: StatParser(_ctx, self.ExpParser),
+                                 parser=self,
                                  by="parse",
                                  util_cond=lambda: self.try_look_ahead().typ == TokenType.SEP_RCURLY)
 
@@ -255,7 +253,7 @@ class StatParser(ParserBase):
 
     def parse_while_stat(self):
         blocks = F.many(self,
-                     parser=lambda _ctx: StatParser(_ctx, self.ExpParser),
+                     parser=self,
                      by="parse",
                      util_cond=lambda: self.try_look_ahead().value == kw_while)
 
@@ -280,7 +278,7 @@ class StatParser(ParserBase):
         to_exp = F.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp)
 
         blocks = F.many(self,
-                        parser=lambda _ctx: StatParser(_ctx, self.ExpParser),
+                        parser=self,
                         by="parse",
                         util_cond=lambda: self.try_look_ahead().value == kw_endfor)
 
@@ -297,7 +295,7 @@ class StatParser(ParserBase):
         self.eat_tk_by_value([kw_func_begin, kw_do])
 
         blocks = F.many(self,
-                        parser=lambda _ctx: StatParser(_ctx, self.ExpParser),
+                        parser=self,
                         by="parse",
                         util_cond=lambda: self.try_look_ahead().value == kw_func_end)
 
@@ -660,8 +658,8 @@ class ClassBlockStatParser(StatParser):
             return super().parse()
         
 class MacroBlockStatParser(StatParser):
-    def __init__(self, token_ctx: tuple, ExpParser = ClassBlockExpParser) -> None:
-        StatParser.__init__(self, token_ctx, ExpParser)
+    def __init__(self, ExpParser = ClassBlockExpParser) -> None:
+        StatParser.__init__(self, ExpParser)
 
     @pos_tracker
     def parse(self):

@@ -1,13 +1,10 @@
 from can_source.can_lexer import *
 from can_source.Ast import can_ast
-from can_source.parser_base import *
+from can_source.parser_base import Parser_base
 from can_source.util.can_utils import exp_type
 from can_source.macros_parser import MacroParser
 
-class ExpParser(ParserBase):
-    def __init__(self, token_ctx: tuple) -> None:
-        ParserBase.__init__(self, token_ctx)
-        self.tokens, self.buffer_tokens = token_ctx
+class ExpParser(Parser_base):
 
     @exp_type('exp_list')
     def parse_exp_list(self):
@@ -252,7 +249,6 @@ class ExpParser(ParserBase):
     prefixexp ::= var
           | '(' exp ')'
           | '|' exp '|'
-          | '<|' id '|>'
           | functioncall
           | id '=' exp
 
@@ -488,10 +484,7 @@ class ExpParser(ParserBase):
 """
 
 class ParExpParser(ExpParser):
-    def __init__(self, token_ctx: tuple) -> None:
-        super().__init__(token_ctx)
-        self.tokens, self.buffer_tokens = token_ctx
-
+    
     # override
     @exp_type('exp')
     def parse_exp(self):
@@ -530,9 +523,6 @@ class ParExpParser(ExpParser):
         return exp
 
 class ClassBlockExpParser(ExpParser):
-    def __init__(self, token_ctx: tuple) -> None:
-        ExpParser.__init__(self, token_ctx)
-
     # Override
     def parse_exp0(self):
         tk = self.try_look_ahead().value
