@@ -5,11 +5,11 @@ from can_source.can_sys import can_context
 
 def pos_tracker(func):
     def wrapper(self, *args, **kwargs):
-        start_pos = self.next_lexer_pos
+        start_pos = F.next_lexer_pos
         ast = func(self, *args, **kwargs)
         if ast == "EOF":
             return
-        end_pos = self.last_tk.pos
+        end_pos = F.last_tk.pos
         ast.pos = Pos(line=start_pos.line,
                       offset=start_pos.offset,
                       end_line=end_pos.end_line,
@@ -17,10 +17,7 @@ def pos_tracker(func):
         return ast
     return wrapper
 
-class Parser_base:
-    """
-       The root(father) of all Parser classes. 
-    """
+class Parser_Fn:
     def __init__(self) -> None:
         self.last_tk = None
 
@@ -28,7 +25,7 @@ class Parser_base:
         try:
             return next(can_context.tokens)
         except StopIteration as e:
-            pass
+            raise "No tokens..."
 
     def look_ahead(self) -> can_token:
         if can_context.buffer_tokens:
@@ -90,3 +87,27 @@ class Parser_base:
             ctx=ctx, tips=tips, _file=os.environ["CUR_FILE"], _len=len(tk.value.encode("gbk")))
         p.show()
         exit()
+
+    def many(self, other_parse_fn, util_cond) -> list:
+        result = []
+        while not util_cond():
+            result.append(other_parse_fn())
+        return result
+    
+    def oneplus(self, other_parse_fn, util_cond) -> list:
+        result = [other_parse_fn()]
+        while not util_cond():
+            result.append(other_parse_fn())
+        return result
+
+    def maybe(self, other_parse_fn, case_cond) -> object:
+        result = None
+        if case_cond():
+            self.skip_once()
+            result = other_parse_fn()
+        return result
+
+"""
+    Parser function
+"""    
+F = Parser_Fn()
