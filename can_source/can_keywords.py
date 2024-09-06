@@ -1,48 +1,50 @@
 from enum import Enum
 
+
 class TokenType(Enum):
     EOF = 0
-    VARARG = 1         # <*>
-    SEP_COMMA = 2      # ,
-    SEP_DOT = 3        # .
-    SEP_LPAREN = 4     # (
-    SEP_RPAREN = 5     # )
-    SEP_LBRACK = 6     # [
-    SEP_RBRACK = 7     # ]
-    SEP_LCURLY = 8     # {
-    SEP_RCURLY = 9     # }
-    OP_MINUS = 10      # -
-    OP_WAVE = 11       # !
-    OP_ADD = 12        # +
-    OP_MUL = 13        # *
-    OP_DIV = 14        # /
-    OP_POW = 15        # ^
-    OP_MOD = 16        # %
-    OP_BAND = 17       # &
-    OP_SHR = 18        # >>
-    OP_SHL = 19        # <<
-    OP_CONCAT = 20     # <->
-    OP_LT = 21         # <
-    OP_LE = 22         # <=
-    OP_GT = 23         # >
-    OP_GE = 24         # >=
-    OP_EQ = 25         # ==
-    OP_ASSIGN = 26     # =
-    OP_NE = 27         # !=
-    OP_AND = 28        # and
-    OP_OR = 29         # or
-    OP_NOT = 30        # not
-    OP_BOR = 31        # <|>
-    OP_IDIV = 32       # //
+    VARARG = 1  # <*>
+    SEP_COMMA = 2  # ,
+    SEP_DOT = 3  # .
+    SEP_LPAREN = 4  # (
+    SEP_RPAREN = 5  # )
+    SEP_LBRACK = 6  # [
+    SEP_RBRACK = 7  # ]
+    SEP_LCURLY = 8  # {
+    SEP_RCURLY = 9  # }
+    OP_MINUS = 10  # -
+    OP_WAVE = 11  # !
+    OP_ADD = 12  # +
+    OP_MUL = 13  # *
+    OP_DIV = 14  # /
+    OP_POW = 15  # ^
+    OP_MOD = 16  # %
+    OP_BAND = 17  # &
+    OP_SHR = 18  # >>
+    OP_SHL = 19  # <<
+    OP_CONCAT = 20  # <->
+    OP_LT = 21  # <
+    OP_LE = 22  # <=
+    OP_GT = 23  # >
+    OP_GE = 24  # >=
+    OP_EQ = 25  # ==
+    OP_ASSIGN = 26  # =
+    OP_NE = 27  # !=
+    OP_AND = 28  # and
+    OP_OR = 29  # or
+    OP_NOT = 30  # not
+    OP_BOR = 31  # <|>
+    OP_IDIV = 32  # //
     KEYWORD = 33
     IDENTIFIER = 34
     STRING = 35
     NUM = 36
-    CALL_NATIVE_EXPR = 37 # Call the other language,
-    BRACK = 38 # |
-    COLON = 39 # :
-    MARK = 40 # ?
-    EXCL = 41 # !
+    CALL_NATIVE_EXPR = 37  # Call the other language,
+    BRACK = 38  # |
+    COLON = 39  # :
+    MARK = 40  # ?
+    EXCL = 41  # !
+
 
 kw_print = "畀我睇下"
 kw_endprint = "點樣先"
@@ -61,7 +63,7 @@ kw_expr_if = "若然"
 kw_expr_else = "唔係咁就"
 kw_then = "嘅話"
 kw_do = "=>"
-kw_dot = '->'
+kw_dot = "->"
 kw_begin = "{"
 kw_end = "}"
 kw_pass = "咩都唔做"
@@ -178,14 +180,50 @@ keywords = [
     kw_del,
     kw_del2,
     kw_call_native,
-    kw_macro_def
+    kw_macro_def,
 ]
 
-syms = {'&', '&&', '|', '%', 
-    '~', '-', '->', '=', '=>',
-    '==>', '==', '$', '$$', '<', 
-    '<*>', '<|>', '<->', '<=',
-    '<<', '>', '>=', '>>', '!',
-    '!=', '@', '@@', '{', '}',
-    '(', ')', '[', ']', '.', '+', '-',
-    '*', '**', '/', '//', '&', '^', ','}
+syms = {
+    "&",
+    "&&",
+    "|",
+    "%",
+    "~",
+    "-",
+    "->",
+    "=",
+    "=>",
+    "==>",
+    "==",
+    "$",
+    "$$",
+    "<",
+    "<*>",
+    "<|>",
+    "<->",
+    "<=",
+    "<<",
+    ">",
+    ">=",
+    ">>",
+    "!",
+    "!=",
+    "@",
+    "@@",
+    "{",
+    "}",
+    "(",
+    ")",
+    "[",
+    "]",
+    ".",
+    "+",
+    "-",
+    "*",
+    "**",
+    "/",
+    "//",
+    "&",
+    "^",
+    ",",
+}

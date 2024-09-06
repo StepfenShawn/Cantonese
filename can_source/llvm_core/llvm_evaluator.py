@@ -3,16 +3,17 @@ import llvmlite.binding as llvm
 from ctypes import *
 from .can_llvm_build import llvmCompiler
 
+
 class LLvmEvaluator:
     def __init__(self, path):
         llvm.initialize()
         llvm.initialize_native_target()
         llvm.initialize_native_asmprinter()
 
-        self.codegen : llvmCompiler = llvmCompiler(path)
+        self.codegen: llvmCompiler = llvmCompiler(path)
         self.target = llvm.Target.from_default_triple()
 
-    def evaluate(self, ast, optimize = True, llvmdump = False, endMainBlock = False):
+    def evaluate(self, ast, optimize=True, llvmdump=False, endMainBlock=False):
         self.codegen.gen_code(ast)
         if endMainBlock:
             self.codegen.main_ret()

@@ -6,28 +6,33 @@ from typing import Tuple
 
 variable: dict = {}
 
-def cantonese_func_def(func_name : str, func) -> None:
+
+def cantonese_func_def(func_name: str, func) -> None:
     global variable
     variable[func_name] = func
+
 
 def define_func(name):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kw):
             return func(*args, **kw)
+
         cantonese_func_def(name, wrapper)
         return wrapper
+
     return decorator
 
+
 def cantonese_lib_init() -> None:
-    
+
     class aa:
         def __getattr__(self, x):
             return eval(x, variable)
 
     @define_func("開份文件")
-    def cantonese_open(file, 模式 = 'r', 解碼 = None):
-        return open(file, mode = 模式, encoding = 解碼)
+    def cantonese_open(file, 模式="r", 解碼=None):
+        return open(file, mode=模式, encoding=解碼)
 
     @define_func("關咗佢")
     def cantonese_close(file) -> None:
@@ -38,7 +43,7 @@ def cantonese_lib_init() -> None:
         print(file.name)
 
     @define_func("睇睇有咩")
-    def out_ctx(file, size = None) -> None:
+    def out_ctx(file, size=None) -> None:
         if size == None:
             print(file.read())
             return
@@ -49,21 +54,21 @@ def cantonese_lib_init() -> None:
         return file.name
 
     @define_func("讀取")
-    def cantonese_read(file, size = None) -> str:
+    def cantonese_read(file, size=None) -> str:
         if size == None:
             return file.read()
         return file.read(size)
 
     @define_func("最尾")
-    def get_list_end(lst : list):
+    def get_list_end(lst: list):
         return lst[-1]
 
     @define_func("排頭位")
-    def get_list_beg(lst : list):
+    def get_list_beg(lst: list):
         return lst[0]
 
     @define_func("身位")
-    def where(lst : list, index : int, index2 = None, index3 = None, index4 = None):
+    def where(lst: list, index: int, index2=None, index3=None, index4=None):
         if index2 != None and index3 == None and index4 == None:
             return lst[index][index2]
         if index3 != None and index2 != None and index4 == None:
@@ -71,17 +76,19 @@ def cantonese_lib_init() -> None:
         if index4 != None and index2 != None and index3 != None:
             return lst[index][index2][index3][index4]
         return lst[index]
-    
+
     @define_func("掗位")
-    def lst_insert(lst : list, index : int, obj) -> None:
+    def lst_insert(lst: list, index: int, obj) -> None:
         lst.insert(index, obj)
 
     @define_func("摞位")
-    def list_get(lst : list, index : int):
+    def list_get(lst: list, index: int):
         return lst[index]
 
     @define_func("check範圍")
-    def lst_range(lst : list, range_lst : list, loss, types = 1, func = None, func_ret = None) -> bool:
+    def lst_range(
+        lst: list, range_lst: list, loss, types=1, func=None, func_ret=None
+    ) -> bool:
         if types == 2:
             for i in lst:
                 if i - loss <= range_lst and i + loss >= range_lst:
@@ -104,6 +111,7 @@ def cantonese_lib_init() -> None:
 
     cantonese_stack_init()
 
+
 def cantonese_json_init() -> None:
     import json
 
@@ -114,7 +122,8 @@ def cantonese_json_init() -> None:
     @define_func("睇下json")
     def show_json_load(text):
         print(json.loads(text))
-    
+
+
 def cantonese_csv_init() -> None:
     import csv
 
@@ -130,16 +139,21 @@ def cantonese_csv_init() -> None:
             ret.append(i)
         return i
 
+
 def cantonese_random_init() -> None:
     import random
+
     cantonese_func_def("求其啦", random.random)
     cantonese_func_def("求其int下啦", random.randint)
     cantonese_func_def("求其嚟個", random.randrange)
     cantonese_func_def("是但揀", random.choice)
 
+
 def cantonese_datetime_init() -> None:
     import datetime
+
     cantonese_func_def("宜家幾點", datetime.datetime.now)
+
 
 def cantonese_xml_init() -> None:
     from xml.dom.minidom import parse
@@ -156,53 +170,63 @@ def cantonese_xml_init() -> None:
     @define_func("睇Dom有咩")
     def get_attr(docelm, attr):
         print(docelm.getAttribute(attr))
-    
+
     @define_func("用Tag揾")
     @define_func("用Tag揾嘅")
-    def getElementsByTag(docelm, tag : str, out = None, ctx = None):
+    def getElementsByTag(docelm, tag: str, out=None, ctx=None):
         if out == 1:
             print(docelm.getElementsByTagName(tag))
         if ctx != None:
             print(ctx + docelm.getElementsByTagName(tag)[0].childNodes[0].data)
         return docelm.getElementsByTagName(tag)
 
+
 def cantonese_turtle_init() -> None:
     import turtle
+
     cantonese_func_def("畫個圈", turtle.circle)
     cantonese_func_def("寫隻字", turtle.write)
     cantonese_func_def("聽我支笛", turtle.exitonclick)
+
 
 def cantonese_smtplib_init() -> None:
     import smtplib
 
     @define_func("send份郵件")
-    def send(sender : str, receivers : str,  message : str, 
-             smtpObj = smtplib.SMTP('localhost')) -> None:
+    def send(
+        sender: str, receivers: str, message: str, smtpObj=smtplib.SMTP("localhost")
+    ) -> None:
         try:
-            smtpObj.sendmail(sender, receivers, message)         
+            smtpObj.sendmail(sender, receivers, message)
             print("Successfully sent email!")
         except Exception:
             print("Error: unable to send email")
+
 
 def cantonese_stack_init() -> None:
     @define_func("stack")
     class _stack(object):
         def __init__(self):
             self.stack = []
+
         def __str__(self):
-            return 'Stack: ' + str(self.stack)
+            return "Stack: " + str(self.stack)
+
         @define_func("我頂")
         def push(self, value):
             self.stack.append(value)
+
         @define_func("我丟")
         def pop(self):
             if self.stack:
                 return self.stack.pop()
             else:
-                raise LookupError('stack 畀你丟空咗!')
+                raise LookupError("stack 畀你丟空咗!")
+
 
 def cantonese_math_init():
     import math
+
     class Matrix(object):
         def __init__(self, list_a):
             assert isinstance(list_a, list)
@@ -210,9 +234,9 @@ def cantonese_math_init():
             self.shape = (len(list_a), len(list_a[0]))
             self.row = self.shape[0]
             self.column = self.shape[1]
-        
+
         def __str__(self):
-            return 'Matrix: ' + str(self.matrix)
+            return "Matrix: " + str(self.matrix)
 
         def build_zero_value_matrix(self, shape):
             zero_value_mat = []
@@ -229,7 +253,9 @@ def cantonese_math_init():
             result_mat = self.build_zero_value_matrix(self.shape)
             for i in range(self.row):
                 for j in range(self.column):
-                    result_mat.matrix[i][j] = self.matrix[i][j] + the_second_mat.matrix[i][j]
+                    result_mat.matrix[i][j] = (
+                        self.matrix[i][j] + the_second_mat.matrix[i][j]
+                    )
             return result_mat
 
         def matrix_multiplication(self, the_second_mat):
@@ -244,14 +270,16 @@ def cantonese_math_init():
                         number += self.matrix[i][k] * the_second_mat.matrix[k][j]
                     result_mat.matrix[i][j] = number
             return result_mat
-    
+
     def corr(a, b):
         if len(a) == 0 or len(b) == 0:
             return None
         a_avg = sum(a) / len(a)
         b_avg = sum(b) / len(b)
         cov_ab = sum([(x - a_avg) * (y - b_avg) for x, y in zip(a, b)])
-        sq = math.sqrt(sum([(x - a_avg) ** 2 for x in a]) * sum([(x - b_avg) ** 2 for x in b]))
+        sq = math.sqrt(
+            sum([(x - a_avg) ** 2 for x in a]) * sum([(x - b_avg) ** 2 for x in b])
+        )
         corr_factor = cov_ab / sq
         return corr_factor
 
@@ -262,15 +290,15 @@ def cantonese_math_init():
             sum = 0
             for j in range(n):
                 sum += (inX[j] - dataSet[i][j]) ** 2
-            distances.append(sum ** 0.5)
+            distances.append(sum**0.5)
         sortDist = sorted(distances)
         classCount = {}
         for i in range(k):
             voteLabel = labels[distances.index(sortDist[i])]
             classCount[voteLabel] = classCount.get(voteLabel, 0) + 1
-        sortedClass = sorted(classCount.items(), key = lambda d : d[1], reverse = True)
+        sortedClass = sorted(classCount.items(), key=lambda d: d[1], reverse=True)
         return sortedClass[0][0]
-    
+
     def l_reg(testX, X, Y):
         a = b = mxy = sum_x = sum_y = lxy = xiSubSqr = 0.0
         for i in range(len(X)):
@@ -284,7 +312,7 @@ def cantonese_math_init():
         b = lxy / xiSubSqr
         a = y_ave - b * x_ave
         print("Linear function is:")
-        print("y=" + str(b) + "x+"+ str(a))
+        print("y=" + str(b) + "x+" + str(a))
         return b * testX + a
 
     cantonese_func_def("KNN", KNN)
@@ -302,6 +330,7 @@ def cantonese_math_init():
     cantonese_func_def("E", math.e)
     cantonese_func_def("+oo", math.inf)
 
+
 def cantonese_model_new(model, datatest, tab, code) -> str:
     if model == "KNN":
         code += tab + "print(KNN(" + datatest + ", 數據, 標籤, K))"
@@ -312,63 +341,67 @@ def cantonese_model_new(model, datatest, tab, code) -> str:
         code = ""
     return code
 
+
 def cantonese_re_init() -> None:
 
     @define_func("襯唔襯")
-    def can_re_match(pattern : str, string : str, flags = 0):
+    def can_re_match(pattern: str, string: str, flags=0):
         return re.match(pattern, string, flags)
 
     @define_func("襯")
-    def can_re_match_out(pattern : str, string : str, flags = 0) -> None:
+    def can_re_match_out(pattern: str, string: str, flags=0) -> None:
         print(re.match(pattern, string, flags).span())
+
 
 def cantonese_urllib_init() -> None:
     import urllib.request
 
     @define_func("睇網頁")
-    def can_urlopen_out(url : str) -> None:
+    def can_urlopen_out(url: str) -> None:
         print(urllib.request.urlopen(url).read())
 
     @define_func("揾網頁")
-    def can_urlopen(url : str):
+    def can_urlopen(url: str):
         return urllib.request.urlopen(url)
+
 
 def cantonese_requests_init() -> None:
     import requests
 
     @define_func("噅求")
-    def req_get(url : str, data = "", json = False):
+    def req_get(url: str, data="", json=False):
         headers = {
-            'user-agent':
-    'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Mobile Safari/537.36' \
+            "user-agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Mobile Safari/537.36"
         }
         if data != "":
             headers.update(data)
         res = requests.get(url, headers)
-        res.encoding = 'utf-8'
+        res.encoding = "utf-8"
         if json:
             return res.json()
         return res.text
+
 
 def cantonese_socket_init() -> None:
     import socket
 
     @define_func("通電話")
     def s_new():
-        return socket.socket() 
+        return socket.socket()
 
     @define_func("傾偈")
-    def s_connect(s, port, host = socket.gethostname()):
+    def s_connect(s, port, host=socket.gethostname()):
         s.connect((host, port))
         return s
 
     @define_func("收風")
-    def s_recv(s, i : int):
+    def s_recv(s, i: int):
         return s.recv(i)
-    
+
     @define_func("收線")
     def s_close(s) -> None:
         s.close()
+
 
 def cantonese_kivy_init() -> None:
     from kivy.app import App
@@ -376,45 +409,44 @@ def cantonese_kivy_init() -> None:
     from kivy.uix.button import Button
     from kivy.uix.boxlayout import BoxLayout
 
-    
     cantonese_func_def("App", App)
     cantonese_func_def("Label", Label)
     cantonese_func_def("Button", Button)
 
     @define_func("同我show")
-    def app_show(ctx, 寬 = (.5, .5), 
-        高 = {"center_x": .5, "center_y": .5}) -> None:
-        return Label(text = ctx, size_hint = 寬, pos_hint = 高)
+    def app_show(ctx, 寬=(0.5, 0.5), 高={"center_x": 0.5, "center_y": 0.5}) -> None:
+        return Label(text=ctx, size_hint=寬, pos_hint=高)
 
     @define_func("App運行")
     def app_run(app_main, build_func) -> None:
         print("The app is running ...")
+
         def build(self):
             return build_func()
+
         app_main.build = build
         app_main().run()
 
     @define_func("開掣")
-    def app_button(ctx, 寬 = (.5, .5), 
-        高 = {"center_x": .5, "center_y": .5}) -> None:
-        return Button(text = ctx, size_hint = 寬, pos_hint = 高)
+    def app_button(ctx, 寬=(0.5, 0.5), 高={"center_x": 0.5, "center_y": 0.5}) -> None:
+        return Button(text=ctx, size_hint=寬, pos_hint=高)
 
     @define_func("老作")
-    def app_layout(types, 佈局 = "", 方向 = 'vertical', 間距 = 15, 內邊距 = 10):
-        if 佈局 ==  "":
+    def app_layout(types, 佈局="", 方向="vertical", 間距=15, 內邊距=10):
+        if 佈局 == "":
             if types == "Box":
-                return BoxLayout(orientation = 方向, 
-                spacing = 間距, padding = 內邊距)
+                return BoxLayout(orientation=方向, spacing=間距, padding=內邊距)
         else:
             for i in types.stack:
                 佈局.add_widget(i)
-    
+
     @define_func("睇實佢")
     def button_bind(btn, func) -> None:
-        btn.bind(on_press = func)
+        btn.bind(on_press=func)
+
 
 def cantonese_pygame_init() -> None:
-    
+
     import pygame
     import math
     import random
@@ -425,21 +457,21 @@ def cantonese_pygame_init() -> None:
     pygame.font.init()
 
     @define_func("屏幕老作")
-    def pygame_setmode(size, caption = ""):
+    def pygame_setmode(size, caption=""):
         if caption != "":
             pygame.display.set_caption(caption)
             return pygame.display.set_mode(size, 0, 32)
         return pygame.display.set_mode(size, 0, 32)
 
     @define_func("圖片老作")
-    def pygame_imgload(path, color = ""):
+    def pygame_imgload(path, color=""):
         img = pygame.image.load(path).convert_alpha()
         if color != "":
-            img.set_colorkey((color),pygame.RLEACCEL)
+            img.set_colorkey((color), pygame.RLEACCEL)
         return img
 
     @define_func("嚟首music")
-    def pygame_musicload(path, loop = True, start = 0.0):
+    def pygame_musicload(path, loop=True, start=0.0):
         pygame.mixer.music.load(path)
         if loop:
             pygame.mixer.music.play(-1, start)
@@ -449,7 +481,7 @@ def cantonese_pygame_init() -> None:
     @define_func("嚟首sound")
     def pygame_soundload(path):
         return pygame.mixer.Sound(path)
-    
+
     @define_func("播放")
     def pygame_sound_play(sound):
         sound.play()
@@ -463,10 +495,10 @@ def cantonese_pygame_init() -> None:
         return object.move(speed)
 
     @define_func("喺邊")
-    def object_rect(object, center = ""):
+    def object_rect(object, center=""):
         if center == "":
             return object.get_rect()
-        return object.get_rect(center = center)
+        return object.get_rect(center=center)
 
     @define_func("校色")
     def pygame_color(color):
@@ -477,20 +509,18 @@ def cantonese_pygame_init() -> None:
         return e.key
 
     @define_func("上畫")
-    def draw(屏幕, obj = "", obj_where = "", event = "", 顏色 = "", 位置 = "") -> None:
+    def draw(屏幕, obj="", obj_where="", event="", 顏色="", 位置="") -> None:
         if event == "":
             for event in pygame.event.get():
-                if event.type == pygame.QUIT: 
+                if event.type == pygame.QUIT:
                     sys.exit()
         else:
-            event_map = {
-                "KEYDOWN" : KEYDOWN
-            }
+            event_map = {"KEYDOWN": KEYDOWN}
             for events in pygame.event.get():
                 for my_ev in event.stack:
                     if events.type == event_map[my_ev[0]]:
                         my_ev[1](events)
-                    if events.type == pygame.QUIT: 
+                    if events.type == pygame.QUIT:
                         sys.exit()
         if 顏色 != "":
             屏幕.fill(顏色)
@@ -498,17 +528,15 @@ def cantonese_pygame_init() -> None:
             屏幕.blit(obj, obj_where)
 
         pygame.time.delay(2)
-    
+
     @define_func("事件驅動")
     def exec_event(event):
-        event_map = {
-                "KEYDOWN" : KEYDOWN
-            }
+        event_map = {"KEYDOWN": KEYDOWN}
         for events in pygame.event.get():
             for my_ev in event.stack:
                 if events.type == event_map[my_ev[0]]:
                     my_ev[1](events)
-                if events.type == pygame.QUIT: 
+                if events.type == pygame.QUIT:
                     sys.exit()
 
     @define_func("揾位")
@@ -527,11 +555,11 @@ def cantonese_pygame_init() -> None:
         clock_obj.tick(t)
 
     @define_func("矩形老作")
-    def pygame_rectload(屏幕, 顏色, X, Y, H = 20, W = 20):
+    def pygame_rectload(屏幕, 顏色, X, Y, H=20, W=20):
         pygame.draw.rect(屏幕, 顏色, pygame.Rect(X, Y, H, W))
 
     @define_func("動圖老作")
-    def pygame_gif_show(屏幕, 序列, pos = (0, 0), delay = 100):
+    def pygame_gif_show(屏幕, 序列, pos=(0, 0), delay=100):
         for i in 序列:
             屏幕.blit(i, pos)
             pygame.time.delay(delay)
@@ -542,9 +570,17 @@ def cantonese_pygame_init() -> None:
         return textSurface, textSurface.get_rect()
 
     @define_func("寫隻字")
-    def pygame_text_show(screen, text, display_x, display_y,
-                         style = 'freesansbold.ttf', _delay = 100, size = 115,
-                         color = (255,255,255), update = True):
+    def pygame_text_show(
+        screen,
+        text,
+        display_x,
+        display_y,
+        style="freesansbold.ttf",
+        _delay=100,
+        size=115,
+        color=(255, 255, 255),
+        update=True,
+    ):
         largeText = pygame.font.Font(style, size)
         TextSurf, TextRect = text_objects(text, largeText, color)
         TextRect.center = (display_x, display_y)
@@ -578,13 +614,14 @@ def cantonese_pygame_init() -> None:
         sprite.kill()
 
     @define_func("跟蹤")
-    def sprite_trace(target, tracer, type = "", speed = 3, speed_y = 16, speed_x = 16):
+    def sprite_trace(target, tracer, type="", speed=3, speed_y=16, speed_x=16):
         if type == "Linear":
             dx, dy = target[0] - tracer.x, target[1] - tracer.y
             dist = math.hypot(dx, dy) + 0.1
             dx, dy = dx / dist, dy / dist  # Normalize.
             # Move along this normalized vector towards the player at current speed.
             return (dx * speed, dy * speed)
+
     """
         display_width : width of the screen
         display_height : height of the screen
@@ -592,10 +629,19 @@ def cantonese_pygame_init() -> None:
 
     @define_func("嚟個按鈕")
     class Button(object):
-        def __init__(self, text, color, screen,
-                    display_width = 1200, display_height = 600, 
-                     x = None, y = None, size = 58, **kwargs):
-            font = pygame.font.Font('freesansbold.ttf', size)
+        def __init__(
+            self,
+            text,
+            color,
+            screen,
+            display_width=1200,
+            display_height=600,
+            x=None,
+            y=None,
+            size=58,
+            **kwargs
+        ):
+            font = pygame.font.Font("freesansbold.ttf", size)
             self.surface = text_objects(text, font, color)[0]
             self.WIDTH = self.surface.get_width()
             self.HEIGHT = self.surface.get_height()
@@ -620,7 +666,7 @@ def cantonese_pygame_init() -> None:
                 return True
             else:
                 return False
-        
+
         def 點擊(self, position):
             return self.check_click(position)
 
@@ -635,10 +681,12 @@ def cantonese_pygame_init() -> None:
     cantonese_func_def("刷新", pygame.display.flip)
     cantonese_func_def("Say拜拜", pygame.quit)
 
+
 def cantonese_numpy_init() -> None:
     pass
 
-LibRegister = namedtuple('LibRegister', ['names', 'f_init', 'import_res'])
+
+LibRegister = namedtuple("LibRegister", ["names", "f_init", "import_res"])
 
 lib_list = [
     LibRegister(["random", "隨機數"], cantonese_random_init, "random"),
@@ -655,18 +703,20 @@ lib_list = [
     LibRegister(["kivy", "手機程式"], cantonese_kivy_init, "kivy"),
     LibRegister(["pygame", "遊戲"], cantonese_pygame_init, "pygame"),
     LibRegister(["json", "json解析"], cantonese_json_init, "json"),
-    LibRegister(["numpy", "數值計算"], cantonese_numpy_init, "numpy")
+    LibRegister(["numpy", "數值計算"], cantonese_numpy_init, "numpy"),
 ]
 
 """
     Built-in library for Cantonese
 """
-def fix_lib_name(name : str) -> Tuple[str, bool]:
+
+
+def fix_lib_name(name: str) -> Tuple[str, bool]:
     global lib_list
 
     # Call function library
-    if name[ : 7] == "python_":
-        return name[7 : ], False
+    if name[:7] == "python_":
+        return name[7:], False
 
     # Call cantonese build-in library
     for lib in lib_list:
@@ -674,6 +724,6 @@ def fix_lib_name(name : str) -> Tuple[str, bool]:
             if lib.f_init is not None:
                 lib.f_init()
             return lib.import_res, False
-    
+
     # Call other library
     return name, True

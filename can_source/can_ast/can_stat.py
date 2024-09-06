@@ -2,14 +2,17 @@ from dataclasses import dataclass
 from typing import List
 from .can_exp import Exp
 
+
 class Stat:
     pass
+
 
 @dataclass
 class FuncCallStat(Stat):
     func_name: Exp
     args: List[Exp]
     pos: object = None
+
 
 @dataclass
 class IfStat(Stat):
@@ -19,15 +22,18 @@ class IfStat(Stat):
     elif_blocks: List[Stat]
     else_blocks: List[Stat]
     pos: object = None
-    
+
+
 @dataclass
 class PrintStat(Stat):
     args: List[Exp]
     pos: object = None
 
+
 @dataclass
 class PassStat(Stat):
     pos: object = None
+
 
 @dataclass
 class AssignStat(Stat):
@@ -35,11 +41,13 @@ class AssignStat(Stat):
     exp_list: List[Exp]
     pos: object = None
 
+
 @dataclass
 class AssignBlockStat(Stat):
     var_list: List[List[Exp]]
     exp_list: List[List[Exp]]
     pos: object = None
+
 
 @dataclass
 class ForStat(Stat):
@@ -49,6 +57,7 @@ class ForStat(Stat):
     blocks: List[Exp]
     pos: object = None
 
+
 @dataclass
 class ForEachStat(Stat):
     id_list: List[Exp]
@@ -56,15 +65,18 @@ class ForEachStat(Stat):
     blocks: List[Stat]
     pos: object = None
 
+
 @dataclass
 class WhileStat(Stat):
     cond_exp: Exp
     blocks: List[Stat]
     pos: object = None
 
+
 @dataclass
 class ListInitStat(Stat):
     pos: object = None
+
 
 @dataclass
 class FunctionDefStat(Stat):
@@ -73,12 +85,14 @@ class FunctionDefStat(Stat):
     blocks: List[Stat]
     pos: object = None
 
+
 @dataclass
 class FuncTypeDefStat(Stat):
     func_name: Exp
     args_type: List[Exp]
     return_type: List[Exp]
     pos: object = None
+
 
 @dataclass
 class MethodDefStat(Stat):
@@ -87,16 +101,19 @@ class MethodDefStat(Stat):
     class_blocks: List[Stat]
     pos: object = None
 
+
 @dataclass
 class AttrDefStat(Stat):
     class_var_list: List[Exp]
     class_exp_list: List[Exp]
     pos: object = None
 
+
 @dataclass
 class ClassInitStat(Stat):
     class_var_list: List[Exp]
     pos: object = None
+
 
 @dataclass
 class ClassDefStat(Stat):
@@ -105,15 +122,18 @@ class ClassDefStat(Stat):
     class_blocks: List[Stat]
     pos: object = None
 
+
 @dataclass
 class ImportStat(Stat):
     idlist: List[Exp]
     pos: object = None
 
+
 @dataclass
 class RaiseStat(Stat):
     name_exp: Exp
     pos: object = None
+
 
 @dataclass
 class TryStat(Stat):
@@ -123,43 +143,52 @@ class TryStat(Stat):
     finally_blocks: List[Stat]
     pos: object = None
 
+
 @dataclass
 class GlobalStat(Stat):
     idlist: List[Exp]
     pos: object = None
 
+
 @dataclass
 class BreakStat(Stat):
     pos: object = None
 
+
 @dataclass
 class ContinueStat(Stat):
     pos: object = None
+
 
 @dataclass
 class TypeStat(Stat):
     exps: List[Exp]
     pos: object = None
 
+
 @dataclass
 class AssertStat(Stat):
     exps: Exp
     pos: object = None
+
 
 @dataclass
 class ReturnStat(Stat):
     exps: List[Exp]
     pos: object = None
 
+
 @dataclass
 class DelStat(Stat):
     exps: List[Exp]
     pos: object = None
 
+
 @dataclass
 class CmdStat(Stat):
     args: List[Exp]
     pos: object = None
+
 
 @dataclass
 class MethodCallStat(Stat):
@@ -174,6 +203,7 @@ class CallStat(Stat):
     exp: Exp
     pos: object = None
 
+
 @dataclass
 class MatchStat(Stat):
     match_id: Exp
@@ -182,16 +212,19 @@ class MatchStat(Stat):
     default_match_block: List[Stat]
     pos: object = None
 
+
 @dataclass
 class MacroDefStat(Stat):
     match_pats: List[Exp]
     match_block: List[Stat]
     pos: object = None
 
+
 @dataclass
 class ExtendStat(Stat):
     code: str
     pos: object = None
+
 
 @dataclass
 class ModelNewStat(Stat):
@@ -199,10 +232,12 @@ class ModelNewStat(Stat):
     dataset: Exp
     pos: object = None
 
+
 @dataclass
 class TurtleStat(Stat):
     exp_blocks: List[Exp]
     pos: object = None
+
 
 @dataclass
 class ExitStat(Stat):

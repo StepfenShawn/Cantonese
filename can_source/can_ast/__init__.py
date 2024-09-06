@@ -3,4 +3,4 @@ from typing import Union
 from .can_exp import *
 from .can_stat import *
 
-AST = Union[Stat, Exp] 
+AST = Union[Stat, Exp]
