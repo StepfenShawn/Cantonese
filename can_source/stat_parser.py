@@ -1,7 +1,7 @@
 from can_source.can_lexer import *
 import can_source.can_ast as can_ast
 from can_source.parser_base import F, pos_tracker
-from can_source.exp_parser import ExpParser, ClassBlockExpParser
+from can_source.exp_parser import ExpParser
 from can_source.macros_parser import MacroParser
 
 
@@ -153,24 +153,25 @@ class StatParser:
             return "EOF"
 
         else:
-            prefix_exp = F.parse_exp(
-                self, self.getExpParser(), by=self.ExpParser.parse_exp
-            )
-            next_tk = F.try_look_ahead()
-            if next_tk.value == kw_from:
-                return self.parse_for_stat(prefix_exp)
+            return self.with_prefix_stats()
 
-            elif next_tk.value == kw_get_value:
-                return self.parse_suffix_assign_stat(prefix_exp)
+    def with_prefix_stats(self):
+        prefix_exp = ExpParser.parse_exp()
+        next_tk = F.try_look_ahead()
+        if next_tk.value == kw_from:
+            return self.parse_for_stat(prefix_exp)
 
-            elif next_tk.value == kw_lst_assign:
-                return self.parse_list_assign_stat(prefix_exp)
+        elif next_tk.value == kw_get_value:
+            return self.parse_suffix_assign_stat(prefix_exp)
 
-            elif next_tk.value == kw_set_assign:
-                return self.parse_set_assign_stat(prefix_exp)
-            # kw_laa1
-            else:
-                return self.parse_class_method_call_stat(prefix_exp)
+        elif next_tk.value == kw_lst_assign:
+            return self.parse_list_assign_stat(prefix_exp)
+
+        elif next_tk.value == kw_set_assign:
+            return self.parse_set_assign_stat(prefix_exp)
+        # kw_laa1
+        else:
+            return self.parse_class_method_call_stat(prefix_exp)
 
     def parse_stats(self):
         while True:
@@ -180,7 +181,6 @@ class StatParser:
             yield stat
 
     def parse_print_stat(self):
-        # args = F.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_args)
         args = ExpParser.parse_args()
         F.eat_tk_by_value(kw_endprint)
         return can_ast.PrintStat(args)
@@ -304,15 +304,13 @@ class StatParser:
 
         F.eat_tk_by_value(kw_from)
 
-        from_exp = F.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp)
+        from_exp = ExpParser.parse_exp()
         F.eat_tk_by_value(kw_to)
 
-        to_exp = F.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp)
+        to_exp = ExpParser.parse_exp()
 
         blocks = F.many(
-            self,
-            parser=self,
-            by="parse",
+            other_parse_fn=self.parse,
             util_cond=lambda: F.try_look_ahead().value == kw_endfor,
         )
 
@@ -329,9 +327,7 @@ class StatParser:
         F.eat_tk_by_value([kw_func_begin, kw_do])
 
         blocks = F.many(
-            self,
-            parser=self,
-            by="parse",
+            other_parse_fn=self.parse,
             util_cond=lambda: F.try_look_ahead().value == kw_func_end,
         )
 
@@ -366,7 +362,7 @@ class StatParser:
         return can_ast.PassStat()
 
     def parse_assert_stat(self):
-        exp = F.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp)
+        exp = ExpParser.parse_exp()
         return can_ast.AssertStat(exp)
 
     def parse_return_stat(self):
@@ -393,8 +389,7 @@ class StatParser:
         F.skip_once()
         F.eat_tk_by_value([kw_except])
 
-        exp_parser = self.getExpParser()
-        except_exps.append(exp_parser.parse_exp())
+        except_exps.append(ExpParser.parse_exp())
 
         F.eat_tk_by_value([kw_then])
         F.eat_tk_by_value([kw_do])
@@ -488,9 +483,7 @@ class StatParser:
         )
 
         class_blocks = F.many(
-            self,
-            ClassBlockStatParser,
-            by="parse",
+            other_parse_fn=self.parse,
             util_cond=lambda: F.try_look_ahead().typ == TokenType.SEP_RCURLY,
         )
 
@@ -534,8 +527,7 @@ class StatParser:
         match_val: list = []
         match_block: list = []
         default_match_block: list = []
-        exp_parser = self.getExpParser()
-        match_id = exp_parser.parse_exp()
+        match_id = ExpParser.parse_exp()
 
         F.eat_tk_by_value(kw_do)
 
@@ -544,19 +536,18 @@ class StatParser:
                 F.skip_once()
                 if F.try_look_ahead().value == kw_case:
                     F.skip_once()
-                    exp_parser = self.getExpParser()
-                    match_val.append(exp_parser.parse_exp())
+                    match_val.append(ExpParser.parse_exp())
 
                     F.eat_tk_by_value(kw_do)
                     F.eat_tk_by_kind(TokenType.SEP_LCURLY)
 
-                    block: list = []
+                    block = F.many(
+                        other_parse_fn=self.parse,
+                        util_cond=lambda: F.try_look_ahead().typ == TokenType.SEP_RCURLY,
+                    )
 
-                    while F.try_look_ahead().typ != TokenType.SEP_RCURLY:
-                        stat_parser = StatParser(self.get_token_ctx(), self.ExpParser)
-                        block.append(stat_parser.parse())
+                    F.eat_tk_by_kind(TokenType.SEP_RCURLY)
 
-                    F.skip_once()
                     match_block.append(block)
 
                 elif F.try_look_ahead().value == "_":
@@ -564,9 +555,10 @@ class StatParser:
                     F.eat_tk_by_value(kw_do)
                     F.eat_tk_by_kind(TokenType.SEP_LCURLY)
 
-                    while F.try_look_ahead().typ != TokenType.SEP_RCURLY:
-                        stat_parser = StatParser(self.get_token_ctx(), self.ExpParser)
-                        default_match_block.append(stat_parser.parse())
+                    default_match_block = F.many(
+                        other_parse_fn=self.parse,
+                        util_cond=lambda: F.try_look_ahead().typ == TokenType.SEP_RCURLY,
+                    )
 
                     F.eat_tk_by_kind(TokenType.SEP_RCURLY)
 
@@ -578,24 +570,19 @@ class StatParser:
         return can_ast.MatchStat(match_id, match_val, match_block, default_match_block)
 
     def parse_for_each_stat(self):
-        id_list: list = []
-        exp_list: list = []
-        blocks: list = []
-
-        exp_parser = self.getExpParser()
-        id_list = exp_parser.parse_idlist()
+        id_list = ExpParser.parse_idlist()
 
         F.eat_tk_by_value(kw_in)
 
-        exp_parser = self.getExpParser()
-        exp_list = exp_parser.parse_exp_list()
+        exp_list = ExpParser.parse_exp_list()
 
         F.eat_tk_by_value(kw_do)
         F.eat_tk_by_kind(TokenType.SEP_LCURLY)
 
-        while F.try_look_ahead().typ != TokenType.SEP_RCURLY:
-            stat_parser = StatParser(self.get_token_ctx(), self.ExpParser)
-            blocks.append(stat_parser.parse())
+        blocks = F.many(
+            other_parse_fn=self.parse,
+            util_cond=lambda: F.try_look_ahead().typ == TokenType.SEP_RCURLY,
+        )
 
         F.eat_tk_by_kind(TokenType.SEP_RCURLY)
 
@@ -629,26 +616,24 @@ class StatParser:
             ):
                 F.skip_once()
             else:
-                exp_blocks.append(
-                    F.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp)
-                )
+                exp_blocks.append(ExpParser.parse_exp())
 
         F.eat_tk_by_kind(TokenType.SEP_RCURLY)
 
         return can_ast.TurtleStat(exp_blocks)
 
     def parse_pls_stat(self):
-        func_name = F.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp)
+        func_name = ExpParser.parse_exp()
         F.eat_tk_by_value(kw_laa1)
         return can_ast.FuncCallStat(func_name, [])
 
 
 class ClassBlockStatParser(StatParser):
-    def __init__(self, token_ctx: tuple, ExpParser=ClassBlockExpParser) -> None:
+    def __init__(self, token_ctx: tuple, ExpParser=ExpParser) -> None:
         StatParser.__init__(self, token_ctx, ExpParser)
 
     def parse_method_block(self):
-        name_exp = F.parse_exp(self, self.getExpParser(), by=self.ExpParser.parse_exp)
+        name_exp = ExpParser.parse_exp()
 
         args: list = F.parse_exp(
             self, self.getExpParser(), by=self.ExpParser.parse_parlist
@@ -705,7 +690,7 @@ class ClassBlockStatParser(StatParser):
 
 
 class MacroBlockStatParser(StatParser):
-    def __init__(self, ExpParser=ClassBlockExpParser) -> None:
+    def __init__(self, ExpParser=ExpParser) -> None:
         StatParser.__init__(self, ExpParser)
 
     @pos_tracker

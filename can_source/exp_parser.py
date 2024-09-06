@@ -364,8 +364,10 @@ class ExpParser:
                 key_exp: can_ast.AST = cls.parse_exp()
                 F.eat_tk_by_kind(TokenType.SEP_RBRACK)
                 exp = can_ast.ListAccessExp(exp, key_exp)
-            elif kind == TokenType.SEP_DOT or (
-                kind == TokenType.KEYWORD and value == kw_dot
+            elif (
+                kind == TokenType.SEP_DOT
+                or (kind == TokenType.KEYWORD and value == kw_dot)
+                or (kind == TokenType.IDENTIFIER and value == "嘅")
             ):
                 F.skip_once()
                 tk = F.eat_tk_by_kind(TokenType.IDENTIFIER)
@@ -559,14 +561,3 @@ class ParExpParser(ExpParser):
             exp2 = exp_parser.parse_exp()
             return can_ast.AssignExp(exp, exp2)
         return exp
-
-
-class ClassBlockExpParser(ExpParser):
-    # Override
-    def parse_exp0(cls):
-        tk = F.try_look_ahead().value
-        if tk in [kw_self, "@@"]:
-            F.skip_once()
-            return can_ast.ClassSelfExp(super().parse_exp0())
-        else:
-            return super().parse_exp0()

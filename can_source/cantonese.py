@@ -24,6 +24,7 @@ from can_source.libraries.can_lib import *
 from can_source.web_core.can_web_parser import *
 from metadata import _version_, logo
 
+
 class Options:
     dump_ast = False
     dump_lex = False

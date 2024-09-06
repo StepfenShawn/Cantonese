@@ -367,7 +367,7 @@ pip install kivy
 使下 kivy
 介紹返 HelloApp 係 乜X {
     佢個老豆叫 App
-    佢識得 |HelloWorld| => {
+    佢識得 |自己, HelloWorld| => {
         |同我show| 下 -> "Hello World" 就係 |做嘢|
         还数 |做嘢|
     }

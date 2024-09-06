@@ -12,7 +12,7 @@ def set_work_env(file: str):
     sys.path.insert(0, pa)
 
 
-class Can_context:
+class CanContext:
     """
     A class to hold global values in runtime
     """
@@ -29,7 +29,7 @@ class Can_context:
         return (self.tokens, self.buffer_tokens)
 
 
-can_context = Can_context()
+can_context = CanContext()
 
 error = namedtuple("layer", ["lineno", "filename"])
 

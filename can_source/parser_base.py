@@ -5,6 +5,10 @@ from can_source.can_sys import can_context
 
 
 def pos_tracker(func):
+    """
+    追踪Token位置
+    """
+
     def wrapper(self, *args, **kwargs):
         start_pos = F.next_lexer_pos
         ast = func(self, *args, **kwargs)
@@ -22,7 +26,7 @@ def pos_tracker(func):
     return wrapper
 
 
-class Parser_Fn:
+class ParserFn:
     def __init__(self) -> None:
         self.last_tk = None
 
@@ -123,4 +127,4 @@ class Parser_Fn:
 """
     Parser function
 """
-F = Parser_Fn()
+F = ParserFn()

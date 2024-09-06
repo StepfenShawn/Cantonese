@@ -104,7 +104,6 @@ kw_pop = "丟你"
 kw_model = "嗌"
 kw_mod_new = "過嚟估下"
 kw_class_init = "佢有啲咩"
-kw_self = "自己嘅"
 kw_call_begin = "下"
 kw_get_value = "就係"
 kw_del = "冇鳩用"
@@ -172,7 +171,6 @@ keywords = [
     kw_model,
     kw_mod_new,
     kw_class_init,
-    kw_self,
     kw_call_begin,
     kw_get_value,
     kw_match,
