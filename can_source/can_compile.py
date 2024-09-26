@@ -166,10 +166,6 @@ class Codegen:
             else:
                 return s + "}"
 
-        elif isinstance(exp, can_parser.can_ast.ClassSelfExp):
-            s = "self." + self.codegen_expr(exp.exp)
-            return s
-
         elif isinstance(exp, can_parser.can_ast.AssignExp):
             s = self.codegen_expr(exp.exp1) + " = " + self.codegen_expr(exp.exp2)
             return s
@@ -179,12 +175,6 @@ class Codegen:
         for arg in args:
             s += ", " + self.codegen_expr(arg)
         return s[2:]
-
-    def codegen_method_args(self, args: list) -> str:
-        s = ""
-        for arg in args:
-            s += ", " + self.codegen_expr(arg)
-        return "self, " + s[2:]
 
     def codegen_lib_list(self, lib_list: list) -> str:
         res = []
@@ -347,7 +337,7 @@ class Codegen:
                 "def "
                 + self.codegen_expr(stat.name_exp)
                 + "("
-                + self.codegen_method_args(stat.args)
+                + self.codegen_args(stat.args)
                 + "):\n",
                 stat,
             )

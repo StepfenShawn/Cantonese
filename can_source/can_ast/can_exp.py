@@ -156,11 +156,6 @@ class LambdaExp(Exp):
 
 
 @dataclass
-class ClassSelfExp(Exp):
-    exp: Exp
-
-
-@dataclass
 class IfElseExp(Exp):
     if_cond_exp: Exp
     if_exp: Exp

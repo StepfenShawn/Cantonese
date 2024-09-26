@@ -24,7 +24,6 @@ class StatParser:
                 can_ast.ObjectAccessExp,
                 can_ast.ListAccessExp,
                 can_ast.MappingExp,
-                can_ast.ClassSelfExp,
                 can_ast.AnnotationExp,
             ),
         ):
@@ -543,7 +542,8 @@ class StatParser:
 
                     block = F.many(
                         other_parse_fn=self.parse,
-                        util_cond=lambda: F.try_look_ahead().typ == TokenType.SEP_RCURLY,
+                        util_cond=lambda: F.try_look_ahead().typ
+                        == TokenType.SEP_RCURLY,
                     )
 
                     F.eat_tk_by_kind(TokenType.SEP_RCURLY)
@@ -557,7 +557,8 @@ class StatParser:
 
                     default_match_block = F.many(
                         other_parse_fn=self.parse,
-                        util_cond=lambda: F.try_look_ahead().typ == TokenType.SEP_RCURLY,
+                        util_cond=lambda: F.try_look_ahead().typ
+                        == TokenType.SEP_RCURLY,
                     )
 
                     F.eat_tk_by_kind(TokenType.SEP_RCURLY)

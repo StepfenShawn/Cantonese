@@ -517,6 +517,34 @@ class ExpParser:
             args = cls.parse_exp_list()
         return args
 
+    @classmethod
+    def parse_attrs_def(cls):
+        tk = F.try_look_ahead()
+        if tk.typ == TokenType.IDENTIFIER:
+            F.skip_once()
+            F.eat_tk_by_value(":")
+            attrs = [
+                can_ast.AnnotationExp(
+                    can_ast.IdExp(tk),
+                    can_ast.IdExp(F.eat_tk_by_kind(TokenType.IDENTIFIER).value),
+                )
+            ]
+            while F.try_look_ahead().typ == TokenType.SEP_COMMA:
+                F.skip_once()
+                tk = F.try_look_ahead()
+                if tk.typ != TokenType.IDENTIFIER:
+                    break
+                else:
+                    F.skip_once()
+                    F.eat_tk_by_value(":")
+                    attrs.append(
+                        can_ast.AnnotationExp(
+                            can_ast.IdExp(tk),
+                            can_ast.IdExp(F.eat_tk_by_kind(TokenType.IDENTIFIER).value),
+                        )
+                    )
+            return attrs
+
 
 """
     parlist ::= id [',', id | '<*>']
