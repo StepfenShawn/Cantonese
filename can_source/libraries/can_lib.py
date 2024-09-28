@@ -1,28 +1,11 @@
 import sys
 import re
-import functools
 from collections import namedtuple
 from typing import Tuple
-
-variable: dict = {}
-
-
-def cantonese_func_def(func_name: str, func) -> None:
-    global variable
-    variable[func_name] = func
-
-
-def define_func(name):
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kw):
-            return func(*args, **kw)
-
-        cantonese_func_def(name, wrapper)
-        return wrapper
-
-    return decorator
-
+from can_source.libraries.can_csv import cantonese_csv_init
+from can_source.libraries.can_json import cantonese_json_init
+from can_source.libraries.can_random import cantonese_random_init
+from can_source.libraries.lib_gobals import *
 
 def cantonese_lib_init() -> None:
 
@@ -111,42 +94,6 @@ def cantonese_lib_init() -> None:
 
     cantonese_stack_init()
 
-
-def cantonese_json_init() -> None:
-    import json
-
-    @define_func("讀取json")
-    def json_load(text):
-        return json.loads(text)
-
-    @define_func("睇下json")
-    def show_json_load(text):
-        print(json.loads(text))
-
-
-def cantonese_csv_init() -> None:
-    import csv
-
-    @define_func("睇睇csv有咩")
-    def out_csv_read(file):
-        for i in csv.reader(file):
-            print(i)
-
-    @define_func("讀取csv")
-    def get_csv(file):
-        ret = []
-        for i in csv.reader(file):
-            ret.append(i)
-        return i
-
-
-def cantonese_random_init() -> None:
-    import random
-
-    cantonese_func_def("求其啦", random.random)
-    cantonese_func_def("求其int下啦", random.randint)
-    cantonese_func_def("求其嚟個", random.randrange)
-    cantonese_func_def("是但揀", random.choice)
 
 
 def cantonese_datetime_init() -> None:

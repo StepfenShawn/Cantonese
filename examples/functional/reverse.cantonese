@@ -1,0 +1,6 @@
+Fn!{
+    介紹返 reverse [] 係 [],
+    介紹返 reverse (x: xs) 係 列表操作!{x ... reverse (xs)}
+}
+
+畀我睇下 reverse(["a", "b", "c", "d"]) 點樣先？

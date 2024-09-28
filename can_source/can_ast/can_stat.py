@@ -104,16 +104,8 @@ class MethodDefStat(Stat):
 
 @dataclass
 class AttrDefStat(Stat):
-    class_var_list: List[Exp]
-    class_exp_list: List[Exp]
+    attrs_list: List[Exp]
     pos: object = None
-
-
-@dataclass
-class ClassInitStat(Stat):
-    class_var_list: List[Exp]
-    pos: object = None
-
 
 @dataclass
 class ClassDefStat(Stat):
@@ -223,19 +215,6 @@ class MacroDefStat(Stat):
 @dataclass
 class ExtendStat(Stat):
     code: str
-    pos: object = None
-
-
-@dataclass
-class ModelNewStat(Stat):
-    model: Exp
-    dataset: Exp
-    pos: object = None
-
-
-@dataclass
-class TurtleStat(Stat):
-    exp_blocks: List[Exp]
     pos: object = None
 
 

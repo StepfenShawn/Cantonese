@@ -3,11 +3,6 @@ import can_source.can_lexer as can_lexer
 import sys, os
 from typing import Generator
 
-from can_source.libraries.can_lib import (
-    fix_lib_name,
-    cantonese_model_new,
-    cantonese_turtle_init,
-)
 from collections import defaultdict
 from can_source.libraries.can_lib import fix_lib_name
 
@@ -60,8 +55,9 @@ class Codegen:
         self.line += s.count("\n")
         end = self.line
         for py_lineno in range(start, end):
-            for can_lineno in range(stat.pos.line, stat.pos.end_line + 1):
-                self.line_mmap[py_lineno].append(can_lineno)
+            if stat.pos:
+                for can_lineno in range(stat.pos.line, stat.pos.end_line + 1):
+                    self.line_mmap[py_lineno].append(can_lineno)
 
     def emit(self, s, stat):
         s = self.tab + s
@@ -343,6 +339,12 @@ class Codegen:
             )
             self.codegen_block(stat.class_blocks)
 
+        elif isinstance(stat, can_parser.can_ast.AttrDefStat):
+            names = list(map(lambda x: x.exp.name, stat.attrs_list))
+            args_str = ','.join([name + "=None" for name in names])
+            attr_str = ';'.join([("self." + name + "=" + name) for name in names])
+            self.emit(f"def __init__(self, {args_str}):{attr_str}\n", stat)
+
         elif isinstance(stat, can_parser.can_ast.MethodCallStat):
             self.emit(
                 self.codegen_expr(stat.name_exp)
@@ -397,19 +399,6 @@ class Codegen:
                 stat,
             )
             self.codegen_block(stat.blocks)
-
-        elif isinstance(stat, can_parser.can_ast.ModelNewStat):
-            s = ""
-            model = self.codegen_expr(stat.model)
-            dataset = self.codegen_expr(stat.dataset)
-            s += cantonese_model_new(model, dataset, self.tab, s)
-
-            self.emit(s, stat)
-
-        elif isinstance(stat, can_parser.can_ast.TurtleStat):
-            cantonese_turtle_init()
-            for item in stat.exp_blocks:
-                self.emit(self.codegen_expr(item) + "\n", stat)
 
     def codegen_block(self, blocks):
         save = self.tab

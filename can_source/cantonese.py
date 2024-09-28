@@ -22,7 +22,7 @@ import can_source.can_sys as can_sys
 from can_source.can_sys import can_context
 from can_source.libraries.can_lib import *
 from can_source.web_core.can_web_parser import *
-from metadata import _version_, logo
+from can_source.metadata import _version_, logo
 
 
 class Options:

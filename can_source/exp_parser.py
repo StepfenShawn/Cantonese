@@ -378,10 +378,6 @@ class ExpParser:
                 kind == TokenType.KEYWORD and value == kw_call_begin
             ):
                 exp = cls.finish_functioncall_exp(exp)
-            elif value == "嘅長度":
-                F.skip_once()
-                key_exp = can_ast.IdExp("__len__()")
-                exp = can_ast.ObjectAccessExp(exp, key_exp)
             elif kind == TokenType.OP_ASSIGN:
                 F.skip_once()
                 exp = can_ast.AssignExp(exp, cls.parse_exp())
@@ -525,7 +521,7 @@ class ExpParser:
             F.eat_tk_by_value(":")
             attrs = [
                 can_ast.AnnotationExp(
-                    can_ast.IdExp(tk),
+                    can_ast.IdExp(tk.value),
                     can_ast.IdExp(F.eat_tk_by_kind(TokenType.IDENTIFIER).value),
                 )
             ]
@@ -539,7 +535,7 @@ class ExpParser:
                     F.eat_tk_by_value(":")
                     attrs.append(
                         can_ast.AnnotationExp(
-                            can_ast.IdExp(tk),
+                            can_ast.IdExp(tk.value),
                             can_ast.IdExp(F.eat_tk_by_kind(TokenType.IDENTIFIER).value),
                         )
                     )
