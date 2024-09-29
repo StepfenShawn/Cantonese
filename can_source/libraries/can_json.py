@@ -1,5 +1,6 @@
 from can_source.libraries.can_lib import define_func
 
+
 def cantonese_json_init() -> None:
     import json
 
@@ -10,4 +11,3 @@ def cantonese_json_init() -> None:
     @define_func("睇下json")
     def show_json_load(text):
         print(json.loads(text))
-

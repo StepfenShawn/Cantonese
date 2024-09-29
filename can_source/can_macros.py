@@ -1,43 +1,32 @@
-from collections import namedtuple
-import re
+from can_source.can_ast import MacroResult
+from can_source.can_lexer import can_token
+from typing import List
 
-marco = namedtuple("marco", ["pattern", "alter"])
+class State:
+    def __init__(self) -> None:
+        self.meta_vars = {}
 
-person_corr_marcos = marco(
-    pattern=lambda s: re.match(r"(.*)同(.*)有幾襯", s, re.S),
-    alter=lambda p: " corr(" + p.group(1) + ", " + p.group(2) + ") ",
-)
+class CanMacro:
+    def __init__(self, name, patterns, alter_blocks) -> None:
+        self.name = name
+        self.patterns = patterns
+        self.alter_blocks = alter_blocks
+        self.state = None
 
-lappend = marco(
-    pattern=lambda s: re.match(r"(.*)加啲(.*)", s, re.S),
-    alter=lambda p: p.group(1) + "->append(" + p.group(2) + ")",
-)
+    def add_rule(self, pat, block):
+        self.patterns.append(pat)
+        self.alter_blocks.append(block)
 
-lremove = marco(
-    pattern=lambda s: re.match(r"(.*)摞走(.*)", s, re.S),
-    alter=lambda p: p.group(1) + "->remove(" + p.group(2) + ")",
-)
+    def try_expand(self, tokentrees: List[can_token]):
+        for pat, block in zip(self.patterns, self.alter_blocks):
+            if self.match_(pat, tokentrees):
+                return block
+        raise f"Can not expand macro: {self.name}" 
 
-lclear = marco(
-    pattern=lambda s: re.match(r"(.*)散水", s, re.S),
-    alter=lambda p: p.group(1) + "->clear()",
-)
+    def match_(self, tokentree, pattern: List[can_token]) -> bool:
+        return True
 
-# Build-in Marcos
-marcos = [person_corr_marcos, lappend, lremove, lclear]
-
-
-def explore_all_macros(code: str):
-    match_search = re.search(re.compile(r"\<\|.*?\|\>", re.S), code)
-    while match_search:
-        case_marco = match_search.group()[2:-2]
-        find = False
-        for m in marcos:
-            p = m.pattern(case_marco)
-            if p:
-                code = code.replace(match_search.group(), m.alter(p))
-                find = True
-        if not find:
-            exit()
-        match_search = re.search(re.compile(r"\<\|.*?\|\>", re.S), code)
-    return code
+    def eval(self, tokentrees: List[can_token]) -> MacroResult:
+        block = self.try_expand(tokentrees)
+        parse_res = MacroResult(block)
+        return parse_res

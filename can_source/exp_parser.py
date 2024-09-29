@@ -2,7 +2,7 @@ from can_source.can_lexer import *
 import can_source.can_ast as can_ast
 from can_source.parser_base import F
 from can_source.macros_parser import MacroParser
-
+from can_source.can_sys import can_macros_context
 
 class ExpParser:
 
@@ -295,6 +295,10 @@ class ExpParser:
             name = next_tk.value
             F.skip_once()
             exp = can_ast.IdExp(name)
+        elif next_tk.value == "@":
+            F.skip_once()
+            id_tk = F.eat_tk_by_kind(TokenType.IDENTIFIER)
+            exp = can_ast.MetaIdExp(id_tk.value)
         # '(' exp ')'
         elif next_tk.typ == TokenType.SEP_LPAREN:
             exp = cls.parse_parens_exp()
@@ -387,8 +391,11 @@ class ExpParser:
                 break
             elif kind == TokenType.EXCL:
                 F.skip_once()
-                macroParser = MacroParser(cls.get_token_ctx())
-                exp = can_ast.MacroCallExp(exp, macroParser.parse_tokentrees()[1:-1])
+                macro_name = exp.name
+                tokentrees = MacroParser.parse_tokentrees()[1:-1]
+                if macro_name not in can_macros_context.macros:
+                    raise Exception(f"macro {macro_name} not found!")
+                exp = can_macros_context.get(macro_name).eval(tokentrees)
                 break
             else:
                 break

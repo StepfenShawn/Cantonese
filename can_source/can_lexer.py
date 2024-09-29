@@ -7,7 +7,6 @@ import os
 
 from can_source.can_keywords import *
 from can_source.util.infoprinter import ErrorPrinter
-from can_source.can_macros import explore_all_macros
 
 Pos = namedtuple("Pos", ["line", "offset", "end_line", "end_offset"])
 
@@ -377,7 +376,6 @@ class lexer:
 
 
 def cantonese_token(file: str, code: str) -> Generator:
-    code = explore_all_macros(code)
     os.environ[f"{file}_SOURCE"] = code
     lex: lexer = lexer(file, code, keywords)
 

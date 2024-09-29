@@ -107,6 +107,7 @@ class AttrDefStat(Stat):
     attrs_list: List[Exp]
     pos: object = None
 
+
 @dataclass
 class ClassDefStat(Stat):
     class_name: Exp

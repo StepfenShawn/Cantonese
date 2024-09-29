@@ -2,9 +2,11 @@ import functools
 
 variable: dict = {}
 
+
 def cantonese_func_def(func_name: str, func) -> None:
     global variable
     variable[func_name] = func
+
 
 def define_func(name):
     def decorator(func):

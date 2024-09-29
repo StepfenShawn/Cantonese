@@ -15,4 +15,3 @@ def cantonese_csv_init() -> None:
         for i in csv.reader(file):
             ret.append(i)
         return i
-

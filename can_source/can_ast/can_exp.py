@@ -100,6 +100,10 @@ class MappingExp(Exp):
 class IdExp(Exp):
     name: str
 
+# meta var in `macro-blocks`
+@dataclass
+class MetaIdExp(Exp):
+    name: str
 
 # '(' exp ')'
 @dataclass
@@ -111,12 +115,6 @@ class ParensExp(Exp):
 class ObjectAccessExp(Exp):
     prefix_exp: Exp
     key_exp: Exp
-
-
-@dataclass
-class MacroCallExp(Exp):
-    prefix_exp: Exp
-    token_trees: List[object]
 
 
 @dataclass

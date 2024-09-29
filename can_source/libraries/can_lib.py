@@ -2,10 +2,12 @@ import sys
 import re
 from collections import namedtuple
 from typing import Tuple
-from can_source.libraries.can_csv import cantonese_csv_init
-from can_source.libraries.can_json import cantonese_json_init
-from can_source.libraries.can_random import cantonese_random_init
+
+# from can_source.libraries.can_csv import cantonese_csv_init
+# from can_source.libraries.can_json import cantonese_json_init
+# from can_source.libraries.can_random import cantonese_random_init
 from can_source.libraries.lib_gobals import *
+
 
 def cantonese_lib_init() -> None:
 
@@ -93,7 +95,6 @@ def cantonese_lib_init() -> None:
     cantonese_func_def("畀你啲嘢", input)
 
     cantonese_stack_init()
-
 
 
 def cantonese_datetime_init() -> None:
@@ -636,12 +637,12 @@ def cantonese_numpy_init() -> None:
 LibRegister = namedtuple("LibRegister", ["names", "f_init", "import_res"])
 
 lib_list = [
-    LibRegister(["random", "隨機數"], cantonese_random_init, "random"),
+    # LibRegister(["random", "隨機數"], cantonese_random_init, "random"),
     LibRegister(["datetime", "日期"], cantonese_datetime_init, "datetime"),
     LibRegister(["math", "數學"], cantonese_math_init, "math"),
     LibRegister(["smtplib", "郵箱"], cantonese_smtplib_init, "stmplib"),
     LibRegister(["xml", "xml解析"], cantonese_xml_init, "xml"),
-    LibRegister(["csv", "csv解析"], cantonese_csv_init, "csv"),
+    # LibRegister(["csv", "csv解析"], cantonese_csv_init, "csv"),
     LibRegister(["os", "系統"], None, "os"),
     LibRegister(["re", "正則匹配"], cantonese_re_init, "re"),
     LibRegister(["urllib", "網頁獲取"], cantonese_urllib_init, "urllib"),
@@ -649,7 +650,7 @@ lib_list = [
     LibRegister(["socket", "網絡連接"], cantonese_socket_init, "socket"),
     LibRegister(["kivy", "手機程式"], cantonese_kivy_init, "kivy"),
     LibRegister(["pygame", "遊戲"], cantonese_pygame_init, "pygame"),
-    LibRegister(["json", "json解析"], cantonese_json_init, "json"),
+    # LibRegister(["json", "json解析"], cantonese_json_init, "json"),
     LibRegister(["numpy", "數值計算"], cantonese_numpy_init, "numpy"),
 ]
 

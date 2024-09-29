@@ -3,7 +3,8 @@ import can_source.can_ast as can_ast
 from can_source.parser_base import F, pos_tracker
 from can_source.exp_parser import ExpParser
 from can_source.macros_parser import MacroParser
-
+from can_source.can_sys import can_macros_context
+from can_source.can_macros import CanMacro
 
 class StatParser:
     def parse_var_list(self):
@@ -288,7 +289,7 @@ class StatParser:
 
         return can_ast.WhileStat(can_ast.UnopExp("not", cond_exps), blocks)
 
-    def parse_for_stat(self, prefix_exp: ExpParser):
+    def parse_for_stat(self, prefix_exp: can_ast.AST):
         blocks: list = []
 
         id = prefix_exp
@@ -435,31 +436,38 @@ class StatParser:
         return can_ast.TypeStat(name_exp)
 
     def parse_cmd_stat(self):
-        args= ExpParser.parse_args()
+        args = ExpParser.parse_args()
         return can_ast.CmdStat(args)
 
+    def parse_macro_block(self):
+        tk = F.try_look_ahead()
+        # case a meta expr
+        if tk.value == "$":
+            return ""
+        else:
+            return self.parse()
+
     def parse_macro_def(self, macro_name: can_ast.AST):
-        F.eat_tk_by_kind(TokenType.SEP_LCURLY)
+        F.eat_tk_by_value(kw_do)
         match_rules: list = []
         match_blocks: list = []
 
-        while F.try_look_ahead().typ != TokenType.SEP_RCURLY:
-            while F.try_look_ahead().value in [kw_case]:
+        while F.try_look_ahead().value != kw_func_end:
+            while F.try_look_ahead().value == "|":
                 F.skip_once()
-                _marcoParser = MacroParser(self.get_token_ctx())
-                match_rules.append(_marcoParser.parse_macro_rule()[1:-1])
+                match_rules.append(MacroParser.parse_macro_rule()[1:-1])
                 F.eats((kw_do, TokenType.SEP_LCURLY))
-
-                block: list = []
-
-                while F.try_look_ahead().typ != TokenType.SEP_RCURLY:
-                    stat_parser = StatParser(self.get_token_ctx(), self.ExpParser)
-                    block.append(stat_parser.parse())
+                block = F.many(
+                    other_parse_fn=self.parse_macro_block,
+                    util_cond=lambda: F.try_look_ahead().typ == TokenType.SEP_RCURLY,
+                )
 
                 F.eat_tk_by_kind(TokenType.SEP_RCURLY)
                 match_blocks.append(block)
 
-        F.eat_tk_by_kind(TokenType.SEP_RCURLY)
+        F.eat_tk_by_value(kw_func_end)
+        n = macro_name.name
+        can_macros_context.update(n, CanMacro(n, match_rules, match_blocks))
         return can_ast.MacroDefStat(match_rules, match_blocks)
 
     def parse_class_def(self, class_name: can_ast.AST):
@@ -492,9 +500,11 @@ class StatParser:
             F.eat_tk_by_value(kw_do)
             F.eat_tk_by_kind(TokenType.SEP_LCURLY)
 
-            blocks = F.many(other_parse_fn=self.parse, util_cond=lambda: F.try_look_ahead().typ
-                == TokenType.SEP_RCURLY)
-            
+            blocks = F.many(
+                other_parse_fn=self.parse,
+                util_cond=lambda: F.try_look_ahead().typ == TokenType.SEP_RCURLY,
+            )
+
             F.eat_tk_by_kind(TokenType.SEP_RCURLY)
 
             return can_ast.MethodDefStat(name_exp, args, blocks)
@@ -524,7 +534,7 @@ class StatParser:
         F.eat_tk_by_value(kw_do)
 
         exps = ExpParser.parse_exp()
-        args= ExpParser.parse_args()
+        args = ExpParser.parse_args()
 
         return can_ast.MethodCallStat(exps, can_ast.IdExp("push"), args)
 
@@ -618,14 +628,3 @@ class StatParser:
         func_name = ExpParser.parse_exp()
         F.eat_tk_by_value(kw_laa1)
         return can_ast.FuncCallStat(func_name, [])
-
-class MacroBlockStatParser(StatParser):
-    def __init__(self, ExpParser=ExpParser) -> None:
-        StatParser.__init__(self, ExpParser)
-
-    @pos_tracker
-    def parse(self):
-        tk = F.try_look_ahead()
-        kind, tk_value = tk.typ, tk.value
-        if tk_value == "@":
-            pass

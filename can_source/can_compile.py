@@ -64,6 +64,9 @@ class Codegen:
         self.update_line_map(stat, s)
         self.code += s
 
+    def compile_macro(self, result):
+        pass
+
     def codegen_expr(self, exp) -> str:
         if isinstance(exp, can_parser.can_ast.StringExp):
             return exp.s
@@ -341,8 +344,8 @@ class Codegen:
 
         elif isinstance(stat, can_parser.can_ast.AttrDefStat):
             names = list(map(lambda x: x.exp.name, stat.attrs_list))
-            args_str = ','.join([name + "=None" for name in names])
-            attr_str = ';'.join([("self." + name + "=" + name) for name in names])
+            args_str = ",".join([name + "=None" for name in names])
+            attr_str = ";".join([("self." + name + "=" + name) for name in names])
             self.emit(f"def __init__(self, {args_str}):{attr_str}\n", stat)
 
         elif isinstance(stat, can_parser.can_ast.MethodCallStat):

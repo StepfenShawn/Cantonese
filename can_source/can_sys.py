@@ -14,7 +14,7 @@ def set_work_env(file: str):
 
 class CanContext:
     """
-    A class to hold global values in runtime
+    A class to hold global values in `compile-time`
     """
 
     def __init__(self):
@@ -28,11 +28,23 @@ class CanContext:
     def get_token_ctx(self) -> tuple:
         return (self.tokens, self.buffer_tokens)
 
+class CanMacrosContext:
+    """
+    A class to hold macros in `compile-time`
+    """
+    def __init__(self):
+        self.macros = {}
+
+    def update(self, name, o):
+        self.macros.update({name: o})
+
+    def get(self, name):
+        return self.macros.get(name)
 
 can_context = CanContext()
+can_macros_context = CanMacrosContext()
 
 error = namedtuple("layer", ["lineno", "filename"])
-
 
 def error_catch(e):
     def show(ty, info):

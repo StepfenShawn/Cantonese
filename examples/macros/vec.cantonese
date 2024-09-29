@@ -1,0 +1,10 @@
+介紹返 vec 係 袋仔的法寶 =>
+    | () => { 还数 [] }
+    |($(@element:expr,)+) => {
+        还数 [
+            (temp_vec.append(@element))
+        ]
+    }
+}
+
+畀我睇下 vec!{"Hello", 1+1, "gg",} 點樣先??
