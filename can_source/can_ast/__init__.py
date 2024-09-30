@@ -2,10 +2,6 @@
 from typing import Union
 from .can_exp import *
 from .can_stat import *
-from dataclasses import dataclass
+from .can_macro_node import *
 
 AST = Union[Stat, Exp]
-
-@dataclass
-class MacroResult:
-    results: AST

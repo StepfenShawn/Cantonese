@@ -1,4 +1,4 @@
-class ParserOption:
+class Option:
     """
     实现一个 Rust-like 嘅 `Option` 类, 用于 Parser
     """
@@ -27,11 +27,9 @@ class ParserOption:
 
     def map(self, func):
         if self.is_some():
-            return ParserOption(func(self.value))
+            return Option(func(self.value))
         else:
-            return ParserOption(None)
+            return Option(None)
 
     def __repr__(self):
-        return (
-            f"Parser_Option({self.value})" if self.is_some() else "Parser_Option(None)"
-        )
+        return f"Option({self.value})" if self.is_some() else "Option(None)"

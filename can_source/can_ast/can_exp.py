@@ -100,10 +100,12 @@ class MappingExp(Exp):
 class IdExp(Exp):
     name: str
 
+
 # meta var in `macro-blocks`
 @dataclass
 class MetaIdExp(Exp):
     name: str
+
 
 # '(' exp ')'
 @dataclass

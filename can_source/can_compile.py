@@ -64,7 +64,7 @@ class Codegen:
         self.update_line_map(stat, s)
         self.code += s
 
-    def compile_macro(self, result):
+    def compile_macro(self, result: can_parser.can_ast.MacroResult):
         pass
 
     def codegen_expr(self, exp) -> str:

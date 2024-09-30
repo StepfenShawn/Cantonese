@@ -6,6 +6,7 @@ from can_source.macros_parser import MacroParser
 from can_source.can_sys import can_macros_context
 from can_source.can_macros import CanMacro
 
+
 class StatParser:
     def parse_var_list(self):
         exp = ExpParser.parse_prefixexp()
@@ -455,7 +456,13 @@ class StatParser:
         while F.try_look_ahead().value != kw_func_end:
             while F.try_look_ahead().value == "|":
                 F.skip_once()
-                match_rules.append(MacroParser.parse_macro_rule()[1:-1])
+                F.eat_tk_by_kind(TokenType.SEP_LPAREN)
+                cur_match_rules = F.many(
+                    other_parse_fn=MacroParser.parse_macro_rule,
+                    util_cond=lambda: F.try_look_ahead().typ == TokenType.SEP_RPAREN,
+                )
+                F.eat_tk_by_kind(TokenType.SEP_RPAREN)
+                match_rules.append(cur_match_rules)
                 F.eats((kw_do, TokenType.SEP_LCURLY))
                 block = F.many(
                     other_parse_fn=self.parse_macro_block,

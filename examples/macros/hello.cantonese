@@ -1,7 +1,7 @@
 #todo
 
 介紹返 sayhello 係 袋仔的法寶 =>
-    | ($(@s: str)) => { 畀我睇下 "Hello" + @s 點樣先?? }
+    | (Hello @s: str) => { 畀我睇下 "Hello" + @s 點樣先?? }
     | () => { 畀我睇下 "Hello" 點樣先?? }
 搞掂
 

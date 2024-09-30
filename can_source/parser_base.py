@@ -2,6 +2,7 @@ import os
 from can_source.can_lexer import TokenType, can_token, getCtxByLine, Pos
 from can_source.util.infoprinter import ErrorPrinter
 from can_source.can_sys import can_context
+from collections import namedtuple
 
 
 def pos_tracker(func):
@@ -26,34 +27,40 @@ def pos_tracker(func):
     return wrapper
 
 
+def new_token_context(tokens: list):
+    cls = namedtuple("TokenContext", ["tokens", "buffer_tokens"])
+    return cls(tokens=tokens, buffer_tokens=[])
+
+
 class ParserFn:
-    def __init__(self) -> None:
+    def __init__(self, ctx) -> None:
         self.last_tk = None
+        self.ctx = ctx
 
     def _next(self):
         try:
-            return next(can_context.tokens)
+            return next(self.ctx.tokens)
         except StopIteration as e:
             raise "No tokens..."
 
     def look_ahead(self) -> can_token:
-        if can_context.buffer_tokens:
-            return can_context.buffer_tokens.pop(0)
+        if self.ctx.buffer_tokens:
+            return self.ctx.buffer_tokens.pop(0)
 
         next_tk = self._next()
         self.last_tk = next_tk
         return next_tk
 
     def try_look_ahead(self) -> can_token:
-        if can_context.buffer_tokens:
-            return can_context.buffer_tokens[0]
+        if self.ctx.buffer_tokens:
+            return self.ctx.buffer_tokens[0]
         next_tk = self._next()
-        can_context.buffer_tokens.append(next_tk)
+        self.ctx.buffer_tokens.append(next_tk)
         return next_tk
 
     def skip_once(self) -> None:
-        if can_context.buffer_tokens:
-            self.last_tk = can_context.buffer_tokens.pop(0)
+        if self.ctx.buffer_tokens:
+            self.last_tk = self.ctx.buffer_tokens.pop(0)
         else:
             self.last_tk = self._next()
 
@@ -67,6 +74,11 @@ class ParserFn:
                 self.eat_tk_by_value(v)
             else:
                 self.eat_tk_by_kind(v)
+
+    # strict match
+    def match_tk(self, expect_tk: can_token) -> bool:
+        tk = self.look_ahead()
+        return tk.value == expect_tk.value and tk.typ == expect_tk.typ
 
     def eat_tk_by_kind(self, k: TokenType) -> can_token:
         tk = self.look_ahead()
@@ -125,6 +137,6 @@ class ParserFn:
 
 
 """
-    Parser function
+    Default Parser function. Binding with `can_context`
 """
-F = ParserFn()
+F = ParserFn(ctx=can_context)

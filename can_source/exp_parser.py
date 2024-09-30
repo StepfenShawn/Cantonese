@@ -4,6 +4,7 @@ from can_source.parser_base import F
 from can_source.macros_parser import MacroParser
 from can_source.can_sys import can_macros_context
 
+
 class ExpParser:
 
     @classmethod
@@ -392,7 +393,7 @@ class ExpParser:
             elif kind == TokenType.EXCL:
                 F.skip_once()
                 macro_name = exp.name
-                tokentrees = MacroParser.parse_tokentrees()[1:-1]
+                tokentrees = MacroParser.parse_tokentrees()
                 if macro_name not in can_macros_context.macros:
                     raise Exception(f"macro {macro_name} not found!")
                 exp = can_macros_context.get(macro_name).eval(tokentrees)
