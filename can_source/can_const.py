@@ -2,7 +2,7 @@
     Inner library: Some global const value for cantonese
 """
 
-from can_source.can_ast import AST, can_exp
+from can_source.can_lexer import TokenType, can_token
 from enum import Enum
 
 
@@ -18,11 +18,12 @@ class FragSpec(Enum):
     IDENT = 2
     LITERAL = 3
     STMT = 4
+    STR = 5
 
     @staticmethod
-    def from_ast(ast: AST):
-        if isinstance(ast, can_exp.IdExp):
-            name = ast.name
+    def from_can_token(tk: can_token):
+        if tk.typ == TokenType.IDENTIFIER:
+            name = tk.value
             if name == "id" or name == "ident":
                 return FragSpec.IDENT
             elif name == "expr":
@@ -33,4 +34,6 @@ class FragSpec(Enum):
                 return FragSpec.STMT
             elif name == "block":
                 return FragSpec.BLOCK
-        raise Exception("Can not into FragSpec")
+            elif name == "str":
+                return FragSpec.STR
+        raise Exception(f"case meta var's token type {tk}: Can not into FragSpec")

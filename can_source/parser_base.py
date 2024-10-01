@@ -11,11 +11,11 @@ def pos_tracker(func):
     """
 
     def wrapper(self, *args, **kwargs):
-        start_pos = F.next_lexer_pos
+        start_pos = self.Fn.next_lexer_pos
         ast = func(self, *args, **kwargs)
         if ast == "EOF":
             return
-        end_pos = F.last_tk.pos
+        end_pos = self.Fn.last_tk.pos
         ast.pos = Pos(
             line=start_pos.line,
             offset=start_pos.offset,
@@ -41,7 +41,7 @@ class ParserFn:
         try:
             return next(self.ctx.tokens)
         except StopIteration as e:
-            raise "No tokens..."
+            raise Exception("No tokens...")
 
     def look_ahead(self) -> can_token:
         if self.ctx.buffer_tokens:
@@ -134,9 +134,3 @@ class ParserFn:
             return None
         self.skip_once()
         return other_parse_fn()
-
-
-"""
-    Default Parser function. Binding with `can_context`
-"""
-F = ParserFn(ctx=can_context)

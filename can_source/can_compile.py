@@ -1,5 +1,6 @@
 import can_source.can_parser as can_parser
 import can_source.can_lexer as can_lexer
+from can_source.parser_base import new_token_context
 import sys, os
 from typing import Generator
 
@@ -22,7 +23,7 @@ def _can_source_to_code(self, data, path, _optimize=-1):
     os.environ["CUR_FILE"] = path
 
     tokens = can_lexer.cantonese_token(path, source)
-    stats = can_parser.StatParser((tokens, [])).parse_stats()
+    stats = can_parser.StatParser(new_token_context(tokens)).parse_stats()
     code_gen = Codegen(stats, path=path)
     _code = code_gen.to_py()
 

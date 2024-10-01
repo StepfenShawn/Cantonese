@@ -1,6 +1,6 @@
 class Option:
     """
-    实现一个 Rust-like 嘅 `Option` 类, 用于 Parser
+    实现一个 Rust-like 嘅 `Option` 类
     """
 
     def __init__(self, value=None):

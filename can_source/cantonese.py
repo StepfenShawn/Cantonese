@@ -63,7 +63,7 @@ def cantonese_run(
         show_pretty_lex(tokens)
         exit()
 
-    stats = can_parser.StatParser().parse_stats()
+    stats = can_parser.StatParser(token_context=can_context).parse_stats()
 
     if Options.dump_ast:
         show_pretty_ast(stats)
