@@ -25,7 +25,7 @@ pip install Cantonese
 &emsp;&emsp;<a href="#11">調用 Python</a>  
 &emsp;&emsp;<a href="#12">面向對象編程</a>  
 &emsp;&emsp;<a href="#13">棧嘅使用</a>  
-&emsp;&emsp;<a href="#14">想点都得! 定义自己嘅语法</a>
+&emsp;&emsp;<a href="#14">想点都得! 定义自己嘅语法</a>  
 <a href="#15">更多例子</a>  
 &emsp;&emsp;<a href="#16">睇下時間</a>  
 &emsp;&emsp;<a href="#17">暫停</a>  
@@ -245,7 +245,7 @@ Duck is sleeping
 ```
 有條仆街叫 |Deo哥|
 ```
-或者用翻賦值嘅方式:   
+或者用返賦值嘅方式:   
 ```
 介紹返 Deo哥 係 條仆街仔()
 ```
@@ -261,6 +261,7 @@ Duck is sleeping
 Stack: [1,2]
 ```
 ### <a name="14">想点都得! 定义自己嘅语法</a>
+介紹咗咁多, `Cantonese`仲將類似於`Rust`入面嘅宏定義引入, 可以通過宏來擴展我哋嘅語法, 簡單啲講, 就相當於`match`語句, 匹配之後用`@`提取元變量喺編譯期間進行替換:    
 ```
 介紹返 sayhello 係 袋仔的法寶 =>
     | (Hello @s: str) => { 畀我睇下 "Hello " + @s 點樣先?? }
@@ -269,6 +270,23 @@ Stack: [1,2]
 
 sayhello!{Hello "dd"} 咁啦
 sayhello!{} 咁啦
+sayhello!{1} 咁啦 # 報錯: 無法匹配
+```
+複雜啲嘅例子:
+```
+介紹返 計算 係 袋仔的法寶 =>
+    | (同我加 @左: epxr @右: expr 好唔好) => { 
+        @左 + @右 }
+    | (同我加 @左: epxr 減 @右: expr 好唔好) => { 
+        @左 - @右 }
+    | (同我加 @左: epxr 除 @右: expr 好唔好) => { 
+        @左 / @右 }
+    | (同我加 @左: epxr 乘 @右: expr 好唔好) => { 
+        @左 * @右 }
+搞掂
+
+畀我睇下 計算!{同我加 1 + 2 好唔好} 點樣先? # 3
+畀我睇下 計算!{同我加 1 + (2 * 2) 好唔好} 點樣先? # 5
 ```
 
 # <a name="15">更多例子</a>

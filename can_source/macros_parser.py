@@ -30,7 +30,7 @@ class MacroParser:
         cls.Fn.eat_tk_by_kind(TokenType.SEP_LPAREN)
         exp_atom = []
         while cls.Fn.try_look_ahead().typ != TokenType.SEP_RPAREN:
-            meta_exp = exp_atom.extend(cls.parse_macro_rule())
+            meta_exp = exp_atom.append(cls.parse_macro_rule())
         cls.Fn.eat_tk_by_kind(TokenType.SEP_RPAREN)
         return cls.finish_meta_exp(meta_exp)
 
@@ -53,6 +53,7 @@ class MacroParser:
             cls.Fn.skip_once()
             meta_exp.rep_sep = next_tk.value
             next_tk = cls.Fn.try_look_ahead()
+        # TODO: make this strict
         if next_tk.value in ["*", "+", "?"]:
             cls.Fn.skip_once()
             meta_exp.rep_op = next_tk.value

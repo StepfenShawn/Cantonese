@@ -143,7 +143,8 @@ class Codegen:
             return s
 
         elif isinstance(exp, can_parser.can_ast.MetaIdExp):
-            return self.codegen_expr(self.macro_meta_vars[exp.name])
+            if exp.name in self.macro_meta_vars:
+                return self.codegen_expr(self.macro_meta_vars[exp.name])
 
         elif isinstance(exp, can_parser.can_ast.MacroResult):
             self.macro_meta_vars = exp.meta_var

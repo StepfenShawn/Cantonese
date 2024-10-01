@@ -10,6 +10,7 @@ from typing import List, Generator
 
 def match(pattern, tokentrees: Generator) -> Option:
     matched_meta_vars = {}
+    matched_meta_exps = []
     cur_token_context = new_token_context(tokentrees)
     curF = ParserFn(ctx=cur_token_context)
     if len(pattern) == 0:
@@ -39,7 +40,7 @@ def match(pattern, tokentrees: Generator) -> Option:
                 )
                 matched_meta_vars[meta_var_name] = ast_node
         elif isinstance(pat, can_ast.MacroMetaExp):
-            pass
+            print(pat)
         else:
             try:
                 if curF.match_tk(pat):
