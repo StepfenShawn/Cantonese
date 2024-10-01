@@ -21,7 +21,7 @@ import can_source.can_sys as can_sys
 import can_source.can_import
 
 from can_source.can_sys import can_context
-from can_source.libraries.can_lib import *
+from can_source.can_libs import *
 from can_source.web_core.can_web_parser import *
 from can_source.metadata import _version_, logo
 
@@ -121,7 +121,7 @@ def cantonese_run(
             if get_py_code:
                 return c
             code = compile(TO_PY_CODE, file, "exec")
-            exec(code, variable)
+            exec(code, lib_env)
         except Exception as e:
             can_sys.error_catch(e)
 

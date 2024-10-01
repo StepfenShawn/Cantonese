@@ -25,18 +25,19 @@ pip install Cantonese
 &emsp;&emsp;<a href="#11">調用 Python</a>  
 &emsp;&emsp;<a href="#12">面向對象編程</a>  
 &emsp;&emsp;<a href="#13">棧嘅使用</a>  
-<a href="#14">更多例子</a>  
-&emsp;&emsp;<a href="#15">睇下時間</a>  
-&emsp;&emsp;<a href="#16">暫停</a>  
-&emsp;&emsp;<a href="#17">嚟個隨機數</a>  
-&emsp;&emsp;<a href="#18">計相關係數</a>  
-&emsp;&emsp;<a href="#19">仲可以機械學習?</a>  
-&emsp;&emsp;<a href="#20">海龜畫圖</a>  
-&emsp;&emsp;<a href="#21">迷宮遊戲仔</a>  
-&emsp;&emsp;<a href="#22">各種排序同查找算法</a>  
-&emsp;&emsp;<a href="#23">寫個網頁嚟睇下？</a>   
-&emsp;&emsp;<a href="#24">用粵語開發一隻 App</a>   
-&emsp;&emsp;<a href="#25">數據庫編程都得???(開發緊)</a>  
+&emsp;&emsp;<a href="#14">想点都得! 定义自己嘅语法</a>
+<a href="#15">更多例子</a>  
+&emsp;&emsp;<a href="#16">睇下時間</a>  
+&emsp;&emsp;<a href="#17">暫停</a>  
+&emsp;&emsp;<a href="#18">嚟個隨機數</a>  
+&emsp;&emsp;<a href="#19">計相關係數</a>  
+&emsp;&emsp;<a href="#20">仲可以機械學習?</a>  
+&emsp;&emsp;<a href="#21">海龜畫圖</a>  
+&emsp;&emsp;<a href="#22">迷宮遊戲仔</a>  
+&emsp;&emsp;<a href="#23">各種排序同查找算法</a>  
+&emsp;&emsp;<a href="#24">寫個網頁嚟睇下？</a>   
+&emsp;&emsp;<a href="#25">用粵語開發一隻 App</a>   
+&emsp;&emsp;<a href="#26">數據庫編程都得???(開發緊)</a>  
 <a href="#25">點樣運行?</a>  
 <a href="#26">TODOs</a>  
 # <a name="0">引言</a>
@@ -259,8 +260,19 @@ Duck is sleeping
 ```
 Stack: [1,2]
 ```
-# <a name="14">更多例子</a>
-### <a name="15">顯示當前時間</a>
+### <a name="14">想点都得! 定义自己嘅语法</a>
+```
+介紹返 sayhello 係 袋仔的法寶 =>
+    | (Hello @s: str) => { 畀我睇下 "Hello " + @s 點樣先?? }
+    | () => { 畀我睇下 "Hello" 點樣先?? }
+搞掂
+
+sayhello!{Hello "dd"} 咁啦
+sayhello!{} 咁啦
+```
+
+# <a name="15">更多例子</a>
+### <a name="16">顯示當前時間</a>
 ```
 使下 datetime
 畀我睇下 |宜家几点()| 點樣先？
@@ -269,12 +281,12 @@ Stack: [1,2]
 ```
 2021-01-17 09:16:20.767191
 ```
-### <a name="16">暫停</a>
+### <a name="17">暫停</a>
 ```
 瞓 阵先 /* 暂停2s */
 瞓 5s  /* 暂停5s */
 ```  
-### <a name="17">嚟個隨機數</a>
+### <a name="18">嚟個隨機數</a>
 ```
 使下 随机数
 介紹返 |A| 係 |求其啦()|
@@ -283,19 +295,19 @@ Stack: [1,2]
 ```
 0.15008236307867207
 ```  
-### <a name="18">計相關係數</a>
+### <a name="19">計相關係數</a>
 聲明兩個 list，計相關係數：  
 ```
 使下 math
 |[2.165, 1.688, 1.651, 2.229]| 拍住上 => |A|
 |[2.060, 1.822, 1.834, 2.799]| 拍住上 => |B|
-畀我睇下 <| A同B有幾襯 |> 點樣先？
+畀我睇下 秘诀!{A同B有幾襯} 點樣先？
 ```
 運行結果：
 ```
 0.8066499427138474
 ```
-### <a name="19">仲可以机器学习?</a>
+### <a name="20">仲可以机器学习?</a>
 實現 KNN 算法：
 ```
 使下 math
@@ -321,29 +333,29 @@ Linear function is:
 y=0.530960991635149x+189.75347155122432
 667.6183640228585
 ```
-### <a name="20">海龜繪圖</a>
+### <a name="21">海龜繪圖</a>
 ```
 老作一下!{
-    首先 |画个圈(100)|
-    跟住 |写隻字("Made By Cantonese\n")|
+    首先 |画个圈(100)|,
+    跟住 |写隻字("Made By Cantonese\n")|,
     最尾 |听我支笛()|
 }
 ```  
 運行結果：    
 <img src="img/turtle_etc.jpg" width="300px">
 
-### <a name="21">迷宮遊戲仔</a>
+### <a name="22">迷宮遊戲仔</a>
 [代碼](examples/games/game.cantonese)  
 運行結果：  
 <img src="img/game_result.jpg" width="300px">
 
-### <a name="22">各種排序同查找算法</a>
+### <a name="23">各種排序同查找算法</a>
 * [二分查找](examples/algorithms/binary_search.cantonese)
 * [线性查找](examples/algorithms/linear_search.cantonese)
 * [冒泡排序](examples/algorithms/bubble_sort.cantonese)
 * [插入排序](examples/algorithms/insert_sort.cantonese)
 
-### <a name="23">寫個網頁睇下</a>
+### <a name="24">寫個網頁睇下</a>
 一個簡單嘅網頁：
 ```
 老作一下 {
@@ -357,7 +369,7 @@ cantonese examples/web/hello_web.cantonese -to_web
 ```
 <img src="img/web_result.jpg" width="300px">
 
-### <a href="#24">用粵語開發一隻 App</a>
+### <a href="#25">用粵語開發一隻 App</a>
 首先安裝 `kivy`：
 ```
 pip install kivy
@@ -377,7 +389,7 @@ App运行 下 -> |HelloApp, HelloApp()->HelloWorld| 啦
 ```
 <img src="img/HelloApp.jpg" width="300px">
 
-### <a href="#25">數據庫編程都得(開發緊)</a>
+### <a href="#26">數據庫編程都得(開發緊)</a>
 select語句:
 ```
 Sql!{
@@ -397,7 +409,7 @@ Sql!{
 [喺呢度](examples/)睇下更多例子.  
 所有關鍵字: https://github.com/Cantonese-community/Keywords  
 
-# <a name="26">点样运行?</a>
+# <a name="27">点样运行?</a>
 查看當前版本:  
 ```shell
 cantonese -v

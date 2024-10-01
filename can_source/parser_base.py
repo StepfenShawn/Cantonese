@@ -1,4 +1,5 @@
 import os
+from can_source.can_error import NoTokenException
 from can_source.can_lexer import TokenType, can_token, getCtxByLine, Pos
 from can_source.util.infoprinter import ErrorPrinter
 from can_source.can_sys import can_context
@@ -41,7 +42,7 @@ class ParserFn:
         try:
             return next(self.ctx.tokens)
         except StopIteration as e:
-            raise Exception("No tokens...")
+            raise NoTokenException("No tokens...")
 
     def look_ahead(self) -> can_token:
         if self.ctx.buffer_tokens:

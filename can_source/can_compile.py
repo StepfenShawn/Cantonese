@@ -5,9 +5,10 @@ import sys, os
 from typing import Generator
 
 from collections import defaultdict
-from can_source.libraries.can_lib import fix_lib_name
+from can_source.can_libs import fix_lib_name
 
 line_map = {}
+
 
 class Codegen:
     def __init__(self, nodes: Generator, path: str):
@@ -41,7 +42,7 @@ class Codegen:
 
     def codegen_expr(self, exp) -> str:
         if isinstance(exp, can_parser.can_ast.StringExp):
-            return exp.s
+            return "Str(" + exp.s + ")"
 
         elif isinstance(exp, can_parser.can_ast.NumeralExp):
             return exp.val
@@ -118,14 +119,14 @@ class Codegen:
             )
 
         elif isinstance(exp, can_parser.can_ast.ListExp):
-            s = "["
+            s = "List(["
             if len(exp.elem_exps):
                 for elem in exp.elem_exps:
                     s += self.codegen_expr(elem) + ", "
-                s = s[:-2] + "]"
+                s = s[:-2] + "])"
                 return s
             else:
-                return s + "]"
+                return s + "])"
 
         elif isinstance(exp, can_parser.can_ast.MapExp):
             s = "{"
@@ -140,7 +141,7 @@ class Codegen:
         elif isinstance(exp, can_parser.can_ast.AssignExp):
             s = self.codegen_expr(exp.exp1) + " = " + self.codegen_expr(exp.exp2)
             return s
-        
+
         elif isinstance(exp, can_parser.can_ast.MetaIdExp):
             return self.codegen_expr(self.macro_meta_vars[exp.name])
 
@@ -155,7 +156,7 @@ class Codegen:
             # clear the meta vars
             self.macro_meta_vars = {}
             return s if s else ""
-            
+
     def codegen_args(self, args: list) -> str:
         s = ""
         for arg in args:

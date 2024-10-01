@@ -1,6 +1,5 @@
 from can_source.can_lexer import *
 import can_source.can_ast as can_ast
-from can_source.parser_base import ParserFn
 
 
 class MacroParser:

@@ -1,4 +1,4 @@
-from can_source.libraries.can_lib import define_func
+from can_source.can_libs.lib_gobals import define_func
 
 
 def cantonese_json_init() -> None:

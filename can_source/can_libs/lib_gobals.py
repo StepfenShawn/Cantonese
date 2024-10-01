@@ -1,11 +1,11 @@
 import functools
 
-variable: dict = {}
+lib_env: dict = {}
 
 
 def cantonese_func_def(func_name: str, func) -> None:
     global variable
-    variable[func_name] = func
+    lib_env[func_name] = func
 
 
 def define_func(name):

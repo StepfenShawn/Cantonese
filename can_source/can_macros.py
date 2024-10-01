@@ -1,3 +1,4 @@
+from can_source.can_error import NoTokenException
 from can_source.util.option import Option
 from can_source.can_ast import MacroResult
 from can_source.can_lexer import can_token
@@ -6,12 +7,18 @@ from can_source.can_const import *
 from can_source.parser_base import ParserFn, new_token_context
 from typing import List, Generator
 
+
 def match(pattern, tokentrees: Generator) -> Option:
     matched_meta_vars = {}
     cur_token_context = new_token_context(tokentrees)
     curF = ParserFn(ctx=cur_token_context)
-    while pattern:
-        pat = pattern.pop(0)
+    if len(pattern) == 0:
+        return (
+            Option(matched_meta_vars)
+            if len([x for x in tokentrees]) == 0
+            else Option(None)
+        )
+    for pat in pattern:
         if isinstance(pat, can_ast.MacroMetaId):
             meta_var_name = pat._id.value
             spec = FragSpec.from_can_token(pat.frag_spec)
@@ -34,9 +41,12 @@ def match(pattern, tokentrees: Generator) -> Option:
         elif isinstance(pat, can_ast.MacroMetaExp):
             pass
         else:
-            if curF.match_tk(pat):
-                curF.skip_once()
-            else:
+            try:
+                if curF.match_tk(pat):
+                    curF.skip_once()
+                else:
+                    return Option(None)
+            except NoTokenException:
                 return Option(None)
     return Option(matched_meta_vars)
 
