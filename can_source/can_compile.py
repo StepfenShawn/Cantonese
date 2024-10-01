@@ -7,34 +7,7 @@ from typing import Generator
 from collections import defaultdict
 from can_source.libraries.can_lib import fix_lib_name
 
-import importlib
-
-importlib.machinery.SOURCE_SUFFIXES.insert(0, ".cantonese")
-_py_source_to_code = importlib.machinery.SourceFileLoader.source_to_code
-
-
-def _can_source_to_code(self, data, path, _optimize=-1):
-
-    source = data.decode("utf-8")
-    if not path.endswith(".cantonese"):
-        return _py_source_to_code(self, source, path, _optimize=_optimize)
-
-    cur_file = os.environ["CUR_FILE"]
-    os.environ["CUR_FILE"] = path
-
-    tokens = can_lexer.cantonese_token(path, source)
-    stats = can_parser.StatParser(new_token_context(tokens)).parse_stats()
-    code_gen = Codegen(stats, path=path)
-    _code = code_gen.to_py()
-
-    os.environ["CUR_FILE"] = cur_file
-    return _py_source_to_code(self, _code, path, _optimize=_optimize)
-
-
-importlib.machinery.SourceFileLoader.source_to_code = _can_source_to_code
-
 line_map = {}
-
 
 class Codegen:
     def __init__(self, nodes: Generator, path: str):
@@ -44,6 +17,7 @@ class Codegen:
         self.line = 1
         self.line_mmap = defaultdict(list)  # Python line mapping to Cantonese line
         self.code = ""
+        self.macro_meta_vars = {}
 
     def to_py(self):
         for node in self.nodes:
@@ -64,9 +38,6 @@ class Codegen:
         s = self.tab + s
         self.update_line_map(stat, s)
         self.code += s
-
-    def compile_macro(self, result: can_parser.can_ast.MacroResult):
-        pass
 
     def codegen_expr(self, exp) -> str:
         if isinstance(exp, can_parser.can_ast.StringExp):
@@ -169,7 +140,22 @@ class Codegen:
         elif isinstance(exp, can_parser.can_ast.AssignExp):
             s = self.codegen_expr(exp.exp1) + " = " + self.codegen_expr(exp.exp2)
             return s
+        
+        elif isinstance(exp, can_parser.can_ast.MetaIdExp):
+            return self.codegen_expr(self.macro_meta_vars[exp.name])
 
+        elif isinstance(exp, can_parser.can_ast.MacroResult):
+            self.macro_meta_vars = exp.meta_var
+            s = ""
+            for node in exp.results:
+                if isinstance(node, can_parser.can_ast.Stat):
+                    self.codegen_stat(node)
+                elif isinstance(node, can_parser.can_ast.Exp):
+                    s += self.codegen_expr(node)
+            # clear the meta vars
+            self.macro_meta_vars = {}
+            return s if s else ""
+            
     def codegen_args(self, args: list) -> str:
         s = ""
         for arg in args:

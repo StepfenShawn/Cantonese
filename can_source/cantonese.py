@@ -18,6 +18,7 @@ import can_source.can_lexer as can_lexer
 import can_source.can_parser as can_parser
 import can_source.can_compile as can_compile
 import can_source.can_sys as can_sys
+import can_source.can_import
 
 from can_source.can_sys import can_context
 from can_source.libraries.can_lib import *

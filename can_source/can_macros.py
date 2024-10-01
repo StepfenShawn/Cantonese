@@ -6,7 +6,6 @@ from can_source.can_const import *
 from can_source.parser_base import ParserFn, new_token_context
 from typing import List, Generator
 
-
 def match(pattern, tokentrees: Generator) -> Option:
     matched_meta_vars = {}
     cur_token_context = new_token_context(tokentrees)
@@ -18,7 +17,7 @@ def match(pattern, tokentrees: Generator) -> Option:
             spec = FragSpec.from_can_token(pat.frag_spec)
             if spec == FragSpec.IDENT:
                 ast_node = can_ast.can_exp.IdExp(
-                    name=curF.eat_tk_by_kind(TokenType.IDENTIFIER)
+                    name=curF.eat_tk_by_kind(TokenType.IDENTIFIER).value
                 )
                 matched_meta_vars[meta_var_name] = ast_node
             elif spec == FragSpec.STMT:
@@ -29,7 +28,7 @@ def match(pattern, tokentrees: Generator) -> Option:
                 matched_meta_vars[meta_var_name] = ast_node
             elif spec == FragSpec.STR:
                 ast_node = can_ast.can_exp.StringExp(
-                    name=curF.eat_tk_by_kind(TokenType.STRING)
+                    s=curF.eat_tk_by_kind(TokenType.STRING).value
                 )
                 matched_meta_vars[meta_var_name] = ast_node
         elif isinstance(pat, can_ast.MacroMetaExp):
@@ -52,12 +51,11 @@ class CanMacro:
         for pat, block in zip(self.patterns, self.alter_blocks):
             match_res = match(pat, (token for token in tokentrees))
             if match_res.is_some():
-                print(match_res.unwrap())
-                return block
+                meta_vars = match_res.unwrap()
+                return meta_vars, block
         raise f"Can not expand macro: {self.name}"
 
     def eval(self, tokentrees: List[can_token]) -> MacroResult:
-        block = self.try_expand(tokentrees)
-        parse_res = MacroResult(block)
-        print(parse_res)
+        matched_meta_vars, block = self.try_expand(tokentrees)
+        parse_res = MacroResult(matched_meta_vars, block)
         return parse_res

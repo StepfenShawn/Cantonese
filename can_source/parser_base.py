@@ -77,7 +77,7 @@ class ParserFn:
 
     # strict match
     def match_tk(self, expect_tk: can_token) -> bool:
-        tk = self.look_ahead()
+        tk = self.try_look_ahead()
         return tk.value == expect_tk.value and tk.typ == expect_tk.typ
 
     def eat_tk_by_kind(self, k: TokenType) -> can_token:
