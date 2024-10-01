@@ -5,12 +5,12 @@ RUN = "python can_source/cantonese.py "
 
 puts "OK sir! Ready to test!!!"
 puts %q{
-     ______            __                           
-    / ________ _____  / /_____  ____  ___  ________ 
+     ______            __
+    / ________ _____  / /_____  ____  ___  ________
    / /   / __ `/ __ \/ __/ __ \/ __ \/ _ \/ ___/ _ \
   / /___/ /_/ / / / / /_/ /_/ / / / /  __(__  /  __/
-  \____/\__,_/_/ /_/\__/\____/_/ /_/\___/____/\___/ 
-        
+  \____/\__,_/_/ /_/\__/\____/_/ /_/\___/____/\___/
+
 }
 
 class BasicTest < Test::Unit::TestCase
@@ -102,7 +102,7 @@ class BasicTest < Test::Unit::TestCase
 
   def test_type
     res = %x(#{RUN} examples/basic/type.cantonese).encode("UTF-8")
-    assert res == "<class 'int'>\n<class 'str'>\n"
+    assert res == "<class 'int'>\n<class 'can_source.can_libs.std.impl.Str'>\n"
   end
 
   def test_while
@@ -186,7 +186,7 @@ class AlgoTest < Test::Unit::TestCase
 end
 
 class MiscTest < Test::Unit::TestCase
-  
+
   def test_calc_corr
     res = %x(#{RUN} examples/numerical/calc_corr.cantonese).encode("UTF-8")
     assert res == "0.8066499427138474\n"
@@ -210,7 +210,7 @@ class MiscTest < Test::Unit::TestCase
 end
 
 class LibTest < Test::Unit::TestCase
-  
+
   def test_csv_parse
     res = %x(#{RUN} examples/lib_sample/csv_parse.cantonese).encode("UTF-8")
     assert res == "['id', 'name', ' age', 'gender', 'class_num']\n['1001', '张三', '18', 'male', '01']\n['1002', '李四', '19', 'male', '01']\n['1003', '王五', '19', 'famale', '01']\n['1004', '李华', '18', 'male', '01']\n"

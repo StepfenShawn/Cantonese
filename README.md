@@ -25,18 +25,19 @@ pip install Cantonese
 &emsp;&emsp;<a href="#11">調用 Python</a>  
 &emsp;&emsp;<a href="#12">面向對象編程</a>  
 &emsp;&emsp;<a href="#13">棧嘅使用</a>  
-<a href="#14">更多例子</a>  
-&emsp;&emsp;<a href="#15">睇下時間</a>  
-&emsp;&emsp;<a href="#16">暫停</a>  
-&emsp;&emsp;<a href="#17">嚟個隨機數</a>  
-&emsp;&emsp;<a href="#18">計相關係數</a>  
-&emsp;&emsp;<a href="#19">仲可以機械學習?</a>  
-&emsp;&emsp;<a href="#20">海龜畫圖</a>  
-&emsp;&emsp;<a href="#21">迷宮遊戲仔</a>  
-&emsp;&emsp;<a href="#22">各種排序同查找算法</a>  
-&emsp;&emsp;<a href="#23">寫個網頁嚟睇下？</a>   
-&emsp;&emsp;<a href="#24">用粵語開發一隻 App</a>   
-&emsp;&emsp;<a href="#25">數據庫編程都得???(開發緊)</a>  
+&emsp;&emsp;<a href="#14">想点都得! 定义自己嘅语法</a>  
+<a href="#15">更多例子</a>  
+&emsp;&emsp;<a href="#16">睇下時間</a>  
+&emsp;&emsp;<a href="#17">暫停</a>  
+&emsp;&emsp;<a href="#18">嚟個隨機數</a>  
+&emsp;&emsp;<a href="#19">計相關係數</a>  
+&emsp;&emsp;<a href="#20">仲可以機械學習?</a>  
+&emsp;&emsp;<a href="#21">海龜畫圖</a>  
+&emsp;&emsp;<a href="#22">迷宮遊戲仔</a>  
+&emsp;&emsp;<a href="#23">各種排序同查找算法</a>  
+&emsp;&emsp;<a href="#24">寫個網頁嚟睇下？</a>   
+&emsp;&emsp;<a href="#25">用粵語開發一隻 App</a>   
+&emsp;&emsp;<a href="#26">數據庫編程都得???(開發緊)</a>  
 <a href="#25">點樣運行?</a>  
 <a href="#26">TODOs</a>  
 # <a name="0">引言</a>
@@ -211,19 +212,22 @@ def add(a, b):
 聲明對象 `duck`，繼承至 `object`，分別有兩個方法 `游水` 同埋 `睡觉` ，仲有一個屬性 `性别`：  
 ```
 介紹返 duck 係 乜X {
-    佢個老豆叫 |object|
-    佢嘅 |性别| 係 "公"
-    佢識得 |游下水| => {
-        畀我睇下 "Duck is swimming" 點樣先？
+    佢個老豆叫 object
+    佢有啲咩?? => {
+        性别: 公家嘢,
+        年龄: 私家嘢
     }
-    佢識得 |睡下觉| => {
-        畀我睇下 "Duck is sleeping" 點樣先？
+    佢識得 游下水 |自己| => {
+        畀我睇下 "Duck is swimming" 點樣先??
     }
+    佢識得 睡下觉 |自己| => {
+        畀我睇下 "Duck is sleeping" 點樣先??
+    } 
 }
 ```
 創建object:  
 ```
-介紹返 myduck 係 阿->duck()
+介紹返 myduck 係 阿->duck(性别="公")
 ```
 調用對象中嘅方法, 两總方式任你揀：   
 ```
@@ -235,12 +239,13 @@ myduck -> 游下水() 啦!
 Duck is swimming
 Duck is sleeping
 ```
+
 ### <a name="13">棧嘅使用</a>
 首先創建一個Stack:  
 ```
 有條仆街叫 |Deo哥|
 ```
-或者用翻賦值嘅方式:   
+或者用返賦值嘅方式:   
 ```
 介紹返 Deo哥 係 條仆街仔()
 ```
@@ -255,8 +260,37 @@ Duck is sleeping
 ```
 Stack: [1,2]
 ```
-# <a name="14">更多例子</a>
-### <a name="15">顯示當前時間</a>
+### <a name="14">想点都得! 定义自己嘅语法</a>
+介紹咗咁多, `Cantonese`仲將類似於`Rust`入面嘅宏定義引入, 可以通過宏來擴展我哋嘅語法, 簡單啲講, 就相當於`match`語句, 匹配之後用`@`提取元變量喺編譯期間進行替換:    
+```
+介紹返 sayhello 係 袋仔的法寶 =>
+    | (Hello @s: str) => { 畀我睇下 "Hello " + @s 點樣先?? }
+    | () => { 畀我睇下 "Hello" 點樣先?? }
+搞掂
+
+sayhello!{Hello "dd"} 咁啦
+sayhello!{} 咁啦
+sayhello!{1} 咁啦 # 報錯: 無法匹配
+```
+複雜啲嘅例子:
+```
+介紹返 計算 係 袋仔的法寶 =>
+    | (同我加 @左: epxr @右: expr 好唔好) => { 
+        @左 + @右 }
+    | (同我加 @左: epxr 減 @右: expr 好唔好) => { 
+        @左 - @右 }
+    | (同我加 @左: epxr 除 @右: expr 好唔好) => { 
+        @左 / @右 }
+    | (同我加 @左: epxr 乘 @右: expr 好唔好) => { 
+        @左 * @右 }
+搞掂
+
+畀我睇下 計算!{同我加 1 + 2 好唔好} 點樣先? # 3
+畀我睇下 計算!{同我加 1 + (2 * 2) 好唔好} 點樣先? # 5
+```
+
+# <a name="15">更多例子</a>
+### <a name="16">顯示當前時間</a>
 ```
 使下 datetime
 畀我睇下 |宜家几点()| 點樣先？
@@ -265,12 +299,12 @@ Stack: [1,2]
 ```
 2021-01-17 09:16:20.767191
 ```
-### <a name="16">暫停</a>
+### <a name="17">暫停</a>
 ```
 瞓 阵先 /* 暂停2s */
 瞓 5s  /* 暂停5s */
 ```  
-### <a name="17">嚟個隨機數</a>
+### <a name="18">嚟個隨機數</a>
 ```
 使下 随机数
 介紹返 |A| 係 |求其啦()|
@@ -279,26 +313,26 @@ Stack: [1,2]
 ```
 0.15008236307867207
 ```  
-### <a name="18">計相關係數</a>
+### <a name="19">計相關係數</a>
 聲明兩個 list，計相關係數：  
 ```
 使下 math
 |[2.165, 1.688, 1.651, 2.229]| 拍住上 => |A|
 |[2.060, 1.822, 1.834, 2.799]| 拍住上 => |B|
-畀我睇下 <| A同B有幾襯 |> 點樣先？
+畀我睇下 秘诀!{A同B有幾襯} 點樣先？
 ```
 運行結果：
 ```
 0.8066499427138474
 ```
-### <a name="19">仲可以机器学习?</a>
+### <a name="20">仲可以机器学习?</a>
 實現 KNN 算法：
 ```
 使下 math
 |[[5, 1], [4, 0], [1, 3], [0, 4]]| 拍住上 => |数据|
 |['动作片', '动作片', '科幻片', '科幻片']| 拍住上 => |标签|
 介紹返 |K| 係 3
-嗌 KNN 过嚟估下 => |[3, 0]|
+过嚟估下!{KNN => |[3, 0]|}
 ```
 運行結果：
 ```
@@ -309,7 +343,7 @@ Stack: [1,2]
 使下 math
 |[300.0 , 400.0 , 400.0 , 550.0 , 720.0 , 850.0 , 900.0 , 950.0]| 拍住上 => |X|
 |[300.0 , 350.0 , 490.0 , 500.0 , 600.0 , 610.0 , 700.0 , 660.0]| 拍住上 => |Y|
-嗌 L_REG 过嚟估下 => |900.0|
+过嚟估下!{L_REG => |900.0|}
 ```
 運行結果：
 ```
@@ -317,29 +351,29 @@ Linear function is:
 y=0.530960991635149x+189.75347155122432
 667.6183640228585
 ```
-### <a name="20">海龜繪圖</a>
+### <a name="21">海龜繪圖</a>
 ```
-老作一下 => {
-    首先 |画个圈(100)|
-    跟住 |写隻字("Made By Cantonese\n")|
+老作一下!{
+    首先 |画个圈(100)|,
+    跟住 |写隻字("Made By Cantonese\n")|,
     最尾 |听我支笛()|
 }
 ```  
 運行結果：    
 <img src="img/turtle_etc.jpg" width="300px">
 
-### <a name="21">迷宮遊戲仔</a>
+### <a name="22">迷宮遊戲仔</a>
 [代碼](examples/games/game.cantonese)  
 運行結果：  
 <img src="img/game_result.jpg" width="300px">
 
-### <a name="22">各種排序同查找算法</a>
+### <a name="23">各種排序同查找算法</a>
 * [二分查找](examples/algorithms/binary_search.cantonese)
 * [线性查找](examples/algorithms/linear_search.cantonese)
 * [冒泡排序](examples/algorithms/bubble_sort.cantonese)
 * [插入排序](examples/algorithms/insert_sort.cantonese)
 
-### <a name="23">寫個網頁睇下</a>
+### <a name="24">寫個網頁睇下</a>
 一個簡單嘅網頁：
 ```
 老作一下 {
@@ -353,7 +387,7 @@ cantonese examples/web/hello_web.cantonese -to_web
 ```
 <img src="img/web_result.jpg" width="300px">
 
-### <a href="#24">用粵語開發一隻 App</a>
+### <a href="#25">用粵語開發一隻 App</a>
 首先安裝 `kivy`：
 ```
 pip install kivy
@@ -363,7 +397,7 @@ pip install kivy
 使下 kivy
 介紹返 HelloApp 係 乜X {
     佢個老豆叫 App
-    佢識得 |HelloWorld| => {
+    佢識得 HelloWorld |自己| => {
         |同我show| 下 -> "Hello World" 就係 |做嘢|
         还数 |做嘢|
     }
@@ -373,16 +407,19 @@ App运行 下 -> |HelloApp, HelloApp()->HelloWorld| 啦
 ```
 <img src="img/HelloApp.jpg" width="300px">
 
-### <a href="#25">數據庫編程都得(開發緊)</a>
+### <a href="#26">數據庫編程都得(開發緊)</a>
 select語句:
 ```
+Sql!{
 喺 成績表 度揾 學生哥 邊個 (年紀 大于 10 同埋 名字 係 'dany');
 
 喺 成績表 度揾 最尾 10 个 學生哥;
 喺 成績表 度揾 排頭 20 个 學生哥; 
-
+}
 /* select * from xx  */
-睇下 xx;
+Sql!{
+    睇下 xx;
+}
 ```
 
 # 仲有啲咩?
@@ -390,7 +427,7 @@ select語句:
 [喺呢度](examples/)睇下更多例子.  
 所有關鍵字: https://github.com/Cantonese-community/Keywords  
 
-# <a name="26">点样运行?</a>
+# <a name="27">点样运行?</a>
 查看當前版本:  
 ```shell
 cantonese -v

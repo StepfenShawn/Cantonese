@@ -40,7 +40,9 @@ macro_def_stmt ::= "袋仔的法寶" '{' macro_def_block '}'
 
 class_def_block ::= '佢嘅' classvarlist 係 explist
               | '佢識得' id [parlist] '=>' '{' block '}'
-              | '佢有啲咩' '=>' '{' assignblock '}'
+              | '佢有啲咩' '=>' '{' attrdefblock '}'
+
+attrdefblock ::= id: ["公家嘢" | "私家嘢"] (',' attrdefblock)
 
 macro_def_block ::= '|' '撞见' macro_rules '=>' '{' macro_block '}'
                 | macro_def_block*
