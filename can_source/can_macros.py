@@ -1,16 +1,15 @@
 from can_source.can_error import NoTokenException
 from can_source.util.option import Option
-from can_source.can_ast import MacroResult
-from can_source.can_lexer import can_token
+from can_source.can_ast import MacroResult, TokenTree
 from can_source.can_parser import *
 from can_source.can_const import *
 from can_source.parser_base import ParserFn, new_token_context
-from typing import List, Generator
+from typing import Generator
 
 
 def match(pattern, tokentrees: Generator) -> Option:
     matched_meta_vars = {}
-    matched_meta_exps = []
+    matched_meta_repetitions = []
     cur_token_context = new_token_context(tokentrees)
     curF = ParserFn(ctx=cur_token_context)
     if len(pattern) == 0:
@@ -39,7 +38,7 @@ def match(pattern, tokentrees: Generator) -> Option:
                     s=curF.eat_tk_by_kind(TokenType.STRING).value
                 )
                 matched_meta_vars[meta_var_name] = ast_node
-        elif isinstance(pat, can_ast.MacroMetaExp):
+        elif isinstance(pat, can_ast.MacroMetaRepExp):
             print(pat)
         else:
             try:
@@ -58,15 +57,15 @@ class CanMacro:
         self.patterns = patterns
         self.alter_blocks = alter_blocks
 
-    def try_expand(self, tokentrees: List[can_token]):
+    def try_expand(self, tokentrees: TokenTree):
         for pat, block in zip(self.patterns, self.alter_blocks):
-            match_res = match(pat, (token for token in tokentrees))
+            match_res = match(pat, (token for token in tokentrees.val))
             if match_res.is_some():
                 meta_vars = match_res.unwrap()
                 return meta_vars, block
         raise f"Can not expand macro: {self.name}"
 
-    def eval(self, tokentrees: List[can_token]) -> MacroResult:
+    def eval(self, tokentrees: TokenTree) -> MacroResult:
         matched_meta_vars, block = self.try_expand(tokentrees)
         parse_res = MacroResult(matched_meta_vars, block)
         return parse_res

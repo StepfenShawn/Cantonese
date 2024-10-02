@@ -48,15 +48,14 @@ class MacroParser:
     @classmethod
     def finish_meta_exp(cls, meta_exp):
         next_tk = cls.Fn.try_look_ahead()
-        meta_exp = can_ast.MacroMetaExp(meta_exp, None, None)
-        if next_tk.value == ",":
+        meta_exp = can_ast.MacroMetaRepExp(meta_exp, None, None)
+        if next_tk.value not in ["*", "+", "?"]:
             cls.Fn.skip_once()
             meta_exp.rep_sep = next_tk.value
             next_tk = cls.Fn.try_look_ahead()
-        # TODO: make this strict
-        if next_tk.value in ["*", "+", "?"]:
-            cls.Fn.skip_once()
-            meta_exp.rep_op = next_tk.value
+
+        op_tk = cls.Fn.eat_tk_by_value(["*", "+", "?"])
+        meta_exp.rep_op = op_tk.value
 
         return meta_exp
 
@@ -67,9 +66,9 @@ class MacroParser:
         while cls.Fn.try_look_ahead().typ != TokenType.SEP_RCURLY:
             next_tk = cls.Fn.try_look_ahead()
             if next_tk.typ == TokenType.SEP_LCURLY:
-                tokentrees.extend(cls.parse_tokentrees())
+                tokentrees.append(cls.parse_tokentrees())
             else:
                 cls.Fn.skip_once()
                 tokentrees.append(next_tk)
         cls.Fn.eat_tk_by_kind(TokenType.SEP_RCURLY)
-        return tokentrees
+        return can_ast.TokenTree(tokentrees)

@@ -40,6 +40,7 @@ class StatParserException(Exception):
     def __str__(self):
         return self.message
 
+
 class MacroNotMatchException(Exception):
     """
     宏找不到匹配

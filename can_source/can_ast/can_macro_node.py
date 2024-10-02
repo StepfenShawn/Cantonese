@@ -5,6 +5,7 @@ from can_source.can_ast.can_exp import Exp
 from can_source.can_ast.can_stat import Stat
 from can_source.can_const import RepOp
 
+
 @dataclass
 class MetaIdExp(Exp):
     """
@@ -13,13 +14,17 @@ class MetaIdExp(Exp):
 
     name: str
 
+
 @dataclass
-class MetaExp(Exp):
+class MetaRepExp(Exp):
     """
-    meta expr in `macro-blocks`
+    meta repetitions in `macro-blocks`
     """
+
     token_trees: List[object]
+    sep: str
     rep_op: RepOp
+
 
 @dataclass
 class MacroDefStat(Stat):
@@ -39,7 +44,7 @@ class MacroMetaId(Exp):
 
 
 @dataclass
-class MacroMetaExp(Exp):
+class MacroMetaRepExp(Exp):
     """
     meta exp in `macro-patterns`
     """
@@ -57,3 +62,8 @@ class MacroResult:
 
     meta_var: dict
     results: list
+
+
+@dataclass
+class TokenTree:
+    val: List[object]
