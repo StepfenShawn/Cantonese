@@ -19,6 +19,7 @@ class FragSpec(Enum):
     LITERAL = 3
     STMT = 4
     STR = 5
+    TT = 6
 
     @staticmethod
     def from_can_token(tk: can_token):
@@ -36,4 +37,6 @@ class FragSpec(Enum):
                 return FragSpec.BLOCK
             elif name == "str":
                 return FragSpec.STR
+            elif name == "tt":
+                return FragSpec.TT
         raise Exception(f"case meta var's token type {tk}: Can not into FragSpec")

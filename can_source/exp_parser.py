@@ -311,6 +311,10 @@ class ExpParser:
         elif next_tk.value == "$$":
             cls.Fn.skip_once()
             exp = cls.parse_functiondef_expr()
+        # meta rep
+        elif next_tk.value == "$":
+            exp = MacroParser.from_ParserFn(cls.Fn).parse_meta_rep_stmt()
+            return exp
         # '|' exp '|'
         else:
             exp = cls.parse_brack_exp()

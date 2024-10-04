@@ -1,5 +1,5 @@
 from can_source.can_error import NoTokenException
-from can_source.util.option import Option
+from can_source.can_utils.option import Option
 from can_source.can_ast import MacroResult, TokenTree
 from can_source.can_parser import *
 from can_source.can_const import *
@@ -39,7 +39,12 @@ def match(pattern, tokentrees: Generator) -> Option:
                 )
                 matched_meta_vars[meta_var_name] = ast_node
         elif isinstance(pat, can_ast.MacroMetaRepExp):
-            print(pat)
+            if pat.rep_op == RepOp.CLOSURE:
+                pass
+            elif pat.rep_op == RepOp.OPRIONAL:
+                pass
+            elif pat.rep_op == RepOp.PLUS_CLOSE:
+                pass
         else:
             try:
                 if curF.match_tk(pat):

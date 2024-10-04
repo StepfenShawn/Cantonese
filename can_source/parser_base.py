@@ -1,7 +1,7 @@
 import os
 from can_source.can_error import NoTokenException
 from can_source.can_lexer import TokenType, can_token, getCtxByLine, Pos
-from can_source.util.infoprinter import ErrorPrinter
+from can_source.can_utils.infoprinter import ErrorPrinter
 from can_source.can_sys import can_context
 from collections import namedtuple
 

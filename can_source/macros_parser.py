@@ -22,23 +22,33 @@ class MacroParser:
         return meta_exp
 
     @classmethod
-    def parse_meta_exp(cls):
+    def parse_meta_rep_exp(cls):
         """
         解析宏规则里面嘅表达式 eg: `$(...)+`
         """
         cls.Fn.skip_once()
         cls.Fn.eat_tk_by_kind(TokenType.SEP_LPAREN)
-        exp_atom = []
+        tokentree = []
         while cls.Fn.try_look_ahead().typ != TokenType.SEP_RPAREN:
-            meta_exp = exp_atom.append(cls.parse_macro_rule())
+            tokentree.append(cls.parse_macro_rule())
         cls.Fn.eat_tk_by_kind(TokenType.SEP_RPAREN)
-        return cls.finish_meta_exp(meta_exp)
+        return cls.finish_meta_exp(tokentree)
+    
+    @classmethod
+    def parse_meta_rep_stmt(cls):
+        """
+        解析宏定义(`block`)里面嘅表达式 eg: `$(...)+`
+        """
+        cls.Fn.skip_once()
+        tokentree = cls.parse_tokentrees()
+        return cls.finish_meta_exp(tokentree)
+        
 
     @classmethod
     def parse_macro_rule(cls) -> list:
         next_tk = cls.Fn.try_look_ahead()
         if next_tk.value == "$":
-            return cls.parse_meta_exp()
+            return cls.parse_meta_rep_exp()
         elif next_tk.value == "@":
             return cls.parse_meta_var()
         else:
@@ -56,7 +66,6 @@ class MacroParser:
 
         op_tk = cls.Fn.eat_tk_by_value(["*", "+", "?"])
         meta_exp.rep_op = op_tk.value
-
         return meta_exp
 
     @classmethod

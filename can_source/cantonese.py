@@ -12,7 +12,7 @@ import textwrap
 sys.path.append(os.getcwd())
 sys.dont_write_bytecode = True
 
-from can_source.util.infoprinter import format_color, show_more
+from can_source.can_utils.infoprinter import format_color, show_more
 
 import can_source.can_lexer as can_lexer
 import can_source.can_parser as can_parser

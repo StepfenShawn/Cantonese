@@ -6,7 +6,7 @@ import zhconv
 import os
 
 from can_source.can_keywords import *
-from can_source.util.infoprinter import ErrorPrinter
+from can_source.can_utils.infoprinter import ErrorPrinter
 
 Pos = namedtuple("Pos", ["line", "offset", "end_line", "end_offset"])
 
