@@ -9,8 +9,11 @@ from can_source.can_macros import CanMacro
 
 class StatParser:
 
-    def __init__(self, token_context):
-        self.Fn = ParserFn(ctx=token_context)
+    def __init__(self, from_):
+        if isinstance(from_, ParserFn):
+            self.Fn = from_
+        else:
+            self.Fn = ParserFn(ctx=from_)
 
     def parse_var_list(self):
         exp = ExpParser.from_ParserFn(self.Fn).parse_prefixexp()

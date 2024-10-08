@@ -1,7 +1,6 @@
 介紹返 vec 係 袋仔的法寶 =>
-    | () => { 还数 [] }
-    |($(@element:expr),+) => {
-        [${@element},+] 咁啦
+    |($(@element:expr),*) => {
+        [${@element},*] 咁啦
     }
 搞掂
 

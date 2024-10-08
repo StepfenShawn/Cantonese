@@ -28,7 +28,7 @@ def pos_tracker(func):
     return wrapper
 
 
-def new_token_context(tokens: list):
+def new_token_context(tokens):
     cls = namedtuple("TokenContext", ["tokens", "buffer_tokens"])
     return cls(tokens=tokens, buffer_tokens=[])
 
@@ -43,6 +43,13 @@ class ParserFn:
             return next(self.ctx.tokens)
         except StopIteration as e:
             raise NoTokenException("No tokens...")
+
+    def no_tokens(self):
+        try:
+            next(self.ctx.tokens)
+        except StopIteration as e:
+            return True
+        return False
 
     def look_ahead(self) -> can_token:
         if self.ctx.buffer_tokens:

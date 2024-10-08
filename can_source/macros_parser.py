@@ -33,7 +33,7 @@ class MacroParser:
             tokentree.append(cls.parse_macro_rule())
         cls.Fn.eat_tk_by_kind(TokenType.SEP_RPAREN)
         return cls.finish_meta_exp(tokentree)
-    
+
     @classmethod
     def parse_meta_rep_stmt(cls):
         """
@@ -42,7 +42,6 @@ class MacroParser:
         cls.Fn.skip_once()
         tokentree = cls.parse_tokentrees()
         return cls.finish_meta_exp(tokentree)
-        
 
     @classmethod
     def parse_macro_rule(cls) -> list:
@@ -76,6 +75,10 @@ class MacroParser:
             next_tk = cls.Fn.try_look_ahead()
             if next_tk.typ == TokenType.SEP_LCURLY:
                 tokentrees.append(cls.parse_tokentrees())
+            elif next_tk.value == "@":
+                cls.Fn.skip_once()
+                meta_var = cls.Fn.eat_tk_by_kind(TokenType.IDENTIFIER)
+                tokentrees.append(can_ast.MetaIdExp(meta_var.value))
             else:
                 cls.Fn.skip_once()
                 tokentrees.append(next_tk)

@@ -1,74 +1,120 @@
-from can_source.can_error import NoTokenException
+from dataclasses import dataclass
+from typing import Optional
+
+from can_source.can_error import NoTokenException, MacroCanNotExpand
 from can_source.can_utils.option import Option
-from can_source.can_ast import MacroResult, TokenTree
+from can_source.can_ast import MacroResult, TokenTree, MacroMetaRepExp, MacroMetaId
 from can_source.can_parser import *
 from can_source.can_const import *
 from can_source.parser_base import ParserFn, new_token_context
-from typing import Generator
 
 
-def match(pattern, tokentrees: Generator) -> Option:
-    matched_meta_vars = {}
-    matched_meta_repetitions = []
-    cur_token_context = new_token_context(tokentrees)
-    curF = ParserFn(ctx=cur_token_context)
-    if len(pattern) == 0:
-        return (
-            Option(matched_meta_vars)
-            if len([x for x in tokentrees]) == 0
-            else Option(None)
-        )
-    for pat in pattern:
-        if isinstance(pat, can_ast.MacroMetaId):
-            meta_var_name = pat._id.value
-            spec = FragSpec.from_can_token(pat.frag_spec)
-            if spec == FragSpec.IDENT:
-                ast_node = can_ast.can_exp.IdExp(
-                    name=curF.eat_tk_by_kind(TokenType.IDENTIFIER).value
-                )
-                matched_meta_vars[meta_var_name] = ast_node
-            elif spec == FragSpec.STMT:
-                ast_node = StatParser(token_context=cur_token_context).parse()
-                matched_meta_vars[meta_var_name] = ast_node
-            elif spec == FragSpec.EXPR:
-                ast_node = ExpParser.from_ParserFn(curF).parse_exp()
-                matched_meta_vars[meta_var_name] = ast_node
-            elif spec == FragSpec.STR:
-                ast_node = can_ast.can_exp.StringExp(
-                    s=curF.eat_tk_by_kind(TokenType.STRING).value
-                )
-                matched_meta_vars[meta_var_name] = ast_node
-        elif isinstance(pat, can_ast.MacroMetaRepExp):
-            if pat.rep_op == RepOp.CLOSURE:
-                pass
-            elif pat.rep_op == RepOp.OPRIONAL:
-                pass
-            elif pat.rep_op == RepOp.PLUS_CLOSE:
-                pass
+@dataclass
+class MatchState:
+    parser_fn: ParserFn
+    meta_vars: dict
+    meta_rep: dict
+
+
+def match_token(excepted: can_token, state: MatchState) -> Optional[MatchState]:
+    """
+    匹配一个token
+    """
+    try:
+        if state.parser_fn.match_tk(excepted):
+            state.parser_fn.skip_once()
+            return state
         else:
-            try:
-                if curF.match_tk(pat):
-                    curF.skip_once()
-                else:
-                    return Option(None)
-            except NoTokenException:
-                return Option(None)
-    return Option(matched_meta_vars)
+            return None
+    except NoTokenException:
+        return None
+
+
+def match_macro_meta_id(pat: MacroMetaId, state: MatchState) -> Optional[MatchState]:
+    """
+    匹配元变量
+    """
+    meta_var_name = pat._id.value
+    spec = FragSpec.from_can_token(pat.frag_spec)
+    if spec == FragSpec.IDENT:
+        ast_node = can_ast.can_exp.IdExp(
+            name=state.parser_fn.eat_tk_by_kind(TokenType.IDENTIFIER).value
+        )
+        state.meta_vars.update({meta_var_name: ast_node})
+    elif spec == FragSpec.STMT:
+        ast_node = StatParser(from_=state.curF).parse()
+        state.meta_vars.update({meta_var_name: ast_node})
+    elif spec == FragSpec.EXPR:
+        ast_node = ExpParser.from_ParserFn(state.parser_fn).parse_exp()
+        state.meta_vars.update({meta_var_name: ast_node})
+    elif spec == FragSpec.STR:
+        ast_node = can_ast.can_exp.StringExp(
+            s=state.parser_fn.eat_tk_by_kind(TokenType.STRING).value
+        )
+        state.meta_vars.update({meta_var_name: ast_node})
+    else:
+        return None
+    return state
+
+
+def match_macro_meta_repexp(
+    pat: MacroMetaRepExp, state: MatchState
+) -> Optional[MatchState]:
+    if pat.rep_op == RepOp.CLOSURE.value:  # *
+        try:
+            try_match = match(pat.token_trees, state)
+            if pat.rep_sep:
+                state.parser_fn.eat_tk_by_value(pat.rep_sep)
+            while try_match.is_some():
+                try_match = match(pat.token_trees, state)
+                if pat.rep_sep:
+                    state.parser_fn.eat_tk_by_value(pat.rep_sep)
+        except NoTokenException:
+            return None
+    elif pat.rep_op == RepOp.OPRIONAL.value:  # ?
+        try_match = match(pat.token_trees, state)
+    elif pat.rep_op == RepOp.PLUS_CLOSE.value:  # +
+        try_match = match(pat.token_trees, state)
+    else:
+        return None
+    return state
+
+
+def match(pattern, state: MatchState) -> Option:
+    # if no pattern?
+    if len(pattern) == 0:
+        return Option(state) if state.parser_fn.no_tokens() else Option(None)
+    for pat in pattern:
+        if isinstance(pat, MacroMetaId):
+            state = match_macro_meta_id(pat, state)
+        elif isinstance(pat, MacroMetaRepExp):
+            state = match_macro_meta_repexp(pat, state)
+        else:
+            state = match_token(pat, state)
+
+        # matches are considered failed when the status is `None`
+        if state == None:
+            return Option(None)
+
+    return Option(state)
 
 
 class CanMacro:
-    def __init__(self, name, patterns, alter_blocks) -> None:
+    def __init__(self, name, patterns, bodys) -> None:
         self.name = name
         self.patterns = patterns
-        self.alter_blocks = alter_blocks
+        self.bodys = bodys
 
     def try_expand(self, tokentrees: TokenTree):
-        for pat, block in zip(self.patterns, self.alter_blocks):
-            match_res = match(pat, (token for token in tokentrees.val))
+        for pat, block in zip(self.patterns, self.bodys):
+            init_match_state = MatchState(
+                ParserFn(new_token_context((token for token in tokentrees.val))), {}, []
+            )
+            match_res = match(pat, init_match_state)
             if match_res.is_some():
-                meta_vars = match_res.unwrap()
+                meta_vars = match_res.unwrap().meta_vars
                 return meta_vars, block
-        raise f"Can not expand macro: {self.name}"
+        raise MacroCanNotExpand(f"Can not expand macro: {self.name}")
 
     def eval(self, tokentrees: TokenTree) -> MacroResult:
         matched_meta_vars, block = self.try_expand(tokentrees)

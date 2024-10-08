@@ -158,6 +158,9 @@ class Codegen:
             self.macro_meta_vars = {}
             return s if s else ""
 
+        elif isinstance(exp, can_parser.can_ast.MacroMetaRepExp):
+            return ""
+
     def codegen_args(self, args: list) -> str:
         s = ""
         for arg in args:
