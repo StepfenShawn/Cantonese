@@ -57,7 +57,7 @@ class ParserFn:
             return False
         else:
             try:
-                self._next()
+                self.ctx.buffer_tokens.append(self._next())
             except NoTokenException as e:
                 return True
             return False
@@ -100,7 +100,9 @@ class ParserFn:
         return tk.value == expect_tk.value and tk.typ == expect_tk.typ
 
     def match(self, v) -> bool:
-        tk = self.try_look_ahead()        
+        if self.no_tokens():
+            return False
+        tk = self.try_look_ahead()
         if isinstance(v, TokenType):
             return tk.typ == v
         else:

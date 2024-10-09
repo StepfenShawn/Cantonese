@@ -15,7 +15,7 @@ class ExpParser:
     def parse_exp_list(cls):
         exps = [cls.parse_exp()]
 
-        while cls.Fn.try_look_ahead().typ == TokenType.SEP_COMMA:
+        while cls.Fn.match(TokenType.SEP_COMMA):
             cls.Fn.skip_once()
             exps.append(cls.parse_exp())
         return exps
@@ -43,7 +43,7 @@ class ExpParser:
     @classmethod
     def parse_exp13(cls):
         exp = cls.parse_exp12()
-        if cls.Fn.try_look_ahead().value == "==>":
+        if cls.Fn.match("==>"):
             cls.Fn.skip_once()
             exp = can_ast.MappingExp(exp, cls.parse_exp12())
         return exp
@@ -246,7 +246,7 @@ class ExpParser:
     @classmethod
     def parse_exp1(cls):
         exp = cls.parse_exp0()
-        if cls.Fn.try_look_ahead().typ == TokenType.OP_POW:
+        if cls.Fn.match(TokenType.OP_POW):
             op = cls.Fn.try_look_ahead().value
             cls.Fn.skip_once()  # Skip the op
             exp = can_ast.BinopExp(op, exp, cls.parse_exp2())
@@ -401,7 +401,7 @@ class ExpParser:
             elif kind == TokenType.EXCL:
                 cls.Fn.skip_once()
                 macro_name = exp.name
-                tokentrees = MacroParser.parse_tokentrees()
+                tokentrees = MacroParser.from_ParserFn(cls.Fn).parse_tokentrees()
                 if macro_name not in can_macros_context.macros:
                     raise Exception(f"macro {macro_name} not found!")
                 exp = can_macros_context.get(macro_name).eval(tokentrees)
