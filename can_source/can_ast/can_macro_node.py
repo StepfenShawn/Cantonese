@@ -55,15 +55,16 @@ class MacroMetaRepExp(Exp):
 
 
 @dataclass
+class TokenTree:
+    val: List[object]
+
+
+@dataclass
 class MacroResult:
     """
     inner-result before expand
     """
 
     meta_var: dict
-    results: list
-
-
-@dataclass
-class TokenTree:
-    val: List[object]
+    meta_rep: object
+    results: TokenTree

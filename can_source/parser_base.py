@@ -38,6 +38,14 @@ class ParserFn:
         self.last_tk = None
         self.ctx = ctx
 
+    def collect(self):
+        """
+        consume all `tokens` generator to `buffer_tokens`.
+        Avoid reference problem.
+        """
+        self.ctx.buffer_tokens.extend([x for x in self.ctx.tokens])
+        return self
+
     def _next(self):
         try:
             return next(self.ctx.tokens)
@@ -45,11 +53,14 @@ class ParserFn:
             raise NoTokenException("No tokens...")
 
     def no_tokens(self):
-        try:
-            next(self.ctx.tokens)
-        except StopIteration as e:
-            return True
-        return False
+        if self.ctx.buffer_tokens:
+            return False
+        else:
+            try:
+                self._next()
+            except NoTokenException as e:
+                return True
+            return False
 
     def look_ahead(self) -> can_token:
         if self.ctx.buffer_tokens:
@@ -87,6 +98,13 @@ class ParserFn:
     def match_tk(self, expect_tk: can_token) -> bool:
         tk = self.try_look_ahead()
         return tk.value == expect_tk.value and tk.typ == expect_tk.typ
+
+    def match(self, v) -> bool:
+        tk = self.try_look_ahead()        
+        if isinstance(v, TokenType):
+            return tk.typ == v
+        else:
+            return tk.value == v
 
     def eat_tk_by_kind(self, k: TokenType) -> can_token:
         tk = self.look_ahead()

@@ -17,6 +17,15 @@ class NoTokenException(Exception):
         return self.message
 
 
+class NoParseException(Exception):
+    def __init__(self, message, state):
+        self.message = message
+        self.state = state
+
+    def __str__(self):
+        return self.message
+
+
 class ExprParserExceprion(Exception):
     """
     表达式解释错误
