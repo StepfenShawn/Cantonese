@@ -105,6 +105,11 @@ class ParserFn:
         tk = self.try_look_ahead()
         if isinstance(v, TokenType):
             return tk.typ == v
+        elif isinstance(v, list):
+            for x in v:
+                if self.match(x):
+                    return True
+            return False
         else:
             return tk.value == v
 

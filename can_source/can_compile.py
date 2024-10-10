@@ -1,6 +1,6 @@
 import can_source.can_parser as can_parser
 import can_source.can_lexer as can_lexer
-from can_source.parser_base import new_token_context
+from can_source.parser_trait import new_token_context
 import sys, os
 from typing import Generator
 

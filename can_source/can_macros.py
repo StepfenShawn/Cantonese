@@ -5,7 +5,7 @@ from can_source.can_error import NoTokenException, MacroCanNotExpand
 from can_source.can_ast import MacroResult, TokenTree, MacroMetaRepExp, MacroMetaId
 from can_source.can_parser import *
 from can_source.can_const import *
-from can_source.parser_base import ParserFn, new_token_context
+from can_source.parser_trait import ParserFn, new_token_context
 
 
 class MetaVarTracker:

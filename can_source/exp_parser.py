@@ -1,6 +1,6 @@
 from can_source.can_lexer import *
 import can_source.can_ast as can_ast
-from can_source.parser_base import ParserFn
+from can_source.parser_trait import ParserFn
 from can_source.macros_parser import MacroParser
 from can_source.can_sys import can_macros_context
 
@@ -52,7 +52,7 @@ class ExpParser:
     @classmethod
     def parse_exp12(cls):
         exp = cls.parse_exp11()
-        while cls.Fn.try_look_ahead().value in ["or", "或者"]:
+        while cls.Fn.match(["or", "或者"]):
             cls.Fn.skip_once()
             exp = can_ast.BinopExp("or", exp, cls.parse_exp11())
         return exp
@@ -61,7 +61,7 @@ class ExpParser:
     @classmethod
     def parse_exp11(cls):
         exp = cls.parse_exp10()
-        while cls.Fn.try_look_ahead().value in ["and", "同埋"]:
+        while cls.Fn.match(["and", "同埋"]):
             cls.Fn.skip_once()
             exp = can_ast.BinopExp("and", exp, cls.parse_exp10())
         return exp
@@ -71,19 +71,19 @@ class ExpParser:
     def parse_exp10(cls):
         exp = cls.parse_exp9()
         while True:
-            now = cls.Fn.try_look_ahead()
-            if now.value in (">", ">=", "<", "<=", "==", "!=", kw_is):
+            if cls.Fn.match([">", ">=", "<", "<=", "==", "!=", kw_is]):
+                now = cls.Fn.try_look_ahead()
                 op = now.value
                 cls.Fn.skip_once()
                 exp = can_ast.BinopExp(
                     op if op != kw_is else "==", exp, cls.parse_exp9()
                 )
 
-            elif now.value in ("in", kw_in):
+            elif cls.Fn.match(["in", kw_in]):
                 cls.Fn.skip_once()
                 exp = can_ast.BinopExp(" in ", exp, cls.parse_exp9())
 
-            elif now.value == "比唔上":
+            elif cls.Fn.match("比唔上"):
                 cls.Fn.skip_once()
                 exp = can_ast.BinopExp("<", exp, cls.parse_exp9())
 
@@ -95,10 +95,7 @@ class ExpParser:
     @classmethod
     def parse_exp9(cls):
         exp = cls.parse_exp8()
-        while (
-            cls.Fn.try_look_ahead().typ == TokenType.OP_BOR
-            or cls.Fn.try_look_ahead().value == "或"
-        ):
+        while cls.Fn.match(TokenType.OP_BOR) or cls.Fn.match("或"):
             cls.Fn.skip_once()
             exp = can_ast.BinopExp("|", exp, cls.parse_exp8())
         return exp
@@ -107,10 +104,7 @@ class ExpParser:
     @classmethod
     def parse_exp8(cls):
         exp = cls.parse_exp7()
-        while (
-            cls.Fn.try_look_ahead().typ == TokenType.OP_WAVE
-            or cls.Fn.try_look_ahead().value == "異或"
-        ):
+        while cls.Fn.match(TokenType.OP_WAVE) or cls.Fn.match("異或"):
             cls.Fn.skip_once()
             exp = can_ast.BinopExp("^", exp, cls.parse_exp8())
         return exp
@@ -119,10 +113,7 @@ class ExpParser:
     @classmethod
     def parse_exp7(cls):
         exp = cls.parse_exp6()
-        while (
-            cls.Fn.try_look_ahead().typ == TokenType.OP_BAND
-            or cls.Fn.try_look_ahead().value == "與"
-        ):
+        while cls.Fn.match(TokenType.OP_BAND) or cls.Fn.match("與"):
             cls.Fn.skip_once()
             exp = can_ast.BinopExp("&", exp, cls.parse_exp8())
         return exp
@@ -131,16 +122,16 @@ class ExpParser:
     @classmethod
     def parse_exp6(cls):
         exp = cls.parse_exp5()
-        if cls.Fn.try_look_ahead().typ in (TokenType.OP_SHL, TokenType.OP_SHR):
+        if cls.Fn.match([TokenType.OP_SHL, TokenType.OP_SHR]):
             op = cls.Fn.try_look_ahead().value
             cls.Fn.skip_once()  # Skip the op
             exp = can_ast.BinopExp(op, exp, cls.parse_exp5())
 
-        elif cls.Fn.try_look_ahead().value == "左移":
+        elif cls.Fn.match("左移"):
             cls.Fn.skip_once()  # Skip the op
             exp = can_ast.BinopExp("<<", exp, cls.parse_exp5())
 
-        elif cls.Fn.try_look_ahead().value == "右移":
+        elif cls.Fn.match("右移"):
             cls.Fn.skip_once()  # Skip the op
             exp = can_ast.BinopExp(">>", exp, cls.parse_exp5())
 
@@ -152,11 +143,11 @@ class ExpParser:
     @classmethod
     def parse_exp5(cls):
         exp = cls.parse_exp4()
-        if cls.Fn.try_look_ahead().typ != TokenType.OP_CONCAT:
+        if not cls.Fn.match(TokenType.OP_CONCAT):
             return exp
 
         exps = [exp]
-        while cls.Fn.try_look_ahead().typ == TokenType.OP_CONCAT:
+        while cls.Fn.match(TokenType.OP_CONCAT):
             cls.Fn.skip_once()
             exps.append(cls.parse_exp4())
         return can_ast.ConcatExp(exps)
@@ -166,16 +157,16 @@ class ExpParser:
     def parse_exp4(cls):
         exp = cls.parse_exp3()
         while True:
-            if cls.Fn.try_look_ahead().typ in (TokenType.OP_ADD, TokenType.OP_MINUS):
+            if cls.Fn.match([TokenType.OP_ADD, TokenType.OP_MINUS]):
                 op = cls.Fn.try_look_ahead().value
                 cls.Fn.skip_once()  # skip the op
                 exp = can_ast.BinopExp(op, exp, cls.parse_exp3())
 
-            elif cls.Fn.try_look_ahead().value == "加":
+            elif cls.Fn.match("加"):
                 cls.Fn.skip_once()  # skip the op
                 exp = can_ast.BinopExp("+", exp, cls.parse_exp3())
 
-            elif cls.Fn.try_look_ahead().value == "減":
+            elif cls.Fn.match("減"):
                 cls.Fn.skip_once()  # skip the op
                 exp = can_ast.BinopExp("-", exp, cls.parse_exp3())
 
@@ -189,29 +180,31 @@ class ExpParser:
     def parse_exp3(cls):
         exp = cls.parse_exp2()
         while True:
-            if cls.Fn.try_look_ahead().typ in (
-                TokenType.OP_MUL,
-                TokenType.OP_MOD,
-                TokenType.OP_DIV,
-                TokenType.OP_IDIV,
+            if cls.Fn.match(
+                [
+                    TokenType.OP_MUL,
+                    TokenType.OP_MOD,
+                    TokenType.OP_DIV,
+                    TokenType.OP_IDIV,
+                ]
             ):
                 op = cls.Fn.try_look_ahead().value
                 cls.Fn.skip_once()  # Skip the op
                 exp = can_ast.BinopExp(op, exp, cls.parse_exp2())
 
-            elif cls.Fn.try_look_ahead().value == "乘":
+            elif cls.Fn.match("乘"):
                 cls.Fn.skip_once()  # Skip the op
                 exp = can_ast.BinopExp("*", exp, cls.parse_exp2())
 
-            elif cls.Fn.try_look_ahead().value == "餘":
+            elif cls.Fn.match("餘"):
                 cls.Fn.skip_once()  # Skip the op
                 exp = can_ast.BinopExp("%", exp, cls.parse_exp2())
 
-            elif cls.Fn.try_look_ahead().value == "整除":
+            elif cls.Fn.match("整除"):
                 cls.Fn.skip_once()  # Skip the op
                 exp = can_ast.BinopExp("//", exp, cls.parse_exp2())
 
-            elif cls.Fn.try_look_ahead().value == "除":
+            elif cls.Fn.match("除"):
                 cls.Fn.skip_once()  # Skip the op
                 exp = can_ast.BinopExp("//", exp, cls.parse_exp2())
 
@@ -223,18 +216,14 @@ class ExpParser:
     # unop exp
     @classmethod
     def parse_exp2(cls):
-        if (
-            cls.Fn.try_look_ahead().value == "not"
-            or cls.Fn.try_look_ahead().value == "-"
-            or cls.Fn.try_look_ahead().value == "~"
-        ):
+        if cls.Fn.match("not") or cls.Fn.match("-") or cls.Fn.match("~"):
 
             op = cls.Fn.try_look_ahead().value
             cls.Fn.skip_once()  # Skip the op
             exp = can_ast.UnopExp(op, cls.parse_exp2())
             return exp
 
-        elif cls.Fn.try_look_ahead().value == "取反":
+        elif cls.Fn.match("取反"):
             op = "~"
             cls.Fn.skip_once()  # Skip the op
             exp = can_ast.UnopExp(op, cls.parse_exp2())
@@ -417,7 +406,7 @@ class ExpParser:
 
     @classmethod
     def finish_functioncall_exp(cls, prefix_exp: can_ast.AST):
-        if cls.Fn.try_look_ahead().value == kw_call_begin:
+        if cls.Fn.match(kw_call_begin):
             cls.Fn.skip_once()
             cls.Fn.eat_tk_by_value(kw_dot)
             args = cls.parse_args()
@@ -453,19 +442,19 @@ class ExpParser:
         if tk.typ == TokenType.IDENTIFIER:
             ids = [can_ast.IdExp(tk.value)]
             cls.Fn.skip_once()
-            while cls.Fn.try_look_ahead().typ == TokenType.SEP_COMMA:
+            while cls.Fn.match(TokenType.SEP_COMMA):
                 cls.Fn.skip_once()
                 if cls.Fn.try_look_ahead().typ != TokenType.IDENTIFIER:
                     cls.error("Excepted identifier type in idlist!")
                 ids.append(can_ast.IdExp(cls.Fn.look_ahead().value))
             return ids
 
-        elif cls.Fn.try_look_ahead().value == "|":
+        elif cls.Fn.match("|"):
             cls.Fn.skip_once()
             ids = [can_ast.IdExp((cls.Fn.eat_tk_by_kind(TokenType.IDENTIFIER)).value)]
-            while cls.Fn.try_look_ahead().typ == TokenType.SEP_COMMA:
+            while cls.Fn.match(TokenType.SEP_COMMA):
                 cls.Fn.skip_once()
-                if cls.Fn.try_look_ahead().typ != TokenType.IDENTIFIER:
+                if not cls.Fn.match(TokenType.IDENTIFIER):
                     cls.Fn.error("Excepted identifier type in idlist!")
                 ids.append(can_ast.IdExp(cls.Fn.look_ahead().value))
             cls.Fn.eat_tk_by_value("|")

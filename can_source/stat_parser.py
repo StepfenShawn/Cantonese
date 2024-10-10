@@ -1,6 +1,6 @@
 from can_source.can_lexer import *
 import can_source.can_ast as can_ast
-from can_source.parser_base import ParserFn, pos_tracker
+from can_source.parser_trait import ParserFn, pos_tracker
 from can_source.exp_parser import ExpParser
 from can_source.macros_parser import MacroParser
 from can_source.can_sys import can_macros_context
@@ -18,7 +18,7 @@ class StatParser:
     def parse_var_list(self):
         exp = ExpParser.from_ParserFn(self.Fn).parse_prefixexp()
         var_list: list = [self.check_var(exp)]
-        while self.Fn.try_look_ahead().typ == TokenType.SEP_COMMA:
+        while self.Fn.match(TokenType.SEP_COMMA):
             self.Fn.skip_once()
             exp = ExpParser.from_ParserFn(self.Fn).parse_prefixexp()
             var_list.append(self.check_var(exp))
@@ -42,114 +42,103 @@ class StatParser:
 
     @pos_tracker
     def parse(self):
-        tk = self.Fn.try_look_ahead()
-        kind, tk_value = tk.typ, tk.value
+        if self.Fn.match(kw_print):
+            self.Fn.skip_once()
+            return self.parse_print_stat()
 
-        if kind == TokenType.KEYWORD:
-            if tk_value == kw_print:
-                self.Fn.skip_once()
-                return self.parse_print_stat()
+        elif self.Fn.match([kw_exit, kw_exit_1, kw_exit_2]):
+            self.Fn.skip_once()
+            return self.parse_exit_stat()
 
-            elif tk_value in [kw_exit, kw_exit_1, kw_exit_2]:
-                self.Fn.skip_once()
-                return self.parse_exit_stat()
+        elif self.Fn.match(kw_assign):
+            self.Fn.skip_once()
+            return self.parse_assign_stat()
 
-            elif tk_value == kw_assign:
-                self.Fn.skip_once()
-                return self.parse_assign_stat()
+        elif self.Fn.match(kw_if):
+            self.Fn.skip_once()
+            return self.parse_if_stat()
 
-            elif tk_value == kw_if:
-                self.Fn.skip_once()
-                return self.parse_if_stat()
+        elif self.Fn.match(kw_import):
+            self.Fn.skip_once()
+            return self.parse_import_stat()
 
-            elif tk_value == kw_import:
-                self.Fn.skip_once()
-                return self.parse_import_stat()
+        elif self.Fn.match(kw_global_set):
+            self.Fn.skip_once()
+            return self.parse_global_stat()
 
-            elif tk_value == kw_global_set:
-                self.Fn.skip_once()
-                return self.parse_global_stat()
+        elif self.Fn.match(kw_break):
+            self.Fn.skip_once()
+            return self.parse_break_stat()
 
-            elif tk_value == kw_break:
-                self.Fn.skip_once()
-                return self.parse_break_stat()
+        elif self.Fn.match(kw_continue):
+            self.Fn.skip_once()
+            return self.parse_continue_stat()
 
-            elif tk_value == kw_continue:
-                self.Fn.skip_once()
-                return self.parse_continue_stat()
+        elif self.Fn.match(kw_while_do):
+            self.Fn.skip_once()
+            return self.parse_while_stat()
 
-            elif tk_value == kw_while_do:
-                self.Fn.skip_once()
-                return self.parse_while_stat()
+        elif self.Fn.match(kw_pass):
+            self.Fn.skip_once()
+            return self.parse_pass_stat()
 
-            elif tk_value == kw_pass:
-                self.Fn.skip_once()
-                return self.parse_pass_stat()
+        elif self.Fn.match(kw_return):
+            self.Fn.skip_once()
+            return self.parse_return_stat()
 
-            elif tk_value == kw_return:
-                self.Fn.skip_once()
-                return self.parse_return_stat()
+        elif self.Fn.match(kw_del):
+            self.Fn.skip_once()
+            return self.parse_del_stat()
 
-            elif tk_value == kw_del:
-                self.Fn.skip_once()
-                return self.parse_del_stat()
+        elif self.Fn.match(kw_type):
+            self.Fn.skip_once()
+            return self.exp_type_stat()
 
-            elif tk_value == kw_type:
-                self.Fn.skip_once()
-                return self.exp_type_stat()
+        elif self.Fn.match(kw_assert):
+            self.Fn.skip_once()
+            return self.parse_assert_stat()
 
-            elif tk_value == kw_assert:
-                self.Fn.skip_once()
-                return self.parse_assert_stat()
+        elif self.Fn.match(kw_try):
+            self.Fn.skip_once()
+            return self.parse_try_stat()
 
-            elif tk_value == kw_try:
-                self.Fn.skip_once()
-                return self.parse_try_stat()
+        elif self.Fn.match(kw_raise):
+            self.Fn.skip_once()
+            return self.parse_raise_stat()
 
-            elif tk_value == kw_raise:
-                self.Fn.skip_once()
-                return self.parse_raise_stat()
+        elif self.Fn.match(kw_cmd):
+            self.Fn.skip_once()
+            return self.parse_cmd_stat()
 
-            elif tk_value == kw_cmd:
-                self.Fn.skip_once()
-                return self.parse_cmd_stat()
+        elif self.Fn.match(kw_stackinit):
+            self.Fn.skip_once()
+            return self.parse_stack_init_stat()
 
-            elif tk_value == kw_stackinit:
-                self.Fn.skip_once()
-                return self.parse_stack_init_stat()
+        elif self.Fn.match(kw_push):
+            self.Fn.skip_once()
+            return self.parse_stack_push_stat()
 
-            elif tk_value == kw_push:
-                self.Fn.skip_once()
-                return self.parse_stack_push_stat()
+        elif self.Fn.match(kw_pop):
+            self.Fn.skip_once()
+            return self.parse_stack_pop_stat()
 
-            elif tk_value == kw_pop:
-                self.Fn.skip_once()
-                return self.parse_stack_pop_stat()
+        elif self.Fn.match(kw_match):
+            self.Fn.skip_once()
+            return self.parse_match_stat()
 
-            elif tk_value == kw_match:
-                self.Fn.skip_once()
-                return self.parse_match_stat()
+        elif self.Fn.match(kw_call_native):
+            self.Fn.skip_once()
+            return self.parse_call_native_stat()
 
-            elif tk_value == kw_call_native:
-                self.Fn.skip_once()
-                return self.parse_call_native_stat()
+        elif self.Fn.match("&&"):
+            self.Fn.skip_once()
+            return self.parse_for_each_stat()
 
-            elif tk_value == "&&":
-                self.Fn.skip_once()
-                return self.parse_for_each_stat()
+        elif self.Fn.match(kw_pls):
+            self.Fn.skip_once()
+            return self.parse_pls_stat()
 
-            elif tk_value == kw_pls:
-                self.Fn.skip_once()
-                return self.parse_pls_stat()
-
-            else:
-                self.Fn.error(
-                    tk,
-                    info=f"\033[0;31m濑嘢!!!\033[0m: 個`{tk.value}`好似有D唔三唔四",
-                    tips=f" 幫緊你只不過有心無力 :(",
-                )
-
-        elif kind == TokenType.EOF:
+        elif self.Fn.match(TokenType.EOF):
             return "EOF"
 
         else:
@@ -157,17 +146,16 @@ class StatParser:
 
     def with_prefix_stats(self):
         prefix_exp = ExpParser.from_ParserFn(self.Fn).parse_exp()
-        next_tk = self.Fn.try_look_ahead()
-        if next_tk.value == kw_from:
+        if self.Fn.match(kw_from):
             return self.parse_for_stat(prefix_exp)
 
-        elif next_tk.value == kw_get_value:
+        elif self.Fn.match(kw_get_value):
             return self.parse_suffix_assign_stat(prefix_exp)
 
-        elif next_tk.value == kw_lst_assign:
+        elif self.Fn.match(kw_lst_assign):
             return self.parse_list_assign_stat(prefix_exp)
 
-        elif next_tk.value == kw_set_assign:
+        elif self.Fn.match(kw_set_assign):
             return self.parse_set_assign_stat(prefix_exp)
         # kw_laa1
         else:
@@ -188,12 +176,12 @@ class StatParser:
     # Parser for muti-assign
     def parse_assign_block(self):
         # Nothing in assignment block
-        if self.Fn.try_look_ahead().value == kw_end_assign:
+        if self.Fn.match(kw_end_assign):
             self.Fn.skip_once()
             return can_ast.PassStat()
         var_list: list = []
         exp_list: list = []
-        while self.Fn.try_look_ahead().value != kw_end_assign:
+        while not self.Fn.match(kw_end_assign):
             var_list.append(self.parse_var_list()[0])
             self.Fn.eat_tk_by_value(kw_is)
             exp_list.append(ExpParser.from_ParserFn(self.Fn).parse_exp_list()[0])
@@ -202,20 +190,20 @@ class StatParser:
         return can_ast.AssignBlockStat(var_list, exp_list)
 
     def parse_assign_stat(self):
-        if self.Fn.try_look_ahead().value == kw_do:
+        if self.Fn.match(kw_do):
             # Skip the kw_do
             self.Fn.skip_once()
             return self.parse_assign_block()
-        elif self.Fn.try_look_ahead().value == kw_function:
+        elif self.Fn.match(kw_function):
             self.Fn.skip_once()
             return self.parse_func_def_stat()
         else:
             var_list = self.parse_var_list()
             self.Fn.eat_tk_by_value(kw_is)
-            if self.Fn.try_look_ahead().value == kw_class_def:
+            if self.Fn.match(kw_class_def):
                 self.Fn.skip_once()
                 return self.parse_class_def(class_name=var_list[0])
-            elif self.Fn.try_look_ahead().value == kw_macro_def:
+            elif self.Fn.match(kw_macro_def):
                 self.Fn.skip_once()
                 return self.parse_macro_def(macro_name=var_list[0])
             else:
@@ -237,12 +225,12 @@ class StatParser:
 
         if_blocks = self.Fn.many(
             other_parse_fn=self.parse,
-            util_cond=lambda: self.Fn.try_look_ahead().typ == TokenType.SEP_RCURLY,
+            util_cond=lambda: self.Fn.match(TokenType.SEP_RCURLY),
         )
 
         self.Fn.eat_tk_by_kind(TokenType.SEP_RCURLY)
 
-        while self.Fn.try_look_ahead().value in [kw_elif]:
+        while self.Fn.match(kw_elif):
             self.Fn.eat_tk_by_value(kw_elif)
 
             elif_exps.append(ExpParser.from_ParserFn(self.Fn).parse_exp())
@@ -251,19 +239,19 @@ class StatParser:
 
             elif_block = self.Fn.many(
                 other_parse_fn=self.parse,
-                util_cond=lambda: self.Fn.try_look_ahead().typ == TokenType.SEP_RCURLY,
+                util_cond=lambda: self.Fn.match(TokenType.SEP_RCURLY),
             )
 
             elif_blocks.append(elif_block)
 
             self.Fn.eat_tk_by_kind(TokenType.SEP_RCURLY)  # Skip the SEP_RCURLY '}'
 
-        if self.Fn.try_look_ahead().value == kw_else_or_not:
+        if self.Fn.match(kw_else_or_not):
             self.Fn.eats((kw_else_or_not, kw_then, kw_do, TokenType.SEP_LCURLY))
 
             else_blocks = self.Fn.many(
                 other_parse_fn=self.parse,
-                util_cond=lambda: self.Fn.try_look_ahead().typ == TokenType.SEP_RCURLY,
+                util_cond=lambda: self.Fn.match(TokenType.SEP_RCURLY),
             )
 
             self.Fn.eat_tk_by_kind(TokenType.SEP_RCURLY)  # Skip the SEP_RCURLY '}'
@@ -287,7 +275,7 @@ class StatParser:
     def parse_while_stat(self):
         blocks = self.Fn.many(
             other_parse_fn=self.parse,
-            util_cond=lambda: self.Fn.try_look_ahead().value == kw_while,
+            util_cond=lambda: self.Fn.match(kw_while),
         )
 
         self.Fn.eat_tk_by_value(kw_while)  # Skip the kw_while
@@ -311,7 +299,7 @@ class StatParser:
 
         blocks = self.Fn.many(
             other_parse_fn=self.parse,
-            util_cond=lambda: self.Fn.try_look_ahead().value == kw_endfor,
+            util_cond=lambda: self.Fn.match(kw_endfor),
         )
 
         self.Fn.eat_tk_by_value(kw_endfor)
@@ -327,7 +315,7 @@ class StatParser:
 
         blocks = self.Fn.many(
             other_parse_fn=self.parse,
-            util_cond=lambda: self.Fn.try_look_ahead().value == kw_func_end,
+            util_cond=lambda: self.Fn.match(kw_func_end),
         )
 
         self.Fn.eat_tk_by_value(kw_func_end)
@@ -381,7 +369,7 @@ class StatParser:
         except_blocks: list = []
         finally_blocks: list = []
 
-        while self.Fn.try_look_ahead().typ != TokenType.SEP_RCURLY:
+        while not self.Fn.match(TokenType.SEP_RCURLY):
             block_parser = StatParser(
                 self.get_token_ctx(), self.ExpParser.from_ParserFn(self.Fn)
             )
@@ -398,7 +386,7 @@ class StatParser:
 
         # a temp list to save the block
         except_block = []
-        while self.Fn.try_look_ahead().typ != TokenType.SEP_RCURLY:
+        while not self.Fn.match(TokenType.SEP_RCURLY):
             block_parser = StatParser(
                 self.get_token_ctx(), self.ExpParser.from_ParserFn(self.Fn)
             )
@@ -407,7 +395,7 @@ class StatParser:
         self.Fn.eat_tk_by_kind(TokenType.SEP_RCURLY)
         except_blocks.append(except_block)
 
-        while self.Fn.try_look_ahead().value == kw_except:
+        while self.Fn.match(kw_except):
             self.Fn.skip_once()
             self.Fn.eat_tk_by_value(kw_then)
 
@@ -419,7 +407,7 @@ class StatParser:
 
             # clear the list
             except_block = []
-            while self.Fn.try_look_ahead().typ != TokenType.SEP_RCURLY:
+            while not self.Fn.match(TokenType.SEP_RCURLY):
                 block_parser = StatParser(
                     self.get_token_ctx(), self.ExpParser.from_ParserFn(self.Fn)
                 )
@@ -427,12 +415,12 @@ class StatParser:
 
             except_blocks.append(except_block)
 
-        if self.Fn.try_look_ahead().value == kw_finally:
+        if self.Fn.match(kw_finally):
             self.Fn.skip_once()
             self.Fn.eat_tk_by_value(kw_do)
             self.Fn.eat_tk_by_kind(TokenType.SEP_LCURLY)
 
-            while self.Fn.try_look_ahead().typ != TokenType.SEP_RCURLY:
+            while not self.Fn.match(TokenType.SEP_RCURLY):
                 block_parser = StatParser(
                     self.get_token_ctx(), self.ExpParser.from_ParserFn(self.Fn)
                 )
@@ -468,22 +456,20 @@ class StatParser:
         match_rules: list = []
         match_blocks: list = []
 
-        while self.Fn.try_look_ahead().value != kw_func_end:
-            while self.Fn.try_look_ahead().value == "|":
+        while not self.Fn.match(kw_func_end):
+            while self.Fn.match("|"):
                 self.Fn.skip_once()
                 self.Fn.eat_tk_by_kind(TokenType.SEP_LPAREN)
                 cur_match_rules = self.Fn.many(
                     other_parse_fn=MacroParser.from_ParserFn(self.Fn).parse_macro_rule,
-                    util_cond=lambda: self.Fn.try_look_ahead().typ
-                    == TokenType.SEP_RPAREN,
+                    util_cond=lambda: self.Fn.match(TokenType.SEP_RPAREN),
                 )
                 self.Fn.eat_tk_by_kind(TokenType.SEP_RPAREN)
                 match_rules.append(cur_match_rules)
                 self.Fn.eats((kw_do, TokenType.SEP_LCURLY))
                 block = self.Fn.many(
                     other_parse_fn=self.parse_macro_block,
-                    util_cond=lambda: self.Fn.try_look_ahead().typ
-                    == TokenType.SEP_RCURLY,
+                    util_cond=lambda: self.Fn.match(TokenType.SEP_RCURLY),
                 )
 
                 self.Fn.eat_tk_by_kind(TokenType.SEP_RCURLY)
@@ -499,12 +485,12 @@ class StatParser:
 
         extend_name = self.Fn.maybe(
             other_parse_fn=ExpParser.from_ParserFn(self.Fn).parse_exp_list,
-            case_cond=lambda: self.Fn.try_look_ahead().value == kw_extend,
+            case_cond=lambda: self.Fn.match(kw_extend),
         )
 
         class_blocks = self.Fn.many(
             other_parse_fn=self.parse_class_block,
-            util_cond=lambda: self.Fn.try_look_ahead().typ == TokenType.SEP_RCURLY,
+            util_cond=lambda: self.Fn.match(TokenType.SEP_RCURLY),
         )
 
         self.Fn.eat_tk_by_kind(TokenType.SEP_RCURLY)
@@ -526,7 +512,7 @@ class StatParser:
 
             blocks = self.Fn.many(
                 other_parse_fn=self.parse,
-                util_cond=lambda: self.Fn.try_look_ahead().typ == TokenType.SEP_RCURLY,
+                util_cond=lambda: self.Fn.match(TokenType.SEP_RCURLY),
             )
 
             self.Fn.eat_tk_by_kind(TokenType.SEP_RCURLY)
@@ -585,10 +571,10 @@ class StatParser:
 
         self.Fn.eat_tk_by_value(kw_do)
 
-        while self.Fn.try_look_ahead().value != kw_func_end:
-            while self.Fn.try_look_ahead().value == "|":
+        while not self.Fn.match(kw_func_end):
+            while self.Fn.match("|"):
                 self.Fn.skip_once()
-                if self.Fn.try_look_ahead().value == kw_case:
+                if self.Fn.match(kw_case):
                     self.Fn.skip_once()
                     match_val.append(ExpParser.from_ParserFn(self.Fn).parse_exp())
 
@@ -597,23 +583,21 @@ class StatParser:
 
                     block = self.Fn.many(
                         other_parse_fn=self.parse,
-                        util_cond=lambda: self.Fn.try_look_ahead().typ
-                        == TokenType.SEP_RCURLY,
+                        util_cond=lambda: self.Fn.match(TokenType.SEP_RCURLY),
                     )
 
                     self.Fn.eat_tk_by_kind(TokenType.SEP_RCURLY)
 
                     match_block.append(block)
 
-                elif self.Fn.try_look_ahead().value == "_":
+                elif self.Fn.match("_"):
                     self.Fn.skip_once()
                     self.Fn.eat_tk_by_value(kw_do)
                     self.Fn.eat_tk_by_kind(TokenType.SEP_LCURLY)
 
                     default_match_block = self.Fn.many(
                         other_parse_fn=self.parse,
-                        util_cond=lambda: self.Fn.try_look_ahead().typ
-                        == TokenType.SEP_RCURLY,
+                        util_cond=lambda: self.Fn.match(TokenType.SEP_RCURLY),
                     )
 
                     self.Fn.eat_tk_by_kind(TokenType.SEP_RCURLY)
@@ -639,7 +623,7 @@ class StatParser:
 
         blocks = self.Fn.many(
             other_parse_fn=self.parse,
-            util_cond=lambda: self.Fn.try_look_ahead().typ == TokenType.SEP_RCURLY,
+            util_cond=lambda: self.Fn.match(TokenType.SEP_RCURLY),
         )
 
         self.Fn.eat_tk_by_kind(TokenType.SEP_RCURLY)

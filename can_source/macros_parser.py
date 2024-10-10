@@ -29,7 +29,7 @@ class MacroParser:
         cls.Fn.skip_once()
         cls.Fn.eat_tk_by_kind(TokenType.SEP_LPAREN)
         tokentree = []
-        while cls.Fn.try_look_ahead().typ != TokenType.SEP_RPAREN:
+        while not cls.Fn.match(TokenType.SEP_RPAREN):
             tokentree.append(cls.parse_macro_rule())
         cls.Fn.eat_tk_by_kind(TokenType.SEP_RPAREN)
         return cls.finish_meta_exp(tokentree)
@@ -45,23 +45,18 @@ class MacroParser:
 
     @classmethod
     def parse_macro_rule(cls) -> list:
-        next_tk = cls.Fn.try_look_ahead()
-        if next_tk.value == "$":
+        if cls.Fn.match("$"):
             return cls.parse_meta_rep_exp()
-        elif next_tk.value == "@":
+        elif cls.Fn.match("@"):
             return cls.parse_meta_var()
         else:
-            cls.Fn.skip_once()
-            return next_tk
+            return cls.Fn.look_ahead()
 
     @classmethod
     def finish_meta_exp(cls, meta_exp):
-        next_tk = cls.Fn.try_look_ahead()
         meta_exp = can_ast.MacroMetaRepExp(meta_exp, None, None)
-        if next_tk.value not in ["*", "+", "?"]:
-            cls.Fn.skip_once()
-            meta_exp.rep_sep = next_tk.value
-            next_tk = cls.Fn.try_look_ahead()
+        if not cls.Fn.match(["*", "+", "?"]):
+            meta_exp.rep_sep = cls.Fn.look_ahead().value
 
         op_tk = cls.Fn.eat_tk_by_value(["*", "+", "?"])
         meta_exp.rep_op = op_tk.value
@@ -71,7 +66,7 @@ class MacroParser:
     def parse_tokentrees(cls) -> list:
         tokentrees = []
         cls.Fn.eat_tk_by_kind(TokenType.SEP_LCURLY)
-        while cls.Fn.try_look_ahead().typ != TokenType.SEP_RCURLY:
+        while not cls.Fn.match(TokenType.SEP_RCURLY):
             next_tk = cls.Fn.try_look_ahead()
             if next_tk.typ == TokenType.SEP_LCURLY:
                 tokentrees.append(cls.parse_tokentrees())
