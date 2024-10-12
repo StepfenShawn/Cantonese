@@ -7,6 +7,8 @@ from can_source.can_parser import *
 from can_source.can_const import *
 from can_source.parser_trait import ParserFn, new_token_context
 
+from can_source.macros.macro import Macros
+
 
 class MetaVarTracker:
     """
@@ -102,9 +104,23 @@ def match_macro_meta_repexp(
             except NoTokenException as e:
                 break
     elif pat.rep_op == RepOp.OPRIONAL.value:  # ?
-        state, result = match(pat.token_trees, state)
+        for tk_node in pat.token_trees:
+            state, result = match(pat.token_trees, state)
+        if result:
+            if pat.rep_sep:
+                state.parser_fn.eat_tk_by_value(pat.rep_sep)
+            state.meta_rep.update(state.meta_vars)
+        else:
+            return state, True
     elif pat.rep_op == RepOp.PLUS_CLOSE.value:  # +
-        state, result = match(pat.token_trees, state)
+        for tk_node in pat.token_trees:
+            state, result = match(pat.token_trees, state)
+        if result:
+            if pat.rep_sep:
+                state.parser_fn.eat_tk_by_value(pat.rep_sep)
+            state.meta_rep.update(state.meta_vars)
+        else:
+            return state, True
     else:
         return state, False
     return state, True
@@ -137,7 +153,7 @@ def match(pattern, state: MatchState) -> Tuple[MatchState, bool]:
         return state, False
 
 
-class CanMacro:
+class CanMacro(Macros):
     def __init__(self, name, patterns, bodys) -> None:
         self.name = name
         self.patterns = patterns
@@ -146,9 +162,7 @@ class CanMacro:
     def try_expand(self, tokentrees: TokenTree):
         for pat, block in zip(self.patterns, self.bodys):
             init_match_state = MatchState(
-                ParserFn(
-                    new_token_context((token for token in tokentrees.val))
-                ).collect(),
+                ParserFn(new_token_context((token for token in tokentrees.val))),
                 {},
                 MetaVarTracker({}),
             )
@@ -157,7 +171,7 @@ class CanMacro:
                 return match_res.meta_vars, match_res.meta_rep, block
         raise MacroCanNotExpand(f"Can not expand macro: {self.name}")
 
-    def eval(self, tokentrees: TokenTree) -> MacroResult:
+    def expand(self, tokentrees: TokenTree) -> MacroResult:
         matched_meta_vars, matched_meta_rep, block = self.try_expand(tokentrees)
         parse_res = MacroResult(matched_meta_vars, matched_meta_rep, block)
         return parse_res

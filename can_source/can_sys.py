@@ -12,43 +12,6 @@ def set_work_env(file: str):
     sys.path.insert(0, pa)
 
 
-class CanContext:
-    """
-    A class to hold global values in `compile-time`
-    """
-
-    def __init__(self):
-        pass
-
-    def set_token_ctx(self, token_ctx: tuple):
-        """
-        we need a buffer_tokens in lazy parser.
-        because the first token maybe not case in `look_ahead` mode.
-        """
-        self.tokens, self.buffer_tokens = token_ctx
-
-    def get_token_ctx(self) -> tuple:
-        return (self.tokens, self.buffer_tokens)
-
-
-class CanMacrosContext:
-    """
-    A class to hold macros in `compile-time`
-    """
-
-    def __init__(self):
-        self.macros = {}
-
-    def update(self, name, o):
-        self.macros.update({name: o})
-
-    def get(self, name):
-        return self.macros.get(name)
-
-
-can_context = CanContext()
-can_macros_context = CanMacrosContext()
-
 error = namedtuple("layer", ["lineno", "filename"])
 
 

@@ -2,7 +2,7 @@ from can_source.can_lexer import *
 import can_source.can_ast as can_ast
 from can_source.parser_trait import ParserFn
 from can_source.macros_parser import MacroParser
-from can_source.can_sys import can_macros_context
+from can_source.can_context import can_macros_context
 
 
 class ExpParser:
@@ -393,7 +393,7 @@ class ExpParser:
                 tokentrees = MacroParser.from_ParserFn(cls.Fn).parse_tokentrees()
                 if macro_name not in can_macros_context.macros:
                     raise Exception(f"macro {macro_name} not found!")
-                exp = can_macros_context.get(macro_name).eval(tokentrees)
+                exp = can_macros_context.get(macro_name).expand(tokentrees)
                 break
             else:
                 break

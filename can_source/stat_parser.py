@@ -3,7 +3,7 @@ import can_source.can_ast as can_ast
 from can_source.parser_trait import ParserFn, pos_tracker
 from can_source.exp_parser import ExpParser
 from can_source.macros_parser import MacroParser
-from can_source.can_sys import can_macros_context
+from can_source.can_context import can_macros_context
 from can_source.can_macros import CanMacro
 
 

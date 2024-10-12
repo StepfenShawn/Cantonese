@@ -20,10 +20,10 @@ import can_source.can_compile as can_compile
 import can_source.can_sys as can_sys
 import can_source.can_import
 
-from can_source.can_sys import can_context
+from can_source.can_context import can_token_context
 from can_source.can_libs import *
 from can_source.web_core.can_web_parser import *
-from can_source.metadata import _version_, logo
+from can_source.can_const import _version_, logo
 
 
 class Options:
@@ -58,13 +58,13 @@ def cantonese_run(
     os.environ["CUR_FILE"] = file
 
     tokens = can_lexer.cantonese_token(file, code)
-    can_context.set_token_ctx((tokens, []))
+    can_token_context.set_token_ctx((tokens, []))
 
     if Options.dump_lex:
         show_pretty_lex(tokens)
         exit()
 
-    stats = can_parser.StatParser(from_=can_context).parse_stats()
+    stats = can_parser.StatParser(from_=can_token_context).parse_stats()
 
     if Options.dump_ast:
         show_pretty_ast(stats)

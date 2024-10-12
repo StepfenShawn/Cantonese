@@ -2,7 +2,6 @@ import os
 from can_source.can_error import NoTokenException
 from can_source.can_lexer import TokenType, can_token, getCtxByLine, Pos
 from can_source.can_utils.infoprinter import ErrorPrinter
-from can_source.can_sys import can_context
 from collections import namedtuple
 
 
@@ -37,14 +36,6 @@ class ParserFn:
     def __init__(self, ctx) -> None:
         self.last_tk = None
         self.ctx = ctx
-
-    def collect(self):
-        """
-        consume all `tokens` generator to `buffer_tokens`.
-        Avoid reference problem.
-        """
-        self.ctx.buffer_tokens.extend([x for x in self.ctx.tokens])
-        return self
 
     def _next(self):
         try:
