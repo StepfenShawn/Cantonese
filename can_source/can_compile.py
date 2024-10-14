@@ -1,6 +1,4 @@
 import can_source.can_parser as can_parser
-import can_source.can_lexer as can_lexer
-from can_source.parser_trait import new_token_context
 import sys, os
 from typing import Generator
 
@@ -18,7 +16,6 @@ class Codegen:
         self.line = 1
         self.line_mmap = defaultdict(list)  # Python line mapping to Cantonese line
         self.code = ""
-        self.macro_meta_vars = {}
 
     def to_py(self):
         for node in self.nodes:
@@ -141,25 +138,6 @@ class Codegen:
         elif isinstance(exp, can_parser.can_ast.AssignExp):
             s = self.codegen_expr(exp.exp1) + " = " + self.codegen_expr(exp.exp2)
             return s
-
-        elif isinstance(exp, can_parser.can_ast.MetaIdExp):
-            if exp.name in self.macro_meta_vars:
-                return self.codegen_expr(self.macro_meta_vars[exp.name])
-
-        elif isinstance(exp, can_parser.can_ast.MacroResult):
-            self.macro_meta_vars = exp.meta_var
-            s = ""
-            for node in exp.results:
-                if isinstance(node, can_parser.can_ast.Stat):
-                    self.codegen_stat(node)
-                elif isinstance(node, can_parser.can_ast.Exp):
-                    s += self.codegen_expr(node)
-            # clear the meta vars
-            self.macro_meta_vars = {}
-            return s if s else ""
-
-        elif isinstance(exp, can_parser.can_ast.MacroMetaRepExp):
-            return ""
 
     def codegen_args(self, args: list) -> str:
         s = ""
@@ -355,7 +333,10 @@ class Codegen:
             self.emit("os.system(" + self.codegen_args(stat.args) + ")\n", stat)
 
         elif isinstance(stat, can_parser.can_ast.CallStat):
-            self.emit(self.codegen_expr(stat.exp) + "\n", stat)
+            if isinstance(stat.exp, can_parser.can_ast.Stat):
+                self.emit(self.codegen_stat(stat.exp) + "\n", stat)
+            else:
+                self.emit(self.codegen_expr(stat.exp) + "\n", stat)
 
         elif isinstance(stat, can_parser.can_ast.GlobalStat):
             self.emit("global " + self.codegen_args(stat.idlist) + "\n", stat)

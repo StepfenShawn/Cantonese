@@ -11,3 +11,16 @@ class CanMacrosContext:
 
     def get(self, name):
         return self.macros.get(name)
+
+
+class MetaVarsContext:
+    """
+    A class to hold meta-vars when expanding the `macro`,
+    in `compile-time`
+    """
+
+    def __init__(self):
+        self.vars = {}
+
+    def get(self, name):
+        return self.vars.get(name)

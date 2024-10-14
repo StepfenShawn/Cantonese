@@ -67,7 +67,7 @@ def cantonese_run(
     stats = can_parser.StatParser(from_=can_token_context).parse_stats()
 
     if Options.dump_ast:
-        show_pretty_ast(stats)
+        show_pretty_ast([stat for stat in stats])
         exit()
 
     code_gen = can_compile.Codegen(stats, path=file)

@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, fields, is_dataclass
 from typing import Tuple
 
 from can_source.can_error import NoTokenException, MacroCanNotExpand
@@ -8,7 +8,7 @@ from can_source.can_const import *
 from can_source.parser_trait import ParserFn, new_token_context
 
 from can_source.macros.macro import Macros
-
+from can_source.can_compile import Codegen
 
 class MetaVarTracker:
     """
@@ -119,8 +119,17 @@ def match_macro_meta_repexp(
             if pat.rep_sep:
                 state.parser_fn.eat_tk_by_value(pat.rep_sep)
             state.meta_rep.update(state.meta_vars)
+            while result:
+                try:
+                    for tk_node in pat.token_trees:
+                        state, result = match_pattern(tk_node, state)
+                        if pat.rep_sep:
+                            state.parser_fn.eat_tk_by_value(pat.rep_sep)
+                        state.meta_rep.update(state.meta_vars)
+                except NoTokenException as e:
+                    break
         else:
-            return state, True
+            return state, False
     else:
         return state, False
     return state, True
@@ -170,8 +179,20 @@ class CanMacro(Macros):
             if result:
                 return match_res.meta_vars, match_res.meta_rep, block
         raise MacroCanNotExpand(f"Can not expand macro: {self.name}")
-
+    
+    def modify_body(self, body, meta_vars: dict):
+        for child in fields(body):
+            value = getattr(body, child.name)
+            if isinstance(value, can_ast.MetaIdExp):
+                setattr(body, child.name, meta_vars.get(value.name))
+            elif isinstance(value, (can_ast.Stat, can_ast.Exp)):
+                self.modify_body(value, meta_vars)
+            elif isinstance(value, (list, set)):
+                for v in value:
+                    self.modify_body(v, meta_vars)
+            
+        return body
+        
     def expand(self, tokentrees: TokenTree) -> MacroResult:
-        matched_meta_vars, matched_meta_rep, block = self.try_expand(tokentrees)
-        parse_res = MacroResult(matched_meta_vars, matched_meta_rep, block)
-        return parse_res
+        matched_meta_vars, matched_meta_rep, body = self.try_expand(tokentrees)
+        return [self.modify_body(child, matched_meta_vars) for child in body]
