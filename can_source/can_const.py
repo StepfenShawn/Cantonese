@@ -39,7 +39,7 @@ class FragSpec(Enum):
                 return FragSpec.STR
             elif name == "tt":
                 return FragSpec.TT
-        raise Exception(f"case meta var's token type {tk}: Can not into FragSpec")
+        raise Exception(f"case meta var's token type {tk}: it's value `{tk.value}` can not into FragSpec")
 
 
 _version_ = "Cantonese\033[5;33m 1.0.9\033[0m Copyright (C) 2020-2024\033[5;35m StepfenShawn\033[0m"

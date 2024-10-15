@@ -1,7 +1,7 @@
 import sys, traceback, os
 
 from collections import namedtuple
-from can_source.can_error import error_stdout
+from can_source.can_error.runtime import error_stdout
 from can_source.can_lexer import getCtxByLine, Pos
 from can_source.can_utils.infoprinter import ErrorPrinter
 

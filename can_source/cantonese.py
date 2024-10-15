@@ -13,6 +13,7 @@ sys.path.append(os.getcwd())
 sys.dont_write_bytecode = True
 
 from can_source.can_utils.infoprinter import format_color, show_more
+from can_source.can_error.compile_time import *
 
 import can_source.can_lexer as can_lexer
 import can_source.can_parser as can_parser
@@ -57,14 +58,23 @@ def cantonese_run(
 
     os.environ["CUR_FILE"] = file
 
-    tokens = can_lexer.cantonese_token(file, code)
+    try:
+        tokens = can_lexer.cantonese_token(file, code)
+    except LexerException as e:
+        print(e.message)
+        exit()
+    
     can_token_context.set_token_ctx((tokens, []))
 
     if Options.dump_lex:
         show_pretty_lex(tokens)
         exit()
 
-    stats = can_parser.StatParser(from_=can_token_context).parse_stats()
+    try:
+        stats = can_parser.StatParser(from_=can_token_context).parse_stats()
+    except NoParseException as e:
+        print(e.message)
+        exit()
 
     if Options.dump_ast:
         show_pretty_ast([stat for stat in stats])

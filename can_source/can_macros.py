@@ -1,14 +1,13 @@
-from dataclasses import dataclass, fields, is_dataclass
+from dataclasses import dataclass, fields
 from typing import Tuple
 
-from can_source.can_error import NoTokenException, MacroCanNotExpand
+from can_source.can_error.compile_time import NoTokenException, MacroCanNotExpand
 from can_source.can_ast import MacroResult, TokenTree, MacroMetaRepExp, MacroMetaId
 from can_source.can_parser import *
 from can_source.can_const import *
 from can_source.parser_trait import ParserFn, new_token_context
 
 from can_source.macros.macro import Macros
-from can_source.can_compile import Codegen
 
 class MetaVarTracker:
     """
@@ -74,6 +73,19 @@ def match_macro_meta_id(pat: MacroMetaId, state: MatchState) -> Tuple[MatchState
             ast_node = can_ast.can_exp.StringExp(
                 s=state.parser_fn.eat_tk_by_kind(TokenType.STRING).value
             )
+            state.meta_vars.update({meta_var_name: ast_node})
+        elif spec == FragSpec.LITERAL:
+            next_tk = state.parser_fn.try_look_ahead()
+            if next_tk.typ == TokenType.STRING:
+                ast_node = can_ast.can_exp.StringExp(
+                    s=state.parser_fn.eat_tk_by_kind(TokenType.STRING).value
+                )
+            elif next_tk.typ == TokenType.NUM:
+                ast_node = can_ast.can_exp.NumeralExp(
+                    val=state.parser_fn.eat_tk_by_kind(TokenType.NUM).value
+                )
+            else:
+                return state, False
             state.meta_vars.update({meta_var_name: ast_node})
         else:
             return state, False
@@ -195,4 +207,4 @@ class CanMacro(Macros):
         
     def expand(self, tokentrees: TokenTree) -> MacroResult:
         matched_meta_vars, matched_meta_rep, body = self.try_expand(tokentrees)
-        return [self.modify_body(child, matched_meta_vars) for child in body]
+        return self.modify_body(body, matched_meta_vars)

@@ -57,15 +57,17 @@ class ErrorPrinter:
     def whitespace(self, num) -> str:
         return " " * num
 
-    def show(self, arrow_char="^") -> None:
+    def err_msg(self, arrow_char="^") -> None:
         strformat = f"""{self.info}
  {_ARROW} {self.file} \033[1;34m{self.pos.line}:{self.pos.offset}\033[0m
  {_BAR}
  {_BAR}{self.pos.line}: {format_color(self.ctx, self.hightlight)}
     {self.whitespace(self.print_offset + len(str(self.pos.line)) + 2)}{arrow_char*self.len} Tips:{self.tips}
-"""
-        print(strformat)
-        print(f":D 不如跟住我嘅tips繼續符碌下?")
+:D 不如跟住我嘅tips繼續符碌下?"""
+        return strformat
+
+    def show(self, arrow_char="^") -> None:
+        print(self.err_msg(arrow_char))
 
     def show_multline(self) -> None:
         strformat = f"""{self.info}

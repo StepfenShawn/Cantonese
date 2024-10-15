@@ -6,7 +6,6 @@ from can_source.macros_parser import MacroParser
 from can_source.can_context import can_macros_context
 from can_source.can_macros import CanMacro
 
-
 class StatParser:
 
     def __init__(self, from_):
@@ -157,9 +156,10 @@ class StatParser:
 
         elif self.Fn.match(kw_set_assign):
             return self.parse_set_assign_stat(prefix_exp)
-        # kw_laa1
-        else:
+        elif self.Fn.match([kw_laa1, kw_gamlaa1]):
             return self.parse_class_method_call_stat(prefix_exp)
+        else:
+            return prefix_exp
 
     def parse_stats(self):
         while True:
@@ -444,12 +444,8 @@ class StatParser:
         return can_ast.CmdStat(args)
 
     def parse_macro_block(self):
-        tk = self.Fn.try_look_ahead()
         # case a meta expr
-        if tk.value == "$":
-            return ""
-        else:
-            return self.parse()
+        return self.parse()
 
     def parse_macro_def(self, macro_name: can_ast.AST):
         self.Fn.eat_tk_by_value(kw_do)
@@ -467,13 +463,10 @@ class StatParser:
                 self.Fn.eat_tk_by_kind(TokenType.SEP_RPAREN)
                 match_rules.append(cur_match_rules)
                 self.Fn.eats((kw_do, TokenType.SEP_LCURLY))
-                block = self.Fn.many(
-                    other_parse_fn=self.parse_macro_block,
-                    util_cond=lambda: self.Fn.match(TokenType.SEP_RCURLY),
-                )
+                body = self.parse_macro_block()
 
                 self.Fn.eat_tk_by_kind(TokenType.SEP_RCURLY)
-                match_blocks.append(block)
+                match_blocks.append(body)
 
         self.Fn.eat_tk_by_value(kw_func_end)
         n = macro_name.name

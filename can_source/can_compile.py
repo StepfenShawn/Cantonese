@@ -333,10 +333,11 @@ class Codegen:
             self.emit("os.system(" + self.codegen_args(stat.args) + ")\n", stat)
 
         elif isinstance(stat, can_parser.can_ast.CallStat):
-            if isinstance(stat.exp, can_parser.can_ast.Stat):
-                self.emit(self.codegen_stat(stat.exp) + "\n", stat)
+            if isinstance(stat.exp, list):
+                self.emit(self.codegen_expr(stat.exp[0]) + "\n", stat)
             else:
                 self.emit(self.codegen_expr(stat.exp) + "\n", stat)
+            
 
         elif isinstance(stat, can_parser.can_ast.GlobalStat):
             self.emit("global " + self.codegen_args(stat.idlist) + "\n", stat)

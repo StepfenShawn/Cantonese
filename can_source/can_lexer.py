@@ -7,6 +7,7 @@ import os
 
 from can_source.can_keywords import *
 from can_source.can_utils.infoprinter import ErrorPrinter
+from can_source.can_error.compile_time import LexerException
 
 Pos = namedtuple("Pos", ["line", "offset", "end_line", "end_offset"])
 
@@ -160,8 +161,7 @@ class lexer:
             tips=f" 係咪`\033[5;33m{get_tips(ctx[self.getCurPos().offset])}\033[0m` ??",
             _file=self.file,
         )
-        p.show()
-        exit()
+        raise LexerException(p.err_msg())
 
     @contextmanager
     def get_token(self):
