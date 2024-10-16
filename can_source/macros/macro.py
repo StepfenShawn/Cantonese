@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Any
 
 
 class Macros(ABC):
@@ -7,8 +8,8 @@ class Macros(ABC):
         pass
 
     @abstractmethod
-    def modify_body(self, body: "Any", meta_vars: "Any"): # type: ignore
+    def modify_body(self, body: Any, meta_vars: Any):  # type: ignore
         """
-            Replace meta vars to ast in body.
+        Replace meta vars to ast in body.
         """
         pass

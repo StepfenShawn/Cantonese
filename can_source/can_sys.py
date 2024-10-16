@@ -2,7 +2,7 @@ import sys, traceback, os
 
 from collections import namedtuple
 from can_source.can_error.runtime import error_stdout
-from can_source.can_lexer import getCtxByLine, Pos
+from can_source.can_lexer.can_lexer import getCtxByLine, Pos
 from can_source.can_utils.infoprinter import ErrorPrinter
 
 
@@ -25,7 +25,7 @@ def error_catch(e):
     print(f"\033[0;31m濑嘢!!!\033[0m: {error_stdout(err_ty, str(e))}")
 
     for info in infos:
-        from can_source.can_compile import line_map
+        from can_source.can_compiler.compiler import line_map
 
         lines = line_map[info.filename][info.lineno]
 

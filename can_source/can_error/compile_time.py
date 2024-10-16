@@ -19,16 +19,19 @@ class LexerException(Exception):
     """
     词法分析错误
     """
+
     def __init__(self, message):
         self.message = message
-    
+
     def __str__(self):
         return self.message
+
 
 class NoParseException(Exception):
     """
     解析错误
     """
+
     def __init__(self, message, state=None):
         self.message = message
         self.state = state

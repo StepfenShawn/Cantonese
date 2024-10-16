@@ -1,9 +1,8 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Any
 
 from can_source.can_ast.can_exp import Exp
 from can_source.can_ast.can_stat import Stat
-from can_source.can_const import RepOp
 
 
 @dataclass
@@ -13,17 +12,6 @@ class MetaIdExp(Exp):
     """
 
     name: str
-
-
-@dataclass
-class MetaRepExp(Exp):
-    """
-    meta repetitions in `macro-blocks`
-    """
-
-    token_trees: List[object]
-    sep: str
-    rep_op: RepOp
 
 
 @dataclass
@@ -56,15 +44,4 @@ class MacroMetaRepExp(Exp):
 
 @dataclass
 class TokenTree:
-    val: List[object]
-
-
-@dataclass
-class MacroResult:
-    """
-    inner-result before expand
-    """
-
-    meta_var: dict
-    meta_rep: object
-    results: TokenTree
+    val: List[Any]

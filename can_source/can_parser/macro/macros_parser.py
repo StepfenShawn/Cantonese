@@ -1,4 +1,4 @@
-from can_source.can_lexer import *
+from can_source.can_lexer.can_lexer import *
 import can_source.can_ast as can_ast
 
 

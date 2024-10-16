@@ -15,9 +15,9 @@ sys.dont_write_bytecode = True
 from can_source.can_utils.infoprinter import format_color, show_more
 from can_source.can_error.compile_time import *
 
-import can_source.can_lexer as can_lexer
+import can_source.can_lexer.can_lexer as can_lexer
 import can_source.can_parser as can_parser
-import can_source.can_compile as can_compile
+from can_source.can_compiler.compiler import Codegen
 import can_source.can_sys as can_sys
 import can_source.can_import
 
@@ -63,7 +63,7 @@ def cantonese_run(
     except LexerException as e:
         print(e.message)
         exit()
-    
+
     can_token_context.set_token_ctx((tokens, []))
 
     if Options.dump_lex:
@@ -80,7 +80,7 @@ def cantonese_run(
         show_pretty_ast([stat for stat in stats])
         exit()
 
-    code_gen = can_compile.Codegen(stats, path=file)
+    code_gen = Codegen(stats, path=file)
     TO_PY_CODE = code_gen.to_py()
 
     if Options._to_llvm:

@@ -1,6 +1,6 @@
 import sys
 
-from can_source.can_lexer import *
+from can_source.can_lexer.can_lexer import *
 
 
 class WebParser(object):

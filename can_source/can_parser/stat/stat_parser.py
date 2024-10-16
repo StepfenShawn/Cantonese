@@ -1,10 +1,11 @@
-from can_source.can_lexer import *
+from can_source.can_lexer.can_lexer import *
 import can_source.can_ast as can_ast
-from can_source.parser_trait import ParserFn, pos_tracker
-from can_source.exp_parser import ExpParser
-from can_source.macros_parser import MacroParser
+from can_source.can_parser.parser_trait import ParserFn, pos_tracker
+from can_source.can_parser.exp.exp_parser import ExpParser
+from can_source.can_parser.macro.macros_parser import MacroParser
 from can_source.can_context import can_macros_context
-from can_source.can_macros import CanMacro
+from can_source.can_macros.impl import CanMacro
+
 
 class StatParser:
 

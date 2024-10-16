@@ -1,16 +1,14 @@
 import re
 from typing import Generator
-from collections import namedtuple
 from contextlib import contextmanager
 import zhconv
 import os
 
-from can_source.can_keywords import *
+from can_source.can_lexer.can_keywords import *
+from can_source.can_lexer.pos import Pos
+from can_source.can_lexer.can_token import can_token
 from can_source.can_utils.infoprinter import ErrorPrinter
 from can_source.can_error.compile_time import LexerException
-
-Pos = namedtuple("Pos", ["line", "offset", "end_line", "end_offset"])
-
 
 # Lazy options
 def getCtxByLine(path: str, line: int) -> str:
@@ -21,32 +19,10 @@ def getCtxByLine(path: str, line: int) -> str:
     return source
 
 
-class can_token:
-    __slots__ = ("pos", "typ", "value")
-
-    def __init__(self, pos: Pos, typ: TokenType, value: str):
-        self.pos = pos
-        self.typ = typ
-        self.value = value
-
-    @property
-    def lineno(self):
-        return self.pos.line
-
-    @property
-    def offset(self):
-        return self.pos.offset
-
-    def __repr__(self) -> str:
-        return f"{self.value} ({self.typ.name})"
-
-
-"""
-    Get the Cantonese Token List
-"""
-
-
 class lexer:
+    """
+        Get the Cantonese Token List
+    """
     def __init__(self, file: str, code: str, keywords: tuple):
         self.file = file
         self.code = code

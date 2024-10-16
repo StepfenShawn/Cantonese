@@ -1,6 +1,6 @@
 import os
 from can_source.can_error.compile_time import NoTokenException, NoParseException
-from can_source.can_lexer import TokenType, can_token, getCtxByLine, Pos
+from can_source.can_lexer.can_lexer import TokenType, can_token, getCtxByLine, Pos
 from can_source.can_utils.infoprinter import ErrorPrinter
 from collections import namedtuple
 
@@ -138,7 +138,7 @@ class ParserFn:
             _file=os.environ["CUR_FILE"],
             _len=len(tk.value.encode("gbk")),
         )
-        raise NoParseException(p.err_msg())        
+        raise NoParseException(p.err_msg())
 
     def many(self, other_parse_fn, util_cond) -> list:
         result = []
