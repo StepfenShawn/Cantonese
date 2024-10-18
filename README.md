@@ -271,6 +271,18 @@ Stack: [1,2]
 sayhello!{Hello "dd"}
 sayhello!{}
 sayhello!{1} # 報錯: 無法匹配
+
+介紹返 vec 係 袋仔的法寶 =>
+    | ($(@element:expr),*) => {
+        [$(@element)*]
+    }
+    | () => {
+        []
+    }
+搞掂
+
+畀我睇下 vec!{"Hello", 1+1, "gg",} 點樣先?? # ['Hello', 2, 'gg']
+畀我睇下 vec!{} 點樣先?? # []
 ```
 複雜啲嘅例子, 定义新嘅语法:`同我计 XX 乜 XX 好唔好`:  
 ```

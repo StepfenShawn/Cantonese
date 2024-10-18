@@ -1,6 +1,7 @@
 from can_source.can_lexer.pos import Pos
 from can_source.can_lexer.can_keywords import TokenType
 
+
 class can_token:
     __slots__ = ("pos", "typ", "value")
 

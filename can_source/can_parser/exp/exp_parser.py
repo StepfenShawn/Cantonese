@@ -1,7 +1,7 @@
 from can_source.can_lexer.can_lexer import *
 import can_source.can_ast as can_ast
-from can_source.can_parser.parser_trait import ParserFn
-from can_source.can_parser.macro.macros_parser import MacroParser
+from can_source.can_parser.macro.pattern_parser import MacroPatParser
+from can_source.can_parser.macro.body_parser import MacroBodyParser
 from can_source.can_context import can_macros_context
 
 
@@ -302,7 +302,7 @@ class ExpParser:
             exp = cls.parse_functiondef_expr()
         # meta rep
         elif next_tk.value == "$":
-            exp = MacroParser.from_ParserFn(cls.Fn).parse_meta_rep_stmt()
+            exp = MacroBodyParser.from_ParserFn(cls.Fn).parse_meta_rep_stmt(cls)
             return exp
         # '|' exp '|'
         else:
@@ -390,7 +390,7 @@ class ExpParser:
             elif kind == TokenType.EXCL:
                 cls.Fn.skip_once()
                 macro_name = exp.name
-                tokentrees = MacroParser.from_ParserFn(cls.Fn).parse_tokentrees()
+                tokentrees = MacroPatParser.from_ParserFn(cls.Fn).parse_tokentrees()
                 if macro_name not in can_macros_context.macros:
                     raise Exception(f"macro {macro_name} not found!")
                 exp = can_macros_context.get(macro_name).expand(tokentrees)

@@ -10,6 +10,7 @@ from can_source.can_lexer.can_token import can_token
 from can_source.can_utils.infoprinter import ErrorPrinter
 from can_source.can_error.compile_time import LexerException
 
+
 # Lazy options
 def getCtxByLine(path: str, line: int) -> str:
     source = os.environ[f"{path}_SOURCE"]
@@ -21,8 +22,9 @@ def getCtxByLine(path: str, line: int) -> str:
 
 class lexer:
     """
-        Get the Cantonese Token List
+    Get the Cantonese Token List
     """
+
     def __init__(self, file: str, code: str, keywords: tuple):
         self.file = file
         self.code = code

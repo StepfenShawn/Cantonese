@@ -2,7 +2,7 @@ from can_source.can_lexer.can_lexer import *
 import can_source.can_ast as can_ast
 
 
-class MacroParser:
+class MacroPatParser:
 
     @classmethod
     def from_ParserFn(cls, F):

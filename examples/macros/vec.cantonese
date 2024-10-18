@@ -1,6 +1,6 @@
 介紹返 vec 係 袋仔的法寶 =>
     | ($(@element:expr),*) => {
-        [${@element},*]
+        [$(@element)*]
     }
     | () => {
         []

@@ -2,7 +2,7 @@ from can_source.can_lexer.can_lexer import *
 import can_source.can_ast as can_ast
 from can_source.can_parser.parser_trait import ParserFn, pos_tracker
 from can_source.can_parser.exp.exp_parser import ExpParser
-from can_source.can_parser.macro.macros_parser import MacroParser
+from can_source.can_parser.macro.pattern_parser import MacroPatParser
 from can_source.can_context import can_macros_context
 from can_source.can_macros.impl import CanMacro
 
@@ -458,7 +458,9 @@ class StatParser:
                 self.Fn.skip_once()
                 self.Fn.eat_tk_by_kind(TokenType.SEP_LPAREN)
                 cur_match_rules = self.Fn.many(
-                    other_parse_fn=MacroParser.from_ParserFn(self.Fn).parse_macro_rule,
+                    other_parse_fn=MacroPatParser.from_ParserFn(
+                        self.Fn
+                    ).parse_macro_rule,
                     util_cond=lambda: self.Fn.match(TokenType.SEP_RPAREN),
                 )
                 self.Fn.eat_tk_by_kind(TokenType.SEP_RPAREN)

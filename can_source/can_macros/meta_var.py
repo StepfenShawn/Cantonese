@@ -4,7 +4,7 @@ from can_source.can_ast import AST
 
 class MetaVar:
     """
-    表示一個match咗嘅元變量
+    表示match咗嘅元變量
     """
 
     def __init__(self, v: AST):
@@ -12,7 +12,7 @@ class MetaVar:
         self.v = [v]
 
     @property
-    def value(self) -> Union[AST | List[AST]]:
+    def value(self) -> Union[AST, List[AST]]:
         if len(self.v) == 1:
             return self.v[0]
         else:
