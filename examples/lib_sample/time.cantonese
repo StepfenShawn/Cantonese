@@ -1,6 +1,7 @@
 /*
     Cantonese实现打印当前时间
 */
-使下 datetime
+使下 py::datetime
+
 畀我睇下 |宜家几点()| 點樣先？
 收工

@@ -1,8 +1,12 @@
+from can_source.can_compiler.lib_gen_helper import gen_import, get_trace
 import can_source.can_parser as can_parser
+
 import sys, os
 from typing import Generator, List, Any
+from copy import deepcopy
 
 from collections import defaultdict
+from can_source.can_parser.exp.names_parser import DependTree
 from can_source.can_libs import fix_lib_name
 
 line_map = {}
@@ -145,19 +149,14 @@ class Codegen:
             s += ", " + self.codegen_expr(arg)
         return s[2:]
 
-    def codegen_import_lib(self, lib_list: List[Any]) -> str:
-        res = []
-        for _ in lib_list:
-            name, need_load = fix_lib_name(self.codegen_expr(_))
-            if name == "python" or name == "py":
-                continue
-            if need_load:
-                for pa in sys.path:
-                    if os.path.exists(f"{pa}/{name}.cantonese"):
-                        with open(f"{pa}/{name}.cantonese", encoding="utf-8") as f:
-                            os.environ[f"{pa}/{name}.cantonese_SOURCE"] = f.read()
-            res.append(name)
-        return "import " + ",".join(res)
+    def codegen_import_lib(self, lib_depend: DependTree) -> List:
+        trace = get_trace(lib_depend)
+        import_stats = []
+
+        for each_depend in trace:
+            import_stats.append(gen_import(each_depend, self))
+
+        return import_stats
 
     def codegen_build_in_method_or_id(self, exp: can_parser.can_ast) -> str:
         if isinstance(exp, can_parser.can_ast.IdExp):
@@ -274,7 +273,9 @@ class Codegen:
             )
 
         elif isinstance(stat, can_parser.can_ast.ImportStat):
-            self.emit(self.codegen_import_lib(stat.names) + "\n", stat)
+            import_stats = self.codegen_import_lib(stat.names)
+            for import_stat in import_stats:
+                self.emit(import_stat + "\n", stat)
 
         elif isinstance(stat, can_parser.can_ast.ReturnStat):
             self.emit("return " + self.codegen_args(stat.exps) + "\n", stat)

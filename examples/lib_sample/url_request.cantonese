@@ -1,5 +1,5 @@
-使下 requests
-使下 json
+使下 py::requests
+使下 py::json
 
 |𠯠求| 下 => "https://view.inews.qq.com/g2/getOnsInfo?name=disease_h5" 就係 |网页|
 |读取json| 下 => |网页| 就係 |数据|

@@ -1,7 +1,8 @@
 /*
  * Cantonese 读取xml文件
  */
-使下 xml
+使下 py::xml
+
 介紹返 |Dom| 係 剪樖Dom树("examples/lib_sample/movies.xml")
 如果 Dom有嘢(Dom, "shelf") 嘅话 => {
     |睇Dom有咩| 下 -> (Dom, "shelf") 啦

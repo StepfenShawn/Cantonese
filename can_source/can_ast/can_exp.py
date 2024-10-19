@@ -145,4 +145,4 @@ class IfElseExp(Exp):
 
 @dataclass
 class NamesExp(Exp):
-    chains_exp: List[Exp]
+    child: List[Exp]
