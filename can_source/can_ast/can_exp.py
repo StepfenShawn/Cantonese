@@ -141,3 +141,8 @@ class IfElseExp(Exp):
     if_cond_exp: Exp
     if_exp: Exp
     else_exp: Exp
+
+
+@dataclass
+class NamesExp(Exp):
+    chains_exp: List[Exp]

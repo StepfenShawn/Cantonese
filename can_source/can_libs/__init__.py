@@ -50,10 +50,6 @@ lib_list = [
 def fix_lib_name(name: str) -> Tuple[str, bool]:
     global lib_list
 
-    # Call function library
-    if name[:7] == "python_":
-        return name[7:], False
-
     # Call cantonese build-in library
     for lib in lib_list:
         if name in lib.names:

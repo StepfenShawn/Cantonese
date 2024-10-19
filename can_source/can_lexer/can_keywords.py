@@ -44,6 +44,7 @@ class TokenType(Enum):
     COLON = 39  # :
     MARK = 40  # ?
     EXCL = 41  # !
+    DCOLON = 42  # ::
 
 
 kw_print = "畀我睇下"

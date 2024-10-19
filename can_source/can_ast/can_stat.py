@@ -118,7 +118,7 @@ class ClassDefStat(Stat):
 
 @dataclass
 class ImportStat(Stat):
-    idlist: List[Exp]
+    names: Exp
     pos: object = None
 
 

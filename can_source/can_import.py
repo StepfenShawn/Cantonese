@@ -3,6 +3,7 @@
     implement the `import *.cantonese`
 """
 
+import importlib.machinery
 import os
 import importlib
 
@@ -12,6 +13,7 @@ from can_source.can_lexer import can_lexer
 from can_source.can_parser.parser_trait import new_token_context
 
 importlib.machinery.SOURCE_SUFFIXES.insert(0, ".cantonese")
+importlib.machinery.SOURCE_SUFFIXES.insert(0, ".cntns")
 _py_source_to_code = importlib.machinery.SourceFileLoader.source_to_code
 
 

@@ -175,8 +175,12 @@ class lexer:
             return can_token(None, TokenType.MARK, "?")
 
         if c == ":":
-            self.next(1)
-            return can_token(None, TokenType.COLON, ":")
+            if self.check("::"):
+                self.next(2)
+                return can_token(None, TokenType.DCOLON, "::")
+            else:
+                self.next(1)
+                return can_token(None, TokenType.COLON, ":")
 
         if c == "%":
             self.next(1)

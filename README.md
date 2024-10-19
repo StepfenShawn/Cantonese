@@ -22,10 +22,10 @@ pip install Cantonese
 &emsp;&emsp;<a href="#8">掟出異常</a>  
 &emsp;&emsp;<a href="#9">斷言語句</a>  
 &emsp;&emsp;<a href="#10">錯誤捕捉語句</a>  
-&emsp;&emsp;<a href="#11">調用 Python</a>  
+&emsp;&emsp;<a href="#11">調用庫</a>  
 &emsp;&emsp;<a href="#12">面向對象編程</a>  
 &emsp;&emsp;<a href="#13">棧嘅使用</a>  
-&emsp;&emsp;<a href="#14">想点都得! 定义自己嘅语法</a>  
+&emsp;&emsp;<a href="#14">袋仔的法寶: 用`Macro`定义自己嘅语法</a>  
 <a href="#15">更多例子</a>  
 &emsp;&emsp;<a href="#16">睇下時間</a>  
 &emsp;&emsp;<a href="#17">暫停</a>  
@@ -193,11 +193,12 @@ try-except-finally:
     畀我睇下 |A, B| 點樣先？
 }
 ``` 
-### <a name="11">調用 Python</a>
+### <a name="11">調用庫</a>
 調用 Python 庫:  
 ```
-使下 python_os
-使下 python_math
+使下 py::os::*
+使下 py::math::*
+使下 py::{re::*, pandas}
 ```
 調用 Python 代碼:  
 ```
@@ -207,6 +208,23 @@ def add(a, b):
 二五仔係我
 
 畀我睇下 |add 下 -> (8, 2)| 點樣先 /* 輸出10 */
+```
+又或者使用`Macro`調用`Python`和`Rust`:  
+```rust
+使下 std::macros::{Py, Rust}
+
+Py!{
+def add(a, b):
+    return a + b
+}
+畀我睇下 |add 下 -> (8, 2)| 點樣先
+
+介紹返 add 係 Rust!{
+    fn add(a: i32, b: i32) -> i32 {
+        a + b
+    }
+}
+畀我睇下 |add 下 -> (8, 2)| 點樣先
 ```
 ### <a name="12">面向對象編程</a>
 聲明對象 `duck`，繼承至 `object`，分別有兩個方法 `游水` 同埋 `睡觉` ，仲有一個屬性 `性别`：  
@@ -260,7 +278,7 @@ Duck is sleeping
 ```
 Stack: [1,2]
 ```
-### <a name="14">想点都得! 定义自己嘅语法</a>
+### <a name="14">袋仔的法寶: 用`Macro`定义自己嘅语法</a>
 介紹咗咁多, `Cantonese`仲將類似於`Rust`入面嘅宏定義引入, 可以通過宏來擴展我哋嘅語法, 簡單啲講, 就相當於`match`語句, 匹配之後用`@`提取元變量喺編譯期間進行替換:    
 ```
 介紹返 sayhello 係 袋仔的法寶 =>
@@ -309,7 +327,7 @@ sayhello!{1} # 報錯: 無法匹配
 # <a name="15">更多例子</a>
 ### <a name="16">顯示當前時間</a>
 ```
-使下 datetime
+使下 std::日期
 畀我睇下 |宜家几点()| 點樣先？
 ```
 運行結果：
@@ -323,7 +341,7 @@ sayhello!{1} # 報錯: 無法匹配
 ```  
 ### <a name="18">嚟個隨機數</a>
 ```
-使下 随机数
+使下 std::随机数
 介紹返 |A| 係 |求其啦()|
 ```
 運行結果：  
@@ -333,7 +351,9 @@ sayhello!{1} # 報錯: 無法匹配
 ### <a name="19">計相關係數</a>
 聲明兩個 list，計相關係數：  
 ```
-使下 math
+使下 py::math
+使下 std::math::macros::*
+
 |[2.165, 1.688, 1.651, 2.229]| 拍住上 => |A|
 |[2.060, 1.822, 1.834, 2.799]| 拍住上 => |B|
 畀我睇下 秘诀!{A同B有幾襯} 點樣先？
@@ -345,7 +365,9 @@ sayhello!{1} # 報錯: 無法匹配
 ### <a name="20">仲可以机器学习?</a>
 實現 KNN 算法：
 ```
-使下 math
+使下 py::math
+使下 std::math::macros::*
+
 |[[5, 1], [4, 0], [1, 3], [0, 4]]| 拍住上 => |数据|
 |['动作片', '动作片', '科幻片', '科幻片']| 拍住上 => |标签|
 介紹返 |K| 係 3
@@ -357,7 +379,9 @@ sayhello!{1} # 報錯: 無法匹配
 ```
 線性回歸：
 ```
-使下 math
+使下 py::math
+使下 std::math::macros::*
+
 |[300.0 , 400.0 , 400.0 , 550.0 , 720.0 , 850.0 , 900.0 , 950.0]| 拍住上 => |X|
 |[300.0 , 350.0 , 490.0 , 500.0 , 600.0 , 610.0 , 700.0 , 660.0]| 拍住上 => |Y|
 过嚟估下!{L_REG => |900.0|}
@@ -370,6 +394,8 @@ y=0.530960991635149x+189.75347155122432
 ```
 ### <a name="21">海龜繪圖</a>
 ```
+使下 std::ui::macros::*
+
 老作一下!{
     首先 |画个圈(100)|,
     跟住 |写隻字("Made By Cantonese\n")|,
@@ -393,15 +419,17 @@ y=0.530960991635149x+189.75347155122432
 ### <a name="24">寫個網頁睇下</a>
 一個簡單嘅網頁：
 ```
-老作一下 {
+使下 std::net::macros::*;
+使下 std::net::监视;
+
+介紹返 html 係 HTML老作一下! {
     打标题 => [ "我嘅第一个网页" ]
     拎笔 => [ "Hello World" ]
 }
+
+监视 下 -> |html, "127.0.0.1", 80| 啦
 ```
 運行後，打開 `127.0.0.1:80` 就可以睇到運行結果：  
-```
-cantonese examples/web/hello_web.cantonese -to_web 
-```
 <img src="img/web_result.jpg" width="300px">
 
 ### <a href="#25">用粵語開發一隻 App</a>
@@ -411,7 +439,8 @@ pip install kivy
 ```
 第一隻 App `HelloWord`：  
 ```
-使下 kivy
+使下 py::kivy
+
 介紹返 HelloApp 係 乜X {
     佢個老豆叫 App
     佢識得 HelloWorld |自己| => {
@@ -427,14 +456,16 @@ App运行 下 -> |HelloApp, HelloApp()->HelloWorld| 啦
 ### <a href="#26">數據庫編程都得(開發緊)</a>
 select語句:
 ```
-Sql!{
+使下 std::sql::macros::*;
+
+SQL!{
 喺 成績表 度揾 學生哥 邊個 (年紀 大于 10 同埋 名字 係 'dany');
 
 喺 成績表 度揾 最尾 10 个 學生哥;
 喺 成績表 度揾 排頭 20 个 學生哥; 
 }
 /* select * from xx  */
-Sql!{
+SQL{
     睇下 xx;
 }
 ```

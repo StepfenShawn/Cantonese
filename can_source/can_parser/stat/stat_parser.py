@@ -2,6 +2,7 @@ from can_source.can_lexer.can_lexer import *
 import can_source.can_ast as can_ast
 from can_source.can_parser.parser_trait import ParserFn, pos_tracker
 from can_source.can_parser.exp.exp_parser import ExpParser
+from can_source.can_parser.exp.names_parser import NamesParser
 from can_source.can_parser.macro.pattern_parser import MacroPatParser
 from can_source.can_context import can_macros_context
 from can_source.can_macros.impl import CanMacro
@@ -260,8 +261,8 @@ class StatParser:
         return can_ast.IfStat(if_exps, if_blocks, elif_exps, elif_blocks, else_blocks)
 
     def parse_import_stat(self):
-        idlist = ExpParser.from_ParserFn(self.Fn).parse_idlist()
-        return can_ast.ImportStat(idlist)
+        names = NamesParser.from_ParserFn(self.Fn).parse()
+        return can_ast.ImportStat(names)
 
     def parse_global_stat(self):
         idlist = ExpParser.from_ParserFn(self.Fn).parse_idlist()
@@ -365,19 +366,16 @@ class StatParser:
         self.Fn.eat_tk_by_value(kw_do)
         self.Fn.eat_tk_by_kind(TokenType.SEP_LCURLY)
 
-        try_blocks: list = []
         except_exps: list = []
         except_blocks: list = []
         finally_blocks: list = []
 
-        while not self.Fn.match(TokenType.SEP_RCURLY):
-            block_parser = StatParser(
-                self.get_token_ctx(), self.ExpParser.from_ParserFn(self.Fn)
-            )
-            try_blocks.append(block_parser.parse())
-
-        self.Fn.skip_once()
-        self.Fn.eat_tk_by_value([kw_except])
+        try_blocks = self.Fn.many(
+            other_parse_fn=self.parse,
+            util_cond=lambda: self.Fn.match(TokenType.SEP_RCURLY),
+        )
+        self.Fn.eat_tk_by_kind(TokenType.SEP_RCURLY)
+        self.Fn.eat_tk_by_value(kw_except)
 
         except_exps.append(ExpParser.from_ParserFn(self.Fn).parse_exp())
 
@@ -386,12 +384,10 @@ class StatParser:
         self.Fn.eat_tk_by_kind(TokenType.SEP_LCURLY)
 
         # a temp list to save the block
-        except_block = []
-        while not self.Fn.match(TokenType.SEP_RCURLY):
-            block_parser = StatParser(
-                self.get_token_ctx(), self.ExpParser.from_ParserFn(self.Fn)
-            )
-            except_block.append(block_parser.parse())
+        except_block = self.Fn.many(
+            other_parse_fn=self.parse,
+            util_cond=lambda: self.Fn.match(TokenType.SEP_RCURLY),
+        )
 
         self.Fn.eat_tk_by_kind(TokenType.SEP_RCURLY)
         except_blocks.append(except_block)
@@ -400,20 +396,16 @@ class StatParser:
             self.Fn.skip_once()
             self.Fn.eat_tk_by_value(kw_then)
 
-            exp_parser = self.getExpParser()
-            except_exps.append(exp_parser.parse_exp())
+            except_exps.append(ExpParser.from_ParserFn(self.Fn).parse_exp())
 
             self.Fn.eat_tk_by_value(kw_do)
             self.Fn.eat_tk_by_kind(TokenType.SEP_LCURLY)
 
-            # clear the list
-            except_block = []
-            while not self.Fn.match(TokenType.SEP_RCURLY):
-                block_parser = StatParser(
-                    self.get_token_ctx(), self.ExpParser.from_ParserFn(self.Fn)
-                )
-                except_block.append(block_parser.parse())
-
+            except_block = self.Fn.many(
+                other_parse_fn=self.parse,
+                util_cond=lambda: self.Fn.match(TokenType.SEP_RCURLY),
+            )
+            self.Fn.eat_tk_by_kind(TokenType.SEP_RCURLY)
             except_blocks.append(except_block)
 
         if self.Fn.match(kw_finally):
@@ -421,13 +413,11 @@ class StatParser:
             self.Fn.eat_tk_by_value(kw_do)
             self.Fn.eat_tk_by_kind(TokenType.SEP_LCURLY)
 
-            while not self.Fn.match(TokenType.SEP_RCURLY):
-                block_parser = StatParser(
-                    self.get_token_ctx(), self.ExpParser.from_ParserFn(self.Fn)
-                )
-                finally_blocks.append(block_parser.parse())
-
-            self.Fn.skip_once()
+            finally_blocks = self.Fn.many(
+                other_parse_fn=self.parse,
+                util_cond=lambda: self.Fn.match(TokenType.SEP_RCURLY),
+            )
+            self.Fn.eat_tk_by_kind(TokenType.SEP_RCURLY)
 
         return can_ast.TryStat(try_blocks, except_exps, except_blocks, finally_blocks)
 

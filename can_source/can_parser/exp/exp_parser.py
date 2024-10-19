@@ -284,24 +284,22 @@ class ExpParser:
 
     @classmethod
     def parse_prefixexp(cls):
-        next_tk = cls.Fn.try_look_ahead()
-        if next_tk.typ == TokenType.IDENTIFIER:
-            name = next_tk.value
-            cls.Fn.skip_once()
+        if cls.Fn.match(TokenType.IDENTIFIER):
+            name = cls.Fn.look_ahead().value
             exp = can_ast.IdExp(name)
-        elif next_tk.value == "@":
+        elif cls.Fn.match("@"):
             cls.Fn.skip_once()
             id_tk = cls.Fn.eat_tk_by_kind(TokenType.IDENTIFIER)
             exp = can_ast.MetaIdExp(id_tk.value)
         # '(' exp ')'
-        elif next_tk.typ == TokenType.SEP_LPAREN:
+        elif cls.Fn.match(TokenType.SEP_LPAREN):
             exp = cls.parse_parens_exp()
         # lambda function
-        elif next_tk.value == "$$":
+        elif cls.Fn.match("$$"):
             cls.Fn.skip_once()
             exp = cls.parse_functiondef_expr()
         # meta rep
-        elif next_tk.value == "$":
+        elif cls.Fn.match("$"):
             exp = MacroBodyParser.from_ParserFn(cls.Fn).parse_meta_rep_stmt(cls)
             return exp
         # '|' exp '|'
@@ -331,8 +329,7 @@ class ExpParser:
     @classmethod
     def parse_listcons(cls):
         cls.Fn.eat_tk_by_kind(TokenType.SEP_LBRACK)
-        next_tk = cls.Fn.try_look_ahead()
-        if next_tk.typ == TokenType.SEP_RBRACK:  # []
+        if cls.Fn.match(TokenType.SEP_RBRACK):  # []
             cls.Fn.skip_once()
             return can_ast.ListExp("")
         else:
@@ -347,8 +344,7 @@ class ExpParser:
     @classmethod
     def parse_mapcons(cls):
         cls.Fn.eat_tk_by_kind(TokenType.SEP_LCURLY)
-        next_tk = cls.Fn.try_look_ahead()
-        if next_tk.typ == TokenType.SEP_RCURLY:  # {}
+        if cls.Fn.match(TokenType.SEP_RCURLY):  # {}
             cls.Fn.skip_once()
             return can_ast.MapExp("")
         else:
@@ -545,52 +541,3 @@ class ExpParser:
                         )
                     )
             return attrs
-
-
-"""
-    parlist ::= id [',', id | '<*>']
-             | id '=' exp [',' id]
-             | '<*>'
-"""
-
-
-class ParExpParser(ExpParser):
-
-    # override
-    @classmethod
-    def parse_exp(cls):
-        return cls.parse_exp0()
-
-    # override
-    @classmethod
-    def parse_exp0(cls):
-        tk = cls.Fn.try_look_ahead()
-
-        if tk.value == "<*>":
-            cls.Fn.skip_once()
-            return can_ast.VarArgExp()
-
-        return cls.parse_prefixexp()
-
-    # override
-    @classmethod
-    def parse_prefixexp(cls):
-        tk = cls.Fn.try_look_ahead()
-        if tk.typ == TokenType.IDENTIFIER:
-            name = tk.value
-            cls.Fn.skip_once()
-            exp = can_ast.IdExp(name)
-            return cls.finish_prefixexp(exp)
-        else:
-            raise Exception("Parlist must be a identifier type!")
-
-    # override
-    @classmethod
-    def finish_prefixexp(cls, exp: can_ast.AST):
-        value = cls.Fn.try_look_ahead().value
-        if value == "=" or value == "==>":
-            cls.Fn.skip_once()
-            exp_parser = ExpParser(cls.get_token_ctx())
-            exp2 = exp_parser.parse_exp()
-            return can_ast.AssignExp(exp, exp2)
-        return exp

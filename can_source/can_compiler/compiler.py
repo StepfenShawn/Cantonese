@@ -1,6 +1,6 @@
 import can_source.can_parser as can_parser
 import sys, os
-from typing import Generator
+from typing import Generator, List, Any
 
 from collections import defaultdict
 from can_source.can_libs import fix_lib_name
@@ -145,17 +145,19 @@ class Codegen:
             s += ", " + self.codegen_expr(arg)
         return s[2:]
 
-    def codegen_lib_list(self, lib_list: list) -> str:
+    def codegen_import_lib(self, lib_list: List[Any]) -> str:
         res = []
         for _ in lib_list:
             name, need_load = fix_lib_name(self.codegen_expr(_))
+            if name == "python" or name == "py":
+                continue
             if need_load:
                 for pa in sys.path:
                     if os.path.exists(f"{pa}/{name}.cantonese"):
                         with open(f"{pa}/{name}.cantonese", encoding="utf-8") as f:
                             os.environ[f"{pa}/{name}.cantonese_SOURCE"] = f.read()
             res.append(name)
-        return ",".join(res)
+        return "import " + ",".join(res)
 
     def codegen_build_in_method_or_id(self, exp: can_parser.can_ast) -> str:
         if isinstance(exp, can_parser.can_ast.IdExp):
@@ -272,8 +274,7 @@ class Codegen:
             )
 
         elif isinstance(stat, can_parser.can_ast.ImportStat):
-            libs = self.codegen_lib_list(stat.idlist)
-            self.emit("import " + libs + "\n", stat)
+            self.emit(self.codegen_import_lib(stat.names) + "\n", stat)
 
         elif isinstance(stat, can_parser.can_ast.ReturnStat):
             self.emit("return " + self.codegen_args(stat.exps) + "\n", stat)
