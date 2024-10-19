@@ -30,7 +30,7 @@ def gen_import(lib_trace: List[IdExp], cls: "Codegen") -> str:  # type: ignore
         if name == "python" or name == "py":
             continue
         if name == "std":
-            name = "can_source.can_lib"
+            name = "can_source.can_libs"
         if need_load:
             for pa in sys.path:
                 if os.path.exists(f"{pa}/{name}.cantonese"):

@@ -1,15 +1,15 @@
 from collections import namedtuple
 from typing import Tuple
 
-from can_source.can_libs.app.impl import cantonese_kivy_init
-from can_source.can_libs.csv.impl import cantonese_csv_init
-from can_source.can_libs.game.impl import cantonese_pygame_init
-from can_source.can_libs.https.impl import (
+from can_source.can_libs.std.app.impl import cantonese_kivy_init
+from can_source.can_libs.std.csv.impl import cantonese_csv_init
+from can_source.can_libs.std.game.impl import cantonese_pygame_init
+from can_source.can_libs.std.https.impl import (
     cantonese_requests_init,
     cantonese_socket_init,
     cantonese_urllib_init,
 )
-from can_source.can_libs.json.impl import cantonese_json_init
+from can_source.can_libs.std.json.impl import cantonese_json_init
 from can_source.can_libs.std.impl import (
     cantonese_datetime_init,
     cantonese_math_init,

@@ -1,6 +1,7 @@
 import functools
+import can_source as base_env
 
-lib_env: dict = {}
+lib_env: dict = {"can_source": base_env}
 
 
 def cantonese_func_def(func_name: str, func) -> None:

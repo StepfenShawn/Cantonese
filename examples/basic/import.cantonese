@@ -1,8 +1,8 @@
 使下 python::{math::sqrt, re::*}
-使下 assign /* 引用外部库 assign.cantonese */
+使下 assign::A /* 引用外部库 assign.cantonese */
 
-畀我睇下 |sqrt(25)| 點樣先？
-畀我睇下 |assign->A| 點樣先??
+畀我睇下 sqrt(25) 點樣先？
+畀我睇下 A 點樣先??
 畀我睇下 "测试成功" 點樣先？
 
 收工

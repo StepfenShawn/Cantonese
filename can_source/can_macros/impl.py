@@ -78,8 +78,6 @@ class CanMacro(Macros):
             value = getattr(body, child.name)
             if isinstance(value, can_ast.MetaIdExp):
                 setattr(body, child.name, meta_vars.get(value.name).value)
-            elif isinstance(value, can_ast.MacroMetaRepExp):
-                pass
             elif isinstance(value, (can_ast.Stat, can_ast.Exp)):
                 self.modify_body(value, meta_vars)
             elif isinstance(value, (list, set)):
@@ -90,7 +88,7 @@ class CanMacro(Macros):
                         if isinstance(vv, list):
                             after_expand.extend(vv)
                         else:
-                            after_expand.append(after_expand)
+                            after_expand.append(vv)
                     elif isinstance(sub_value, can_ast.MacroMetaRepExp):
                         vv = self.yield_repetition(sub_value, meta_vars)
                         after_expand.extend(vv)
