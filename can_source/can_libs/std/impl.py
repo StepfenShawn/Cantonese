@@ -16,11 +16,38 @@ class List(list):
     def 加啲(self, o):
         super().append(o)
 
+    def collect(self):
+        return self
+
+    def iter(self):
+        return self
+
+    def map(self, func):
+        return List(map(func, self))
+
+    def filter(self, func):
+        return List(filter(func, self))
+
+    def flat_map(self, func):
+        return List(item for sublist in map(func, self) for item in sublist)
+
 
 class Str(str):
     @property
     def 長度(self):
         return super().__len__()
+
+    def collect(self):
+        return self
+
+    def iter(self):
+        return self
+
+    def map(self, func):
+        return List("".join(map(func, self)))
+
+    def filter(self, func):
+        return List("".join(filter(func, self)))
 
 
 def cantonese_lib_init() -> None:

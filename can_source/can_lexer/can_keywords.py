@@ -52,7 +52,6 @@ kw_endprint = "點樣先"
 kw_exit = "收工"
 kw_in = "喺"
 kw_elif = "定係"
-kw_turtle_beg = "老作一下"
 kw_type = "起底"
 kw_assign = "介紹返"
 kw_end_assign = "先啦"
@@ -120,7 +119,6 @@ keywords = [
     kw_exit,
     kw_in,
     kw_elif,
-    kw_turtle_beg,
     kw_type,
     kw_assign,
     kw_end_assign,

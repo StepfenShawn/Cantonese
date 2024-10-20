@@ -256,13 +256,6 @@ class ExpParser:
             cls.Fn.skip_once()
             return can_ast.NumeralExp(tk.value)
 
-        elif tk.typ == TokenType.STRING:
-            cls.Fn.skip_once()
-            return can_ast.StringExp(tk.value)
-
-        elif tk.typ == TokenType.SEP_LBRACK:
-            return cls.parse_listcons()
-
         elif tk.typ == TokenType.SEP_LCURLY:
             return cls.parse_mapcons()
 
@@ -291,6 +284,11 @@ class ExpParser:
         if cls.Fn.match(TokenType.IDENTIFIER):
             name = cls.Fn.look_ahead().value
             exp = can_ast.IdExp(name)
+        elif cls.Fn.match(TokenType.STRING):
+            tk = cls.Fn.look_ahead()
+            exp = can_ast.StringExp(tk.value)
+        elif cls.Fn.match(TokenType.SEP_LBRACK):
+            exp = cls.parse_listcons()
         elif cls.Fn.match("@"):
             cls.Fn.skip_once()
             id_tk = cls.Fn.eat_tk_by_kind(TokenType.IDENTIFIER)

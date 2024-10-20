@@ -105,7 +105,7 @@ def error_catch(e):
                 _len=len(ctx.encode("gbk")),
             )
 
-            p.show(arrow_char="^")
+            print(p.err_msg(arrow_char="^"))
         else:
             start_line = lines[0]
             end_line = lines[-1]
