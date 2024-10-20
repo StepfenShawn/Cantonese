@@ -1,8 +1,12 @@
-from can_source.can_lexer.can_lexer import *
+import os
 import can_source.can_ast as can_ast
+
+from can_source.can_lexer.can_lexer import *
 from can_source.can_parser.macro.pattern_parser import MacroPatParser
 from can_source.can_parser.macro.body_parser import MacroBodyParser
 from can_source.can_context import can_macros_context
+from can_source.can_error.compile_time import MacroNotFound
+from can_source.can_utils.show.infoprinter import ErrorPrinter
 
 
 class ExpParser:
@@ -386,9 +390,14 @@ class ExpParser:
             elif kind == TokenType.EXCL:
                 cls.Fn.skip_once()
                 macro_name = exp.name
-                tokentrees = MacroPatParser.from_ParserFn(cls.Fn).parse_tokentrees()
                 if macro_name not in can_macros_context.macros:
-                    raise Exception(f"macro {macro_name} not found!")
+                    raise MacroNotFound(
+                        f"揾唔到你嘅Macro: `{macro_name}`\n"
+                        + "係咪Macro喺其它文件? 咁就試下{% 路徑::"
+                        + macro_name
+                        + " %} 啦!"
+                    )
+                tokentrees = MacroPatParser.from_ParserFn(cls.Fn).parse_tokentrees()
                 exp = can_macros_context.get(macro_name).expand(tokentrees)
                 break
             else:

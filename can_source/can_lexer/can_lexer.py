@@ -2,18 +2,21 @@ import re
 from typing import Generator
 from contextlib import contextmanager
 import zhconv
-import os
+from difflib import get_close_matches
 
 from can_source.can_lexer.can_keywords import *
 from can_source.can_lexer.pos import Pos
 from can_source.can_lexer.can_token import can_token
-from can_source.can_utils.infoprinter import ErrorPrinter
 from can_source.can_error.compile_time import LexerException
+from can_source.can_utils.show.infoprinter import ErrorPrinter
 
 
-# Lazy options
 def getCtxByLine(path: str, line: int) -> str:
-    source = os.environ[f"{path}_SOURCE"]
+    """
+    get context from file. (Lazy option)
+    """
+    with open(path, encoding="utf-8") as f:
+        source = f.read()
     gen = (s for s in source.split("\n"))
     for _ in range(line):
         source = next(gen)
@@ -128,18 +131,17 @@ class lexer:
         self.error("unfinished string")
 
     def error(self, args: str):
-        from difflib import get_close_matches
-
         ctx = getCtxByLine(self.file, self.getCurPos().line)
         get_tips = lambda s: ",".join(get_close_matches(s, syms))
-        p = ErrorPrinter(
-            info=f"{args}\n 喺 lexer 中察覺到有D痴线",
-            pos=self.getCurPos(),
-            ctx=ctx,
-            tips=f" 係咪`\033[5;33m{get_tips(ctx[self.getCurPos().offset])}\033[0m` ??",
-            _file=self.file,
+        raise LexerException(
+            ErrorPrinter(
+                info=f"{args}\n 喺 lexer 中察覺到有D痴线",
+                pos=self.getCurPos(),
+                ctx=ctx,
+                tips=f" 係咪`\033[5;33m{get_tips(ctx[self.getCurPos().offset])}\033[0m` ??",
+                _file=self.file,
+            ).err_msg()
         )
-        raise LexerException(p.err_msg())
 
     @contextmanager
     def get_token(self):

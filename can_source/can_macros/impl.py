@@ -27,7 +27,7 @@ class CanMacro(Macros):
             match_res, result = match(pat, init_match_state)
             if result:
                 return match_res.meta_vars, block
-        raise MacroCanNotExpand(f"Can not expand macro: {self.name}")
+        raise MacroCanNotExpand(f"展開唔到Macro: {self.name} ...")
 
     def ensure_repetition(
         self, rep_exp: can_ast.MacroMetaRepExp, meta_vars: Dict[str, MetaVar]

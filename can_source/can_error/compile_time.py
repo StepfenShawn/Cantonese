@@ -3,7 +3,11 @@
 """
 
 
-class NoTokenException(Exception):
+class CompTimeException(Exception):
+    pass
+
+
+class NoTokenException(CompTimeException):
     """
     `Token`长度唔够
     """
@@ -15,7 +19,7 @@ class NoTokenException(Exception):
         return self.message
 
 
-class LexerException(Exception):
+class LexerException(CompTimeException):
     """
     词法分析错误
     """
@@ -27,7 +31,7 @@ class LexerException(Exception):
         return self.message
 
 
-class NoParseException(Exception):
+class NoParseException(CompTimeException):
     """
     解析错误
     """
@@ -40,7 +44,7 @@ class NoParseException(Exception):
         return self.message
 
 
-class ExprParserExceprion(Exception):
+class ExprParserExceprion(CompTimeException):
     """
     表达式解释错误
     """
@@ -52,7 +56,7 @@ class ExprParserExceprion(Exception):
         return self.message
 
 
-class StatParserException(Exception):
+class StatParserException(CompTimeException):
     """
     语句解释错误
     """
@@ -64,7 +68,19 @@ class StatParserException(Exception):
         return self.message
 
 
-class MacroNotMatchException(Exception):
+class MacroNotFound(CompTimeException):
+    """
+    找不到宏
+    """
+
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return self.message
+
+
+class MacroNotMatchException(CompTimeException):
     """
     宏找不到匹配
     """
@@ -76,7 +92,7 @@ class MacroNotMatchException(Exception):
         return self.message
 
 
-class MacroCanNotExpand(Exception):
+class MacroCanNotExpand(CompTimeException):
     """
     宏无法展开
     """

@@ -7,7 +7,7 @@ from can_source.can_error.compile_time import LexerException
 from can_source.can_error.runtime import error_stdout
 from can_source.can_lexer.can_lexer import getCtxByLine, Pos
 from can_source.can_lexer import cantonese_token_from_file
-from can_source.can_utils.infoprinter import ErrorPrinter
+from can_source.can_utils.show.infoprinter import ErrorPrinter
 from can_source.can_utils.depend_tree import DependTree, depend_to_url, get_trace
 from can_source.can_context import CanTokenContext
 from can_source.can_parser.exp.names_parser import NamesParser

@@ -6,13 +6,17 @@
 import cmd
 import sys, os
 import argparse
+import traceback
+
 from collections import defaultdict
+from typing import Callable
 import textwrap
 
 sys.path.append(os.getcwd())
 sys.dont_write_bytecode = True
 
-from can_source.can_utils.infoprinter import format_color, show_more
+from can_source.can_utils.show.infoprinter import format_color
+from can_source.can_utils.show.helper import show_more
 from can_source.can_error.compile_time import *
 
 from can_source.can_lexer import cantonese_token_from_file
@@ -31,7 +35,7 @@ def include_eval(dispatch, file, is_to_py) -> None:
     if dispatch == "cantonese":
         with open(file, encoding="utf-8") as f:
             code = f.read()
-            cantonese_run(code, is_to_py, str(file))
+            start_cantonese(lambda: cantonese_run(code, is_to_py, str(file)))
     elif dispatch == "sh":
         os.system(f"./{file}")
     else:
@@ -46,7 +50,60 @@ class Options:
     debug = False
 
 
+def create_cli():
+    arg_parser = argparse.ArgumentParser()
+    arg_parser.add_argument("file", nargs="?", default="")
+    arg_parser.add_argument("others", nargs="?", default="")
+    arg_parser.add_argument(
+        "-to_py", action="store_true", help="Translate Cantonese to Python"
+    )
+    arg_parser.add_argument(
+        "-讲翻py", action="store_true", help="Translate Cantonese to Python"
+    )
+    arg_parser.add_argument("-to_web", action="store_true")
+    arg_parser.add_argument("-倾偈", action="store_true")
+    arg_parser.add_argument("-allow_pyc", action="store_true")
+    arg_parser.add_argument("-compile", action="store_true")
+    arg_parser.add_argument("-讲白啲", action="store_true")
+    arg_parser.add_argument("-build", action="store_true")
+    arg_parser.add_argument("-ast", action="store_true")
+    arg_parser.add_argument("-z", action="store_true")
+    arg_parser.add_argument("-lex", action="store_true")
+    arg_parser.add_argument("-debug", action="store_true")
+    arg_parser.add_argument(
+        "-v", "-verison", action="store_true", help="Print the version"
+    )
+    arg_parser.add_argument("-mkfile", action="store_true")
+    arg_parser.add_argument("-l", action="store_true")
+    arg_parser.add_argument("-llvm", action="store_true")
+    return arg_parser
+
+
+args = create_cli().parse_args()
 TO_PY_CODE = ""
+
+
+def start_cantonese(run_fn: Callable):
+    """
+    啓動 `Cantonese` !!!
+    """
+    global args
+    try:
+        run_fn()
+    except CompTimeException as e:
+        print("!!編譯期間瀨嘢:(\n")
+        print(e)
+        exit()
+    except Exception as e:
+        if args.z:
+            traceback.print_exc()
+        else:
+            tb = traceback.extract_tb(e.__traceback__)
+            filename, lineno, funcname, _ = tb[-1]
+            print(
+                f"!!編譯器內部瀨嘢:(\n\n -> `{funcname}`函數\n -> 喺編譯器源代碼 '{filename}' 嘅{lineno}行:\n ->   {_}\n 發生 {e}\n\n 用 `-z` 查看完整錯誤信息."
+            )
+            exit()
 
 
 def show_pretty_lex(tokens):
@@ -69,11 +126,7 @@ def cantonese_run(
 
     os.environ["CUR_FILE"] = file
 
-    try:
-        tokens = cantonese_token_from_file(file, code)
-    except LexerException as e:
-        print(e.message)
-        exit()
+    tokens = cantonese_token_from_file(file, code)
 
     can_token_context.set_token_ctx((tokens, []))
 
@@ -81,11 +134,7 @@ def cantonese_run(
         show_pretty_lex(tokens)
         exit()
 
-    try:
-        stats = can_parser.StatParser(from_=can_token_context).parse_stats()
-    except NoParseException as e:
-        print(e.message)
-        exit()
+    stats = can_parser.StatParser(from_=can_token_context).parse_stats()
 
     if Options.dump_ast:
         show_pretty_ast([stat for stat in stats])
@@ -133,8 +182,6 @@ def cantonese_run(
 
         print(dis.dis(TO_PY_CODE))
     else:
-        import traceback
-
         try:
             c = TO_PY_CODE
             if REPL:
@@ -172,7 +219,11 @@ class 交互(cmd.Cmd):
         if code is not None:
             if code == ".quit":
                 sys.exit(1)
-            c = cantonese_run(code, False, "【標準輸入】", REPL=True, get_py_code=True)
+            start_cantonese(
+                lambda: cantonese_run(
+                    code, False, "【標準輸入】", REPL=True, get_py_code=True
+                ),
+            )
             if len(c) == 0:
                 c = code
             self.run(c)
@@ -183,36 +234,13 @@ def 开始交互():
     print(_version_)
     import time
 
-    交互().cmdloop(str(time.asctime(time.localtime(time.time()))))
+    交互().cmdloop(
+        "本地時間: " + str(time.asctime(time.localtime(time.time()))) + ", 天氣唔知點"
+    )
 
 
 def main():
-    arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument("file", nargs="?", default="")
-    arg_parser.add_argument("others", nargs="?", default="")
-    arg_parser.add_argument(
-        "-to_py", action="store_true", help="Translate Cantonese to Python"
-    )
-    arg_parser.add_argument(
-        "-讲翻py", action="store_true", help="Translate Cantonese to Python"
-    )
-    arg_parser.add_argument("-to_web", action="store_true")
-    arg_parser.add_argument("-倾偈", action="store_true")
-    arg_parser.add_argument("-allow_pyc", action="store_true")
-    arg_parser.add_argument("-compile", action="store_true")
-    arg_parser.add_argument("-讲白啲", action="store_true")
-    arg_parser.add_argument("-build", action="store_true")
-    arg_parser.add_argument("-ast", action="store_true")
-    arg_parser.add_argument("-lex", action="store_true")
-    arg_parser.add_argument("-debug", action="store_true")
-    arg_parser.add_argument(
-        "-v", "-verison", action="store_true", help="Print the version"
-    )
-    arg_parser.add_argument("-mkfile", action="store_true")
-    arg_parser.add_argument("-l", action="store_true")
-    arg_parser.add_argument("-llvm", action="store_true")
-    args = arg_parser.parse_args()
-
+    global args
     global _version_
 
     if args.v:
@@ -267,7 +295,7 @@ def main():
         if args.allow_pyc:
             sys.dont_write_bytecode = False
 
-        cantonese_run(code, is_to_py, args.file)
+        start_cantonese(lambda: cantonese_run(code, is_to_py, args.file))
 
 
 if __name__ == "__main__":
