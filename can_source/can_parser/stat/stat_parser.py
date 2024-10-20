@@ -435,8 +435,10 @@ class StatParser:
         return can_ast.CmdStat(args)
 
     def parse_macro_block(self):
-        # case a meta expr
-        return self.parse()
+        can_macros_context.lazy_expand = True
+        res = self.parse()
+        can_macros_context.lazy_expand = False
+        return res
 
     def parse_macro_def(self, macro_name: can_ast.AST):
         self.Fn.eat_tk_by_value(kw_do)

@@ -37,6 +37,22 @@ class ParserFn:
         self.last_tk = None
         self.ctx = ctx
 
+    def start_record(self):
+        self.record = True
+        self.cache = []
+
+    def roll_back(self):
+        """
+        Used for implementing `backtrack` for parser.
+        """
+        if not hasattr(self, "record") or not self.record:
+            raise Exception("Unreachable!!!")
+        self.cache.reverse()
+        for tk in self.cache:
+            self.ctx.buffer_tokens.insert(0, tk)
+        self.cache = []
+        self.record = False
+
     def _next(self):
         try:
             return next(self.ctx.tokens)
@@ -55,10 +71,12 @@ class ParserFn:
 
     def look_ahead(self) -> can_token:
         if self.ctx.buffer_tokens:
-            return self.ctx.buffer_tokens.pop(0)
-
-        next_tk = self._next()
-        self.last_tk = next_tk
+            next_tk = self.ctx.buffer_tokens.pop(0)
+        else:
+            next_tk = self._next()
+            self.last_tk = next_tk
+        if hasattr(self, "record") and self.record:
+            self.cache.append(next_tk)
         return next_tk
 
     def try_look_ahead(self) -> can_token:
@@ -73,6 +91,8 @@ class ParserFn:
             self.last_tk = self.ctx.buffer_tokens.pop(0)
         else:
             self.last_tk = self._next()
+        if hasattr(self, "record") and self.record:
+            self.cache.append(self.last_tk)
 
     @property
     def next_lexer_pos(self) -> Pos:
@@ -106,6 +126,8 @@ class ParserFn:
 
     def eat_tk_by_kind(self, k: TokenType) -> can_token:
         tk = self.look_ahead()
+        if hasattr(self, "record") and self.record:
+            self.cache.append(tk)
         err = ""
         if k != tk.typ:
             err = f"\033[0;31m濑嘢!!!\033[0m: `{tk.value}`好似有D唔三唔四"
@@ -114,6 +136,8 @@ class ParserFn:
 
     def eat_tk_by_value(self, expectation) -> can_token:
         tk = self.look_ahead()
+        if hasattr(self, "record") and self.record:
+            self.cache.append(tk)
         err = ""
         if isinstance(expectation, list):
             if tk.value not in expectation:

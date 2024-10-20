@@ -11,6 +11,7 @@ from can_source.can_const import *
 from can_source.can_parser.parser_trait import ParserFn, new_token_context
 
 from can_source.can_macros.macro import Macros
+from can_source.can_context import can_macros_context
 
 
 class CanMacro(Macros):
@@ -76,8 +77,16 @@ class CanMacro(Macros):
     def modify_body(self, body, meta_vars: Dict[str, MetaVar]):
         for child in fields(body):
             value = getattr(body, child.name)
+            # 撞见元变量
             if isinstance(value, can_ast.MetaIdExp):
                 setattr(body, child.name, meta_vars.get(value.name).value)
+            # 撞见递归或调用其它宏
+            elif isinstance(value, can_ast.CallMacro):
+                setattr(
+                    body,
+                    child.name,
+                    can_macros_context.get(name=value.name).expand(value.token_trees),
+                )
             elif isinstance(value, (can_ast.Stat, can_ast.Exp)):
                 self.modify_body(value, meta_vars)
             elif isinstance(value, (list, set)):
@@ -102,6 +111,9 @@ class CanMacro(Macros):
         # 单个`metaIdExp`
         if isinstance(body, can_ast.MetaIdExp):
             return matched_meta_vars.get(body.name).value
+        # 递归扩展调用其它宏
+        elif isinstance(body, can_ast.CallMacro):
+            return can_macros_context.get(name=body.name).expand(body.token_trees)
         # 其它情况
         return self.modify_body(body, matched_meta_vars)
 

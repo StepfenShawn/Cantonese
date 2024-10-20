@@ -45,3 +45,9 @@ class MacroMetaRepExp(Exp):
 @dataclass
 class TokenTree:
     val: List[Any]
+
+
+@dataclass
+class CallMacro:
+    name: str
+    token_trees: List[object]

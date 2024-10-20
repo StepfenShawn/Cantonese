@@ -5,6 +5,8 @@ class CanMacrosContext:
 
     def __init__(self):
         self.macros = {}
+        # 递归宏调用需要延迟展开
+        self.lazy_expand = False
 
     def update(self, name, o):
         self.macros.update({name: o})

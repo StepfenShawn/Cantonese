@@ -388,7 +388,10 @@ class ExpParser:
             elif kind == TokenType.EXCL:
                 cls.Fn.skip_once()
                 macro_name = exp.name
-                if macro_name not in can_macros_context.macros:
+                if (
+                    not can_macros_context.lazy_expand
+                    and macro_name not in can_macros_context.macros
+                ):
                     raise MacroNotFound(
                         f"揾唔到你嘅Macro: `{macro_name}`\n"
                         + "係咪Macro喺其它文件? 咁就試下{% 路徑::"
@@ -396,7 +399,10 @@ class ExpParser:
                         + " %} 啦!"
                     )
                 tokentrees = MacroPatParser.from_ParserFn(cls.Fn).parse_tokentrees()
-                exp = can_macros_context.get(macro_name).expand(tokentrees)
+                if can_macros_context.lazy_expand:
+                    exp = can_ast.CallMacro(macro_name, tokentrees)
+                else:
+                    exp = can_macros_context.get(macro_name).expand(tokentrees)
                 break
             else:
                 break

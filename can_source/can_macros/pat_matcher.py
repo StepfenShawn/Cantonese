@@ -10,13 +10,16 @@ def match_token(excepted: can_token, state: MatchState) -> Tuple[MatchState, boo
     """
     匹配一个token
     """
+    state.parser_fn.start_record()
     try:
         if state.parser_fn.match_tk(excepted):
             state.parser_fn.skip_once()
             return state, True
         else:
+            state.parser_fn.roll_back()
             return state, False
     except NoTokenException:
+        state.parser_fn.roll_back()
         return state, False
 
 
@@ -34,20 +37,24 @@ def match_macro_meta_id(pat: MacroMetaId, state: MatchState) -> Tuple[MatchState
             )
             state.update_meta_vars(meta_var_name, ast_node)
         elif spec == FragSpec.STMT:
+            state.parser_fn.start_record()
             try:
                 ast_node = StatParser(from_=state.curF).parse()
             except (NoTokenException, NoParseException) as e:
+                state.parser_fn.roll_back()
                 return state, False
             else:
                 state.update_meta_vars(meta_var_name, ast_node)
         elif spec == FragSpec.EXPR:
+            state.parser_fn.start_record()
             try:
                 ast_node = ExpParser.from_ParserFn(state.parser_fn).parse_exp()
             except (NoTokenException, NoParseException) as e:
+                state.parser_fn.roll_back()
                 return state, False
             else:
                 state.update_meta_vars(meta_var_name, ast_node)
-        elif spec == FragSpec.STR:
+        elif spec == FragSpec.STR and state.parser_fn.match(TokenType.STRING):
             ast_node = can_ast.can_exp.StringExp(
                 s=state.parser_fn.eat_tk_by_kind(TokenType.STRING).value
             )
@@ -91,6 +98,7 @@ def match_macro_meta_repexp(
                     state.parser_fn.eat_tk_by_value(pat.rep_sep)
             except NoTokenException as e:
                 break
+        return state, True
     elif pat.rep_op == RepOp.OPRIONAL.value:  # ?
         for tk_node in pat.token_trees:
             state, result = match_pattern(tk_node, state)
@@ -98,19 +106,25 @@ def match_macro_meta_repexp(
             state.parser_fn.eat_tk_by_value(pat.rep_sep)
         return state, True
     elif pat.rep_op == RepOp.PLUS_CLOSE.value:  # +
+        result = True
+        state.parser_fn.start_record()
         for tk_node in pat.token_trees:
-            state, result = match_pattern(tk_node, state)
+            state, r = match_pattern(tk_node, state)
+            result &= r
         if result and pat.rep_sep:
             state.parser_fn.eat_tk_by_value(pat.rep_sep)
             while result:
                 try:
                     for tk_node in pat.token_trees:
                         state, result = match_pattern(tk_node, state)
+                        if not result:
+                            break
                     if result and pat.rep_sep:
                         state.parser_fn.eat_tk_by_value(pat.rep_sep)
                 except NoTokenException as e:
                     break
         else:
+            state.parser_fn.roll_back()
             return state, False
     else:
         return state, False
