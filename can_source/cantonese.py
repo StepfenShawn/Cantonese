@@ -15,7 +15,7 @@ sys.dont_write_bytecode = True
 from can_source.can_utils.infoprinter import format_color, show_more
 from can_source.can_error.compile_time import *
 
-import can_source.can_lexer.can_lexer as can_lexer
+from can_source.can_lexer import cantonese_token_from_file
 import can_source.can_parser as can_parser
 from can_source.can_compiler.compiler import Codegen
 import can_source.can_sys as can_sys
@@ -25,6 +25,17 @@ from can_source.can_context import can_token_context
 from can_source.can_libs import *
 from can_source.web_core.can_web_parser import *
 from can_source.can_const import _version_, logo
+
+
+def include_eval(dispatch, file, is_to_py) -> None:
+    if dispatch == "cantonese":
+        with open(file, encoding="utf-8") as f:
+            code = f.read()
+            cantonese_run(code, is_to_py, str(file))
+    elif dispatch == "sh":
+        os.system(f"./{file}")
+    else:
+        raise Exception("Unreachable!")
 
 
 class Options:
@@ -54,12 +65,12 @@ def cantonese_run(
 ) -> None:
 
     global TO_PY_CODE
-    global variable
+    global lib_env
 
     os.environ["CUR_FILE"] = file
 
     try:
-        tokens = can_lexer.cantonese_token(file, code)
+        tokens = cantonese_token_from_file(file, code)
     except LexerException as e:
         print(e.message)
         exit()
@@ -127,7 +138,7 @@ def cantonese_run(
         try:
             c = TO_PY_CODE
             if REPL:
-                TO_PY_CODE = ""  # reset the global variable in REPL mode
+                TO_PY_CODE = ""  # reset the global lib_env in REPL mode
             if get_py_code:
                 return c
             code = compile(TO_PY_CODE, file, "exec")
@@ -145,10 +156,10 @@ class 交互(cmd.Cmd):
         pass
 
     def run(self, code):
-        if code in variable.keys():
-            print(variable[code])
+        if code in lib_env.keys():
+            print(lib_env[code])
         try:
-            exec(code, variable)
+            exec(code, lib_env)
         except Exception as e:
             can_sys.error_catch(e)
 
@@ -223,12 +234,18 @@ def main():
 
         is_to_py = False
         code = ""
+
         with open(args.file, encoding="utf-8") as f:
             code = f.read()
+            code = can_sys.eval_pre_script(
+                code,
+                args.file,
+                apply_f=lambda dispatch, path: include_eval(dispatch, path, is_to_py),
+            )
 
         if args.build:
             cantonese_lib_init()
-            exec(code, variable)
+            exec(code, lib_env)
             exit()
         if args.to_py or args.讲翻py:
             is_to_py = True

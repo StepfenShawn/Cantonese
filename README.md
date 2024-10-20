@@ -211,7 +211,7 @@ def add(a, b):
 ```
 又或者使用`Macro`調用`Python`和`Rust`:  
 ```rust
-使下 std::macros::{Py, Rust}
+{% std::macros::{Py, Rust} %}
 
 Py!{
 def add(a, b):
@@ -353,8 +353,8 @@ sayhello!{1} # 報錯: 無法匹配
 ### <a name="19">計相關係數</a>
 聲明兩個 list，計相關係數：  
 ```Rust
+{% std::macros::math %}
 使下 py::math
-使下 std::math::macros::*
 
 |[2.165, 1.688, 1.651, 2.229]| 拍住上 => |A|
 |[2.060, 1.822, 1.834, 2.799]| 拍住上 => |B|
@@ -367,8 +367,8 @@ sayhello!{1} # 報錯: 無法匹配
 ### <a name="20">仲可以机器学习?</a>
 實現 KNN 算法：
 ```Rust
+{% std::macros::math %}
 使下 py::math
-使下 std::math::macros::*
 
 |[[5, 1], [4, 0], [1, 3], [0, 4]]| 拍住上 => |数据|
 |['动作片', '动作片', '科幻片', '科幻片']| 拍住上 => |标签|
@@ -396,7 +396,7 @@ y=0.530960991635149x+189.75347155122432
 ```
 ### <a name="21">海龜繪圖</a>
 ```Rust
-使下 std::ui::macros::*
+{% std::macros::ui %}
 
 老作一下!{
     首先 |画个圈(100)|,
@@ -421,7 +421,7 @@ y=0.530960991635149x+189.75347155122432
 ### <a name="24">寫個網頁睇下</a>
 一個簡單嘅網頁：
 ```Rust
-使下 std::net::macros::*;
+{% std::macros::net %}
 使下 std::net::监视;
 
 介紹返 html 係 HTML老作一下! {
@@ -458,7 +458,7 @@ App运行 下 -> |HelloApp, HelloApp()->HelloWorld| 啦
 ### <a href="#26">數據庫編程都得(開發緊)</a>
 select語句:
 ```Rust
-使下 std::sql::macros::*;
+使下 macros::sql::*;
 
 SQL!{
 喺 成績表 度揾 學生哥 邊個 (年紀 大于 10 同埋 名字 係 'dany');

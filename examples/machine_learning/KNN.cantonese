@@ -1,7 +1,10 @@
 /*
  * Cantonese 实现 KNN 算法
 */
-使下 math
+{% std::macros::math %}
+
+使下 py::math
+
 /*
  * 使用KNN前必须定义3个变量且变量名相同: 数据, 标签, K
 */

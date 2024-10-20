@@ -355,14 +355,3 @@ class lexer:
                 return can_token(None, TokenType.CALL_NATIVE_EXPR, token)
 
         self.error(f"\033[0;31m濑嘢!!!\033[0m:睇唔明嘅Token: `{c}`")
-
-
-def cantonese_token(file: str, code: str) -> Generator:
-    os.environ[f"{file}_SOURCE"] = code
-    lex: lexer = lexer(file, code, keywords)
-
-    while True:
-        with lex.get_token() as token:
-            yield token
-            if token.typ == TokenType.EOF:
-                break

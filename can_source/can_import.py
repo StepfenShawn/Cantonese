@@ -4,7 +4,6 @@
 """
 
 import importlib.machinery
-from contextlib import contextmanager
 import os, sys
 
 from can_source import can_parser

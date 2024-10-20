@@ -1,11 +1,6 @@
 from can_source.can_lexer.can_lexer import *
+from can_source.can_utils.depend_tree import DependTree
 import can_source.can_ast as can_ast
-
-
-class DependTree:
-    def __init__(self, v):
-        self.v = v
-        self.child = None
 
 
 class NamesParser:

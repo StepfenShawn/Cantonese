@@ -1,7 +1,9 @@
 /*
  * Cantonese 实现线性回归算法
 */
-使下 math
+{% std::macros::math %}
+
+使下 py::math
 /*
  * 使用线性回归必须定义两个变量: X, Y
 */

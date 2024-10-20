@@ -1,13 +1,10 @@
-from can_source.can_compiler.lib_gen_helper import gen_import, get_trace
-import can_source.can_parser as can_parser
-
-import sys, os
-from typing import Generator, List, Any
-from copy import deepcopy
-
+import os
+from typing import Generator, List
 from collections import defaultdict
-from can_source.can_parser.exp.names_parser import DependTree
-from can_source.can_libs import fix_lib_name
+
+from can_source.can_utils.depend_tree import DependTree, get_trace
+from can_source.can_compiler.lib_gen_helper import gen_import
+import can_source.can_parser as can_parser
 
 line_map = {}
 
