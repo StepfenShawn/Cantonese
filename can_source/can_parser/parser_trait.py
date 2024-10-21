@@ -41,17 +41,23 @@ class ParserFn:
         self.record = True
         self.cache = []
 
+    def close_record(self):
+        self.record = False
+        self.cache = []
+
     def roll_back(self):
         """
-        Used for implementing `backtrack` for parser.
+        Used for implementing `backtrace` for parser.
         """
         if not hasattr(self, "record") or not self.record:
             raise Exception("Unreachable!!!")
         self.cache.reverse()
         for tk in self.cache:
             self.ctx.buffer_tokens.insert(0, tk)
-        self.cache = []
-        self.record = False
+        self.close_record()
+
+    def get_record(self):
+        return self.cache
 
     def _next(self):
         try:
@@ -126,8 +132,6 @@ class ParserFn:
 
     def eat_tk_by_kind(self, k: TokenType) -> can_token:
         tk = self.look_ahead()
-        if hasattr(self, "record") and self.record:
-            self.cache.append(tk)
         err = ""
         if k != tk.typ:
             err = f"\033[0;31m濑嘢!!!\033[0m: `{tk.value}`好似有D唔三唔四"

@@ -54,10 +54,8 @@ class MacroPatParser:
 
     @classmethod
     def finish_meta_exp(cls, meta_exp):
-        meta_exp = can_ast.MacroMetaRepExp(meta_exp, None, None)
-        if not cls.Fn.match(["*", "+", "?"]):
-            meta_exp.rep_sep = cls.Fn.look_ahead().value
-
+        meta_exp = can_ast.MacroMetaRepExpInPat(meta_exp, None, None)
+        meta_exp.rep_sep = cls.Fn.look_ahead().value
         op_tk = cls.Fn.eat_tk_by_value(["*", "+", "?"])
         meta_exp.rep_op = op_tk.value
         return meta_exp
@@ -65,10 +63,10 @@ class MacroPatParser:
     @classmethod
     def parse_tokentrees(cls) -> list:
         tokentrees = []
-        cls.Fn.eat_tk_by_kind(TokenType.SEP_LCURLY)
-        while not cls.Fn.match(TokenType.SEP_RCURLY):
+        open_ch = cls.Fn.eat_tk_by_kind(TokenType.SEP_LPAREN)
+        while not cls.Fn.match(TokenType.SEP_RPAREN):
             next_tk = cls.Fn.try_look_ahead()
-            if next_tk.typ == TokenType.SEP_LCURLY:
+            if next_tk.typ == TokenType.SEP_LPAREN:
                 tokentrees.append(cls.parse_tokentrees())
             elif next_tk.value == "@":
                 cls.Fn.skip_once()
@@ -77,5 +75,5 @@ class MacroPatParser:
             else:
                 cls.Fn.skip_once()
                 tokentrees.append(next_tk)
-        cls.Fn.eat_tk_by_kind(TokenType.SEP_RCURLY)
-        return can_ast.TokenTree(tokentrees)
+        close_ch = cls.Fn.eat_tk_by_kind(TokenType.SEP_RPAREN)
+        return can_ast.TokenTree(tokentrees, open_ch, close_ch)

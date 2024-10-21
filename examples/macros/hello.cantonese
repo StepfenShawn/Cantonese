@@ -3,5 +3,5 @@
     | () => { 畀我睇下 "Hello" 點樣先?? }
 搞掂
 
-sayhello!{Hello "dd"}
-sayhello!{}
+sayhello!(Hello "dd")
+sayhello!()

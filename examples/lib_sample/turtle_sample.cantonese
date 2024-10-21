@@ -7,8 +7,8 @@
 
 使下 py::turtle
 
-老作一下!{
-    首先 |画个圈(100)|,
-    跟住 |写隻字("Made By Cantonese\n", False,'center')|,
-    最尾 |听我支笛()|,
-}
+老作一下!(
+    首先 画个圈(100),
+    跟住 写隻字("Made By Cantonese\n", False,'center'),
+    最尾 听我支笛(),
+)

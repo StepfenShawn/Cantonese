@@ -1,158 +1,101 @@
-from typing import Tuple
 from can_source.can_macros.match_state import MatchState
 from can_source.can_error.compile_time import NoParseException, NoTokenException
-from can_source.can_ast import TokenTree, MacroMetaRepExp, MacroMetaId
+from can_source.can_ast import TokenTree, MacroMetaRepExpInPat, MacroMetaId
 from can_source.can_parser import *
 from can_source.can_const import *
 
 
-def match_token(excepted: can_token, state: MatchState) -> Tuple[MatchState, bool]:
-    """
-    匹配一个token
-    """
-    state.parser_fn.start_record()
-    try:
-        if state.parser_fn.match_tk(excepted):
-            state.parser_fn.skip_once()
-            return state, True
+class TokenTreeHelper:
+    @staticmethod
+    def tree_to_list(tree: TokenTree):
+        ys = [tree.open_ch]
+        for leaf in tree.child:
+            if isinstance(leaf, TokenTree):
+                ys.extend(TokenTreeHelper.tree_to_list(leaf))
+            else:
+                ys.append(leaf)
+        ys.append(tree.close_ch)
+        return ys
+
+
+class PatRuler:
+    def __init__(self, pattern: list):
+        self.pattern = pattern
+
+    def with_state(self, state: MatchState) -> "Self":
+        self.state = state
+        return self
+
+    def match_token(self, excepted: can_token):
+        if self.state.parser_fn.match_tk(excepted):
+            self.state.parser_fn.skip_once()
         else:
-            state.parser_fn.roll_back()
-            return state, False
-    except NoTokenException:
-        state.parser_fn.roll_back()
-        return state, False
+            raise NoParseException("NO")
 
+    def match_meta_id(self, id: MacroMetaId):
+        meta_var_name = id._id.value
+        spec = FragSpec.from_can_token(id.frag_spec)
+        self.state.parser_fn.start_record()
 
-def match_macro_meta_id(pat: MacroMetaId, state: MatchState) -> Tuple[MatchState, bool]:
-    """
-    匹配元变量
-    """
-
-    meta_var_name = pat._id.value
-    spec = FragSpec.from_can_token(pat.frag_spec)
-    try:
-        if spec == FragSpec.IDENT and state.parser_fn.match(TokenType.IDENTIFIER):
-            ast_node = can_ast.can_exp.IdExp(
-                name=state.parser_fn.eat_tk_by_kind(TokenType.IDENTIFIER).value
-            )
-            state.update_meta_vars(meta_var_name, ast_node)
+        if spec == FragSpec.IDENT:
+            self.state.parser_fn.eat_tk_by_kind(TokenType.IDENTIFIER)
         elif spec == FragSpec.STMT:
-            state.parser_fn.start_record()
-            try:
-                ast_node = StatParser(from_=state.curF).parse()
-            except (NoTokenException, NoParseException) as e:
-                state.parser_fn.roll_back()
-                return state, False
-            else:
-                state.update_meta_vars(meta_var_name, ast_node)
+            StatParser(from_=self.state.parser_fn).parse()
         elif spec == FragSpec.EXPR:
-            state.parser_fn.start_record()
-            try:
-                ast_node = ExpParser.from_ParserFn(state.parser_fn).parse_exp()
-            except (NoTokenException, NoParseException) as e:
-                state.parser_fn.roll_back()
-                return state, False
+            ExpParser.from_ParserFn(self.state.parser_fn).parse_exp()
+        elif spec == FragSpec.STR:
+            self.state.parser_fn.eat_tk_by_kind(TokenType.STRING)
+        elif spec == FragSpec.LITERAL:
+            if self.state.parser_fn.match([TokenType.NUM, TokenType.STRING]):
+                self.state.parser_fn.skip_once()
             else:
-                state.update_meta_vars(meta_var_name, ast_node)
-        elif spec == FragSpec.STR and state.parser_fn.match(TokenType.STRING):
-            ast_node = can_ast.can_exp.StringExp(
-                s=state.parser_fn.eat_tk_by_kind(TokenType.STRING).value
+                raise NoParseException("No")
+
+        self.state.update_meta_vars(meta_var_name, self.state.parser_fn.get_record())
+        self.state.parser_fn.close_record()
+
+    def match_rep(self, pat: MacroMetaRepExpInPat):
+
+        def _run():
+            for tk_node in pat.token_trees:
+                self.match_pattern(tk_node)
+
+        if pat.rep_op == RepOp.CLOSURE.value:  # *
+            self.state.parser_fn.many(
+                _run, util_cond=lambda: not self.state.parser_fn.match(pat.rep_sep)
             )
-            state.update_meta_vars(meta_var_name, ast_node)
-        elif spec == FragSpec.LITERAL and (
-            state.parser_fn.match(TokenType.STRING)
-            or state.parser_fn.match(TokenType.NUM)
-        ):
-            if state.parser_fn.match(TokenType.STRING):
-                ast_node = can_ast.can_exp.StringExp(
-                    s=state.parser_fn.eat_tk_by_kind(TokenType.STRING).value
-                )
-            elif state.parser_fn.match(TokenType.NUM):
-                ast_node = can_ast.can_exp.NumeralExp(
-                    val=state.parser_fn.eat_tk_by_kind(TokenType.NUM).value
-                )
-            state.update_meta_vars(meta_var_name, ast_node)
+        elif pat.rep_op == RepOp.OPRIONAL.value:  # ?
+            # self.state.parser_fn.maybe(_run, case_cond=lambda: self.state.parser_fn.match(pat.token_trees))
+            pass
+        elif pat.rep_op == RepOp.PLUS_CLOSE.value:  # +
+            self.state.parser_fn.oneplus(
+                _run, util_cond=lambda: not self.state.parser_fn.match(pat.rep_sep)
+            )
+
+    def match_pattern(self, pat) -> bool:
+        try:
+            if isinstance(pat, MacroMetaId):
+                self.match_meta_id(pat)
+            elif isinstance(pat, MacroMetaRepExpInPat):
+                self.match_rep(pat)
+            else:
+                self.match_token(pat)
+        except (NoTokenException, NoParseException):
+            return False
         else:
-            return state, False
-    except NoTokenException:
-        return state, False
-    return state, True
+            return True
 
+    def match(self) -> bool:
+        if len(self.pattern) == 0:
+            return self.state.parser_fn.no_tokens()
 
-def match_macro_meta_repexp(
-    pat: MacroMetaRepExp, state: MatchState
-) -> Tuple[MatchState, bool]:
-    if state.parser_fn.no_tokens():
-        return state, False
+        for pat in self.pattern:
+            result = self.match_pattern(pat)
+            if not result:
+                return False
 
-    if pat.rep_op == RepOp.CLOSURE.value:  # *
-        for tk_node in pat.token_trees:
-            state, result = match_pattern(tk_node, state)
-        if result and pat.rep_sep:
-            state.parser_fn.eat_tk_by_value(pat.rep_sep)
-        while result:
-            try:
-                for tk_node in pat.token_trees:
-                    state, result = match_pattern(tk_node, state)
-                if result and pat.rep_sep:
-                    state.parser_fn.eat_tk_by_value(pat.rep_sep)
-            except NoTokenException as e:
-                break
-        return state, True
-    elif pat.rep_op == RepOp.OPRIONAL.value:  # ?
-        for tk_node in pat.token_trees:
-            state, result = match_pattern(tk_node, state)
-        if result and pat.rep_sep:
-            state.parser_fn.eat_tk_by_value(pat.rep_sep)
-        return state, True
-    elif pat.rep_op == RepOp.PLUS_CLOSE.value:  # +
-        result = True
-        state.parser_fn.start_record()
-        for tk_node in pat.token_trees:
-            state, r = match_pattern(tk_node, state)
-            result &= r
-        if result and pat.rep_sep:
-            state.parser_fn.eat_tk_by_value(pat.rep_sep)
-            while result:
-                try:
-                    for tk_node in pat.token_trees:
-                        state, result = match_pattern(tk_node, state)
-                        if not result:
-                            break
-                    if result and pat.rep_sep:
-                        state.parser_fn.eat_tk_by_value(pat.rep_sep)
-                except NoTokenException as e:
-                    break
-        else:
-            state.parser_fn.roll_back()
-            return state, False
-    else:
-        return state, False
-    return state, True
+        # all pattern has been matched, it's should be `no_tokens` state
+        return self.state.parser_fn.no_tokens()
 
-
-def match_pattern(pat, state: MatchState) -> Tuple[MatchState, bool]:
-    if isinstance(pat, MacroMetaId):
-        state, result = match_macro_meta_id(pat, state)
-    elif isinstance(pat, MacroMetaRepExp):
-        state, result = match_macro_meta_repexp(pat, state)
-    else:
-        state, result = match_token(pat, state)
-    return state, result
-
-
-def match(pattern, state: MatchState) -> Tuple[MatchState, bool]:
-    # if no pattern? (Epsilon)
-    if len(pattern) == 0:
-        return (state, True) if state.parser_fn.no_tokens() else (state, False)
-
-    for pat in pattern:
-        state, result = match_pattern(pat, state)
-        if not result:
-            return state, False
-
-    # all pattern has been matched, it's should be `no_tokens` state
-    if state.parser_fn.no_tokens():
-        return state, True
-    else:
-        return state, False
+    def get_state(self):
+        return self.state

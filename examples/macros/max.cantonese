@@ -1,0 +1,17 @@
+介紹返 getmax 係 袋仔的法寶 =>
+    | (@x:expr) => { 
+        x 
+    }
+    | (@x: expr, @y: expr) => {
+        max 下 -> |@x, @y|
+    }
+    | (@x:expr $(, @xs: expr)+) => { 
+        max 下 -> |@x, getmax!{ ${@xs}+ }|
+    }
+    | () => { 
+        None 
+    }
+搞掂
+
+# 畀我睇下 getmax!{-1, 1} 點樣先??
+畀我睇下 getmax!(4, 8, -1, 90, -9) 點樣先??

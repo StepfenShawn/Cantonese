@@ -1,5 +1,6 @@
 from can_source.can_lexer.can_lexer import *
 import can_source.can_ast as can_ast
+from can_source.can_parser.macro.body_parser import MacroBodyParser
 from can_source.can_parser.parser_trait import ParserFn, pos_tracker
 from can_source.can_parser.exp.exp_parser import ExpParser
 from can_source.can_parser.exp.names_parser import NamesParser
@@ -434,12 +435,6 @@ class StatParser:
         args = ExpParser.from_ParserFn(self.Fn).parse_args()
         return can_ast.CmdStat(args)
 
-    def parse_macro_block(self):
-        can_macros_context.lazy_expand = True
-        res = self.parse()
-        can_macros_context.lazy_expand = False
-        return res
-
     def parse_macro_def(self, macro_name: can_ast.AST):
         self.Fn.eat_tk_by_value(kw_do)
         match_rules: list = []
@@ -457,10 +452,8 @@ class StatParser:
                 )
                 self.Fn.eat_tk_by_kind(TokenType.SEP_RPAREN)
                 match_rules.append(cur_match_rules)
-                self.Fn.eats((kw_do, TokenType.SEP_LCURLY))
-                body = self.parse_macro_block()
-
-                self.Fn.eat_tk_by_kind(TokenType.SEP_RCURLY)
+                self.Fn.eat_tk_by_value(kw_do)
+                body = MacroBodyParser.from_ParserFn(self.Fn).parse_tokentrees()
                 match_blocks.append(body)
 
         self.Fn.eat_tk_by_value(kw_func_end)

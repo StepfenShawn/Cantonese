@@ -32,9 +32,20 @@ class MacroMetaId(Exp):
 
 
 @dataclass
-class MacroMetaRepExp(Exp):
+class MacroMetaRepExpInPat(Exp):
     """
-    meta exp in `macro-patterns`
+    meta exp in `macro-patterns` (Input)
+    """
+
+    token_trees: List[object]
+    rep_sep: Exp
+    rep_op: Exp
+
+
+@dataclass
+class MacroMetaRepExpInBlock(Exp):
+    """
+    meta exp in `macro-blocks` (Output)
     """
 
     token_trees: List[object]
@@ -44,7 +55,9 @@ class MacroMetaRepExp(Exp):
 
 @dataclass
 class TokenTree:
-    val: List[Any]
+    child: List[Any]
+    open_ch: Any  # `(` or '{'
+    close_ch: Any  # ')' or '}'
 
 
 @dataclass

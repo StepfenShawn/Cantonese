@@ -5,7 +5,11 @@ from can_source.can_lexer.can_lexer import *
 from can_source.can_parser.macro.pattern_parser import MacroPatParser
 from can_source.can_parser.macro.body_parser import MacroBodyParser
 from can_source.can_context import can_macros_context
-from can_source.can_error.compile_time import MacroNotFound
+from can_source.can_error.compile_time import (
+    MacroNotFound,
+    NoParseException,
+    NoTokenException,
+)
 from can_source.can_utils.show.infoprinter import ErrorPrinter
 
 
@@ -302,7 +306,7 @@ class ExpParser:
             exp = cls.parse_functiondef_expr()
         # meta rep
         elif cls.Fn.match("$"):
-            exp = MacroBodyParser.from_ParserFn(cls.Fn).parse_meta_rep_stmt(cls)
+            exp = MacroBodyParser.from_ParserFn(cls.Fn).parse_meta_rep_stmt()
             return exp
         # '|' exp '|'
         else:
@@ -357,41 +361,30 @@ class ExpParser:
     @classmethod
     def finish_prefixexp(cls, exp: can_ast.AST):
         while True:
-            next_tk = cls.Fn.try_look_ahead()
-            kind, value = next_tk.typ, next_tk.value
-            if kind == TokenType.SEP_LBRACK:
+            if cls.Fn.match(TokenType.SEP_LBRACK):
                 cls.Fn.skip_once()
                 key_exp: can_ast.AST = cls.parse_exp()
                 cls.Fn.eat_tk_by_kind(TokenType.SEP_RBRACK)
                 exp = can_ast.ListAccessExp(exp, key_exp)
-            elif (
-                kind == TokenType.SEP_DOT
-                or (kind == TokenType.KEYWORD and value == kw_dot)
-                or (kind == TokenType.IDENTIFIER and value == "嘅")
-            ):
+            elif cls.Fn.match([TokenType.SEP_DOT, kw_dot, "嘅"]):
                 cls.Fn.skip_once()
                 tk = cls.Fn.eat_tk_by_kind(TokenType.IDENTIFIER)
                 name = tk.value
                 key_exp = can_ast.IdExp(name)
                 exp = can_ast.ObjectAccessExp(exp, key_exp)
-            elif (kind == TokenType.SEP_LPAREN) or (
-                kind == TokenType.KEYWORD and value == kw_call_begin
-            ):
+            elif cls.Fn.match([TokenType.SEP_LPAREN, kw_call_begin]):
                 exp = cls.finish_functioncall_exp(exp)
-            elif kind == TokenType.OP_ASSIGN:
+            elif cls.Fn.match(TokenType.OP_ASSIGN):
                 cls.Fn.skip_once()
                 exp = can_ast.AssignExp(exp, cls.parse_exp())
-            elif kind == TokenType.COLON:
+            elif cls.Fn.match(TokenType.COLON):
                 cls.Fn.skip_once()
                 exp = can_ast.AnnotationExp(exp, cls.parse_exp())
                 break
-            elif kind == TokenType.EXCL:
+            elif cls.Fn.match(TokenType.EXCL):
                 cls.Fn.skip_once()
                 macro_name = exp.name
-                if (
-                    not can_macros_context.lazy_expand
-                    and macro_name not in can_macros_context.macros
-                ):
+                if macro_name not in can_macros_context.macros:
                     raise MacroNotFound(
                         f"揾唔到你嘅Macro: `{macro_name}`\n"
                         + "係咪Macro喺其它文件? 咁就試下{% 路徑::"
@@ -399,10 +392,7 @@ class ExpParser:
                         + " %} 啦!"
                     )
                 tokentrees = MacroPatParser.from_ParserFn(cls.Fn).parse_tokentrees()
-                if can_macros_context.lazy_expand:
-                    exp = can_ast.CallMacro(macro_name, tokentrees)
-                else:
-                    exp = can_macros_context.get(macro_name).expand(tokentrees)
+                exp = can_macros_context.get(macro_name).expand(tokentrees)
                 break
             else:
                 break

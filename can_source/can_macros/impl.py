@@ -1,17 +1,29 @@
 from dataclasses import fields
 from typing import Any, Dict, List, Union, Tuple
+from collections import Iterable
+from copy import deepcopy
 
 from can_source.can_error.compile_time import MacroCanNotExpand
 from can_source.can_ast import TokenTree
 from can_source.can_macros.match_state import MatchState
 from can_source.can_macros.meta_var import MetaVar
-from can_source.can_macros.pat_matcher import match
-from can_source.can_parser import *
+from can_source.can_macros.pat_matcher import PatRuler
+import can_source.can_ast as can_ast
 from can_source.can_const import *
 from can_source.can_parser.parser_trait import ParserFn, new_token_context
 
 from can_source.can_macros.macro import Macros
-from can_source.can_context import can_macros_context
+from can_source.can_context import can_parser_context
+
+
+def flatten(xs):
+    ys = []
+    if isinstance(xs, Iterable):
+        for x in xs:
+            ys.extend(flatten(x))
+    else:
+        ys.append(xs)
+    return ys
 
 
 class CanMacro(Macros):
@@ -23,15 +35,15 @@ class CanMacro(Macros):
     def try_expand(self, tokentrees: TokenTree):
         for pat, block in zip(self.patterns, self.bodys):
             init_match_state = MatchState(
-                ParserFn(new_token_context((token for token in tokentrees.val))), {}
+                ParserFn(new_token_context((token for token in tokentrees.child))), {}
             )
-            match_res, result = match(pat, init_match_state)
-            if result:
-                return match_res.meta_vars, block
+            matcher = PatRuler(pat).with_state(init_match_state)
+            if matcher.match():
+                return matcher.get_state().meta_vars, block
         raise MacroCanNotExpand(f"展開唔到Macro: {self.name} ...")
 
     def ensure_repetition(
-        self, rep_exp: can_ast.MacroMetaRepExp, meta_vars: Dict[str, MetaVar]
+        self, rep_exp: can_ast.MacroMetaRepExpInBlock, meta_vars: Dict[str, MetaVar]
     ) -> Tuple[bool, int]:
 
         if isinstance(rep_exp.token_trees, can_ast.MetaIdExp):
@@ -39,84 +51,75 @@ class CanMacro(Macros):
 
         ensure = False
         times = 0  # 元变量出现次数
-
-        for child in fields(rep_exp.token_trees):
-            value = getattr(rep_exp.token_trees, child.name)
+        for value in rep_exp.token_trees.child:
             if isinstance(value, can_ast.MetaIdExp):
                 ensure = True
                 times = meta_vars.get(value.name).get_repetition_times()
-            elif isinstance(value, can_ast.MacroMetaRepExp):
+            elif isinstance(value, can_ast.MacroMetaRepExpInBlock):
                 _ensure, _times = self.ensure_repetition(value, meta_vars)
                 ensure = _ensure and ensure and (times == _times)
         return ensure, times
 
     def yield_repetition(
-        self, rep: can_ast.MacroMetaRepExp, meta_vars: Dict[str, MetaVar]
+        self, rep: can_ast.MacroMetaRepExpInBlock, meta_vars: Dict[str, MetaVar]
     ) -> Union[Any, List[Any]]:
         ensure, times = self.ensure_repetition(rep, meta_vars)
         if ensure:
             if rep.rep_op == RepOp.PLUS_CLOSE.value:
-                return self.expand_meta_vars(rep.token_trees, meta_vars)
+                res = []
+                for time in range(times):
+                    res.extend(self.modify_body(rep.token_trees, meta_vars))
+                    if time != times - 1:
+                        res.append(rep.rep_sep)
+                return res
+
             elif rep.rep_op == RepOp.OPRIONAL.value:
-                return (
-                    None
-                    if times == 0
-                    else self.expand_meta_vars(rep.token_trees, meta_vars)
-                )
+                if times == 0:
+                    return None
+                else:
+                    return self.modify_body(rep.token_trees, meta_vars)
             elif rep.rep_op == RepOp.CLOSURE.value:
-                return (
-                    None
-                    if times == 0
-                    else self.expand_meta_vars(rep.token_trees, meta_vars)
-                )
+                if times == 0:
+                    return None
+                else:
+                    res = []
+                    for time in range(times):
+                        res.extend(self.modify_body(rep.token_trees, meta_vars))
+                        if time != times - 1:
+                            res.append(rep.rep_sep)
+                    return res
             else:
                 raise Exception("Unreachable!!!")
         else:
             raise MacroCanNotExpand("repetition")
 
-    def modify_body(self, body, meta_vars: Dict[str, MetaVar]):
-        for child in fields(body):
-            value = getattr(body, child.name)
-            # 撞见元变量
-            if isinstance(value, can_ast.MetaIdExp):
-                setattr(body, child.name, meta_vars.get(value.name).value)
-            # 撞见递归或调用其它宏
-            elif isinstance(value, can_ast.CallMacro):
-                setattr(
-                    body,
-                    child.name,
-                    can_macros_context.get(name=value.name).expand(value.token_trees),
-                )
-            elif isinstance(value, (can_ast.Stat, can_ast.Exp)):
-                self.modify_body(value, meta_vars)
-            elif isinstance(value, (list, set)):
-                after_expand = []
-                for sub_value in value:
-                    if isinstance(sub_value, can_ast.MetaIdExp):
-                        vv = meta_vars.get(sub_value.name).value
-                        if isinstance(vv, list):
-                            after_expand.extend(vv)
-                        else:
-                            after_expand.append(vv)
-                    elif isinstance(sub_value, can_ast.MacroMetaRepExp):
-                        vv = self.yield_repetition(sub_value, meta_vars)
-                        after_expand.extend(vv)
-                    else:
-                        self.modify_body(sub_value, meta_vars)
-                        after_expand.append(sub_value)
-                setattr(body, child.name, after_expand)
-        return body
+    def apply_meta_op(
+        self,
+        meta_vars: Any,
+        token: Union[
+            can_token,
+            can_ast.MetaIdExp,
+            can_ast.CallMacro,
+            can_ast.MacroMetaRepExpInBlock,
+        ],
+    ):
+        if isinstance(token, can_token):
+            return token
+        elif isinstance(token, can_ast.MetaIdExp):
+            return meta_vars.get(token.name).value
+        elif isinstance(token, can_ast.MacroMetaRepExpInBlock):
+            return self.yield_repetition(token, meta_vars)
+        elif isinstance(token, TokenTree):
+            return token.child
 
-    def expand_meta_vars(self, body, matched_meta_vars):
-        # 单个`metaIdExp`
-        if isinstance(body, can_ast.MetaIdExp):
-            return matched_meta_vars.get(body.name).value
-        # 递归扩展调用其它宏
-        elif isinstance(body, can_ast.CallMacro):
-            return can_macros_context.get(name=body.name).expand(body.token_trees)
-        # 其它情况
-        return self.modify_body(body, matched_meta_vars)
+    def modify_body(self, body: TokenTree, meta_vars: Any):
+        return flatten(map(lambda tk: self.apply_meta_op(meta_vars, tk), body.child))
 
     def expand(self, tokentrees: TokenTree):
         matched_meta_vars, body = self.try_expand(tokentrees)
-        return self.expand_meta_vars(body, matched_meta_vars)
+        body = self.modify_body(body, matched_meta_vars)
+        return (
+            can_parser_context.with_name("stat")
+            .with_fn(ParserFn(new_token_context((x for x in body))))
+            .parse()
+        )
