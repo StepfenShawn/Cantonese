@@ -32,12 +32,10 @@ class PatRuler:
         spec = FragSpec.from_can_token(regex.spec)
         if spec == FragSpec.IDENT:
             if len(tokens) == 1 and tokens[-1].typ == TokenType.IDENTIFIER:
-                self.state.update_meta_vars(meta_var_name, tokens)
                 return True
 
         elif spec == FragSpec.STR:
             if len(tokens) == 1 and tokens[-1].typ == TokenType.STRING:
-                self.state.update_meta_vars(meta_var_name, tokens)
                 return True
 
         elif spec == FragSpec.LITERAL:
@@ -45,32 +43,29 @@ class PatRuler:
                 TokenType.STRING,
                 TokenType.NUM,
             ]:
-                self.state.update_meta_vars(meta_var_name, tokens)
                 return True
 
         elif spec == FragSpec.STMT:
             try:
-                can_parser_context.with_name("stat").with_tokens(
-                    deepcopy(tokens)
-                ).parse()
+                if (
+                    can_parser_context.with_name("stat")
+                    .with_tokens(deepcopy(tokens))
+                    .can_be_parse_able(name="parse")
+                ):
+                    return True
             except (NoParseException, NoTokenException):
                 return False
-            else:
-                self.state.update_meta_vars(meta_var_name, tokens)
-                return True
 
         elif spec == FragSpec.EXPR:
             try:
-                (
+                if (
                     can_parser_context.with_name("exp")
                     .with_tokens(deepcopy(tokens))
-                    .parse(name="parse_exp")
-                )
+                    .can_be_parse_able(name="parse_exp")
+                ):
+                    return True
             except (NoParseException, NoTokenException):
                 return False
-            else:
-                self.state.update_meta_vars(meta_var_name, tokens)
-                return True
 
         return False
 
@@ -83,7 +78,13 @@ class PatRuler:
             return self.match_var(regex, tokens)
         elif isinstance(regex, Concat):
             for prefix, suffix in split(tokens):
-                if self.matches(regex.left, prefix) and self.matches(regex.right, suffix):
+                if self.matches(regex.left, prefix) and self.matches(
+                    regex.right, suffix
+                ):
+                    if isinstance(regex.left, Var):
+                        self.state.update_meta_vars(regex.left.var.value, prefix)
+                    if isinstance(regex.right, Var):
+                        self.state.update_meta_vars(regex.right.var.value, suffix)
                     return True
             return False
         elif isinstance(regex, Star):

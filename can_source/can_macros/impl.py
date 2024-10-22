@@ -16,6 +16,7 @@ from can_source.can_parser.parser_trait import ParserFn, new_token_context
 from can_source.can_macros.macro import Macros
 from can_source.can_context import can_parser_context
 
+
 class TokenTreeHelper:
     @staticmethod
     def tree_to_list(tree: TokenTree):
@@ -27,7 +28,8 @@ class TokenTreeHelper:
                 ys.append(leaf)
         ys.append(tree.close_ch)
         return ys
-    
+
+
 def flatten(xs):
     ys = []
     if isinstance(xs, Iterable):
@@ -71,7 +73,8 @@ class CanMacro(Macros):
             init_match_state = MatchState({})
             matcher = PatRuler().with_state(init_match_state)
             if matcher.matches(
-                build_regex(deepcopy(pat)), TokenTreeHelper.tree_to_list(tokentrees)[1:-1]
+                build_regex(deepcopy(pat)),
+                TokenTreeHelper.tree_to_list(tokentrees)[1:-1],
             ):
                 return matcher.get_state().meta_vars, block
         raise MacroCanNotExpand(f"展開唔到Macro: {self.name} ...")
@@ -145,7 +148,7 @@ class CanMacro(Macros):
             x = self.yield_repetition(token, meta_vars)
             return x
         elif isinstance(token, TokenTree):
-            return token.child
+            return TokenTreeHelper.tree_to_list(token)
 
     def modify_body(self, body: TokenTree, meta_vars: Any):
         return flatten(map(lambda tk: self.apply_meta_op(meta_vars, tk), body.child))

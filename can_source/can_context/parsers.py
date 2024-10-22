@@ -44,8 +44,7 @@ class CanParserContext:
 
     def parse(self, name: str = "parse") -> Any:
         return getattr(self.parser, name)()
-    
+
     def can_be_parse_able(self, name: str = "parse") -> bool:
         getattr(self.parser, name)()
         return self.fn.no_tokens()
-

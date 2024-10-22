@@ -29,8 +29,9 @@ class MetaVar:
         """
         將一個已經匹配嘅 Token 添加到 meta_var (`repetition`情況下調用)
         """
-        self.v = v
-        self._yiled = (x for x in self.v)
+        if v not in self.v:
+            self.v.append(v)
+            self._yiled = (x for x in self.v)
 
     def get_repetition_times(self) -> int:
         """

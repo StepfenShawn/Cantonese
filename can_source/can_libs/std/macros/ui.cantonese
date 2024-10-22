@@ -3,7 +3,7 @@
         None
     }
     | ($(@x: id @command: expr),+) => { 
-        [${@command}+]
+        [${@command},+]
             .iter()
             .map($$ x { x })
             .collect() 啦
