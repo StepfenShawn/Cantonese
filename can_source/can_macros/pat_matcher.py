@@ -6,29 +6,20 @@ from can_source.can_macros.match_state import MatchState
 from can_source.can_ast import TokenTree
 from can_source.can_parser import *
 from can_source.can_const import *
-from can_source.can_parser.parser_trait import new_token_context
+from can_source.can_context import can_parser_context
 
 
 def split(xs: list):
     if len(xs) == 1:
         return [(xs, [])]
-    return [(xs[:i], xs[i:]) for i in range(0, len(xs))]
+    return [(xs[:i], xs[i:]) for i in range(0, len(xs))] + [(xs, [])]
 
 
-class TokenTreeHelper:
-    @staticmethod
-    def tree_to_list(tree: TokenTree):
-        ys = [tree.open_ch]
-        for leaf in tree.child:
-            if isinstance(leaf, TokenTree):
-                ys.extend(TokenTreeHelper.tree_to_list(leaf))
-            else:
-                ys.append(leaf)
-        ys.append(tree.close_ch)
-        return ys
-
+def prefix_split(xs: list):
+    return [(xs[:i], xs[i:]) for i in range(1, len(xs))] + [(xs, [])]
 
 Self = TypeVar("Self")
+
 
 class PatRuler:
 
@@ -59,7 +50,9 @@ class PatRuler:
 
         elif spec == FragSpec.STMT:
             try:
-                StatParser(from_=ParserFn(new_token_context(deepcopy(tokens)))).parse()
+                can_parser_context.with_name("stat").with_tokens(
+                    deepcopy(tokens)
+                ).parse()
             except (NoParseException, NoTokenException):
                 return False
             else:
@@ -68,9 +61,11 @@ class PatRuler:
 
         elif spec == FragSpec.EXPR:
             try:
-                ExpParser.from_ParserFn(
-                    ParserFn(new_token_context(deepcopy(tokens)))
-                ).parse_exp()
+                (
+                    can_parser_context.with_name("exp")
+                    .with_tokens(deepcopy(tokens))
+                    .parse(name="parse_exp")
+                )
             except (NoParseException, NoTokenException):
                 return False
             else:
@@ -87,18 +82,17 @@ class PatRuler:
         elif isinstance(regex, Var):
             return self.match_var(regex, tokens)
         elif isinstance(regex, Concat):
-            result = False
             for prefix, suffix in split(tokens):
-                result |= self.matches(regex.left, prefix) and self.matches(
-                    regex.right, suffix
-                )
-            return result
-        elif isinstance(regex, Optional):
-            pass
-        elif isinstance(regex, Plus):
-            pass
+                if self.matches(regex.left, prefix) and self.matches(regex.right, suffix):
+                    return True
+            return False
         elif isinstance(regex, Star):
-            pass
+            if tokens == []:
+                return True
+            for prefix, suffix in prefix_split(tokens):
+                if self.matches(regex.v, prefix) and self.matches(regex, suffix):
+                    return True
+            return False
 
     def get_state(self):
         return self.state

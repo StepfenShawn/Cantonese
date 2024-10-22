@@ -15,13 +15,14 @@ def pos_tracker(func):
         ast = func(self, *args, **kwargs)
         if ast == "EOF":
             return
-        end_pos = self.Fn.last_tk.pos
-        ast.pos = Pos(
-            line=start_pos.line,
-            offset=start_pos.offset,
-            end_line=end_pos.end_line,
-            end_offset=end_pos.end_offset,
-        )
+        if self.Fn.last_tk:
+            end_pos = self.Fn.last_tk.pos
+            ast.pos = Pos(
+                line=start_pos.line,
+                offset=start_pos.offset,
+                end_line=end_pos.end_line,
+                end_offset=end_pos.end_offset,
+            )
         return ast
 
     return wrapper

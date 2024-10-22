@@ -55,7 +55,7 @@ class MacroPatParser:
     @classmethod
     def finish_meta_exp(cls, meta_exp):
         meta_exp = can_ast.MacroMetaRepExpInPat(meta_exp, None, None)
-        meta_exp.rep_sep = cls.Fn.look_ahead().value
+        meta_exp.rep_sep = cls.Fn.look_ahead()
         op_tk = cls.Fn.eat_tk_by_value(["*", "+", "?"])
         meta_exp.rep_op = op_tk.value
         return meta_exp

@@ -10,6 +10,6 @@ class MatchState:
 
     def update_meta_vars(self, name: str, v: can_token) -> None:
         if name in self.meta_vars:
-            self.meta_vars.get(name).add_matched_value(v)
+            self.meta_vars.get(name).update(v)
         else:
             self.meta_vars[name] = MetaVar(v)

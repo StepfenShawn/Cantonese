@@ -21,7 +21,8 @@ class MacroBodyParser:
     @classmethod
     def finish_meta_exp(cls, exp):
         meta_exp = can_ast.MacroMetaRepExpInBlock(exp, None, None)
-        meta_exp.rep_sep = cls.Fn.look_ahead()
+        if not cls.Fn.match(["*", "+", "?"]):
+            meta_exp.rep_sep = cls.Fn.look_ahead()
         op_tk = cls.Fn.eat_tk_by_value(["*", "+", "?"])
         meta_exp.rep_op = op_tk.value
         return meta_exp

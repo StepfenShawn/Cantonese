@@ -16,7 +16,18 @@ from can_source.can_parser.parser_trait import ParserFn, new_token_context
 from can_source.can_macros.macro import Macros
 from can_source.can_context import can_parser_context
 
-
+class TokenTreeHelper:
+    @staticmethod
+    def tree_to_list(tree: TokenTree):
+        ys = [tree.open_ch]
+        for leaf in tree.child:
+            if isinstance(leaf, TokenTree):
+                ys.extend(TokenTreeHelper.tree_to_list(leaf))
+            else:
+                ys.append(leaf)
+        ys.append(tree.close_ch)
+        return ys
+    
 def flatten(xs):
     ys = []
     if isinstance(xs, Iterable):
@@ -36,6 +47,16 @@ def build_regex(l: list) -> Regex:
         node = Atom(x)
     elif isinstance(x, MacroMetaId):
         node = Var(x._id, x.frag_spec)
+    elif isinstance(x, MacroMetaRepExpInPat):
+        if x.rep_op == RepOp.CLOSURE.value:
+            node = Star(build_regex(x.token_trees + [x.rep_sep]))
+        elif x.rep_op == RepOp.OPRIONAL.value:
+            node = Optional(build_regex(x.token_trees + [x.rep_sep]))
+        elif x.rep_op == RepOp.PLUS_CLOSE.value:
+            node = Concat(
+                build_regex(x.token_trees + [x.rep_sep]),
+                Star(build_regex(x.token_trees + [x.rep_sep])),
+            )
     return Concat(node, build_regex(l))
 
 
@@ -50,7 +71,7 @@ class CanMacro(Macros):
             init_match_state = MatchState({})
             matcher = PatRuler().with_state(init_match_state)
             if matcher.matches(
-                build_regex(deepcopy(pat)), [token for token in tokentrees.child]
+                build_regex(deepcopy(pat)), TokenTreeHelper.tree_to_list(tokentrees)[1:-1]
             ):
                 return matcher.get_state().meta_vars, block
         raise MacroCanNotExpand(f"展開唔到Macro: {self.name} ...")
@@ -82,7 +103,7 @@ class CanMacro(Macros):
                 res = []
                 for time in range(times):
                     res.extend(self.modify_body(rep.token_trees, meta_vars))
-                    if time != times - 1:
+                    if time != times - 1 and rep.rep_sep:
                         res.append(rep.rep_sep)
                 return res
 
@@ -98,7 +119,7 @@ class CanMacro(Macros):
                     res = []
                     for time in range(times):
                         res.extend(self.modify_body(rep.token_trees, meta_vars))
-                        if time != times - 1:
+                        if time != times - 1 and rep.rep_sep:
                             res.append(rep.rep_sep)
                     return res
             else:
@@ -121,7 +142,8 @@ class CanMacro(Macros):
         elif isinstance(token, can_ast.MetaIdExp):
             return meta_vars.get(token.name).value
         elif isinstance(token, can_ast.MacroMetaRepExpInBlock):
-            return self.yield_repetition(token, meta_vars)
+            x = self.yield_repetition(token, meta_vars)
+            return x
         elif isinstance(token, TokenTree):
             return token.child
 
@@ -131,8 +153,4 @@ class CanMacro(Macros):
     def expand(self, tokentrees: TokenTree):
         matched_meta_vars, body = self.try_expand(tokentrees)
         body = self.modify_body(body, matched_meta_vars)
-        return (
-            can_parser_context.with_name("stat")
-            .with_fn(ParserFn(new_token_context((x for x in body))))
-            .parse()
-        )
+        return can_parser_context.with_name("stat").with_tokens(body).parse()

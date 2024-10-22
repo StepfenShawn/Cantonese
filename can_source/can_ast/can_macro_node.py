@@ -3,6 +3,7 @@ from typing import List, Any
 
 from can_source.can_ast.can_exp import Exp
 from can_source.can_ast.can_stat import Stat
+from can_source.can_lexer.can_token import can_token
 
 
 @dataclass
@@ -38,8 +39,8 @@ class MacroMetaRepExpInPat(Exp):
     """
 
     token_trees: List[object]
-    rep_sep: Exp
-    rep_op: Exp
+    rep_sep: can_token
+    rep_op: str
 
 
 @dataclass

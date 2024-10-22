@@ -1,5 +1,6 @@
-from typing import TypeVar, Any
-from can_source.can_parser.parser_trait import ParserFn
+from typing import TypeVar, Any, List
+from can_source.can_lexer.can_token import can_token
+from can_source.can_parser.parser_trait import ParserFn, new_token_context
 
 Parser = TypeVar("Parser")
 
@@ -33,12 +34,18 @@ class CanParserContext:
             raise Exception("Unreachable!!!")
         return self
 
-    def with_fn(self, fn: ParserFn):
+    def with_tokens(self, tokens: List[can_token]):
+        self.fn = ParserFn(new_token_context((token for token in tokens)))
         if hasattr(self.parser, "from_ParserFn"):
-            self.parser = self.parser.from_ParserFn(fn)
+            self.parser = self.parser.from_ParserFn(self.fn)
         else:
-            self.parser = self.parser(from_=fn)
+            self.parser = self.parser(from_=self.fn)
         return self
 
-    def parse(self) -> Any:
-        return self.parser.parse()
+    def parse(self, name: str = "parse") -> Any:
+        return getattr(self.parser, name)()
+    
+    def can_be_parse_able(self, name: str = "parse") -> bool:
+        getattr(self.parser, name)()
+        return self.fn.no_tokens()
+
