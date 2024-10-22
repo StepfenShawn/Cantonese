@@ -1,8 +1,18 @@
+from copy import deepcopy
+from typing import List, TypeVar
+
+from can_source.can_macros.regex import *
 from can_source.can_macros.match_state import MatchState
-from can_source.can_error.compile_time import NoParseException, NoTokenException
-from can_source.can_ast import TokenTree, MacroMetaRepExpInPat, MacroMetaId
+from can_source.can_ast import TokenTree
 from can_source.can_parser import *
 from can_source.can_const import *
+from can_source.can_parser.parser_trait import new_token_context
+
+
+def split(xs: list):
+    if len(xs) == 1:
+        return [(xs, [])]
+    return [(xs[:i], xs[i:]) for i in range(0, len(xs))]
 
 
 class TokenTreeHelper:
@@ -18,84 +28,77 @@ class TokenTreeHelper:
         return ys
 
 
-class PatRuler:
-    def __init__(self, pattern: list):
-        self.pattern = pattern
+Self = TypeVar("Self")
 
-    def with_state(self, state: MatchState) -> "Self":
+class PatRuler:
+
+    def with_state(self, state: MatchState) -> Self:
         self.state = state
         return self
 
-    def match_token(self, excepted: can_token):
-        if self.state.parser_fn.match_tk(excepted):
-            self.state.parser_fn.skip_once()
-        else:
-            raise NoParseException("NO")
-
-    def match_meta_id(self, id: MacroMetaId):
-        meta_var_name = id._id.value
-        spec = FragSpec.from_can_token(id.frag_spec)
-        self.state.parser_fn.start_record()
-
+    def match_var(self, regex: Var, tokens: List[can_token]) -> bool:
+        meta_var_name = regex.var.value
+        spec = FragSpec.from_can_token(regex.spec)
         if spec == FragSpec.IDENT:
-            self.state.parser_fn.eat_tk_by_kind(TokenType.IDENTIFIER)
-        elif spec == FragSpec.STMT:
-            StatParser(from_=self.state.parser_fn).parse()
-        elif spec == FragSpec.EXPR:
-            ExpParser.from_ParserFn(self.state.parser_fn).parse_exp()
+            if len(tokens) == 1 and tokens[-1].typ == TokenType.IDENTIFIER:
+                self.state.update_meta_vars(meta_var_name, tokens)
+                return True
+
         elif spec == FragSpec.STR:
-            self.state.parser_fn.eat_tk_by_kind(TokenType.STRING)
+            if len(tokens) == 1 and tokens[-1].typ == TokenType.STRING:
+                self.state.update_meta_vars(meta_var_name, tokens)
+                return True
+
         elif spec == FragSpec.LITERAL:
-            if self.state.parser_fn.match([TokenType.NUM, TokenType.STRING]):
-                self.state.parser_fn.skip_once()
-            else:
-                raise NoParseException("No")
+            if len(tokens) == 1 and tokens[-1].typ in [
+                TokenType.STRING,
+                TokenType.NUM,
+            ]:
+                self.state.update_meta_vars(meta_var_name, tokens)
+                return True
 
-        self.state.update_meta_vars(meta_var_name, self.state.parser_fn.get_record())
-        self.state.parser_fn.close_record()
-
-    def match_rep(self, pat: MacroMetaRepExpInPat):
-
-        def _run():
-            for tk_node in pat.token_trees:
-                self.match_pattern(tk_node)
-
-        if pat.rep_op == RepOp.CLOSURE.value:  # *
-            self.state.parser_fn.many(
-                _run, util_cond=lambda: not self.state.parser_fn.match(pat.rep_sep)
-            )
-        elif pat.rep_op == RepOp.OPRIONAL.value:  # ?
-            # self.state.parser_fn.maybe(_run, case_cond=lambda: self.state.parser_fn.match(pat.token_trees))
-            pass
-        elif pat.rep_op == RepOp.PLUS_CLOSE.value:  # +
-            self.state.parser_fn.oneplus(
-                _run, util_cond=lambda: not self.state.parser_fn.match(pat.rep_sep)
-            )
-
-    def match_pattern(self, pat) -> bool:
-        try:
-            if isinstance(pat, MacroMetaId):
-                self.match_meta_id(pat)
-            elif isinstance(pat, MacroMetaRepExpInPat):
-                self.match_rep(pat)
-            else:
-                self.match_token(pat)
-        except (NoTokenException, NoParseException):
-            return False
-        else:
-            return True
-
-    def match(self) -> bool:
-        if len(self.pattern) == 0:
-            return self.state.parser_fn.no_tokens()
-
-        for pat in self.pattern:
-            result = self.match_pattern(pat)
-            if not result:
+        elif spec == FragSpec.STMT:
+            try:
+                StatParser(from_=ParserFn(new_token_context(deepcopy(tokens)))).parse()
+            except (NoParseException, NoTokenException):
                 return False
+            else:
+                self.state.update_meta_vars(meta_var_name, tokens)
+                return True
 
-        # all pattern has been matched, it's should be `no_tokens` state
-        return self.state.parser_fn.no_tokens()
+        elif spec == FragSpec.EXPR:
+            try:
+                ExpParser.from_ParserFn(
+                    ParserFn(new_token_context(deepcopy(tokens)))
+                ).parse_exp()
+            except (NoParseException, NoTokenException):
+                return False
+            else:
+                self.state.update_meta_vars(meta_var_name, tokens)
+                return True
+
+        return False
+
+    def matches(self, regex: Regex, tokens: List[can_token]) -> bool:
+        if isinstance(regex, Empty):
+            return tokens == []
+        elif isinstance(regex, Atom):
+            return len(tokens) == 1 and tokens[-1].value == regex.token.value
+        elif isinstance(regex, Var):
+            return self.match_var(regex, tokens)
+        elif isinstance(regex, Concat):
+            result = False
+            for prefix, suffix in split(tokens):
+                result |= self.matches(regex.left, prefix) and self.matches(
+                    regex.right, suffix
+                )
+            return result
+        elif isinstance(regex, Optional):
+            pass
+        elif isinstance(regex, Plus):
+            pass
+        elif isinstance(regex, Star):
+            pass
 
     def get_state(self):
         return self.state

@@ -1,15 +1,16 @@
-from dataclasses import fields
 from typing import Any, Dict, List, Union, Tuple
 from collections import Iterable
 from copy import deepcopy
 
 from can_source.can_error.compile_time import MacroCanNotExpand
-from can_source.can_ast import TokenTree
+from can_source.can_ast import TokenTree, MacroMetaId, MacroMetaRepExpInPat
+from can_source.can_lexer.can_token import can_token
 from can_source.can_macros.match_state import MatchState
 from can_source.can_macros.meta_var import MetaVar
 from can_source.can_macros.pat_matcher import PatRuler
 import can_source.can_ast as can_ast
 from can_source.can_const import *
+from can_source.can_macros.regex import *
 from can_source.can_parser.parser_trait import ParserFn, new_token_context
 
 from can_source.can_macros.macro import Macros
@@ -26,6 +27,18 @@ def flatten(xs):
     return ys
 
 
+def build_regex(l: list) -> Regex:
+    if not l:
+        return Empty()
+    x = l.pop(0)
+    node = None
+    if isinstance(x, can_token):
+        node = Atom(x)
+    elif isinstance(x, MacroMetaId):
+        node = Var(x._id, x.frag_spec)
+    return Concat(node, build_regex(l))
+
+
 class CanMacro(Macros):
     def __init__(self, name, patterns, bodys) -> None:
         self.name = name
@@ -34,11 +47,11 @@ class CanMacro(Macros):
 
     def try_expand(self, tokentrees: TokenTree):
         for pat, block in zip(self.patterns, self.bodys):
-            init_match_state = MatchState(
-                ParserFn(new_token_context((token for token in tokentrees.child))), {}
-            )
-            matcher = PatRuler(pat).with_state(init_match_state)
-            if matcher.match():
+            init_match_state = MatchState({})
+            matcher = PatRuler().with_state(init_match_state)
+            if matcher.matches(
+                build_regex(deepcopy(pat)), [token for token in tokentrees.child]
+            ):
                 return matcher.get_state().meta_vars, block
         raise MacroCanNotExpand(f"展開唔到Macro: {self.name} ...")
 
