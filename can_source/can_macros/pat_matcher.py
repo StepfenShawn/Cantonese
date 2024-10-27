@@ -18,6 +18,7 @@ def split(xs: list):
 def prefix_split(xs: list):
     return [(xs[:i], xs[i:]) for i in range(1, len(xs))] + [(xs, [])]
 
+
 Self = TypeVar("Self")
 
 
@@ -76,6 +77,9 @@ class PatRuler:
             return len(tokens) == 1 and tokens[-1].value == regex.token.value
         elif isinstance(regex, Var):
             return self.match_var(regex, tokens)
+        elif isinstance(regex, Optional):
+            print(regex.v, tokens)
+            return self.matches(regex.v, tokens) or tokens == []
         elif isinstance(regex, Concat):
             for prefix, suffix in split(tokens):
                 if self.matches(regex.left, prefix) and self.matches(

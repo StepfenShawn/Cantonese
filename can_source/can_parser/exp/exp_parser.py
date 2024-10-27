@@ -251,20 +251,19 @@ class ExpParser:
 
     @classmethod
     def parse_exp0(cls):
-        tk = cls.Fn.try_look_ahead()
-        if tk.value == "<*>":
+        if cls.Fn.match("<*>"):
             cls.Fn.skip_once()
             return can_ast.VarArgExp()
 
-        elif tk.typ == TokenType.NUM:
-            cls.Fn.skip_once()
+        elif cls.Fn.match(TokenType.NUM):
+            tk = cls.Fn.look_ahead()
             return can_ast.NumeralExp(tk.value)
 
-        elif tk.typ == TokenType.SEP_LCURLY:
+        elif cls.Fn.match(TokenType.SEP_LCURLY):
             return cls.parse_mapcons()
 
         # If-Else expr
-        elif tk.value in [kw_expr_if]:
+        elif cls.Fn.match(kw_expr_if):
             cls.Fn.skip_once()
             return cls.parse_if_else_expr()
 

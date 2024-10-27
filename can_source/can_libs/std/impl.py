@@ -299,7 +299,7 @@ def cantonese_math_init():
         return b * testX + a
 
     cantonese_func_def("KNN", KNN)
-    cantonese_func_def("l_reg", l_reg)
+    cantonese_func_def("L_REG", l_reg)
     cantonese_func_def("corr", corr)
     cantonese_func_def("矩陣", Matrix)
     cantonese_func_def("點積", Matrix.matrix_multiplication)
@@ -312,18 +312,6 @@ def cantonese_math_init():
     cantonese_func_def("PI", math.pi)
     cantonese_func_def("E", math.e)
     cantonese_func_def("+oo", math.inf)
-
-
-def cantonese_model_new(model, datatest, tab, code) -> str:
-    if model == "KNN":
-        code += tab + "print(KNN(" + datatest + ", 數據, 標籤, K))"
-    elif model == "L_REG":
-        code += tab + "print(l_reg(" + datatest + ", X, Y))"
-    else:
-        print("揾唔到你嘅模型: " + model + "!")
-        code = ""
-    return code
-
 
 def cantonese_re_init() -> None:
 

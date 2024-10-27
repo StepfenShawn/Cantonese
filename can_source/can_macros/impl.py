@@ -1,5 +1,9 @@
 from typing import Any, Dict, List, Union, Tuple
-from collections import Iterable
+
+try:
+    from collections.abc import Iterable
+except ImportError:
+    from collections import Iterable
 from copy import deepcopy
 
 from can_source.can_error.compile_time import MacroCanNotExpand
@@ -11,7 +15,6 @@ from can_source.can_macros.pat_matcher import PatRuler
 import can_source.can_ast as can_ast
 from can_source.can_const import *
 from can_source.can_macros.regex import *
-from can_source.can_parser.parser_trait import ParserFn, new_token_context
 
 from can_source.can_macros.macro import Macros
 from can_source.can_context import can_parser_context
@@ -53,7 +56,9 @@ def build_regex(l: list) -> Regex:
         if x.rep_op == RepOp.CLOSURE.value:
             node = Star(build_regex(x.token_trees + [x.rep_sep]))
         elif x.rep_op == RepOp.OPRIONAL.value:
-            node = Optional(build_regex(x.token_trees + [x.rep_sep]))
+            node = Concat(
+                Optional(build_regex(x.token_trees)), Optional(Atom(x.rep_sep))
+            )
         elif x.rep_op == RepOp.PLUS_CLOSE.value:
             node = Concat(
                 build_regex(x.token_trees + [x.rep_sep]),
@@ -91,7 +96,8 @@ class CanMacro(Macros):
         for value in rep_exp.token_trees.child:
             if isinstance(value, can_ast.MetaIdExp):
                 ensure = True
-                times = meta_vars.get(value.name).get_repetition_times()
+                v = meta_vars.get(value.name)
+                times = v.get_repetition_times() if v else 0
             elif isinstance(value, can_ast.MacroMetaRepExpInBlock):
                 _ensure, _times = self.ensure_repetition(value, meta_vars)
                 ensure = _ensure and ensure and (times == _times)
@@ -112,12 +118,12 @@ class CanMacro(Macros):
 
             elif rep.rep_op == RepOp.OPRIONAL.value:
                 if times == 0:
-                    return None
+                    return []
                 else:
                     return self.modify_body(rep.token_trees, meta_vars)
             elif rep.rep_op == RepOp.CLOSURE.value:
                 if times == 0:
-                    return None
+                    return []
                 else:
                     res = []
                     for time in range(times):
@@ -148,7 +154,13 @@ class CanMacro(Macros):
             x = self.yield_repetition(token, meta_vars)
             return x
         elif isinstance(token, TokenTree):
-            return TokenTreeHelper.tree_to_list(token)
+            x = list(
+                map(
+                    lambda tk: self.apply_meta_op(meta_vars, tk),
+                    TokenTreeHelper.tree_to_list(token),
+                )
+            )
+            return x
 
     def modify_body(self, body: TokenTree, meta_vars: Any):
         return flatten(map(lambda tk: self.apply_meta_op(meta_vars, tk), body.child))
@@ -156,4 +168,7 @@ class CanMacro(Macros):
     def expand(self, tokentrees: TokenTree):
         matched_meta_vars, body = self.try_expand(tokentrees)
         body = self.modify_body(body, matched_meta_vars)
-        return can_parser_context.with_name("stat").with_tokens(body).parse()
+        ast_result = (
+            can_parser_context.with_name("stat").with_tokens(deepcopy(body)).parse()
+        )
+        return ast_result

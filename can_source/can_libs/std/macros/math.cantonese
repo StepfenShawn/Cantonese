@@ -6,9 +6,9 @@
 搞掂
 
 
-/*
 介紹返 过嚟估下 係 袋仔的法寶 =>
-    | (@model: id => @args: expr) => {
-        @model(@args)
+    | (@model: id => $(@args: expr),*) => {
+        畀我睇下 @model(${@args},*) 點樣先??
     }
-搞掂*/
+    | () => { None }
+搞掂

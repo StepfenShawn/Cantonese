@@ -89,7 +89,7 @@ def start_cantonese(run_fn: Callable):
     """
     global args
     try:
-        run_fn()
+        return run_fn()
     except CompTimeException as e:
         print("!!編譯期間瀨嘢:(\n")
         print(e)
@@ -219,13 +219,11 @@ class 交互(cmd.Cmd):
         if code is not None:
             if code == ".quit":
                 sys.exit(1)
-            start_cantonese(
+            c = start_cantonese(
                 lambda: cantonese_run(
                     code, False, "【標準輸入】", REPL=True, get_py_code=True
                 ),
             )
-            if len(c) == 0:
-                c = code
             self.run(c)
 
 
