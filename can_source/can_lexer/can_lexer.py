@@ -1,6 +1,6 @@
 import re
-from typing import Generator
 from contextlib import contextmanager
+import os
 import zhconv
 from difflib import get_close_matches
 
@@ -15,6 +15,8 @@ def getCtxByLine(path: str, line: int) -> str:
     """
     get context from file. (Lazy option)
     """
+    if path == "【標準輸入】":
+        return os.environ.get("REPL_CONTEXT", "Unknow-Context")
     with open(path, encoding="utf-8") as f:
         source = f.read()
     gen = (s for s in source.split("\n"))

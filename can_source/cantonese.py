@@ -211,11 +211,7 @@ class 交互(cmd.Cmd):
             can_sys.error_catch(e)
 
     def default(self, code):
-
-        global kw_exit_1
-        global kw_exit_2
-        global kw_exit
-
+        os.environ["REPL_CONTEXT"] = code
         if code is not None:
             if code == ".quit":
                 sys.exit(1)
@@ -228,9 +224,9 @@ class 交互(cmd.Cmd):
 
 
 def 开始交互():
-    global _version_
-    print(_version_)
     import time
+    
+    print(_version_)
 
     交互().cmdloop(
         "本地時間: " + str(time.asctime(time.localtime(time.time()))) + ", 天氣唔知點"
