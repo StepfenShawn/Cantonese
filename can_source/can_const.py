@@ -44,7 +44,7 @@ class FragSpec(Enum):
         )
 
 
-_version_ = "Cantonese\033[5;33m 1.0.9\033[0m Copyright (C) 2020-2024\033[5;35m StepfenShawn\033[0m"
+_version_ = "Cantonese\033[5;33m 1.0.10\033[0m Copyright (C) 2020-2024\033[5;35m StepfenShawn\033[0m"
 logo = (
     "\033[0;34m"
     + r"""
