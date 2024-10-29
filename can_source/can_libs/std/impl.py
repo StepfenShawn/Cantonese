@@ -313,6 +313,7 @@ def cantonese_math_init():
     cantonese_func_def("E", math.e)
     cantonese_func_def("+oo", math.inf)
 
+
 def cantonese_re_init() -> None:
 
     @define_func("襯唔襯")

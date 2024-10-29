@@ -71,15 +71,15 @@ def create_cli():
     arg_parser.add_argument("-lex", action="store_true")
     arg_parser.add_argument("-debug", action="store_true")
     arg_parser.add_argument(
-        "-v", "-verison", action="store_true", help="Print the version"
+        "-v", "--version", action="store_true", help="Print the version"
     )
     arg_parser.add_argument("-mkfile", action="store_true")
     arg_parser.add_argument("-l", action="store_true")
     arg_parser.add_argument("-llvm", action="store_true")
-    return arg_parser
+
+    return arg_parser.parse_args()
 
 
-args = create_cli().parse_args()
 TO_PY_CODE = ""
 
 
@@ -225,7 +225,7 @@ class 交互(cmd.Cmd):
 
 def 开始交互():
     import time
-    
+
     print(_version_)
 
     交互().cmdloop(
@@ -234,10 +234,11 @@ def 开始交互():
 
 
 def main():
-    global args
     global _version_
 
-    if args.v:
+    args = create_cli()
+
+    if args.version:
         print(_version_, logo)
         sys.exit(1)
 

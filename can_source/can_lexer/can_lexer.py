@@ -133,6 +133,9 @@ class lexer:
         self.error("unfinished string")
 
     def error(self, args: str):
+        """
+        错误tips
+        """
         ctx = getCtxByLine(self.file, self.getCurPos().line)
         get_tips = lambda s: ",".join(get_close_matches(s, syms))
         raise LexerException(

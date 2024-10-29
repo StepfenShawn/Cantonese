@@ -3,6 +3,7 @@ from can_source.can_error.compile_time import NoTokenException, NoParseException
 from can_source.can_lexer.can_lexer import TokenType, can_token, getCtxByLine, Pos
 from can_source.can_utils.show.infoprinter import ErrorPrinter
 from collections import namedtuple
+from typing import List, Union, Any, Callable
 
 
 def pos_tracker(func):
@@ -28,21 +29,31 @@ def pos_tracker(func):
     return wrapper
 
 
-def new_token_context(tokens):
+def new_token_context(tokens: List[can_token]):
     cls = namedtuple("TokenContext", ["tokens", "buffer_tokens"])
     return cls(tokens=tokens, buffer_tokens=[])
 
 
 class ParserFn:
+    """
+    A class that embedded in every `Parser` class.
+    """
+
     def __init__(self, ctx) -> None:
         self.last_tk = None
         self.ctx = ctx
 
     def start_record(self):
+        """
+        开始记录Token (!用于backtrace)
+        """
         self.record = True
         self.cache = []
 
     def close_record(self):
+        """
+        停止记录Token (!用于backtrace)
+        """
         self.record = False
         self.cache = []
 
@@ -105,7 +116,7 @@ class ParserFn:
     def next_lexer_pos(self) -> Pos:
         return self.try_look_ahead().pos
 
-    def eats(self, tk_list):
+    def eats(self, tk_list: List[Union[str, TokenType]]):
         for v in tk_list:
             if isinstance(v, str):
                 self.eat_tk_by_value(v)
@@ -117,7 +128,7 @@ class ParserFn:
         tk = self.try_look_ahead()
         return tk.value == expect_tk.value and tk.typ == expect_tk.typ
 
-    def match(self, v) -> bool:
+    def match(self, v: Union[TokenType, List, str]) -> bool:
         if self.no_tokens():
             return False
         tk = self.try_look_ahead()
@@ -139,7 +150,7 @@ class ParserFn:
             self.error(tk, err, f" 不妨嘗試下`{k.name}`類型??")
         return tk
 
-    def eat_tk_by_value(self, expectation) -> can_token:
+    def eat_tk_by_value(self, expectation: Union[List, str]) -> can_token:
         tk = self.look_ahead()
         if hasattr(self, "record") and self.record:
             self.cache.append(tk)
@@ -157,7 +168,7 @@ class ParserFn:
                 self.error(tk, err, f" 係咪`\033[5;33m{expectation}\033[0m` ??")
             return tk
 
-    def error(self, tk, info, tips):
+    def error(self, tk: can_token, info: str, tips: str):
         ctx = getCtxByLine(os.environ["CUR_FILE"], tk.lineno)
         raise NoParseException(
             ErrorPrinter(
@@ -170,19 +181,25 @@ class ParserFn:
             ).err_msg()
         )
 
-    def many(self, other_parse_fn, util_cond) -> list:
+    def many(
+        self, other_parse_fn: Callable[[], Any], util_cond: Callable[[], bool]
+    ) -> list:
         result = []
         while not util_cond():
             result.append(other_parse_fn())
         return result
 
-    def oneplus(self, other_parse_fn, util_cond) -> list:
+    def oneplus(
+        self, other_parse_fn: Callable[[], Any], util_cond: Callable[[], bool]
+    ) -> list:
         result = [other_parse_fn()]
         while not util_cond():
             result.append(other_parse_fn())
         return result
 
-    def maybe(self, other_parse_fn, case_cond) -> object:
+    def maybe(
+        self, other_parse_fn: Callable[[], Any], case_cond: Callable[[], bool]
+    ) -> object:
         if not case_cond():
             return None
         self.skip_once()
