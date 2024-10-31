@@ -1,0 +1,410 @@
+// 粤语编程语言嘅 pest 语法规则文件
+
+// 忽略空白字符
+WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
+
+// 注释
+COMMENT = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" | "#" ~ (!"\n" ~ ANY)* }
+
+// 基础字符规则
+alpha = _{ 'a'..'z' | 'A'..'Z' | '\u{4E00}'..'\u{9FFF}' }
+digit = _{ '0'..'9' }
+identifier_char = _{ alpha | digit | "_" }
+
+// 关键字定义 - 基于can_keywords.py中的定义
+keyword = @{ 
+    "畀我睇下" | "點樣先" | "收工" | "喺" | "定係" | "起底" | "介紹返" | "先啦" | 
+    "乜X" | "唔係" | "係" | "如果" | "若然" | "唔係咁就" | "嘅话" | 
+    "咩都唔做" | "落操场玩跑步" | "$" | "好心" | "啦" | 
+    "咁啦" | "使下" | "点部署" | "搞掂" | "諗下" | "佢嘅" | "玩到" | "為止" | 
+    "還數" | "执嘢" | "揾到" | "执手尾" | "掟個" | "嚟睇下" | "从" | "行到" | 
+    "到步" | "佢個老豆叫" | "佢識得" | "落Order" | "飲茶先啦" | "Hea陣先" | 
+    "拍住上" | "埋堆" | "Share下" | "辛苦曬啦" | "同我躝" | "有條仆街叫" | 
+    "頂你" | "丟你" | "佢有啲咩" | "下" | "就係" | "冇鳩用" | "冇撚用" | 
+    "睇撚住" | "撞见" | "我係二五仔" | "袋仔的法寶" | "公家嘢" | "私家嘢" |
+    "自己"
+}
+
+// 字面量
+string_literal = @{ 
+    ("\"" ~ (!"\"" ~ ANY)* ~ "\"") |
+    ("「" ~ (!"」" ~ ANY)* ~ "」")
+}
+number_literal = @{ 
+    "0x" ~ ('0'..'9' | 'a'..'f' | 'A'..'F')+ ~ ("." ~ ('0'..'9' | 'a'..'f' | 'A'..'F')+)? |
+    digit+ ~ ("." ~ digit+)?
+}
+bool_literal = @{ "啱" | "唔啱" | "true" | "false" }
+null_literal = @{ "冇嘢" | "null" }
+var_arg = @{ "<*>" }
+
+// 标识符规则
+identifier = @{ !keyword ~ identifier_char+ }
+
+// 表达式 - 使用 Pratt 解析器的形式
+expression = { term ~ (binary_operator ~ term)* }
+
+term = _{
+    list_expression |
+    map_expression |
+    string_literal |
+    number_literal |
+    bool_literal |
+    null_literal |
+    var_arg |
+    unary_expression |
+    call_expression |
+    lambda_expression |
+    parenthesized_expression |
+    object_access_expression |
+    list_access_expression |
+    identifier
+}
+
+// 一元表达式
+unary_expression = {
+    unary_operator ~ term
+}
+
+unary_operator = {
+    "-" | "唔係" | "not" | "長度" | "len"
+}
+
+// 二元运算符
+binary_operator = {
+    // 数学运算符（按长度和前缀排序）
+    "**" | "//" | "+" | "-" | "*" | "/" | "^" | "%" |
+    // 比较运算符（按长度和前缀排序）
+    "<=" | "<" | ">=" | ">" | "==" | "!=" | "比唔上" |
+    // 逻辑和特殊运算符（按长度和前缀排序）
+    "==>" | "<->" | "<|>" | "&&" | "=" | "係" | "同" | "and" | "or" 
+}
+
+// 括号表达式
+parenthesized_expression = {
+    "|" ~ expression ~ "|"
+}
+
+// 对象访问表达式
+object_access_expression = {
+    identifier ~ "->" ~ identifier
+}
+
+// 列表访问表达式
+list_access_expression = {
+    identifier ~ "[" ~ expression ~ "]"
+}
+
+// 列表表达式
+list_expression = {
+    "[" ~ (expression ~ ("," ~ expression)*)? ~ "]"
+}
+
+// 映射表达式
+map_expression = {
+    "{" ~ (map_entry ~ ("," ~ map_entry)*)? ~ "}"
+}
+
+map_entry = {
+    expression ~ ":" ~ expression
+}
+
+// Lambda表达式
+lambda_expression = {
+    "$$" ~ parameter_list ~ "{" ~ expression ~ "}"
+}
+
+// 函数调用
+call_expression = {
+    identifier ~ "下" ~ "->" ~ argument_list |
+    object_call_expression
+}
+
+object_call_expression = {
+    identifier ~ "->" ~ identifier ~ "(" ~ argument_list? ~ ")" ~ "啦" ~ "!"?
+}
+
+argument_list = {
+    expression ~ ("," ~ expression)*
+}
+
+// 语句
+statement = {
+    assignment_statement |
+    assignment_block_statement |
+    print_statement |
+    if_statement |
+    for_statement |
+    for_each_statement |
+    while_statement |
+    list_init_statement |
+    function_declaration |
+    function_type_declaration |
+    method_declaration |
+    attribute_declaration |
+    class_declaration |
+    import_statement |
+    throw_statement |
+    try_catch_statement |
+    global_statement |
+    break_statement |
+    continue_statement |
+    type_statement |
+    assert_statement |
+    return_statement |
+    delete_statement |
+    command_statement |
+    method_call_statement |
+    function_call_statement |
+    match_statement |
+    macro_def_statement |
+    embedded_code_statement |
+    exit_statement |
+    expression_statement
+}
+
+// 表达式语句
+expression_statement = {
+    expression
+}
+
+// 赋值语句
+assignment_statement = {
+    "介紹返" ~ var_list ~ "係" ~ exp_list
+}
+
+var_list = {
+    "「" ~ identifier ~ "」" |
+    identifier ~ ("," ~ identifier)*
+}
+
+exp_list = {
+    expression ~ ("," ~ expression)*
+}
+
+// 块赋值语句
+assignment_block_statement = {
+    "介紹返" ~ "=>" ~ 
+    (var_list ~ "係" ~ exp_list)+ ~
+    "先啦"
+}
+
+// 打印语句
+print_statement = {
+    "畀我睇下" ~ expression ~ "點樣先" ~ ("?" | "？")*
+}
+
+// 条件语句
+if_statement = {
+    "如果" ~ condition ~ "嘅话" ~ "=>" ~ block ~
+    ("定係" ~ condition ~ "嘅话" ~ "=>" ~ block)* ~
+    ("唔係" ~ "嘅话" ~ "=>" ~ block)?
+}
+
+condition = _{
+    "|" ~ expression ~ "|"
+}
+
+// 循环语句
+for_statement = {
+    identifier ~ "从" ~ expression ~ "行到" ~ expression ~ block ~ "到步"
+}
+
+for_each_statement = {
+    identifier ~ "喺" ~ expression ~ "=>" ~ block
+}
+
+while_statement = {
+    "落操场玩跑步" ~ block ~ "玩到" ~ identifier ~ "为止" ~ "收工"
+}
+
+// 列表初始化
+list_init_statement = {
+    "有條仆街叫" ~ "|" ~ identifier ~ "|"
+}
+
+// 函数声明
+function_declaration = {
+    "介紹返" ~ "$" ~ identifier ~ parameter_list ~ "点部署" ~ statement_list ~ "搞掂"
+}
+
+parameter_list = {
+    "|" ~ (identifier ~ ("," ~ identifier)*)? ~ "|"
+}
+
+// 函数类型定义
+function_type_declaration = {
+    identifier ~ ":" ~ type_list ~ "->" ~ type_list
+}
+
+type_list = {
+    identifier ~ ("," ~ identifier)*
+}
+
+// 方法定义
+method_declaration = {
+    "佢識得" ~ identifier ~ "|" ~ "自己" ~ ("," ~ identifier)* ~ "|" ~ "=>" ~ block
+}
+
+// 属性定义
+attribute_declaration = {
+    "佢有啲咩" ~ "=>" ~ attribute_list
+}
+
+attribute_list = {
+    (identifier ~ ":" ~ ("公家嘢" | "私家嘢") ~ ",")* ~ 
+    identifier ~ ":" ~ ("公家嘢" | "私家嘢")
+}
+
+// 类定义
+class_declaration = {
+    "介紹返" ~ identifier ~ "係" ~ "乜X" ~ "{" ~
+    ("佢個老豆叫" ~ identifier)? ~
+    (method_declaration | attribute_declaration)* ~
+    "}"
+}
+
+// 导入语句
+import_statement = {
+    "使下" ~ import_path
+}
+
+import_path = {
+    (identifier ~ "::" ~ identifier ~ ("::" ~ "*" | "::" ~ identifier)*) |
+    (identifier ~ "::" ~ "{" ~ identifier ~ ("::" ~ "*")? ~ ("," ~ identifier ~ ("::" ~ "*")?)* ~ "}")
+}
+
+// 异常处理
+throw_statement = {
+    "掟個" ~ expression ~ "嚟睇下" ~ ("?" | "？")*
+}
+
+try_catch_statement = {
+    "执嘢" ~ "=>" ~ block ~
+    "揾到" ~ identifier ~ "嘅话" ~ "=>" ~ block ~
+    ("执手尾" ~ "=>" ~ block)?
+}
+
+// 全局变量语句
+global_statement = {
+    "Share下" ~ identifier_list
+}
+
+identifier_list = {
+    identifier ~ ("," ~ identifier)*
+}
+
+// 跳出循环
+break_statement = {
+    "飲茶先啦"
+}
+
+// 继续循环
+continue_statement = {
+    "Hea陣先"
+}
+
+// 类型语句
+type_statement = {
+    "起底" ~ expression
+}
+
+// 断言语句
+assert_statement = {
+    "諗下" ~ expression ~ ("?" | "？")*
+}
+
+// 返回语句
+return_statement = {
+    "還數" ~ expression
+}
+
+// 删除语句
+delete_statement = {
+    ("冇鳩用" | "冇撚用") ~ identifier_list
+}
+
+// 命令语句
+command_statement = {
+    "落Order" ~ string_literal
+}
+
+// 方法调用语句
+method_call_statement = {
+    object_call_expression
+}
+
+// 函数调用语句
+function_call_statement = {
+    "好心" ~ "|" ~ call_expression ~ "|" ~ "啦" ~ "!"? |
+    call_expression ~ "啦" ~ "!"?
+}
+
+// 模式匹配语句
+match_statement = {
+    "睇撚住" ~ identifier ~ "=>" ~
+    ("|" ~ "撞见" ~ expression ~ "=>" ~ block)* ~
+    ("|" ~ "_" ~ "=>" ~ block)? ~
+    "搞掂"
+}
+
+// 宏定义语句
+macro_def_statement = {
+    "介紹返" ~ identifier ~ "係" ~ "袋仔的法寶" ~ "=>" ~
+    ("|" ~ macro_pattern ~ "=>" ~ "{" ~ token_tree ~ "}")* ~
+    "搞掂"
+}
+
+macro_pattern = {
+    "(" ~ token_tree ~ ")" |
+    token_tree
+}
+
+token_tree = {
+    (macro_token | meta_variable | meta_operation)*
+}
+
+macro_token = {
+    string_literal |
+    number_literal |
+    identifier |
+    "+" | "-" | "*" | "/" | ":" | "," |
+    "==" | "!=" | "<" | "<=" | ">" | ">=" |
+    "係" | "同" | "and" | "or" | "好唔好" | "加" | "减" | "乘" | "除"
+}
+
+meta_variable = {
+    "@" ~ identifier ~ (":" ~ identifier)?
+}
+
+meta_operation = {
+    "${" ~ identifier ~ ("," ~ identifier)* ~ "}" |
+    "$(" ~ token_tree ~ ")" ~ ("*" | "+" | "?") |
+    "$" ~ meta_variable
+}
+
+// 嵌入代码语句
+embedded_code_statement = {
+    "{%" ~ identifier ~ "%}" |
+    "#XD" ~ (!"二五仔係我" ~ ANY)* ~ "二五仔係我"
+}
+
+// 退出语句
+exit_statement = {
+    "收工" | "辛苦曬啦" | "同我躝"
+}
+
+// 代码块
+block = {
+    "{" ~ statement* ~ "}" |
+    ("=>" ~ statement_list ~ "先啦")
+}
+
+statement_list = {
+    statement+
+}
+
+// 定义程序
+program = {
+    SOI ~ statement* ~ EOI
+} 

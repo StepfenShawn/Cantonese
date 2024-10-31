@@ -1,0 +1,87 @@
+/* 高级宏定义示例（袋仔的法寶） */
+
+# 带元变量的问候宏
+介紹返 sayhello 係 袋仔的法寶 =>
+    | (Hello @name:str) => { 
+        畀我睇下 "Hello, " + @name + "!" 點樣先?? 
+    }
+    | () => { 
+        畀我睇下 "Hello, world!" 點樣先?? 
+    }
+搞掂
+
+# 调用问候宏
+sayhello!(Hello "粵語編程")
+sayhello!()
+
+# 带元操作的计算宏
+介紹返 計算 係 袋仔的法寶 =>
+    | (同我計 @left:expr 加 @right:expr 好唔好) => { 
+        @left + @right 
+    }
+    | (同我計 @left:expr 减 @right:expr 好唔好) => { 
+        @left - @right 
+    }
+    | (同我計 @left:expr 乘 @right:expr 好唔好) => { 
+        @left * @right 
+    }
+    | (同我計 @left:expr 除 @right:expr 好唔好) => { 
+        @left / @right 
+    }
+搞掂
+
+# 调用计算宏
+畀我睇下 計算!(同我計 10 加 5 好唔好) 點樣先??
+畀我睇下 計算!(同我計 10 减 5 好唔好) 點樣先??
+
+# 带重复元操作的数组宏
+介紹返 vec 係 袋仔的法寶 =>
+    | ($(元素),*) => {
+        [${元素}*]
+    }
+    | () => {
+        []
+    }
+搞掂
+
+# 调用数组宏
+介紹返「数组」係 vec!(1, 2, 3, 4, 5)
+畀我睇下「数组」點樣先??
+
+# 条件宏定义
+介紹返 when 係 袋仔的法寶 =>
+    | (@condition:expr 就 @body:block 唔係就 @else_body:block) => {
+        如果 |@condition| 嘅话 => {
+            @body
+        }
+        唔係 嘅话 => {
+            @else_body
+        }
+    }
+    | (@condition:expr 就 @body:block) => {
+        如果 |@condition| 嘅话 => {
+            @body
+        }
+    }
+搞掂
+
+# 调用条件宏
+when!(x > 5 就 {
+    畀我睇下 "x 大于 5" 點樣先??
+} 唔係就 {
+    畀我睇下 "x 唔大于 5" 點樣先??
+})
+
+# 函数定义宏
+介紹返 fn 係 袋仔的法寶 =>
+    | (@name:ident($(@param:ident),*) => @body:block) => {
+        介紹返 $@name |${@param}*| 点部署 {
+            @body
+        } 搞掂
+    }
+搞掂
+
+# 使用函数定义宏
+fn!(add(x, y) => {
+    還數 x + y
+}) 

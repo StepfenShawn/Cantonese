@@ -1,4 +1,5 @@
 # For my test
+.VsCodeCounter
 test/test_c.s
 test/test.c
 test/a.exe
