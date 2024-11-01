@@ -196,6 +196,13 @@ pub enum Expression {
         span: Span,
     },
 
+    // 宏調用
+    MacroCallExpression {
+        name: Box<Expression>,
+        arguments: Vec<Expression>,
+        span: Span,
+    },
+
     // Lambda表達式
     LambdaExpression {
         parameters: Vec<Expression>,
@@ -273,6 +280,7 @@ impl Expression {
             Expression::ListAccessExpression { span, .. } => *span,
             Expression::AttributeAccessExpression { span, .. } => *span,
             Expression::CallExpression { span, .. } => *span,
+            Expression::MacroCallExpression { span, .. } => *span,
             Expression::LambdaExpression { span, .. } => *span,
             Expression::ConditionalExpression { span, .. } => *span,
             Expression::Names { span, .. } => *span,

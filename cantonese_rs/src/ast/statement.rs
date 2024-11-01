@@ -217,6 +217,12 @@ pub enum Statement {
         span: Span,
     },
 
+    // "咁啦"語句 - 默認行為語句
+    ElseStatement {
+        body: Block,
+        span: Span,
+    },
+
     // 嵌入代碼語句
     EmbeddedCodeStatement {
         code: String,
@@ -263,6 +269,7 @@ impl Statement {
             Statement::ExpressionStatement { span, .. } => *span,
             Statement::MatchStatement { span, .. } => *span,
             Statement::MacroDefStatement { span, .. } => *span,
+            Statement::ElseStatement { span, .. } => *span,
             Statement::EmbeddedCodeStatement { span, .. } => *span,
             Statement::ExitStatement { span } => *span,
         }

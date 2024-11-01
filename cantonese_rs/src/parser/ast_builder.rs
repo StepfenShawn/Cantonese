@@ -5,7 +5,7 @@ use thiserror::Error;
 
 use super::CantoneseParser;
 use super::Rule;
-use super::token_tree::TokenTree;
+use super::token_tree::{TokenTree, TokenTreeNode, Token, TokenKind};
 use crate::ast::{
     BinaryOperator, Block, Expression, ImportPath, Program, Span, Statement, UnaryOperator,
 };
@@ -115,6 +115,7 @@ impl<'a> AstBuilder<'a> {
             Rule::function_call_statement => self.build_function_call_statement(pair, span),
             Rule::match_statement => self.build_match_statement(pair, span),
             Rule::macro_def_statement => self.build_macro_def_statement(pair, span),
+            Rule::else_statement => self.build_else_statement(pair, span),
             Rule::embedded_code_statement => self.build_embedded_code_statement(pair, span),
             Rule::exit_statement => self.build_exit_statement(pair, span),
             Rule::statement => {
@@ -785,7 +786,9 @@ impl<'a> AstBuilder<'a> {
         pair: Pair<'_, Rule>,
         span: Span,
     ) -> Result<Statement, ParseError> {
-        let mut inner = pair.into_inner();
+        // 克隆pair以避免移动问题
+        let pair_clone = pair.clone();
+        let mut inner = pair_clone.into_inner();
         let match_id_pair = inner.next().unwrap();
         let match_id = self.build_expression(match_id_pair)?;
 
@@ -816,7 +819,9 @@ impl<'a> AstBuilder<'a> {
         pair: Pair<'_, Rule>,
         span: Span,
     ) -> Result<Statement, ParseError> {
-        let mut inner = pair.into_inner();
+        // 克隆pair以避免移动问题
+        let pair_clone = pair.clone();
+        let mut inner = pair_clone.into_inner();
 
         // 获取宏的名称
         let name_pair = inner.next().unwrap();
@@ -872,67 +877,97 @@ impl<'a> AstBuilder<'a> {
     /// 构建宏模式
     fn build_macro_pattern(&self, pair: Pair<'_, Rule>) -> Result<Expression, ParseError> {
         let span = Span::from_pest(pair.as_span(), self.source);
-
-        let mut token_trees = Vec::new();
-        for inner_pair in pair.into_inner() {
-            match inner_pair.as_rule() {
-                Rule::token_tree => {
-                    let token_tree = self.build_token_tree(inner_pair)?;
-                    token_trees.push(token_tree);
-                }
-                _ => return Err(ParseError::InvalidNode(inner_pair.as_rule())),
-            }
-        }
-
-        // 将所有token_tree合并为一个表达式
-        if token_trees.len() == 1 {
-            Ok(token_trees.pop().unwrap())
-        } else {
-            // 如果有多个token_tree，创建一个ListExpression
-            Ok(Expression::ListExpression {
-                elements: token_trees,
-                span,
+        
+        // 克隆pair以避免移动问题
+        let pair_clone = pair.clone();
+        let mut inner = pair_clone.into_inner();
+        
+        let token_trees = inner.next()
+            .map(|p| self.build_token_tree(p))
+            .transpose()?
+            .map(|_tree| Expression::MacroMetaRepInPat {
+                token_trees: Vec::new(),
+                rep_sep: "".to_string(),
+                rep_op: "".to_string(),
+                span: Span::from_pest(pair.as_span(), self.source),
             })
-        }
+            .unwrap_or_else(|| Expression::MacroMetaRepInPat {
+                token_trees: Vec::new(),
+                rep_sep: "".to_string(),
+                rep_op: "".to_string(),
+                span,
+            });
+        
+        Ok(token_trees)
     }
 
-    /// 构建token树
-    fn build_token_tree(&self, pair: Pair<'_, Rule>) -> Result<TokenTree, ParseError> {
-        let span = Span::from_pest(pair.as_span(), self.source);
-
-        let mut elements = Vec::new();
-        for inner_pair in pair.into_inner() {
+    /// 构建令牌树
+    fn build_token_tree(
+        &self,
+        pair: Pair<'_, Rule>,
+    ) -> Result<TokenTree, ParseError> {
+        // 克隆pair以避免移动问题
+        let pair_clone = pair.clone();
+        let span = Span::from_pest(pair_clone.as_span(), self.source);
+        let mut tokens = TokenTree::new('(', ')', span);
+        
+        for inner_pair in pair_clone.into_inner() {
             match inner_pair.as_rule() {
-                Rule::macro_token => {
-                    let token = self.build_macro_token(inner_pair)?;
-                    elements.push(token);
+                Rule::token => {
+                    let token_text = inner_pair.as_str().to_string();
+                    let token_span = Span::from_pest(inner_pair.as_span(), self.source);
+                    
+                    // 根据token的类型判断TokenKind
+                    let kind = if token_text.starts_with('@') {
+                        TokenKind::MetaVariable
+                    } else if token_text.starts_with('"') || token_text.starts_with('\'') {
+                        TokenKind::StringLiteral
+                    } else if token_text == "真" || token_text == "假" {
+                        TokenKind::BoolLiteral
+                    } else if token_text == "冇嘢" {
+                        TokenKind::Other // 使用Other替代NullLiteral
+                    } else if token_text.chars().all(|c| c.is_digit(10) || c == '.') {
+                        TokenKind::NumberLiteral
+                    } else if token_text.chars().all(|c| c.is_alphanumeric() || c == '_') {
+                        TokenKind::Identifier
+                    } else if token_text == "," {
+                        TokenKind::Comma
+                    } else if token_text == ";" {
+                        TokenKind::Semicolon
+                    } else if token_text == "." {
+                        TokenKind::Dot
+                    } else if token_text == ":" {
+                        TokenKind::Colon
+                    } else if token_text == "[" {
+                        TokenKind::LeftBracket
+                    } else if token_text == "]" {
+                        TokenKind::RightBracket
+                    } else {
+                        TokenKind::Operator
+                    };
+                    
+                    let token = Token::new(token_text, kind, token_span);
+                    tokens.add_child(TokenTreeNode::Token(token));
                 }
-                Rule::meta_variable => {
-                    let meta_var = self.build_meta_variable(inner_pair)?;
-                    elements.push(meta_var);
-                }
-                Rule::meta_operation => {
-                    let meta_op = self.build_meta_operation(inner_pair)?;
-                    elements.push(meta_op);
+                Rule::token_tree => {
+                    let sub_tree = self.build_token_tree(inner_pair)?;
+                    tokens.add_child(TokenTreeNode::Tree(sub_tree));
                 }
                 _ => return Err(ParseError::InvalidNode(inner_pair.as_rule())),
             }
         }
-
-        // 创建TokenTree表达式
-        Ok(TokenTree {
-            children: [].into(),
-            open_symbol: '(',
-            close_symbol: ')',
-            span,
-        })
+        
+        Ok(tokens)
     }
 
     /// 构建宏标记
     fn build_macro_token(&self, pair: Pair<'_, Rule>) -> Result<Expression, ParseError> {
         let span = Span::from_pest(pair.as_span(), self.source);
         let pair_str = pair.as_str().to_string();
-        let inner = pair.into_inner().next();
+        
+        // 克隆pair以避免移动问题
+        let pair_clone = pair.clone();
+        let inner = pair_clone.into_inner().next();
 
         if let Some(inner_pair) = inner {
             match inner_pair.as_rule() {
@@ -956,18 +991,16 @@ impl<'a> AstBuilder<'a> {
     /// 构建元变量
     fn build_meta_variable(&self, pair: Pair<'_, Rule>) -> Result<Expression, ParseError> {
         let span = Span::from_pest(pair.as_span(), self.source);
-        let mut inner = pair.into_inner();
+        
+        // 克隆pair以避免移动问题
+        let pair_clone = pair.clone();
+        let mut inner = pair_clone.into_inner();
 
         let id_pair = inner.next().unwrap();
         let id = self.build_expression(id_pair)?;
 
-        // 检查是否有类型说明
-        let frag_spec = if let Some(type_pair) = inner.next() {
-            self.build_expression(type_pair)?
-        } else {
-            // 如果没有类型说明，使用默认的"expr"类型
-            Expression::Identifier("expr".to_string(), span)
-        };
+        // 在当前实现中，元变量没有类型规范，使用默认值"expr"
+        let frag_spec = Expression::Identifier("expr".to_string(), span);
 
         Ok(Expression::MacroMetaId {
             id: Box::new(id),
@@ -981,57 +1014,91 @@ impl<'a> AstBuilder<'a> {
         let span = Span::from_pest(pair.as_span(), self.source);
         let inner_text = pair.as_str();
 
-        let mut inner = pair.into_inner();
+        // 克隆pair以避免移动问题
+        let pair_clone = pair.clone();
+        let mut inner = pair_clone.into_inner();
         let first_pair = inner.next().unwrap();
 
         match first_pair.as_rule() {
-            // ${identifier,...} 元变量替换
-            Rule::identifier if inner_text.starts_with("${") => {
-                let mut ids = Vec::new();
-                ids.push(self.build_expression(first_pair)?);
-
-                // 添加逗号后的标识符
-                while let Some(id_pair) = inner.next() {
-                    if id_pair.as_rule() == Rule::identifier {
-                        ids.push(self.build_expression(id_pair)?);
-                    }
-                }
-
-                Ok(Expression::Names { names: ids, span })
-            }
-            // $(token_tree)* 重复元操作
+            // 处理$(token_tree)*模式 - 用于模式匹配
             Rule::token_tree if inner_text.starts_with("$(") => {
+                // 构建token_tree
                 let token_tree = self.build_token_tree(first_pair)?;
+                let token_trees_expr = self.token_tree_to_expression(&token_tree)?;
+                
+                // 获取重复操作符 (* + ?)
                 let rep_op_pair = inner.next().unwrap();
                 let rep_op = rep_op_pair.as_str().to_string();
-
+                
+                // 创建MacroMetaRepInPat表达式
                 Ok(Expression::MacroMetaRepInPat {
-                    token_trees: vec![],
+                    token_trees: vec![token_trees_expr],
                     rep_sep: ",".to_string(), // 默认使用逗号作为分隔符
                     rep_op,
                     span,
                 })
             }
+            // 处理${token_tree}*模式 - 用于宏主体
+            Rule::token_tree if inner_text.starts_with("${") => {
+                // 构建token_tree
+                let token_tree = self.build_token_tree(first_pair)?;
+                let token_trees_expr = self.token_tree_to_expression(&token_tree)?;
+                
+                // 获取重复操作符 (* + ?)
+                let rep_op_pair = inner.next().unwrap();
+                let rep_op = rep_op_pair.as_str().to_string();
+                
+                // 创建MacroMetaRepInBlock表达式
+                Ok(Expression::MacroMetaRepInBlock {
+                    token_trees: vec![token_trees_expr],
+                    rep_sep: Box::new(Expression::StringLiteral(",".to_string(), span)), // 默认分隔符
+                    rep_op: Box::new(Expression::StringLiteral(rep_op, span)),
+                    span,
+                })
+            }
             // $meta_variable 元变量引用
-            Rule::meta_variable if inner_text.starts_with("$@") => {
+            Rule::meta_variable => {
                 let meta_var = self.build_meta_variable(first_pair)?;
-
+                
                 // 获取meta_variable的名称
                 let name = match &meta_var {
                     Expression::MacroMetaId { id, .. } => {
                         if let Expression::Identifier(id_name, _) = &**id {
                             format!("${}", id_name)
                         } else {
-                            format!("${}", inner_text.trim_start_matches("$@"))
+                            format!("$@{}", inner_text.trim_start_matches("$@"))
                         }
-                    }
-                    _ => format!("${}", inner_text.trim_start_matches("$@")),
+                    },
+                    _ => format!("$@{}", inner_text.trim_start_matches("$@"))
                 };
-
-                Ok(Expression::MacroMeta { name, span })
+                
+                Ok(Expression::MacroMeta {
+                    name,
+                    span
+                })
             }
             _ => Err(ParseError::InvalidNode(first_pair.as_rule())),
         }
+    }
+    
+    /// 将TokenTree转换为Expression
+    fn token_tree_to_expression(&self, token_tree: &TokenTree) -> Result<Expression, ParseError> {
+        // 创建一个TokenTree表达式
+        let children = token_tree.children.iter()
+            .map(|node| match node {
+                TokenTreeNode::Token(token) => {
+                    Ok(Expression::StringLiteral(token.text.clone(), token.span))
+                }
+                TokenTreeNode::Tree(tree) => self.token_tree_to_expression(tree),
+            })
+            .collect::<Result<Vec<Expression>, ParseError>>()?;
+            
+        Ok(Expression::TokenTree {
+            children,
+            open_symbol: token_tree.open_symbol,
+            close_symbol: token_tree.close_symbol,
+            span: token_tree.span,
+        })
     }
 
     /// 构建嵌入代码语句
@@ -1054,66 +1121,22 @@ impl<'a> AstBuilder<'a> {
     }
 
     /// 构建表达式
-    fn build_expression(&self, pair: Pair<'_, Rule>) -> Result<Expression, ParseError> {
+    pub fn build_expression(&self, pair: Pair<'_, Rule>) -> Result<Expression, ParseError> {
         let span = Span::from_pest(pair.as_span(), self.source);
-
-        match pair.as_rule() {
-            Rule::expression => {
-                let mut iter = pair.into_inner();
-                let first = iter.next().unwrap();
-
-                // 如果只有一个项，直接处理
-                if iter.len() == 0 {
-                    return self.build_expression(first);
-                }
-
-                // 否则是二元表达式
-                let mut left = self.build_expression(first)?;
-
-                while let Some(op_pair) = iter.next() {
-                    if op_pair.as_rule() != Rule::binary_operator {
-                        return Err(ParseError::InvalidNode(op_pair.as_rule()));
-                    }
-
-                    let op_str = op_pair.as_str();
-                    let operator = BinaryOperator::from_str(op_str)
-                        .ok_or_else(|| ParseError::InvalidOperator(op_str.to_string()))?;
-
-                    let right_pair = iter.next().unwrap();
-                    let right = self.build_expression(right_pair)?;
-
-                    let expr_span = Span::new(left.span().start, right.span().end);
-
-                    left = Expression::BinaryExpression {
-                        left: Box::new(left),
-                        operator,
-                        right: Box::new(right),
-                        span: expr_span,
-                    };
-                }
-
-                Ok(left)
-            }
+        let inner_rule = pair.as_rule();
+        
+        match inner_rule {
+            Rule::expression => self.build_expression(pair.into_inner().next().unwrap()),
+            Rule::variable_expression => self.build_variable_expression(pair, span),
+            Rule::unary_expression => self.build_unary_expression(pair, span),
+            Rule::binary_expression => self.build_binary_expression(pair, span),
+            Rule::function_call_expression => self.build_function_call_expression(pair, span),
+            Rule::method_call_expression => self.build_method_call_expression(pair, span),
+            Rule::macro_call_expression => self.build_macro_call_expression(pair, span),
+            Rule::tuple_expression => self.build_tuple_expression(pair, span),
             Rule::term => {
                 let inner = pair.into_inner().next().unwrap();
                 self.build_expression(inner)
-            }
-            Rule::unary_expression => {
-                let mut inner = pair.into_inner();
-                let op_pair = inner.next().unwrap();
-                let operand_pair = inner.next().unwrap();
-
-                let op_str = op_pair.as_str();
-                let operator = UnaryOperator::from_str(op_str)
-                    .ok_or_else(|| ParseError::InvalidOperator(op_str.to_string()))?;
-
-                let operand = self.build_expression(operand_pair)?;
-
-                Ok(Expression::UnaryExpression {
-                    operator,
-                    operand: Box::new(operand),
-                    span,
-                })
             }
             Rule::parenthesized_expression => {
                 let inner = pair.into_inner().next().unwrap();
@@ -1284,5 +1307,52 @@ impl<'a> AstBuilder<'a> {
         span: Span,
     ) -> Result<Statement, ParseError> {
         Ok(Statement::ListInitStatement { span })
+    }
+
+    /// 构建else语句 ("咁啦"语句)
+    fn build_else_statement(
+        &self,
+        pair: Pair<'_, Rule>,
+        span: Span,
+    ) -> Result<Statement, ParseError> {
+        // 克隆pair以避免移动问题
+        let pair_clone = pair.clone();
+        let mut inner = pair_clone.into_inner();
+        
+        // 获取块
+        let block_pair = inner.next().unwrap();
+        let body = self.build_block(block_pair)?;
+        
+        Ok(Statement::ElseStatement {
+            body,
+            span,
+        })
+    }
+
+    /// 构建宏调用表达式
+    fn build_macro_call_expression(
+        &self,
+        pair: Pair<'_, Rule>,
+        span: Span,
+    ) -> Result<Expression, ParseError> {
+        // 克隆pair以避免移动问题
+        let pair_clone = pair.clone();
+        let mut inner = pair_clone.into_inner();
+        
+        // 获取宏名称
+        let name_pair = inner.next().unwrap();
+        let name = Box::new(self.build_expression(name_pair)?);
+        
+        // 获取宏参数(arguments)
+        let mut arguments = vec![];
+        for arg_pair in inner {
+            arguments.push(self.build_expression(arg_pair)?);
+        }
+        
+        Ok(Expression::MacroCallExpression {
+            name,
+            arguments,
+            span,
+        })
     }
 }

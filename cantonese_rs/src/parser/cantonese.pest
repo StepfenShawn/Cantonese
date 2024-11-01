@@ -117,11 +117,18 @@ lambda_expression = {
 // 函数调用
 call_expression = {
     identifier ~ "下" ~ "->" ~ argument_list |
-    object_call_expression
+    object_call_expression |
+    macro_call_expression
 }
 
+// 方法调用
 object_call_expression = {
     identifier ~ "->" ~ identifier ~ "(" ~ argument_list? ~ ")" ~ "啦" ~ "!"?
+}
+
+// 宏调用表达式
+macro_call_expression = { 
+    identifier ~ "!" ~ token_tree
 }
 
 argument_list = {
@@ -156,6 +163,7 @@ statement = {
     command_statement |
     method_call_statement |
     function_call_statement |
+    else_statement |
     match_statement |
     macro_def_statement |
     embedded_code_statement |
@@ -166,6 +174,10 @@ statement = {
 // 表达式语句
 expression_statement = {
     expression
+}
+
+else_statement = { 
+    block ~ "咁啦" 
 }
 
 // 赋值语句
@@ -340,6 +352,11 @@ function_call_statement = {
     call_expression ~ "啦" ~ "!"?
 }
 
+// 宏调用语句 - 添加对宏调用的支持
+macro_call_statement = {
+    identifier ~ "!" ~ "(" ~ token_tree ~ ")" ~ "啦" ~ "!"?
+}
+
 // 模式匹配语句
 match_statement = {
     "睇撚住" ~ identifier ~ "=>" ~
@@ -356,30 +373,44 @@ macro_def_statement = {
 }
 
 macro_pattern = {
-    "(" ~ token_tree ~ ")" |
-    token_tree
+    "(" ~ token_tree ~ ")"
 }
 
 token_tree = {
     (macro_token | meta_variable | meta_operation)*
 }
 
-macro_token = {
+// 宏标记 - 任何单个标记都可以作为宏标记
+macro_token = @{
     string_literal |
     number_literal |
+    bool_literal |
+    null_literal |
     identifier |
-    "+" | "-" | "*" | "/" | ":" | "," |
-    "==" | "!=" | "<" | "<=" | ">" | ">=" |
-    "係" | "同" | "and" | "or" | "好唔好" | "加" | "减" | "乘" | "除"
+    keyword |
+    // 常见操作符和分隔符
+    "+" | "-" | "*" | "/" | "%" | "^" | "!" | "?" | "？" |
+    ":" | ";" | "," | "." | "|" | "\\" | "=" | "~" | "@" | "#" | "$" | "&" |
+    "(" | ")" | "[" | "]" | "{" | "}" | "<" | ">" |
+    // 复合操作符
+    "==" | "!=" | "<=" | ">=" | "&&" | "||" | "+=" | "-=" | "*=" | "/=" |
+    // 粤语特殊操作符
+    "係" | "同" | "加" | "减" | "乘" | "除" | "比唔上" |
+    // 任意其他单个字符(非空白字符)
+    (!WHITESPACE ~ !meta_variable ~ !meta_operation ~ ANY)
 }
 
-meta_variable = {
-    "@" ~ identifier ~ (":" ~ identifier)?
+meta_variable = @{
+    "@" ~ identifier
 }
 
-meta_operation = {
-    "${" ~ identifier ~ ("," ~ identifier)* ~ "}" |
+// 元操作符 - 根据body_parser.py中的实现
+meta_operation = @{
+    // 对于pattern parser - $(token_tree)*
     "$(" ~ token_tree ~ ")" ~ ("*" | "+" | "?") |
+    // 对于body parser - ${token_tree}*
+    "${" ~ token_tree ~ "}" ~ ("*" | "+" | "?") |
+    // 元变量引用 - $@identifier
     "$" ~ meta_variable
 }
 
