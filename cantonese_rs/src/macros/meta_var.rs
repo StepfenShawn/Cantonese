@@ -1,7 +1,7 @@
 // 粤语编程语言宏处理模块 - 元变量
 
-use std::collections::HashMap;
 use crate::ast::expression::Expression;
+use std::collections::HashMap;
 // 删除未使用的导入
 //use crate::parser::token_tree::{Token, TokenTree, TokenTreeNode};
 
@@ -28,7 +28,7 @@ impl MetaVar {
         if self.values.is_empty() {
             panic!("元变量中没有值");
         }
-        
+
         let value = self.values[self.current_index].clone();
         self.current_index = (self.current_index + 1) % self.values.len();
         value
@@ -89,9 +89,9 @@ impl MetaVarEnv {
     pub fn get_repetition_count(&self, name: &str) -> usize {
         self.vars.get(name).map_or(0, |var| var.repetition_count())
     }
-    
+
     /// 获取所有元变量的名称和引用
     pub fn iter(&self) -> impl Iterator<Item = (&String, &MetaVar)> {
         self.vars.iter()
     }
-} 
+}

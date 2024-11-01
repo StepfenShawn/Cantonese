@@ -4,9 +4,9 @@ use super::match_state::MatchState;
 use super::regex::{FragSpec, Regex};
 use crate::ast::expression::Expression;
 use crate::ast::position::Span;
-use crate::parser::ast_builder::ParseError;
 use crate::parser::CantoneseParser;
 use crate::parser::Rule;
+use crate::parser::ast_builder::ParseError;
 use pest::Parser;
 
 /// 模式匹配器 - 用于匹配宏模式和输入
@@ -84,7 +84,8 @@ impl PatMatcher {
         if valid {
             // 如果是单个表达式，直接添加
             if expressions.len() == 1 {
-                self.state_mut().update_meta_var(name.to_string(), expressions[0].clone());
+                self.state_mut()
+                    .update_meta_var(name.to_string(), expressions[0].clone());
             } else {
                 // 如果是多个表达式，创建一个列表表达式
                 // 创建一个空的位置信息
@@ -102,7 +103,8 @@ impl PatMatcher {
                     elements: expressions.to_vec(),
                     span,
                 };
-                self.state_mut().update_meta_var(name.to_string(), list_expr);
+                self.state_mut()
+                    .update_meta_var(name.to_string(), list_expr);
             }
             return true;
         }
@@ -111,28 +113,34 @@ impl PatMatcher {
     }
 
     /// 分割输入序列为多种可能的前缀和后缀
-    fn split_input<'a>(&self, input: &'a [Expression]) -> Vec<(&'a [Expression], &'a [Expression])> {
+    fn split_input<'a>(
+        &self,
+        input: &'a [Expression],
+    ) -> Vec<(&'a [Expression], &'a [Expression])> {
         let mut result = Vec::new();
-        
+
         // 考虑所有可能的分割点
         for i in 0..=input.len() {
             let (prefix, suffix) = input.split_at(i);
             result.push((prefix, suffix));
         }
-        
+
         result
     }
-    
+
     /// 专门用于前缀匹配的分割
-    fn prefix_split<'a>(&self, input: &'a [Expression]) -> Vec<(&'a [Expression], &'a [Expression])> {
+    fn prefix_split<'a>(
+        &self,
+        input: &'a [Expression],
+    ) -> Vec<(&'a [Expression], &'a [Expression])> {
         let mut result = Vec::new();
-        
+
         // 从最长的前缀开始尝试
         for i in (0..=input.len()).rev() {
             let (prefix, suffix) = input.split_at(i);
             result.push((prefix, suffix));
         }
-        
+
         result
     }
 
@@ -144,6 +152,8 @@ impl PatMatcher {
                 if inputs.len() == 1 {
                     if let Expression::StringLiteral(text, _) = &inputs[0] {
                         text == s
+                    } else if let Expression::Identifier(name, _) = &inputs[0] {
+                        name == s
                     } else {
                         false
                     }
@@ -151,43 +161,34 @@ impl PatMatcher {
                     false
                 }
             }
-            Regex::Var { name, spec: _ } => {
-                if inputs.is_empty() {
-                    return false;
-                }
-                
-                // 记录元变量的值
-                self.state.update_meta_var(name.clone(), inputs[0].clone());
-                true
+            Regex::Var { name, spec } => {
+                // 匹配元变量
+                self.match_var(name, spec, inputs)
             }
             Regex::Concat { left, right } => {
                 // 尝试不同的分割方式
-                let mut matched = false;
                 let splits = self.split_input(inputs);
                 
-                // 克隆当前状态，以便在匹配失败时恢复
+                // 记录当前状态
                 let backup_state = self.state.clone();
                 
                 for (prefix, suffix) in splits {
-                    let prefix_match = self.matches(left, prefix);
-                    
-                    if prefix_match {
-                        // 如果前缀匹配成功，尝试匹配后缀
-                        let suffix_match = self.matches(right, suffix);
-                        
-                        if suffix_match {
-                            matched = true;
-                            break;
+                    // 匹配左侧
+                    if self.matches(left, prefix) {
+                        // 如果左侧匹配成功，继续匹配右侧
+                        if self.matches(right, suffix) {
+                            return true;
                         }
                     }
                     
-                    // 如果这种分割方式不成功，恢复状态
+                    // 这种分割方式不成功，恢复状态
                     self.state = backup_state.clone();
                 }
                 
-                matched
+                false
             }
             Regex::Star(inner) => {
+                // 匹配零或多次
                 if inputs.is_empty() {
                     return true;
                 }
@@ -195,50 +196,31 @@ impl PatMatcher {
                 // 尝试不同的前缀匹配
                 let splits = self.prefix_split(inputs);
                 
-                // 记录当前状态
-                let backup_state = self.state.clone();
-                
                 for (prefix, suffix) in splits {
                     if prefix.is_empty() {
                         continue;
                     }
                     
-                    let prefix_match = self.matches(inner, prefix);
+                    // 记录当前状态
+                    let backup_state = self.state.clone();
                     
-                    if prefix_match {
-                        // 如果前缀匹配成功，对剩余部分递归调用
-                        if suffix.is_empty() {
+                    // 匹配前缀
+                    if self.matches(inner, prefix) {
+                        // 对剩余部分递归应用Star匹配
+                        if self.matches(&Regex::Star(inner.clone()), suffix) {
                             return true;
                         }
-                        
-                        // 保存当前状态
-                        let current_state = self.state.clone();
-                        
-                        // 尝试匹配后缀
-                        let suffix_match = self.matches(&Regex::Star(inner.clone()), suffix);
-                        
-                        if suffix_match {
-                            return true;
-                        }
-                        
-                        // 如果匹配失败，恢复状态
-                        self.state = current_state;
                     }
                     
-                    // 如果这种分割方式不成功，恢复状态
-                    self.state = backup_state.clone();
+                    // 恢复状态
+                    self.state = backup_state;
                 }
                 
                 false
             }
             Regex::Optional(inner) => {
-                // 可选模式，尝试匹配或跳过
-                if inputs.is_empty() {
-                    return true;
-                }
-                
-                let match_result = self.matches(inner, inputs);
-                match_result || inputs.is_empty()
+                // 匹配零或一次
+                inputs.is_empty() || self.matches(inner, inputs)
             }
         }
     }
@@ -247,12 +229,13 @@ impl PatMatcher {
     pub fn try_parse_expression(&self, input: &str) -> Result<Expression, ParseError> {
         // 使用Pest解析器解析表达式
         let pairs = CantoneseParser::parse(Rule::expression, input)?;
-        let pair = pairs.into_iter().next().ok_or_else(|| {
-            ParseError::Custom("无法解析表达式".to_string())
-        })?;
-        
+        let pair = pairs
+            .into_iter()
+            .next()
+            .ok_or_else(|| ParseError::Custom("无法解析表达式".to_string()))?;
+
         // 使用AST构建器构建表达式
         let ast_builder = crate::parser::ast_builder::AstBuilder::new(input);
         ast_builder.build_expression(pair)
     }
-} 
+}

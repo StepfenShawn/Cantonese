@@ -211,9 +211,9 @@ pub enum Statement {
 
     // 宏定義語句
     MacroDefStatement {
-        name: Box<Expression>,
-        match_patterns: Vec<Expression>,
-        match_block: TokenTree,
+        name: String,
+        pattern: Vec<Expression>,
+        body: Vec<Expression>,
         span: Span,
     },
 

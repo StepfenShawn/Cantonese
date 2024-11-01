@@ -123,12 +123,12 @@ call_expression = {
 
 // 方法调用
 object_call_expression = {
-    identifier ~ "->" ~ identifier ~ "(" ~ argument_list? ~ ")" ~ "啦" ~ "!"?
+    identifier ~ "->" ~ identifier ~ "(" ~ argument_list? ~ ")" ~ ("啦" | "咁啦") ~ "!"?
 }
 
 // 宏调用表达式
 macro_call_expression = { 
-    identifier ~ "!" ~ token_tree
+    identifier ~ "!" ~ "(" ~ pattern_token_tree ~ ")"
 }
 
 argument_list = {
@@ -163,7 +163,6 @@ statement = {
     command_statement |
     method_call_statement |
     function_call_statement |
-    else_statement |
     match_statement |
     macro_def_statement |
     embedded_code_statement |
@@ -174,10 +173,6 @@ statement = {
 // 表达式语句
 expression_statement = {
     expression
-}
-
-else_statement = { 
-    block ~ "咁啦" 
 }
 
 // 赋值语句
@@ -352,11 +347,6 @@ function_call_statement = {
     call_expression ~ "啦" ~ "!"?
 }
 
-// 宏调用语句 - 添加对宏调用的支持
-macro_call_statement = {
-    identifier ~ "!" ~ "(" ~ token_tree ~ ")" ~ "啦" ~ "!"?
-}
-
 // 模式匹配语句
 match_statement = {
     "睇撚住" ~ identifier ~ "=>" ~
@@ -368,16 +358,44 @@ match_statement = {
 // 宏定义语句
 macro_def_statement = {
     "介紹返" ~ identifier ~ "係" ~ "袋仔的法寶" ~ "=>" ~
-    ("|" ~ macro_pattern ~ "=>" ~ "{" ~ token_tree ~ "}")* ~
+    ("|" ~ macro_pattern ~ "=>" ~ macro_body)* ~
     "搞掂"
 }
 
+// 宏模式
 macro_pattern = {
-    "(" ~ token_tree ~ ")"
+    "{" ~ pattern_token_tree ~ "}" |
+    "(" ~ pattern_token_tree ~ ")" |
+    "[" ~ pattern_token_tree ~ "]"
 }
 
-token_tree = {
-    (macro_token | meta_variable | meta_operation)*
+// 宏内容
+macro_body = {
+    "{" ~ body_token_tree ~ "}" 
+}
+
+// 模式中的token树 - 用于匹配
+pattern_token_tree = {
+    (
+        macro_token | 
+        pattern_meta_variable | 
+        pattern_meta_repetition |
+        "(" ~ pattern_token_tree ~ ")" |
+        "{" ~ pattern_token_tree ~ "}" |
+        "[" ~ pattern_token_tree ~ "]"
+    )*
+}
+
+// 宏体中的token树 - 用于展开
+body_token_tree = {
+    (
+        macro_token | 
+        body_meta_variable | 
+        body_meta_repetition |
+        "(" ~ body_token_tree ~ ")" |
+        "{" ~ body_token_tree ~ "}" |
+        "[" ~ body_token_tree ~ "]"
+    )*
 }
 
 // 宏标记 - 任何单个标记都可以作为宏标记
@@ -388,30 +406,48 @@ macro_token = @{
     null_literal |
     identifier |
     keyword |
-    // 常见操作符和分隔符
+    // 常见操作符和分隔符(更明确地指定)
     "+" | "-" | "*" | "/" | "%" | "^" | "!" | "?" | "？" |
-    ":" | ";" | "," | "." | "|" | "\\" | "=" | "~" | "@" | "#" | "$" | "&" |
-    "(" | ")" | "[" | "]" | "{" | "}" | "<" | ">" |
+    ":" | ";" | "," | "." | "|" | "\\" | "=" | "~" | "#" | "&" | 
     // 复合操作符
     "==" | "!=" | "<=" | ">=" | "&&" | "||" | "+=" | "-=" | "*=" | "/=" |
     // 粤语特殊操作符
     "係" | "同" | "加" | "减" | "乘" | "除" | "比唔上" |
-    // 任意其他单个字符(非空白字符)
-    (!WHITESPACE ~ !meta_variable ~ !meta_operation ~ ANY)
+    // 任意其他单个字符(非空白字符且非特殊语法元素)
+    (!COMMENT ~ !WHITESPACE ~ !pattern_meta_variable ~ !pattern_meta_repetition ~ !body_meta_variable ~ !body_meta_repetition ~ !"$(" ~ !"${" ~ ANY)
 }
 
-meta_variable = @{
+// 模式中的元变量 - 带有片段规范(例如 @变量名:类型)
+pattern_meta_variable = {
+    "@" ~ identifier ~ ":" ~ identifier
+}
+
+// 模式中的重复表达式(例如 $(...)*、$(...),*)
+pattern_meta_repetition = {
+    "$(" ~ pattern_token_tree ~ ")" ~ ("*" | "+" | "?") ~ (",")?
+}
+
+// 宏体中的元变量引用(例如 @变量名)
+body_meta_variable = {
     "@" ~ identifier
 }
 
-// 元操作符 - 根据body_parser.py中的实现
-meta_operation = @{
-    // 对于pattern parser - $(token_tree)*
-    "$(" ~ token_tree ~ ")" ~ ("*" | "+" | "?") |
-    // 对于body parser - ${token_tree}*
-    "${" ~ token_tree ~ "}" ~ ("*" | "+" | "?") |
-    // 元变量引用 - $@identifier
-    "$" ~ meta_variable
+// 宏体中的重复表达式(例如 ${...}*、${...},*)
+body_meta_repetition = {
+    "${" ~ body_token_tree ~ "}" ~ ("*" | "+" | "?") ~ (",")?
+}
+
+// 宏调用 - 使用感叹号后缀
+macro_call = {
+    identifier ~ "!" ~ macro_call_args
+}
+
+// 宏调用参数
+macro_call_args = {
+    "(" ~ expression* ~ ")" |
+    "{" ~ expression* ~ "}" |
+    "[" ~ expression* ~ "]" |
+    "(" ~ ")" | "{" ~ "}" | "[" ~ "]" // 空参数
 }
 
 // 嵌入代码语句

@@ -236,6 +236,11 @@ pub enum Expression {
         span: Span,
     },
 
+    MacroPatternExpression {
+        token_stream: Box<Expression>,
+        span: Span,
+    },
+
     MacroMetaRepInPat {
         token_trees: Vec<Expression>,
         rep_sep: String,
@@ -250,11 +255,9 @@ pub enum Expression {
         span: Span,
     },
 
-    // TokenTree
-    TokenTree {
-        children: Vec<Expression>,
-        open_symbol: char,
-        close_symbol: char,
+    // 使用新的TokenStream表达式
+    TokenStream {
+        tokens: Vec<Expression>,
         span: Span,
     },
 }
@@ -288,7 +291,8 @@ impl Expression {
             Expression::MacroMetaId { span, .. } => *span,
             Expression::MacroMetaRepInPat { span, .. } => *span,
             Expression::MacroMetaRepInBlock { span, .. } => *span,
-            Expression::TokenTree { span, .. } => *span,
+            Expression::TokenStream { span, .. } => *span,
+            Expression::MacroPatternExpression { span, .. } => *span,
         }
     }
 }

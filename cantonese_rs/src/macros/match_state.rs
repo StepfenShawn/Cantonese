@@ -40,4 +40,4 @@ impl MatchState {
     pub fn is_successful(&self) -> bool {
         self.success
     }
-} 
+}

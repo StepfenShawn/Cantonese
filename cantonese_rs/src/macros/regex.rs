@@ -1,7 +1,7 @@
 // 粤语编程语言宏处理模块 - 正则表达式
 
-use std::fmt;
 use crate::ast::expression::Expression;
+use std::fmt;
 
 /// 片段规范 - 指定元变量可以匹配的内容类型
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -38,21 +38,30 @@ impl FragSpec {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum RepOp {
     /// 零或多次 (*)
-    Star,
+    CLOSURE,
     /// 零或一次 (?)
-    Optional,
+    OPRIONAL,
     /// 一或多次 (+)
-    Plus,
+    PLUS_CLOSE,
 }
 
 impl RepOp {
     /// 从字符串创建重复操作符
     pub fn from_str(s: &str) -> Option<Self> {
         match s {
-            "*" => Some(RepOp::Star),
-            "?" => Some(RepOp::Optional),
-            "+" => Some(RepOp::Plus),
+            "*" => Some(RepOp::CLOSURE),
+            "?" => Some(RepOp::OPRIONAL),
+            "+" => Some(RepOp::PLUS_CLOSE),
             _ => None,
+        }
+    }
+
+    /// 获取操作符的字符串值
+    pub fn value(&self) -> &'static str {
+        match self {
+            RepOp::CLOSURE => "*",
+            RepOp::OPRIONAL => "?",
+            RepOp::PLUS_CLOSE => "+",
         }
     }
 }
@@ -65,15 +74,9 @@ pub enum Regex {
     /// 原子表达式（匹配单个标记）
     Atom(String),
     /// 变量表达式（匹配元变量）
-    Var {
-        name: String,
-        spec: FragSpec,
-    },
+    Var { name: String, spec: FragSpec },
     /// 连接表达式（匹配两个连续的表达式）
-    Concat {
-        left: Box<Regex>,
-        right: Box<Regex>,
-    },
+    Concat { left: Box<Regex>, right: Box<Regex> },
     /// 星号表达式（匹配零或多次）
     Star(Box<Regex>),
     /// 可选表达式（匹配零或一次）
@@ -124,22 +127,79 @@ pub fn build_regex(expressions: &[Expression]) -> Regex {
         return Regex::empty();
     }
 
-    // 这里需要根据你的Expression结构实现转换
-    // 这只是一个简单的示例框架
     let mut result = Regex::empty();
+    let mut expressions = expressions.to_vec();
     
-    for expr in expressions {
-        // 根据表达式类型构建不同的正则表达式部分
-        let part = match expr {
-            // 处理不同的表达式类型...
-            _ => Regex::atom("未实现"), // 临时占位，实际需要完善
-        };
+    if !expressions.is_empty() {
+        let x = expressions.remove(0);
+        let mut node = Regex::empty();
         
-        // 将部分连接到结果
-        if matches!(result, Regex::Empty) {
-            result = part;
+        match x {
+            Expression::Identifier(name, _) => {
+                node = Regex::atom(name);
+            },
+            Expression::StringLiteral(text, _) => {
+                node = Regex::atom(text);
+            },
+            Expression::MacroMetaId { id, frag_spec, .. } => {
+                if let Expression::Identifier(name, _) = *id {
+                    if let Expression::Identifier(spec, _) = *frag_spec {
+                        node = Regex::var(name, FragSpec::from_str(&spec));
+                    }
+                }
+            },
+            Expression::MacroMetaRepInPat { token_trees, rep_sep, rep_op, .. } => {
+                if let Some(op) = RepOp::from_str(&rep_op) {
+                    match op {
+                        RepOp::CLOSURE => {
+                            let inner = build_regex(&token_trees);
+                            let inner_with_sep = if rep_sep.is_empty() {
+                                inner
+                            } else {
+                                Regex::concat(inner, Regex::atom(rep_sep))
+                            };
+                            node = Regex::star(inner_with_sep);
+                        },
+                        RepOp::OPRIONAL => {
+                            let inner = build_regex(&token_trees);
+                            let inner_with_sep = if rep_sep.is_empty() {
+                                inner
+                            } else {
+                                Regex::concat(
+                                    Regex::optional(inner), 
+                                    Regex::optional(Regex::atom(rep_sep))
+                                )
+                            };
+                            node = inner_with_sep;
+                        },
+                        RepOp::PLUS_CLOSE => {
+                            let inner = build_regex(&token_trees);
+                            
+                            // 创建包含分隔符的表达式
+                            let inner_with_sep = if rep_sep.is_empty() {
+                                inner.clone()
+                            } else {
+                                Regex::concat(inner.clone(), Regex::atom(rep_sep.clone()))
+                            };
+                            
+                            // + 等价于 一次 + 零次或多次
+                            node = Regex::concat(
+                                inner.clone(),
+                                Regex::star(inner_with_sep)
+                            );
+                        }
+                    }
+                }
+            },
+            _ => {
+                // 处理其他类型表达式
+            }
+        }
+        
+        if !expressions.is_empty() {
+            result = Regex::concat(node, build_regex(&expressions));
         } else {
-            result = Regex::concat(result, part);
+            result = node;
         }
     }
     
@@ -157,4 +217,4 @@ impl fmt::Display for Regex {
             Regex::Optional(inner) => write!(f, "Optional({})", inner),
         }
     }
-} 
+}
