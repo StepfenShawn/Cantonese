@@ -3,9 +3,12 @@
 use std::collections::HashMap;
 
 use super::token_matcher::{FragmentType, MatchError, MetaVariable, TokenMatcher};
-use crate::ast::{Block, Expression, Program, Span, Statement, position::{Position, self}};
+use crate::ast::{
+    Block, Expression, Program, Span, Statement,
+    position::{self, Position},
+};
 use crate::parser::ast_builder::ParseError;
-use crate::parser::token_tree::{TokenKind, TokenTree, TokenStream, Delimiter, Token};
+use crate::parser::token_tree::{Delimiter, Token, TokenKind, TokenStream, TokenTree};
 
 /// 宏定义
 #[derive(Debug, Clone)]
@@ -123,8 +126,8 @@ impl MacroExpander {
     /// 解析宏定义
     fn parse_macro_definition(
         &self,
-        name: &str, 
-        patterns: &[Expression], 
+        name: &str,
+        patterns: &[Expression],
         bodies: &[Expression],
         span: &Span,
     ) -> Result<MacroDefinition, MacroExpandError> {
@@ -262,7 +265,8 @@ impl MacroExpander {
                         match self.try_expand_macro_call(name, &arguments, span) {
                             Ok(expanded) => {
                                 // 从语句中提取表达式
-                                if let Statement::ExpressionStatement { expression, .. } = expanded {
+                                if let Statement::ExpressionStatement { expression, .. } = expanded
+                                {
                                     return expression;
                                 }
                             }
@@ -341,7 +345,7 @@ impl MacroExpander {
                     Ok(Some(match_result)) => {
                         // 模式匹配成功，展开宏体
                         let expanded = self.matcher.expand_macro(body, &match_result.bindings)?;
-                        
+
                         // 将展开后的TokenStream转换回Statement
                         return self.token_stream_to_statement(&expanded);
                     }
@@ -362,7 +366,10 @@ impl MacroExpander {
     }
 
     /// 将表达式转换为TokenStream
-    fn expression_to_token_stream(&self, expression: &Expression) -> Result<TokenStream, MacroExpandError> {
+    fn expression_to_token_stream(
+        &self,
+        expression: &Expression,
+    ) -> Result<TokenStream, MacroExpandError> {
         // 根据表达式类型创建不同的TokenTree
         match expression {
             Expression::Identifier(name, span) => {
@@ -386,7 +393,11 @@ impl MacroExpander {
                 stream.push(token_tree);
                 Ok(stream)
             }
-            Expression::MacroMetaId { id, frag_spec, span } => {
+            Expression::MacroMetaId {
+                id,
+                frag_spec,
+                span,
+            } => {
                 // 创建元变量TokenTree
                 if let Expression::Identifier(name, _) = &**id {
                     let frag_type = if let Expression::Identifier(spec, _) = &**frag_spec {
@@ -407,7 +418,7 @@ impl MacroExpander {
             // 直接支持TokenStream表达式
             Expression::TokenStream { tokens, span } => {
                 let mut stream = TokenStream::new();
-                
+
                 // 遍历所有子表达式，将它们转换为TokenTree
                 for token_expr in tokens {
                     // 递归转换子表达式
@@ -417,7 +428,7 @@ impl MacroExpander {
                         stream.push(token);
                     }
                 }
-                
+
                 // 设置位置信息
                 stream.span = Some(*span);
                 Ok(stream)
@@ -440,7 +451,7 @@ impl MacroExpander {
         span: Span,
     ) -> Result<TokenStream, MacroExpandError> {
         let mut stream = TokenStream::new();
-        
+
         // 处理每个表达式
         for expr in expressions {
             let expr_stream = self.expression_to_token_stream(expr)?;
@@ -453,14 +464,17 @@ impl MacroExpander {
     }
 
     /// 将TokenStream转换为Statement
-    fn token_stream_to_statement(&self, stream: &TokenStream) -> Result<Statement, MacroExpandError> {
+    fn token_stream_to_statement(
+        &self,
+        stream: &TokenStream,
+    ) -> Result<Statement, MacroExpandError> {
         // 简单实现：将TokenStream视为表达式语句
         // 在实际实现中，这里需要调用Parser将TokenStream解析为完整的AST
-        
+
         // 创建一个简单的表达式
         let expr = self.token_stream_to_expression(stream)?;
         let span = expr.span();
-        
+
         Ok(Statement::ExpressionStatement {
             expression: expr,
             span,
@@ -468,7 +482,10 @@ impl MacroExpander {
     }
 
     /// 将TokenStream转换为Expression
-    fn token_stream_to_expression(&self, stream: &TokenStream) -> Result<Expression, MacroExpandError> {
+    fn token_stream_to_expression(
+        &self,
+        stream: &TokenStream,
+    ) -> Result<Expression, MacroExpandError> {
         if stream.tokens.is_empty() {
             // 空的TokenStream，创建一个空值表达式
             let dummy_span = Span::new(Position::start(), Position::start());

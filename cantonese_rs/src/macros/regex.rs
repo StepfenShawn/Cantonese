@@ -129,26 +129,31 @@ pub fn build_regex(expressions: &[Expression]) -> Regex {
 
     let mut result = Regex::empty();
     let mut expressions = expressions.to_vec();
-    
+
     if !expressions.is_empty() {
         let x = expressions.remove(0);
         let mut node = Regex::empty();
-        
+
         match x {
             Expression::Identifier(name, _) => {
                 node = Regex::atom(name);
-            },
+            }
             Expression::StringLiteral(text, _) => {
                 node = Regex::atom(text);
-            },
+            }
             Expression::MacroMetaId { id, frag_spec, .. } => {
                 if let Expression::Identifier(name, _) = *id {
                     if let Expression::Identifier(spec, _) = *frag_spec {
                         node = Regex::var(name, FragSpec::from_str(&spec));
                     }
                 }
-            },
-            Expression::MacroMetaRepInPat { token_trees, rep_sep, rep_op, .. } => {
+            }
+            Expression::MacroMetaRepInPat {
+                token_trees,
+                rep_sep,
+                rep_op,
+                ..
+            } => {
                 if let Some(op) = RepOp::from_str(&rep_op) {
                     match op {
                         RepOp::CLOSURE => {
@@ -159,50 +164,47 @@ pub fn build_regex(expressions: &[Expression]) -> Regex {
                                 Regex::concat(inner, Regex::atom(rep_sep))
                             };
                             node = Regex::star(inner_with_sep);
-                        },
+                        }
                         RepOp::OPRIONAL => {
                             let inner = build_regex(&token_trees);
                             let inner_with_sep = if rep_sep.is_empty() {
                                 inner
                             } else {
                                 Regex::concat(
-                                    Regex::optional(inner), 
-                                    Regex::optional(Regex::atom(rep_sep))
+                                    Regex::optional(inner),
+                                    Regex::optional(Regex::atom(rep_sep)),
                                 )
                             };
                             node = inner_with_sep;
-                        },
+                        }
                         RepOp::PLUS_CLOSE => {
                             let inner = build_regex(&token_trees);
-                            
+
                             // 创建包含分隔符的表达式
                             let inner_with_sep = if rep_sep.is_empty() {
                                 inner.clone()
                             } else {
                                 Regex::concat(inner.clone(), Regex::atom(rep_sep.clone()))
                             };
-                            
+
                             // + 等价于 一次 + 零次或多次
-                            node = Regex::concat(
-                                inner.clone(),
-                                Regex::star(inner_with_sep)
-                            );
+                            node = Regex::concat(inner.clone(), Regex::star(inner_with_sep));
                         }
                     }
                 }
-            },
+            }
             _ => {
                 // 处理其他类型表达式
             }
         }
-        
+
         if !expressions.is_empty() {
             result = Regex::concat(node, build_regex(&expressions));
         } else {
             result = node;
         }
     }
-    
+
     result
 }
 

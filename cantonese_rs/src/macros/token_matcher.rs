@@ -1,7 +1,7 @@
 // 粤语编程语言宏处理模块 - 标记匹配器
 
 use crate::ast::position::Span;
-use crate::parser::token_tree::{Token, TokenKind, TokenStream, TokenTree, Delimiter};
+use crate::parser::token_tree::{Delimiter, Token, TokenKind, TokenStream, TokenTree};
 use std::collections::HashMap;
 use thiserror::Error;
 
@@ -81,12 +81,18 @@ impl MatchResult {
 
     /// 添加绑定
     pub fn add_binding(&mut self, name: String, value: TokenTree) {
-        self.bindings.entry(name).or_insert_with(Vec::new).push(value);
+        self.bindings
+            .entry(name)
+            .or_insert_with(Vec::new)
+            .push(value);
     }
 
     /// 添加多个值的绑定
     pub fn add_binding_multiple(&mut self, name: String, values: Vec<TokenTree>) {
-        self.bindings.entry(name).or_insert_with(Vec::new).extend(values);
+        self.bindings
+            .entry(name)
+            .or_insert_with(Vec::new)
+            .extend(values);
     }
 
     /// 获取绑定值
@@ -98,7 +104,10 @@ impl MatchResult {
     pub fn merge(&mut self, other: MatchResult) {
         self.matched_tokens += other.matched_tokens;
         for (name, values) in other.bindings {
-            self.bindings.entry(name).or_insert_with(Vec::new).extend(values);
+            self.bindings
+                .entry(name)
+                .or_insert_with(Vec::new)
+                .extend(values);
         }
     }
 }
@@ -214,7 +223,9 @@ impl TokenMatcher {
                     }
                 }
                 // 匹配分组
-                TokenTree::Group { delimiter, stream, .. } => {
+                TokenTree::Group {
+                    delimiter, stream, ..
+                } => {
                     if let Some(input_token) = input_iter.next() {
                         if let TokenTree::Group {
                             delimiter: input_delim,
@@ -260,24 +271,28 @@ impl TokenMatcher {
         match (token, fragment_type) {
             // 标识符片段
             (TokenTree::Token(token), FragmentType::Ident) => token.is_identifier(),
-            
+
             // 字符串片段
-            (TokenTree::Token(token), FragmentType::Str) => matches!(token.kind, TokenKind::StringLiteral),
-            
+            (TokenTree::Token(token), FragmentType::Str) => {
+                matches!(token.kind, TokenKind::StringLiteral)
+            }
+
             // 字面量片段
             (TokenTree::Token(token), FragmentType::Literal) => {
                 matches!(
                     token.kind,
                     TokenKind::StringLiteral | TokenKind::NumberLiteral | TokenKind::BoolLiteral
                 )
-            },
-            
+            }
+
             // 表达式片段 - 几乎所有东西都可以是表达式
             (_, FragmentType::Expr) => true,
-            
+
             // 块片段 - 必须是分组且使用花括号
-            (TokenTree::Group { delimiter, .. }, FragmentType::Block) => *delimiter == Delimiter::Brace,
-            
+            (TokenTree::Group { delimiter, .. }, FragmentType::Block) => {
+                *delimiter == Delimiter::Brace
+            }
+
             // 默认情况下，我们接受任何标记
             (_, _) => true,
         }
@@ -313,7 +328,11 @@ impl TokenMatcher {
                     result.push(token.clone());
                 }
                 // 递归处理分组
-                TokenTree::Group { delimiter, stream, span } => {
+                TokenTree::Group {
+                    delimiter,
+                    stream,
+                    span,
+                } => {
                     let expanded_stream = self.expand_macro(stream, bindings)?;
                     result.push(TokenTree::Group {
                         delimiter: *delimiter,
@@ -339,4 +358,4 @@ pub enum MatchError {
 
     #[error("无法展开宏: {0}")]
     CannotExpand(String),
-} 
+}

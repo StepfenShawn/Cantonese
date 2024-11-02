@@ -167,12 +167,7 @@ statement = {
     macro_def_statement |
     embedded_code_statement |
     exit_statement |
-    expression_statement
-}
-
-// 表达式语句
-expression_statement = {
-    expression
+    expression // 表达式语句
 }
 
 // 赋值语句
@@ -382,19 +377,8 @@ pattern_token_tree = {
         pattern_meta_repetition |
         "(" ~ pattern_token_tree ~ ")" |
         "{" ~ pattern_token_tree ~ "}" |
-        "[" ~ pattern_token_tree ~ "]"
-    )*
-}
-
-// 宏体中的token树 - 用于展开
-body_token_tree = {
-    (
-        macro_token | 
-        body_meta_variable | 
-        body_meta_repetition |
-        "(" ~ body_token_tree ~ ")" |
-        "{" ~ body_token_tree ~ "}" |
-        "[" ~ body_token_tree ~ "]"
+        "[" ~ pattern_token_tree ~ "]" |
+        "|" ~ pattern_token_tree ~ "|"
     )*
 }
 
@@ -408,13 +392,16 @@ macro_token = @{
     keyword |
     // 常见操作符和分隔符(更明确地指定)
     "+" | "-" | "*" | "/" | "%" | "^" | "!" | "?" | "？" |
-    ":" | ";" | "," | "." | "|" | "\\" | "=" | "~" | "#" | "&" | 
+    ":" | ";" | "," | "." | "\\" | "=" | "~" | "#" | "&" | 
     // 复合操作符
     "==" | "!=" | "<=" | ">=" | "&&" | "||" | "+=" | "-=" | "*=" | "/=" |
     // 粤语特殊操作符
     "係" | "同" | "加" | "减" | "乘" | "除" | "比唔上" |
     // 任意其他单个字符(非空白字符且非特殊语法元素)
-    (!COMMENT ~ !WHITESPACE ~ !pattern_meta_variable ~ !pattern_meta_repetition ~ !body_meta_variable ~ !body_meta_repetition ~ !"$(" ~ !"${" ~ ANY)
+    // 排除注释开始标记和括号
+    (!COMMENT ~ !WHITESPACE ~ !pattern_meta_variable ~ !pattern_meta_repetition ~ 
+     !body_meta_variable ~ !body_meta_repetition ~ !"$(" ~ !"${" ~ !"/*" ~ !"#" ~
+     !"|" ~ !"(" ~ !")" ~ !"[" ~ !"]" ~ !"{" ~ !"}" ~ ANY)
 }
 
 // 模式中的元变量 - 带有片段规范(例如 @变量名:类型)
@@ -437,17 +424,18 @@ body_meta_repetition = {
     "${" ~ body_token_tree ~ "}" ~ ("*" | "+" | "?") ~ (",")?
 }
 
-// 宏调用 - 使用感叹号后缀
-macro_call = {
-    identifier ~ "!" ~ macro_call_args
-}
-
-// 宏调用参数
-macro_call_args = {
-    "(" ~ expression* ~ ")" |
-    "{" ~ expression* ~ "}" |
-    "[" ~ expression* ~ "]" |
-    "(" ~ ")" | "{" ~ "}" | "[" ~ "]" // 空参数
+// 宏体中的token树 - 用于展开
+body_token_tree = {
+    (
+        COMMENT |
+        macro_token | 
+        body_meta_variable | 
+        body_meta_repetition |
+        "(" ~ body_token_tree ~ ")" |
+        "{" ~ body_token_tree ~ "}" |
+        "[" ~ body_token_tree ~ "]" |
+        "|" ~ body_token_tree ~ "|"
+    )*
 }
 
 // 嵌入代码语句

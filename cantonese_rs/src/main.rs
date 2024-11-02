@@ -86,7 +86,7 @@ fn parse_file(file: PathBuf, output_json: bool) -> Result<()> {
 
     // 展开宏（新增的步骤）
     let expanded_program = expand_macros(program);
-
+    println!("展开后的AST: {:?}", expanded_program);
     if output_json {
         // 输出展开后的AST到JSON文件
         print_program(&expanded_program, &file_path);

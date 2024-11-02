@@ -1,8 +1,8 @@
 // 粤语编程语言嘅宏解析器模块 - 用於處理宏定義同調用
 
 use crate::ast::{Block, Expression, Position, Span, Statement};
-use crate::parser::token_tree::{Token, TokenTree, TokenStream, Delimiter};
 use crate::macros::token_matcher::FragmentType;
+use crate::parser::token_tree::{Delimiter, Token, TokenStream, TokenTree};
 use thiserror::Error;
 
 /// 宏解析錯誤
@@ -85,21 +85,37 @@ impl<'a> MacroParser<'a> {
             match expr {
                 // 標識符
                 Expression::Identifier(name, span) => {
-                    let token = Token::new(name.clone(), crate::parser::token_tree::TokenKind::Identifier, *span);
+                    let token = Token::new(
+                        name.clone(),
+                        crate::parser::token_tree::TokenKind::Identifier,
+                        *span,
+                    );
                     stream.push(TokenTree::Token(token));
                 }
                 // 字符串字面量
                 Expression::StringLiteral(value, span) => {
-                    let token = Token::new(format!("\"{}\"", value), crate::parser::token_tree::TokenKind::StringLiteral, *span);
+                    let token = Token::new(
+                        format!("\"{}\"", value),
+                        crate::parser::token_tree::TokenKind::StringLiteral,
+                        *span,
+                    );
                     stream.push(TokenTree::Token(token));
                 }
                 // 數字字面量
                 Expression::NumberLiteral(value, span) => {
-                    let token = Token::new(value.to_string(), crate::parser::token_tree::TokenKind::NumberLiteral, *span);
+                    let token = Token::new(
+                        value.to_string(),
+                        crate::parser::token_tree::TokenKind::NumberLiteral,
+                        *span,
+                    );
                     stream.push(TokenTree::Token(token));
                 }
                 // 元變量 @var:type
-                Expression::MacroMetaId { id, frag_spec, span } => {
+                Expression::MacroMetaId {
+                    id,
+                    frag_spec,
+                    span,
+                } => {
                     if let Expression::Identifier(name, _) = &**id {
                         let frag_type = if let Expression::Identifier(spec, _) = &**frag_spec {
                             spec.clone()
@@ -107,7 +123,11 @@ impl<'a> MacroParser<'a> {
                             "expr".to_string()
                         };
                         let token_text = format!("@{}:{}", name, frag_type);
-                        let token = Token::new(token_text, crate::parser::token_tree::TokenKind::MetaVariable, *span);
+                        let token = Token::new(
+                            token_text,
+                            crate::parser::token_tree::TokenKind::MetaVariable,
+                            *span,
+                        );
                         stream.push(TokenTree::Token(token));
                     }
                 }
@@ -133,14 +153,14 @@ impl<'a> MacroParser<'a> {
     ) -> Result<MacroCall, MacroError> {
         // 轉換參數為TokenStream
         let args_stream = self.build_token_stream(arguments)?;
-        
+
         // 創建宏調用
         let span = if let Some(expr) = arguments.first() {
             expr.span()
         } else {
             Span::new(Position::start(), Position::start())
         };
-        
+
         Ok(MacroCall {
             name: name.to_string(),
             args: args_stream,

@@ -65,7 +65,7 @@ impl Delimiter {
             Delimiter::None => None,
         }
     }
-    
+
     /// 從字符創建分隔符
     pub fn from_char(c: char) -> Option<Self> {
         match c {
@@ -111,6 +111,12 @@ pub enum TokenKind {
     Semicolon,
     /// 元變量（宏變量）- 以@開頭
     MetaVariable,
+    /// 宏元變量（用於宏定義）
+    MacroMetaVariable,
+    /// 宏標記（用於宏匹配）
+    MacroToken,
+    /// 宏重複（例如 $(...)*）
+    MacroRepetition,
     /// 重複運算符 (例如 * 或 +)
     RepetitionOperator,
     /// 分隔符
@@ -127,19 +133,16 @@ impl TokenStream {
             span: None,
         }
     }
-    
+
     /// 從迭代器創建標記流
     pub fn from_iter<I>(iter: I) -> Self
     where
         I: IntoIterator<Item = TokenTree>,
     {
         let tokens: Vec<TokenTree> = iter.into_iter().collect();
-        Self {
-            tokens,
-            span: None,
-        }
+        Self { tokens, span: None }
     }
-    
+
     /// 將標記流轉換為字符串
     pub fn to_string(&self) -> String {
         let mut result = String::new();
@@ -149,7 +152,9 @@ impl TokenStream {
                     result.push_str(&token.text);
                     result.push(' ');
                 }
-                TokenTree::Group { delimiter, stream, .. } => {
+                TokenTree::Group {
+                    delimiter, stream, ..
+                } => {
                     if let Some(open) = delimiter.open() {
                         result.push(open);
                     }
@@ -163,22 +168,22 @@ impl TokenStream {
         }
         result
     }
-    
+
     /// 添加一個標記到流尾部
     pub fn push(&mut self, token: TokenTree) {
         self.tokens.push(token);
     }
-    
+
     /// 获取标记流中的标记数量
     pub fn len(&self) -> usize {
         self.tokens.len()
     }
-    
+
     /// 检查标记流是否为空
     pub fn is_empty(&self) -> bool {
         self.tokens.is_empty()
     }
-    
+
     /// 获取标记流的迭代器
     pub fn iter(&self) -> impl Iterator<Item = &TokenTree> {
         self.tokens.iter()
@@ -200,7 +205,7 @@ impl Token {
     pub fn is_meta_variable(&self) -> bool {
         matches!(self.kind, TokenKind::MetaVariable)
     }
-    
+
     /// 获取标记文本
     pub fn text(&self) -> &str {
         &self.text
@@ -211,7 +216,9 @@ impl fmt::Display for TokenTree {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             TokenTree::Token(token) => write!(f, "{}", token.text),
-            TokenTree::Group { delimiter, stream, .. } => {
+            TokenTree::Group {
+                delimiter, stream, ..
+            } => {
                 if let Some(open) = delimiter.open() {
                     write!(f, "{}", open)?;
                 }
@@ -257,13 +264,9 @@ impl IntoIterator for TokenStream {
 impl TokenTree {
     /// 创建标识符标记
     pub fn ident(name: &str, span: Span) -> Self {
-        TokenTree::Token(Token::new(
-            name.to_string(),
-            TokenKind::Identifier,
-            span,
-        ))
+        TokenTree::Token(Token::new(name.to_string(), TokenKind::Identifier, span))
     }
-    
+
     /// 创建字符串字面量标记
     pub fn string(value: &str, span: Span) -> Self {
         TokenTree::Token(Token::new(
@@ -272,7 +275,7 @@ impl TokenTree {
             span,
         ))
     }
-    
+
     /// 创建数字字面量标记
     pub fn number(value: &str, span: Span) -> Self {
         TokenTree::Token(Token::new(
@@ -281,7 +284,7 @@ impl TokenTree {
             span,
         ))
     }
-    
+
     /// 创建元变量标记
     pub fn meta_var(name: &str, span: Span) -> Self {
         TokenTree::Token(Token::new(
@@ -290,7 +293,7 @@ impl TokenTree {
             span,
         ))
     }
-    
+
     /// 创建分组
     pub fn group(delimiter: Delimiter, stream: TokenStream, span: Span) -> Self {
         TokenTree::Group {

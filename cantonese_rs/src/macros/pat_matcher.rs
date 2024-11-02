@@ -168,10 +168,10 @@ impl PatMatcher {
             Regex::Concat { left, right } => {
                 // 尝试不同的分割方式
                 let splits = self.split_input(inputs);
-                
+
                 // 记录当前状态
                 let backup_state = self.state.clone();
-                
+
                 for (prefix, suffix) in splits {
                     // 匹配左侧
                     if self.matches(left, prefix) {
@@ -180,11 +180,11 @@ impl PatMatcher {
                             return true;
                         }
                     }
-                    
+
                     // 这种分割方式不成功，恢复状态
                     self.state = backup_state.clone();
                 }
-                
+
                 false
             }
             Regex::Star(inner) => {
@@ -192,18 +192,18 @@ impl PatMatcher {
                 if inputs.is_empty() {
                     return true;
                 }
-                
+
                 // 尝试不同的前缀匹配
                 let splits = self.prefix_split(inputs);
-                
+
                 for (prefix, suffix) in splits {
                     if prefix.is_empty() {
                         continue;
                     }
-                    
+
                     // 记录当前状态
                     let backup_state = self.state.clone();
-                    
+
                     // 匹配前缀
                     if self.matches(inner, prefix) {
                         // 对剩余部分递归应用Star匹配
@@ -211,11 +211,11 @@ impl PatMatcher {
                             return true;
                         }
                     }
-                    
+
                     // 恢复状态
                     self.state = backup_state;
                 }
-                
+
                 false
             }
             Regex::Optional(inner) => {
