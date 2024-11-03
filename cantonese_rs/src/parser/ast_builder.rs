@@ -139,14 +139,8 @@ impl<'a> AstBuilder<'a> {
         let var_list_pair = inner.next().unwrap();
         let mut var_list = Vec::new();
 
-        if var_list_pair.as_rule() == Rule::var_list {
-            for var_pair in var_list_pair.into_inner() {
-                let var = self.build_expression(var_pair)?;
-                var_list.push(var);
-            }
-        } else {
-            // 如果直接是一个标识符，转换为表达式
-            let var = self.build_expression(var_list_pair)?;
+        for var_pair in var_list_pair.into_inner() {
+            let var = self.build_expression(var_pair)?;
             var_list.push(var);
         }
 
@@ -182,7 +176,7 @@ impl<'a> AstBuilder<'a> {
 
         for inner_pair in pair.into_inner() {
             match inner_pair.as_rule() {
-                Rule::var_list => {
+                Rule::var => {
                     let mut vars = Vec::new();
                     for var_pair in inner_pair.into_inner() {
                         let var = self.build_expression(var_pair)?;
@@ -245,7 +239,7 @@ impl<'a> AstBuilder<'a> {
         // 处理else if和else部分
         while let Some(next_pair) = inner.next() {
             match next_pair.as_rule() {
-                Rule::condition => {
+                Rule::expression => {
                     let elif_exp = self.build_expression(next_pair)?;
                     elif_exps.push(elif_exp);
 
@@ -729,7 +723,70 @@ impl<'a> AstBuilder<'a> {
         let object_call = pair.into_inner().next().unwrap();
         let mut inner = object_call.into_inner();
 
-        let object_pair = inner.next().unwrap();
+        // 获取方法调用链
+        let chain_pair = inner.next().unwrap();
+        
+        // 处理复杂的调用链
+        if chain_pair.as_rule() == Rule::object_call_chain {
+            let mut chain_inner = chain_pair.into_inner();
+            
+            // 第一个标识符是对象
+            let object_id = chain_inner.next().unwrap();
+            let mut object = Expression::Identifier(
+                object_id.as_str().to_string(),
+                Span::from_pest(object_id.as_span(), self.source)
+            );
+            
+            // 获取剩余的属性链，直到最后一个作为方法
+            let mut props = Vec::new();
+            for prop in chain_inner {
+                props.push(prop);
+            }
+            
+            // 逐步构建链式访问
+            for i in 0..props.len()-1 {
+                let prop_pair = &props[i];
+                let property = Expression::Identifier(
+                    prop_pair.as_str().to_string(),
+                    Span::from_pest(prop_pair.as_span(), self.source)
+                );
+                
+                object = Expression::ObjectAccessExpression {
+                    object: Box::new(object),
+                    property: Box::new(property),
+                    span: Span::from_pest(prop_pair.as_span(), self.source),
+                };
+            }
+            
+            // 最后一个是方法名
+            let method = if let Some(last_prop) = props.last() {
+                Expression::Identifier(
+                    last_prop.as_str().to_string(),
+                    Span::from_pest(last_prop.as_span(), self.source)
+                )
+            } else {
+                return Err(ParseError::Custom("方法调用缺少方法名".to_string()));
+            };
+            
+            // 处理参数列表
+            let mut arguments = Vec::new();
+            if let Some(args_pair) = inner.next() {
+                for arg_pair in args_pair.into_inner() {
+                    let arg = self.build_expression(arg_pair)?;
+                    arguments.push(arg);
+                }
+            }
+            
+            return Ok(Statement::MethodCallStatement {
+                object,
+                method,
+                arguments,
+                span,
+            });
+        }
+        
+        // 如果不是链式调用，回退到原始处理方式
+        let object_pair = chain_pair;
         let object = self.build_expression(object_pair)?;
 
         let method_pair = inner.next().unwrap();
@@ -1019,20 +1076,8 @@ impl<'a> AstBuilder<'a> {
                     span,
                 })
             }
-            Rule::object_access_expression => {
-                let mut inner = pair.into_inner();
-                let object_pair = inner.next().unwrap();
-                let property_pair = inner.next().unwrap();
-
-                let object = self.build_expression(object_pair)?;
-                let property = self.build_expression(property_pair)?;
-
-                Ok(Expression::ObjectAccessExpression {
-                    object: Box::new(object),
-                    property: Box::new(property),
-                    span,
-                })
-            }
+            Rule::object_access_expression => self.build_object_access_expression(pair, span),
+            Rule::object_access_chain => self.build_object_access_chain(pair, span),
             Rule::list_access_expression => {
                 let mut inner = pair.into_inner();
                 let list_pair = inner.next().unwrap();
@@ -1215,29 +1260,53 @@ impl<'a> AstBuilder<'a> {
         })
     }
 
-    /// 构建模式中的元变量
-    fn build_pattern_meta_variable(&self, pair: Pair<'_, Rule>) -> Result<Expression, ParseError> {
-        let span = Span::from_pest(pair.as_span(), self.source);
-
-        // 克隆pair以避免移动问题
-        let pair_clone = pair.clone();
-        let mut inner = pair_clone.into_inner();
-
-        // 获取标识符和片段规范
-        let id_pair = inner.next().unwrap();
-        let id = Expression::Identifier(id_pair.as_str().to_string(), span);
-
-        // 获取片段规范
-        let frag_spec_pair = inner.next().unwrap();
-        let frag_spec = Expression::Identifier(frag_spec_pair.as_str().to_string(), span);
-
-        Ok(Expression::MacroMetaId {
-            id: Box::new(id),
-            frag_spec: Box::new(frag_spec),
-            span,
-        })
+    /// 构建对象访问表达式
+    fn build_object_access_expression(
+        &self,
+        pair: Pair<'_, Rule>,
+        span: Span,
+    ) -> Result<Expression, ParseError> {
+        // 获取对象访问链
+        let chain_pair = pair.into_inner().next().unwrap();
+        self.build_object_access_chain(chain_pair, span)
     }
 
+    /// 构建对象访问链
+    fn build_object_access_chain(
+        &self,
+        pair: Pair<'_, Rule>,
+        span: Span,
+    ) -> Result<Expression, ParseError> {
+        let mut inner = pair.into_inner();
+        
+        // 获取链的基础对象
+        let base_pair = inner.next().unwrap();
+        let base_obj = match base_pair.as_rule() {
+            Rule::object_base => {
+                let obj_pair = base_pair.into_inner().next().unwrap();
+                self.build_expression(obj_pair)?
+            },
+            _ => return Err(ParseError::InvalidNode(base_pair.as_rule())),
+        };
+
+        // 获取所有属性标识符并生成链式对象访问
+        let mut current_expr = base_obj;
+        for prop_pair in inner {
+            if prop_pair.as_rule() == Rule::identifier {
+                let property = Expression::Identifier(prop_pair.as_str().to_string(), 
+                    Span::from_pest(prop_pair.as_span(), self.source));
+                
+                current_expr = Expression::ObjectAccessExpression {
+                    object: Box::new(current_expr),
+                    property: Box::new(property),
+                    span: Span::from_pest(prop_pair.as_span(), self.source),
+                };
+            }
+        }
+
+        Ok(current_expr)
+    }
+    
     /// 构建宏体中的元变量
     fn build_body_meta_variable(&self, pair: Pair<'_, Rule>) -> Result<Expression, ParseError> {
         let span = Span::from_pest(pair.as_span(), self.source);
@@ -1326,7 +1395,6 @@ impl<'a> AstBuilder<'a> {
             span,
         })
     }
-
     /// 构建TokenTree
     fn build_token_tree(
         &self,
@@ -1361,7 +1429,7 @@ impl<'a> AstBuilder<'a> {
                     )));
                 }
                 Rule::pattern_meta_variable => {
-                    let var_expr = self.build_pattern_meta_variable(inner_pair)?;
+                    let var_expr = self.build_meta_variable(inner_pair)?;
                     let var_span = var_expr.span();
                     stream.push(TokenTree::Token(Token::new(
                         format!("{:?}", var_expr),

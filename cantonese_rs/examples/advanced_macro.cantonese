@@ -75,7 +75,7 @@ when!(x > 5 就 {
 # 函数定义宏
 介紹返 fn 係 袋仔的法寶 =>
     | (@name:ident($(@param:ident),*) => @body:block) => {
-        介紹返 $@name |${@param}*| 点部署 {
+        介紹返 $@name |${@param}*| 點部署 {
             @body
         } 搞掂
     }

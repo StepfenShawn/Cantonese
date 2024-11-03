@@ -16,13 +16,12 @@ keyword = @{
     "畀我睇下" | "點樣先" | "收工" | "喺" | "定係" | "起底" | "介紹返" | "先啦" | 
     "乜X" | "唔係" | "係" | "如果" | "若然" | "唔係咁就" | "嘅话" | 
     "咩都唔做" | "落操场玩跑步" | "$" | "好心" | "啦" | 
-    "咁啦" | "使下" | "点部署" | "搞掂" | "諗下" | "佢嘅" | "玩到" | "為止" | 
+    "咁啦" | "使下" | "點部署" | "搞掂" | "諗下" | "佢嘅" | "玩到" | "為止" | 
     "還數" | "执嘢" | "揾到" | "执手尾" | "掟個" | "嚟睇下" | "从" | "行到" | 
     "到步" | "佢個老豆叫" | "佢識得" | "落Order" | "飲茶先啦" | "Hea陣先" | 
     "拍住上" | "埋堆" | "Share下" | "辛苦曬啦" | "同我躝" | "有條仆街叫" | 
     "頂你" | "丟你" | "佢有啲咩" | "下" | "就係" | "冇鳩用" | "冇撚用" | 
-    "睇撚住" | "撞见" | "我係二五仔" | "袋仔的法寶" | "公家嘢" | "私家嘢" |
-    "自己"
+    "睇撚住" | "撞见" | "我係二五仔" | "袋仔的法寶" | "公家嘢" | "私家嘢"
 }
 
 // 字面量
@@ -42,7 +41,9 @@ var_arg = @{ "<*>" }
 identifier = @{ !keyword ~ identifier_char+ }
 
 // 表达式 - 使用 Pratt 解析器的形式
-expression = { term ~ (binary_operator ~ term)* }
+expression = { 
+    term ~ (binary_operator ~ term)*
+}
 
 term = _{
     list_expression |
@@ -87,7 +88,18 @@ parenthesized_expression = {
 
 // 对象访问表达式
 object_access_expression = {
-    identifier ~ "->" ~ identifier
+    object_access_chain
+}
+
+// 对象访问链 - 支持链式访问
+object_access_chain = {
+    object_base ~ ("->" ~ identifier)+
+}
+
+// 对象访问基础
+object_base = {
+    identifier |
+    call_expression 
 }
 
 // 列表访问表达式
@@ -123,7 +135,12 @@ call_expression = {
 
 // 方法调用
 object_call_expression = {
-    identifier ~ "->" ~ identifier ~ "(" ~ argument_list? ~ ")" ~ ("啦" | "咁啦") ~ "!"?
+    object_call_chain ~ "(" ~ argument_list? ~ ")" ~ ("啦" | "咁啦")? ~ "!"?
+}
+
+// 方法调用链 - 允许链式调用
+object_call_chain = {
+    (identifier ~ ("->" ~ identifier)*)
 }
 
 // 宏调用表达式
@@ -172,12 +189,16 @@ statement = {
 
 // 赋值语句
 assignment_statement = {
-    "介紹返" ~ var_list ~ "係" ~ exp_list
+    "介紹返" ~ (var ~ ("," ~ var)*) ~ "係" ~ exp_list
 }
 
-var_list = {
-    "「" ~ identifier ~ "」" |
-    identifier ~ ("," ~ identifier)*
+
+var = {
+    object_access_expression |
+    list_access_expression |
+    map_expression |
+    identifier |
+    "「" ~ identifier ~ "」"
 }
 
 exp_list = {
@@ -187,7 +208,7 @@ exp_list = {
 // 块赋值语句
 assignment_block_statement = {
     "介紹返" ~ "=>" ~ 
-    (var_list ~ "係" ~ exp_list)+ ~
+    ((var ~ ("," ~ var)*) ~ "係" ~ exp_list)+ ~
     "先啦"
 }
 
@@ -198,13 +219,9 @@ print_statement = {
 
 // 条件语句
 if_statement = {
-    "如果" ~ condition ~ "嘅话" ~ "=>" ~ block ~
-    ("定係" ~ condition ~ "嘅话" ~ "=>" ~ block)* ~
+    "如果" ~ expression ~ "嘅话" ~ "=>" ~ block ~
+    ("定係" ~ expression ~ "嘅话" ~ "=>" ~ block)* ~
     ("唔係" ~ "嘅话" ~ "=>" ~ block)?
-}
-
-condition = _{
-    "|" ~ expression ~ "|"
 }
 
 // 循环语句
@@ -227,7 +244,7 @@ list_init_statement = {
 
 // 函数声明
 function_declaration = {
-    "介紹返" ~ "$" ~ identifier ~ parameter_list ~ "点部署" ~ statement_list ~ "搞掂"
+    "介紹返" ~ "$" ~ identifier ~ parameter_list? ~ "點部署" ~ statement_list ~ "搞掂"
 }
 
 parameter_list = {
@@ -245,7 +262,7 @@ type_list = {
 
 // 方法定义
 method_declaration = {
-    "佢識得" ~ identifier ~ "|" ~ "自己" ~ ("," ~ identifier)* ~ "|" ~ "=>" ~ block
+    "佢識得" ~ identifier ~ "|" ~ identifier ~ ("," ~ identifier)* ~ "|" ~ "=>" ~ block
 }
 
 // 属性定义
