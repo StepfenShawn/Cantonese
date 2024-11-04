@@ -1,5 +1,6 @@
 //! 粤语编程语言语法解析测试
 
+extern crate cantonese_rs;
 use cantonese_rs::parser::ast_builder::AstBuilder;
 use std::fs;
 use std::path::Path;

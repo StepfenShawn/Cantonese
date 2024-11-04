@@ -5,6 +5,10 @@ edition = "2024"
 authors = ["Stepfen Shawn"]
 description = "粵語編程語言嘅Rust實現"
 
+[lib]
+name = "cantonese_rs"
+crate-type = ["cdylib", "rlib"]
+
 [dependencies]
 pest = "2.7.7"
 pest_derive = "2.7.7"
@@ -16,3 +20,4 @@ logos = "0.14.0"
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.114"
 once_cell = "1.19.0"
+pyo3 = { version = "0.20.0", features = ["extension-module"] }
