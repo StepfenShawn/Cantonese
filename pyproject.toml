@@ -1,0 +1,31 @@
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "Cantonese"
+requires-python = ">=3.7"
+authors = [
+    {name = "Stepfen Shawn"}
+]
+description = "粵語編程語言"
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
+module-name = "cantonese_rs"
+python-source = "py_cantonese"
+bindings = "pyo3"
+include = ["Cargo.toml", "src/**/*", "py_cantonese/**/*"]
+
+[project.scripts]
+cantonese = "py_cantonese.cantonese:main"

@@ -72,3 +72,6 @@ media/*
 .vscode/
 
 *.exe
+
+# Rust
+target/
