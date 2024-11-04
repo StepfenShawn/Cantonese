@@ -15,20 +15,20 @@ import textwrap
 sys.path.append(os.getcwd())
 sys.dont_write_bytecode = True
 
+from cantonese_rs import parse_to_ast
+
 from py_cantonese.can_utils.show.infoprinter import format_color
 from py_cantonese.can_utils.show.helper import show_more
 from py_cantonese.can_error.compile_time import *
 
-from py_cantonese.can_lexer import cantonese_token_from_file
-import py_cantonese.can_parser as can_parser
 from py_cantonese.can_compiler.compiler import Codegen
 import py_cantonese.can_sys as can_sys
 import py_cantonese.can_import
 
-from py_cantonese.can_context import can_token_context
 from py_cantonese.can_libs import *
 from py_cantonese.web_core.can_web_parser import *
 from py_cantonese.can_const import _version_, logo
+from py_cantonese.can_ast.can_ast_converter import convert_program
 
 def include_eval(dispatch, file, is_to_py) -> None:
     if dispatch == "cantonese":
@@ -124,23 +124,27 @@ def cantonese_run(
 
     os.environ["CUR_FILE"] = file
 
-    tokens = cantonese_token_from_file(file, code)
-
-    can_token_context.set_token_ctx((tokens, []))
-
-    if Options.dump_lex:
-        show_pretty_lex(tokens)
-        exit()
-
-    stats = can_parser.StatParser(from_=can_token_context).parse_stats()
-
-    if Options.dump_ast:
-        show_pretty_ast([stat for stat in stats])
-        exit()
-
-    code_gen = Codegen(stats, path=file)
-    TO_PY_CODE = code_gen.to_py()
-
+    # 使用Rust解析器生成AST的dict表示
+    ast_dict = parse_to_ast(code)
+    
+    if isinstance(ast_dict, list):
+        # 将dict表示转换为can_ast对象
+        stats = convert_program(ast_dict)
+        # 如果需要显示AST，则在转换后显示
+        if Options.dump_ast:
+            show_pretty_ast(stats)
+            
+        # 使用转换后的can_ast对象生成Python代码
+        code_gen = Codegen(stats, path=file)
+        TO_PY_CODE = code_gen.to_py()
+    else:
+        # 处理解析错误
+        if "error" in ast_dict:
+            error_msg = ast_dict["error"]
+            raise CompTimeException(f"解析错误: {error_msg}")
+        else:
+            raise CompTimeException("未知解析错误")
+    
     if Options._to_llvm:
         import llvm_core.can_llvm_build as can_llvm_build
         import llvm_core.llvm_evaluator as llvm_evaluator
@@ -258,11 +262,6 @@ def main():
 
         with open(args.file, encoding="utf-8") as f:
             code = f.read()
-            code = can_sys.eval_pre_script(
-                code,
-                args.file,
-                apply_f=lambda dispatch, path: include_eval(dispatch, path, is_to_py),
-            )
 
         if args.build:
             cantonese_lib_init()

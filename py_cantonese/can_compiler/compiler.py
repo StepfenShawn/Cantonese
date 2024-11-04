@@ -2,9 +2,9 @@ import os
 from typing import Generator, List
 from collections import defaultdict
 
+from py_cantonese import can_ast
 from py_cantonese.can_utils.depend_tree import DependTree, get_trace
 from py_cantonese.can_compiler.lib_gen_helper import gen_import
-import py_cantonese.can_parser as can_parser
 
 line_map = {}
 
@@ -24,7 +24,7 @@ class Codegen:
         line_map[os.environ["CUR_FILE"]] = self.line_mmap
         return self.code
 
-    def update_line_map(self, stat: can_parser.can_ast.Stat, s: str):
+    def update_line_map(self, stat: can_ast.Stat, s: str):
         start = self.line
         self.line += s.count("\n")
         end = self.line
@@ -39,28 +39,28 @@ class Codegen:
         self.code += s
 
     def codegen_expr(self, exp) -> str:
-        if isinstance(exp, can_parser.can_ast.StringExp):
+        if isinstance(exp, can_ast.StringExp):
             return "Str(" + exp.s + ")"
 
-        elif isinstance(exp, can_parser.can_ast.NumeralExp):
+        elif isinstance(exp, can_ast.NumeralExp):
             return exp.val
 
-        elif isinstance(exp, can_parser.can_ast.IdExp):
+        elif isinstance(exp, can_ast.IdExp):
             return exp.name
 
-        elif isinstance(exp, can_parser.can_ast.FalseExp):
+        elif isinstance(exp, can_ast.FalseExp):
             return "False"
 
-        elif isinstance(exp, can_parser.can_ast.TrueExp):
+        elif isinstance(exp, can_ast.TrueExp):
             return "True"
 
-        elif isinstance(exp, can_parser.can_ast.NullExp):
+        elif isinstance(exp, can_ast.NullExp):
             return "None"
 
-        elif isinstance(exp, can_parser.can_ast.AnnotationExp):
+        elif isinstance(exp, can_ast.AnnotationExp):
             return self.codegen_expr(exp.exp) + ":" + exp.tyid.name
 
-        elif isinstance(exp, can_parser.can_ast.BinopExp):
+        elif isinstance(exp, can_ast.BinopExp):
             return (
                 "("
                 + self.codegen_expr(exp.exp1)
@@ -69,15 +69,15 @@ class Codegen:
                 + ")"
             )
 
-        elif isinstance(exp, can_parser.can_ast.MappingExp):
+        elif isinstance(exp, can_ast.MappingExp):
             return self.codegen_expr(exp.exp1) + ":" + self.codegen_expr(exp.exp2)
 
-        elif isinstance(exp, can_parser.can_ast.ObjectAccessExp):
+        elif isinstance(exp, can_ast.ObjectAccessExp):
             return (
                 self.codegen_expr(exp.prefix_exp) + "." + self.codegen_expr(exp.key_exp)
             )
 
-        elif isinstance(exp, can_parser.can_ast.ListAccessExp):
+        elif isinstance(exp, can_ast.ListAccessExp):
             return (
                 self.codegen_expr(exp.prefix_exp)
                 + "["
@@ -85,10 +85,10 @@ class Codegen:
                 + "]"
             )
 
-        elif isinstance(exp, can_parser.can_ast.UnopExp):
+        elif isinstance(exp, can_ast.UnopExp):
             return "(" + exp.op + " " + self.codegen_expr(exp.exp) + ")"
 
-        elif isinstance(exp, can_parser.can_ast.FuncCallExp):
+        elif isinstance(exp, can_ast.FuncCallExp):
             return (
                 self.codegen_expr(exp.prefix_exp)
                 + "("
@@ -96,7 +96,7 @@ class Codegen:
                 + ")"
             )
 
-        elif isinstance(exp, can_parser.can_ast.LambdaExp):
+        elif isinstance(exp, can_ast.LambdaExp):
             return (
                 "(lambda "
                 + self.codegen_args(exp.id_list)
@@ -105,7 +105,7 @@ class Codegen:
                 + ")"
             )
 
-        elif isinstance(exp, can_parser.can_ast.IfElseExp):
+        elif isinstance(exp, can_ast.IfElseExp):
             return (
                 "("
                 + self.codegen_expr(exp.if_exp)
@@ -116,7 +116,7 @@ class Codegen:
                 + ")"
             )
 
-        elif isinstance(exp, can_parser.can_ast.ListExp):
+        elif isinstance(exp, can_ast.ListExp):
             s = "List(["
             if len(exp.elem_exps):
                 for elem in exp.elem_exps:
@@ -126,7 +126,7 @@ class Codegen:
             else:
                 return s + "])"
 
-        elif isinstance(exp, can_parser.can_ast.MapExp):
+        elif isinstance(exp, can_ast.MapExp):
             s = "{"
             if len(exp.elem_exps):
                 for elem in exp.elem_exps:
@@ -136,7 +136,7 @@ class Codegen:
             else:
                 return s + "}"
 
-        elif isinstance(exp, can_parser.can_ast.AssignExp):
+        elif isinstance(exp, can_ast.AssignExp):
             s = self.codegen_expr(exp.exp1) + " = " + self.codegen_expr(exp.exp2)
             return s
 
@@ -155,8 +155,8 @@ class Codegen:
 
         return import_stats
 
-    def codegen_build_in_method_or_id(self, exp: can_parser.can_ast) -> str:
-        if isinstance(exp, can_parser.can_ast.IdExp):
+    def codegen_build_in_method_or_id(self, exp: can_ast.IdExp) -> str:
+        if isinstance(exp, can_ast.IdExp):
             return exp.name
         else:
             return self.codegen_expr(exp)
@@ -168,10 +168,10 @@ class Codegen:
         return s[2:]
 
     def codegen_stat(self, stat):
-        if isinstance(stat, can_parser.can_ast.PrintStat):
+        if isinstance(stat, can_ast.PrintStat):
             self.emit("print(" + self.codegen_args(stat.args) + ")\n", stat)
 
-        elif isinstance(stat, can_parser.can_ast.AssignStat):
+        elif isinstance(stat, can_ast.AssignStat):
             self.emit(
                 self.codegen_args(stat.var_list)
                 + " = "
@@ -180,7 +180,7 @@ class Codegen:
                 stat,
             )
 
-        elif isinstance(stat, can_parser.can_ast.AssignBlockStat):
+        elif isinstance(stat, can_ast.AssignBlockStat):
             for i in range(len(stat.var_list)):
                 self.emit(
                     self.codegen_expr(stat.var_list[i])
@@ -190,19 +190,19 @@ class Codegen:
                     stat,
                 )
 
-        elif isinstance(stat, can_parser.can_ast.ExitStat):
+        elif isinstance(stat, can_ast.ExitStat):
             self.emit("exit()\n", stat)
 
-        elif isinstance(stat, can_parser.can_ast.PassStat):
+        elif isinstance(stat, can_ast.PassStat):
             self.emit("pass\n", stat)
 
-        elif isinstance(stat, can_parser.can_ast.BreakStat):
+        elif isinstance(stat, can_ast.BreakStat):
             self.emit("break\n", stat)
 
-        elif isinstance(stat, can_parser.can_ast.ContinueStat):
+        elif isinstance(stat, can_ast.ContinueStat):
             self.emit("continue\n", stat)
 
-        elif isinstance(stat, can_parser.can_ast.IfStat):
+        elif isinstance(stat, can_ast.IfStat):
             self.emit("if " + self.codegen_expr(stat.if_exp) + ":\n", stat)
             self.codegen_block(stat.if_block)
 
@@ -214,7 +214,7 @@ class Codegen:
                 self.emit("else:\n", stat)
                 self.codegen_block(stat.else_blocks)
 
-        elif isinstance(stat, can_parser.can_ast.TryStat):
+        elif isinstance(stat, can_ast.TryStat):
             self.emit("try: \n", stat)
             self.codegen_block(stat.try_blocks)
 
@@ -228,14 +228,14 @@ class Codegen:
                 self.emit("finally:\n", stat)
                 self.codegen_block(stat.finally_blocks)
 
-        elif isinstance(stat, can_parser.can_ast.RaiseStat):
+        elif isinstance(stat, can_ast.RaiseStat):
             self.emit("raise " + self.codegen_expr(stat.name_exp) + "\n", stat)
 
-        elif isinstance(stat, can_parser.can_ast.WhileStat):
+        elif isinstance(stat, can_ast.WhileStat):
             self.emit("while " + self.codegen_expr(stat.cond_exp) + ":\n", stat)
             self.codegen_block(stat.blocks)
 
-        elif isinstance(stat, can_parser.can_ast.ForStat):
+        elif isinstance(stat, can_ast.ForStat):
             self.emit(
                 "for "
                 + self.codegen_expr(stat.var)
@@ -248,7 +248,7 @@ class Codegen:
             )
             self.codegen_block(stat.blocks)
 
-        elif isinstance(stat, can_parser.can_ast.FunctionDefStat):
+        elif isinstance(stat, can_ast.FunctionDefStat):
             self.emit(
                 "def "
                 + self.codegen_expr(stat.name_exp)
@@ -259,7 +259,7 @@ class Codegen:
             )
             self.codegen_block(stat.blocks)
 
-        elif isinstance(stat, can_parser.can_ast.FuncCallStat):
+        elif isinstance(stat, can_ast.FuncCallStat):
             self.emit(
                 self.codegen_expr(stat.func_name)
                 + "("
@@ -269,24 +269,24 @@ class Codegen:
                 stat,
             )
 
-        elif isinstance(stat, can_parser.can_ast.ImportStat):
+        elif isinstance(stat, can_ast.ImportStat):
             import_stats = self.codegen_import_lib(stat.names)
             for import_stat in import_stats:
                 self.emit(import_stat + "\n", stat)
 
-        elif isinstance(stat, can_parser.can_ast.ReturnStat):
+        elif isinstance(stat, can_ast.ReturnStat):
             self.emit("return " + self.codegen_args(stat.exps) + "\n", stat)
 
-        elif isinstance(stat, can_parser.can_ast.DelStat):
+        elif isinstance(stat, can_ast.DelStat):
             self.emit("del " + self.codegen_args(stat.exps) + "\n", stat)
 
-        elif isinstance(stat, can_parser.can_ast.TypeStat):
+        elif isinstance(stat, can_ast.TypeStat):
             self.emit("print(type(" + self.codegen_expr(stat.exps) + "))\n", stat)
 
-        elif isinstance(stat, can_parser.can_ast.AssertStat):
+        elif isinstance(stat, can_ast.AssertStat):
             self.emit("assert " + self.codegen_expr(stat.exps) + "\n", stat)
 
-        elif isinstance(stat, can_parser.can_ast.ClassDefStat):
+        elif isinstance(stat, can_ast.ClassDefStat):
             extend_classes = ""
             if stat.class_extend != None:
                 extend_classes = self.codegen_args(stat.class_extend)
@@ -300,7 +300,7 @@ class Codegen:
             )
             self.codegen_block(stat.class_blocks)
 
-        elif isinstance(stat, can_parser.can_ast.MethodDefStat):
+        elif isinstance(stat, can_ast.MethodDefStat):
             self.emit(
                 "def "
                 + self.codegen_expr(stat.name_exp)
@@ -311,13 +311,13 @@ class Codegen:
             )
             self.codegen_block(stat.class_blocks)
 
-        elif isinstance(stat, can_parser.can_ast.AttrDefStat):
+        elif isinstance(stat, can_ast.AttrDefStat):
             names = list(map(lambda x: x.exp.name, stat.attrs_list))
             args_str = ",".join([name + "=None" for name in names])
             attr_str = ";".join([("self." + name + "=" + name) for name in names])
             self.emit(f"def __init__(self, {args_str}):{attr_str}\n", stat)
 
-        elif isinstance(stat, can_parser.can_ast.MethodCallStat):
+        elif isinstance(stat, can_ast.MethodCallStat):
             self.emit(
                 self.codegen_expr(stat.name_exp)
                 + "."
@@ -328,20 +328,20 @@ class Codegen:
                 stat,
             )
 
-        elif isinstance(stat, can_parser.can_ast.CmdStat):
+        elif isinstance(stat, can_ast.CmdStat):
             self.emit("os.system(" + self.codegen_args(stat.args) + ")\n", stat)
 
-        elif isinstance(stat, can_parser.can_ast.CallStat):
+        elif isinstance(stat, can_ast.CallStat):
             self.emit(self.codegen_expr(stat.exp) + "\n", stat)
 
-        elif isinstance(stat, can_parser.can_ast.GlobalStat):
+        elif isinstance(stat, can_ast.GlobalStat):
             self.emit("global " + self.codegen_args(stat.idlist) + "\n", stat)
 
-        elif isinstance(stat, can_parser.can_ast.ExtendStat):
+        elif isinstance(stat, can_ast.ExtendStat):
             for s in stat.code.split("\n"):
                 self.emit(s + "\n", stat)
 
-        elif isinstance(stat, can_parser.can_ast.MatchStat):
+        elif isinstance(stat, can_ast.MatchStat):
             for i in range(len(stat.match_val)):
                 if i == 0:
                     elif_or_if = "if "
@@ -361,7 +361,7 @@ class Codegen:
                 self.emit("else:\n", stat)
                 self.codegen_block(stat.default_match_block)
 
-        elif isinstance(stat, can_parser.can_ast.ForEachStat):
+        elif isinstance(stat, can_ast.ForEachStat):
             self.emit(
                 "for "
                 + self.codegen_args(stat.id_list)

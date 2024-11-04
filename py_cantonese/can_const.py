@@ -2,7 +2,6 @@
     Inner library: Some global const value for cantonese
 """
 
-from py_cantonese.can_lexer.can_lexer import TokenType, can_token
 from enum import Enum
 
 
@@ -22,26 +21,27 @@ class FragSpec(Enum):
     TT = 6
 
     @staticmethod
-    def from_can_token(tk: can_token):
-        if tk.typ == TokenType.IDENTIFIER:
-            name = tk.value
-            if name == "id" or name == "ident":
-                return FragSpec.IDENT
-            elif name == "expr":
-                return FragSpec.EXPR
-            elif name == "lit":
-                return FragSpec.LITERAL
-            elif name == "stmt":
-                return FragSpec.STMT
-            elif name == "block":
-                return FragSpec.BLOCK
-            elif name == "str":
-                return FragSpec.STR
-            elif name == "tt":
-                return FragSpec.TT
-        raise Exception(
-            f"case meta var's token type {tk}: it's value `{tk.value}` can not into FragSpec"
-        )
+    def from_can_token(tk):
+        pass
+        # if tk.typ == TokenType.IDENTIFIER:
+        #     name = tk.value
+        #     if name == "id" or name == "ident":
+        #         return FragSpec.IDENT
+        #     elif name == "expr":
+        #         return FragSpec.EXPR
+        #     elif name == "lit":
+        #         return FragSpec.LITERAL
+        #     elif name == "stmt":
+        #         return FragSpec.STMT
+        #     elif name == "block":
+        #         return FragSpec.BLOCK
+        #     elif name == "str":
+        #         return FragSpec.STR
+        #     elif name == "tt":
+        #         return FragSpec.TT
+        # raise Exception(
+        #     f"case meta var's token type {tk}: it's value `{tk.value}` can not into FragSpec"
+        # )
 
 
 _version_ = "Cantonese\033[5;33m 1.0.10\033[0m Copyright (C) 2020-2024\033[5;35m StepfenShawn\033[0m"

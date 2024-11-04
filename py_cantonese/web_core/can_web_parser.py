@@ -1,7 +1,5 @@
 import sys
 
-from py_cantonese.can_lexer.can_lexer import *
-
 
 class WebParser(object):
     def __init__(self, tokens: list, Node: list) -> None:
@@ -270,7 +268,7 @@ def get_html_file(name: str) -> str:
     return name[: len(name) - len("cantonese")] + "html"
 
 
-class WebLexer(lexer):
+class WebLexer():
     def __init__(self, file, code, keywords):
         super().__init__(file, code, keywords)
         (

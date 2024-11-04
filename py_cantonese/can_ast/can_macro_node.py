@@ -3,7 +3,7 @@ from typing import List, Any
 
 from py_cantonese.can_ast.can_exp import Exp
 from py_cantonese.can_ast.can_stat import Stat
-from py_cantonese.can_lexer.can_token import can_token
+# from py_cantonese.can_lexer.can_token import can_token
 
 
 @dataclass
@@ -39,8 +39,8 @@ class MacroMetaRepExpInPat(Exp):
     """
 
     token_trees: List[object]
-    rep_sep: can_token
-    rep_op: str
+    rep_sep: object
+    rep_op: object
 
 
 @dataclass
