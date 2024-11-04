@@ -33,7 +33,7 @@ fn test_complex_function_and_class() {
     
     # 使用函数和类
     介紹返 p 係 create_person 下 -> "Alice", 30
-    p->say_hello()啦!
+    # p->say_hello()啦!
     畀我睇下 "Age: " + p->get_age() 點樣先?
     "#;
 

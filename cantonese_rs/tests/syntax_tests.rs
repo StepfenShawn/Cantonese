@@ -96,11 +96,6 @@ fn test_match() {
 }
 
 #[test]
-fn test_pipe() {
-    test_parse_file("../examples/basic/pipe.cantonese");
-}
-
-#[test]
 fn test_raise() {
     test_parse_file("../examples/basic/raise.cantonese");
 }

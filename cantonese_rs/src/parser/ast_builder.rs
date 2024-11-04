@@ -467,7 +467,7 @@ impl<'a> AstBuilder<'a> {
 
         for next_pair in inner {
             match next_pair.as_rule() {
-                Rule::identifier => {
+                Rule::expression => {
                     let parent = self.build_expression(next_pair)?;
                     extends.push(parent);
                 }
@@ -720,92 +720,36 @@ impl<'a> AstBuilder<'a> {
         pair: Pair<'_, Rule>,
         span: Span,
     ) -> Result<Statement, ParseError> {
-        let object_call = pair.into_inner().next().unwrap();
-        let mut inner = object_call.into_inner();
+        // 方法调用现在是一个后缀表达式
+        let postfix_pair = pair.into_inner().next().unwrap();
 
-        // 获取方法调用链
-        let chain_pair = inner.next().unwrap();
-        
-        // 处理复杂的调用链
-        if chain_pair.as_rule() == Rule::object_call_chain {
-            let mut chain_inner = chain_pair.into_inner();
-            
-            // 第一个标识符是对象
-            let object_id = chain_inner.next().unwrap();
-            let mut object = Expression::Identifier(
-                object_id.as_str().to_string(),
-                Span::from_pest(object_id.as_span(), self.source)
-            );
-            
-            // 获取剩余的属性链，直到最后一个作为方法
-            let mut props = Vec::new();
-            for prop in chain_inner {
-                props.push(prop);
-            }
-            
-            // 逐步构建链式访问
-            for i in 0..props.len()-1 {
-                let prop_pair = &props[i];
-                let property = Expression::Identifier(
-                    prop_pair.as_str().to_string(),
-                    Span::from_pest(prop_pair.as_span(), self.source)
-                );
-                
-                object = Expression::ObjectAccessExpression {
-                    object: Box::new(object),
-                    property: Box::new(property),
-                    span: Span::from_pest(prop_pair.as_span(), self.source),
-                };
-            }
-            
-            // 最后一个是方法名
-            let method = if let Some(last_prop) = props.last() {
-                Expression::Identifier(
-                    last_prop.as_str().to_string(),
-                    Span::from_pest(last_prop.as_span(), self.source)
-                )
-            } else {
-                return Err(ParseError::Custom("方法调用缺少方法名".to_string()));
-            };
-            
-            // 处理参数列表
-            let mut arguments = Vec::new();
-            if let Some(args_pair) = inner.next() {
-                for arg_pair in args_pair.into_inner() {
-                    let arg = self.build_expression(arg_pair)?;
-                    arguments.push(arg);
-                }
-            }
-            
-            return Ok(Statement::MethodCallStatement {
-                object,
-                method,
-                arguments,
-                span,
-            });
+        // 解析后缀表达式
+        let expr = self.build_postfix_expression(postfix_pair, span)?;
+
+        // 从后缀表达式中提取方法调用信息
+        match expr {
+            Expression::CallExpression {
+                callee, arguments, ..
+            } => match *callee {
+                Expression::ObjectAccessExpression {
+                    object, property, ..
+                } => Ok(Statement::MethodCallStatement {
+                    object: *object,
+                    method: *property,
+                    arguments,
+                    span,
+                }),
+                _ => Ok(Statement::FunctionCallStatement {
+                    function: *callee,
+                    arguments,
+                    span,
+                }),
+            },
+            _ => Err(ParseError::Custom(format!(
+                "表达式不是方法调用: {:?}",
+                expr
+            ))),
         }
-        
-        // 如果不是链式调用，回退到原始处理方式
-        let object_pair = chain_pair;
-        let object = self.build_expression(object_pair)?;
-
-        let method_pair = inner.next().unwrap();
-        let method = self.build_expression(method_pair)?;
-
-        let mut arguments = Vec::new();
-        if let Some(args_pair) = inner.next() {
-            for arg_pair in args_pair.into_inner() {
-                let arg = self.build_expression(arg_pair)?;
-                arguments.push(arg);
-            }
-        }
-
-        Ok(Statement::MethodCallStatement {
-            object,
-            method,
-            arguments,
-            span,
-        })
     }
 
     /// 构建函数调用语句
@@ -815,25 +759,47 @@ impl<'a> AstBuilder<'a> {
         span: Span,
     ) -> Result<Statement, ParseError> {
         let mut inner = pair.into_inner();
-        let call_pair = inner.next().unwrap();
+        let first_pair = inner.next().unwrap();
 
-        let mut call_inner = call_pair.into_inner();
-        let function_pair = call_inner.next().unwrap();
-        let function = self.build_expression(function_pair)?;
+        // 处理 "好心 |...|啦" 形式
+        if first_pair.as_str() == "好心" {
+            let postfix_pair = inner.next().unwrap();
+            let expr = self.build_postfix_expression(postfix_pair, span)?;
 
-        let mut arguments = Vec::new();
-        if let Some(args_pair) = call_inner.next() {
-            for arg_pair in args_pair.into_inner() {
-                let arg = self.build_expression(arg_pair)?;
-                arguments.push(arg);
+            // 从后缀表达式中提取函数调用信息
+            match expr {
+                Expression::CallExpression {
+                    callee, arguments, ..
+                } => Ok(Statement::FunctionCallStatement {
+                    function: *callee,
+                    arguments,
+                    span,
+                }),
+                _ => Ok(Statement::FunctionCallStatement {
+                    function: expr,
+                    arguments: Vec::new(),
+                    span,
+                }),
+            }
+        } else {
+            // 直接是后缀表达式形式
+            let expr = self.build_postfix_expression(first_pair, span)?;
+
+            // 从后缀表达式中提取函数调用信息
+            match expr {
+                Expression::CallExpression {
+                    callee, arguments, ..
+                } => Ok(Statement::FunctionCallStatement {
+                    function: *callee,
+                    arguments,
+                    span,
+                }),
+                _ => Err(ParseError::Custom(format!(
+                    "表达式不是函数调用: {:?}",
+                    expr
+                ))),
             }
         }
-
-        Ok(Statement::FunctionCallStatement {
-            function,
-            arguments,
-            span,
-        })
     }
 
     /// 构建匹配语句
@@ -952,7 +918,6 @@ impl<'a> AstBuilder<'a> {
     fn parse_macro_body(&self, pair: Pair<'_, Rule>) -> Result<Vec<Expression>, ParseError> {
         let mut expressions = Vec::new();
 
-        // println!("解析宏主体: {:?}", pair);
         // 遍历所有主体标记树
         for body_token_tree in pair.into_inner() {
             if body_token_tree.as_rule() == Rule::body_token_tree {
@@ -1065,7 +1030,7 @@ impl<'a> AstBuilder<'a> {
             Rule::macro_call_expression => self.build_macro_call_expression(pair, span),
             Rule::term => {
                 let inner = pair.into_inner().next().unwrap();
-                self.build_expression(inner)
+                self.build_term(inner)
             }
             Rule::parenthesized_expression => {
                 let inner = pair.into_inner().next().unwrap();
@@ -1073,22 +1038,6 @@ impl<'a> AstBuilder<'a> {
 
                 Ok(Expression::ParenthesizedExpression {
                     expression: Box::new(expression),
-                    span,
-                })
-            }
-            Rule::object_access_expression => self.build_object_access_expression(pair, span),
-            Rule::object_access_chain => self.build_object_access_chain(pair, span),
-            Rule::list_access_expression => {
-                let mut inner = pair.into_inner();
-                let list_pair = inner.next().unwrap();
-                let index_pair = inner.next().unwrap();
-
-                let list = self.build_expression(list_pair)?;
-                let index = self.build_expression(index_pair)?;
-
-                Ok(Expression::ListAccessExpression {
-                    list: Box::new(list),
-                    index: Box::new(index),
                     span,
                 })
             }
@@ -1139,25 +1088,6 @@ impl<'a> AstBuilder<'a> {
                     span,
                 })
             }
-            Rule::call_expression => {
-                let mut inner = pair.into_inner();
-                let callee_pair = inner.next().unwrap();
-                let callee = self.build_expression(callee_pair)?;
-
-                let mut arguments = Vec::new();
-                if let Some(args_pair) = inner.next() {
-                    for arg_pair in args_pair.into_inner() {
-                        let arg = self.build_expression(arg_pair)?;
-                        arguments.push(arg);
-                    }
-                }
-
-                Ok(Expression::CallExpression {
-                    callee: Box::new(callee),
-                    arguments,
-                    span,
-                })
-            }
             Rule::string_literal => {
                 let text = pair.as_str();
                 // 移除两边的引号
@@ -1191,8 +1121,123 @@ impl<'a> AstBuilder<'a> {
             Rule::null_literal => Ok(Expression::NullLiteral(span)),
             Rule::var_arg => Ok(Expression::VarArg(span)),
             Rule::identifier => Ok(Expression::Identifier(pair.as_str().to_string(), span)),
+            Rule::unary_expression => self.build_unary_expression(pair, span),
+            Rule::postfix_expression => self.build_postfix_expression(pair, span),
+            Rule::primary => self.build_primary(pair, span),
             _ => Err(ParseError::InvalidNode(pair.as_rule())),
         }
+    }
+
+    /// 构建基础表达式单元
+    fn build_primary(&self, pair: Pair<'_, Rule>, span: Span) -> Result<Expression, ParseError> {
+        let inner = pair.into_inner().next().unwrap();
+        self.build_expression(inner)
+    }
+
+    /// 构建后缀表达式
+    fn build_postfix_expression(
+        &self,
+        pair: Pair<'_, Rule>,
+        span: Span,
+    ) -> Result<Expression, ParseError> {
+        let mut inner = pair.into_inner();
+
+        // 获取基础表达式单元
+        let primary_pair = inner.next().unwrap();
+        let mut expr = self.build_primary(primary_pair, span)?;
+
+        // 处理所有后缀操作符
+        for op_pair in inner {
+            // postfix_operator 是 silent ($)，所以我们直接获取其内部内容
+            for inner_op in op_pair.into_inner() {
+                match inner_op.as_rule() {
+                    // 对象属性访问: "->" | "." | "嘅" + identifier
+                    Rule::identifier => {
+                        // 获取前缀操作符
+                        let property_name = inner_op.as_str().to_string();
+                        let property_span = Span::from_pest(inner_op.as_span(), self.source);
+
+                        expr = Expression::ObjectAccessExpression {
+                            object: Box::new(expr),
+                            property: Box::new(Expression::Identifier(
+                                property_name,
+                                property_span,
+                            )),
+                            span: property_span,
+                        };
+                    }
+
+                    // 列表索引访问: "[" + expression + "]"
+                    Rule::expression => {
+                        let index_expr = self.build_expression(inner_op.clone())?;
+                        expr = Expression::ListAccessExpression {
+                            list: Box::new(expr),
+                            index: Box::new(index_expr),
+                            span: Span::from_pest(inner_op.as_span(), self.source),
+                        };
+                    }
+
+                    // 函数调用: "(" + arguments? + ")" | "下" + arguments
+                    Rule::argument_list => {
+                        let mut arguments = Vec::new();
+                        for arg_pair in inner_op.clone().into_inner() {
+                            let arg = self.build_expression(arg_pair)?;
+                            arguments.push(arg);
+                        }
+
+                        expr = Expression::CallExpression {
+                            callee: Box::new(expr),
+                            arguments,
+                            span: Span::from_pest(inner_op.as_span(), self.source),
+                        };
+                    }
+
+                    // 其他可能的后缀操作符
+                    _ => return Err(ParseError::InvalidNode(inner_op.as_rule())),
+                }
+            }
+        }
+
+        Ok(expr)
+    }
+
+    /// 构建表达式项 (term)
+    fn build_term(&self, pair: Pair<'_, Rule>) -> Result<Expression, ParseError> {
+        let span = Span::from_pest(pair.as_span(), self.source);
+
+        match pair.as_rule() {
+            Rule::unary_expression => self.build_unary_expression(pair, span),
+            Rule::postfix_expression => self.build_postfix_expression(pair, span),
+            _ => Err(ParseError::InvalidNode(pair.as_rule())),
+        }
+    }
+
+    /// 构建一元表达式
+    fn build_unary_expression(
+        &self,
+        pair: Pair<'_, Rule>,
+        span: Span,
+    ) -> Result<Expression, ParseError> {
+        let mut inner = pair.into_inner();
+
+        let op_pair = inner.next().unwrap();
+        let op_str = op_pair.as_str();
+
+        // 将一元操作符转换为UnaryOperator枚举
+        let operator = match op_str {
+            "-" => UnaryOperator::Negative,
+            "唔係" | "not" => UnaryOperator::Not,
+            _ => return Err(ParseError::InvalidOperator(op_str.to_string())),
+        };
+
+        let operand_pair = inner.next().unwrap();
+        let operand = self.build_expression(operand_pair)?;
+
+        Ok(Expression::UnaryExpression {
+            operator,
+            operand: Box::new(operand),
+            span,
+        })
     }
 
     /// 构建代码块
@@ -1220,10 +1265,17 @@ impl<'a> AstBuilder<'a> {
     /// 构建list_init语句
     fn build_list_init_statement(
         &self,
-        _pair: Pair<'_, Rule>,
+        pair: Pair<'_, Rule>,
         span: Span,
     ) -> Result<Statement, ParseError> {
-        Ok(Statement::ListInitStatement { span })
+        let mut inner = pair.into_inner();
+        let list_expr = self.build_expression(inner.next().unwrap())?;
+        let name = self.build_expression(inner.next().unwrap())?;
+        Ok(Statement::ListInitStatement {
+            list_expr,
+            name,
+            span,
+        })
     }
 
     /// 构建宏调用表达式
@@ -1260,53 +1312,6 @@ impl<'a> AstBuilder<'a> {
         })
     }
 
-    /// 构建对象访问表达式
-    fn build_object_access_expression(
-        &self,
-        pair: Pair<'_, Rule>,
-        span: Span,
-    ) -> Result<Expression, ParseError> {
-        // 获取对象访问链
-        let chain_pair = pair.into_inner().next().unwrap();
-        self.build_object_access_chain(chain_pair, span)
-    }
-
-    /// 构建对象访问链
-    fn build_object_access_chain(
-        &self,
-        pair: Pair<'_, Rule>,
-        span: Span,
-    ) -> Result<Expression, ParseError> {
-        let mut inner = pair.into_inner();
-        
-        // 获取链的基础对象
-        let base_pair = inner.next().unwrap();
-        let base_obj = match base_pair.as_rule() {
-            Rule::object_base => {
-                let obj_pair = base_pair.into_inner().next().unwrap();
-                self.build_expression(obj_pair)?
-            },
-            _ => return Err(ParseError::InvalidNode(base_pair.as_rule())),
-        };
-
-        // 获取所有属性标识符并生成链式对象访问
-        let mut current_expr = base_obj;
-        for prop_pair in inner {
-            if prop_pair.as_rule() == Rule::identifier {
-                let property = Expression::Identifier(prop_pair.as_str().to_string(), 
-                    Span::from_pest(prop_pair.as_span(), self.source));
-                
-                current_expr = Expression::ObjectAccessExpression {
-                    object: Box::new(current_expr),
-                    property: Box::new(property),
-                    span: Span::from_pest(prop_pair.as_span(), self.source),
-                };
-            }
-        }
-
-        Ok(current_expr)
-    }
-    
     /// 构建宏体中的元变量
     fn build_body_meta_variable(&self, pair: Pair<'_, Rule>) -> Result<Expression, ParseError> {
         let span = Span::from_pest(pair.as_span(), self.source);

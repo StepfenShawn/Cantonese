@@ -11,10 +11,9 @@ alpha = _{ 'a'..'z' | 'A'..'Z' | '\u{4E00}'..'\u{9FFF}' }
 digit = _{ '0'..'9' }
 identifier_char = _{ alpha | digit | "_" }
 
-// 关键字定义 - 基于can_keywords.py中的定义
 keyword = @{ 
     "畀我睇下" | "點樣先" | "收工" | "喺" | "定係" | "起底" | "介紹返" | "先啦" | 
-    "乜X" | "唔係" | "係" | "如果" | "若然" | "唔係咁就" | "嘅话" | 
+    "乜X" | "唔係" | "係" | "如果" | "若然" | "唔係咁就" | "嘅话" | "嘅" |
     "咩都唔做" | "落操场玩跑步" | "$" | "好心" | "啦" | 
     "咁啦" | "使下" | "點部署" | "搞掂" | "諗下" | "佢嘅" | "玩到" | "為止" | 
     "還數" | "执嘢" | "揾到" | "执手尾" | "掟個" | "嚟睇下" | "从" | "行到" | 
@@ -46,20 +45,8 @@ expression = {
 }
 
 term = _{
-    list_expression |
-    map_expression |
-    string_literal |
-    number_literal |
-    bool_literal |
-    null_literal |
-    var_arg |
     unary_expression |
-    call_expression |
-    lambda_expression |
-    parenthesized_expression |
-    object_access_expression |
-    list_access_expression |
-    identifier
+    postfix_expression
 }
 
 // 一元表达式
@@ -68,7 +55,7 @@ unary_expression = {
 }
 
 unary_operator = {
-    "-" | "唔係" | "not" | "長度" | "len"
+    "-" | "not"
 }
 
 // 二元运算符
@@ -83,28 +70,8 @@ binary_operator = {
 
 // 括号表达式
 parenthesized_expression = {
+    "(" ~ expression ~ ")" |
     "|" ~ expression ~ "|"
-}
-
-// 对象访问表达式
-object_access_expression = {
-    object_access_chain
-}
-
-// 对象访问链 - 支持链式访问
-object_access_chain = {
-    object_base ~ ("->" ~ identifier)+
-}
-
-// 对象访问基础
-object_base = {
-    identifier |
-    call_expression 
-}
-
-// 列表访问表达式
-list_access_expression = {
-    identifier ~ "[" ~ expression ~ "]"
 }
 
 // 列表表达式
@@ -126,23 +93,6 @@ lambda_expression = {
     "$$" ~ parameter_list ~ "{" ~ expression ~ "}"
 }
 
-// 函数调用
-call_expression = {
-    identifier ~ "下" ~ "->" ~ argument_list |
-    object_call_expression |
-    macro_call_expression
-}
-
-// 方法调用
-object_call_expression = {
-    object_call_chain ~ "(" ~ argument_list? ~ ")" ~ ("啦" | "咁啦")? ~ "!"?
-}
-
-// 方法调用链 - 允许链式调用
-object_call_chain = {
-    (identifier ~ ("->" ~ identifier)*)
-}
-
 // 宏调用表达式
 macro_call_expression = { 
     identifier ~ "!" ~ "(" ~ pattern_token_tree ~ ")"
@@ -151,6 +101,32 @@ macro_call_expression = {
 argument_list = {
     expression ~ ("," ~ expression)*
 }
+
+// 基础表达式单元 (不包含后缀操作)
+primary = {
+    string_literal |
+    number_literal |
+    bool_literal |
+    null_literal |
+    var_arg |
+    list_expression |
+    map_expression |
+    parenthesized_expression |
+    lambda_expression |
+    macro_call_expression |
+    identifier
+}
+
+// 后缀操作符 (访问、索引、调用)
+postfix_operator = {
+    ("下" ~ "->" ~ argument_list) |
+    (!"嘅话" ~ "嘅" | "->" | ".") ~ identifier |
+    "[" ~ expression ~ "]" |
+    ("(" ~ argument_list? ~ ")")
+}
+
+// 后缀表达式 (基础单元 + 零或多个后缀操作)
+postfix_expression = { primary ~ postfix_operator* }
 
 // 语句
 statement = {
@@ -162,6 +138,7 @@ statement = {
     for_each_statement |
     while_statement |
     list_init_statement |
+    stack_init_statement |
     function_declaration |
     function_type_declaration |
     method_declaration |
@@ -184,7 +161,7 @@ statement = {
     macro_def_statement |
     embedded_code_statement |
     exit_statement |
-    expression // 表达式语句
+    expression
 }
 
 // 赋值语句
@@ -192,10 +169,8 @@ assignment_statement = {
     "介紹返" ~ (var ~ ("," ~ var)*) ~ "係" ~ exp_list
 }
 
-
 var = {
-    object_access_expression |
-    list_access_expression |
+    postfix_expression |
     map_expression |
     identifier |
     "「" ~ identifier ~ "」"
@@ -214,7 +189,7 @@ assignment_block_statement = {
 
 // 打印语句
 print_statement = {
-    "畀我睇下" ~ expression ~ "點樣先" ~ ("?" | "？")*
+    "畀我睇下" ~ (expression ~ ("," ~ expression)*) ~ "點樣先"
 }
 
 // 条件语句
@@ -226,7 +201,7 @@ if_statement = {
 
 // 循环语句
 for_statement = {
-    identifier ~ "从" ~ expression ~ "行到" ~ expression ~ block ~ "到步"
+    identifier ~ "从" ~ expression ~ "行到" ~ expression ~ statement_list ~ "到步"
 }
 
 for_each_statement = {
@@ -239,6 +214,10 @@ while_statement = {
 
 // 列表初始化
 list_init_statement = {
+    expression ~ "拍住上" ~ "=>" ~ expression
+}
+
+stack_init_statement = {
     "有條仆街叫" ~ "|" ~ identifier ~ "|"
 }
 
@@ -248,7 +227,8 @@ function_declaration = {
 }
 
 parameter_list = {
-    "|" ~ (identifier ~ ("," ~ identifier)*)? ~ "|"
+    "|" ~ (identifier ~ ("," ~ identifier)*)? ~ "|" |
+    (identifier ~ ("," ~ identifier)*)?
 }
 
 // 函数类型定义
@@ -278,7 +258,7 @@ attribute_list = {
 // 类定义
 class_declaration = {
     "介紹返" ~ identifier ~ "係" ~ "乜X" ~ "{" ~
-    ("佢個老豆叫" ~ identifier)? ~
+    ("佢個老豆叫" ~ expression)? ~
     (method_declaration | attribute_declaration)* ~
     "}"
 }
@@ -290,17 +270,21 @@ import_statement = {
 
 import_path = {
     (identifier ~ "::" ~ identifier ~ ("::" ~ "*" | "::" ~ identifier)*) |
-    (identifier ~ "::" ~ "{" ~ identifier ~ ("::" ~ "*")? ~ ("," ~ identifier ~ ("::" ~ "*")?)* ~ "}")
+    (identifier ~ "::" ~ "{" ~ nested_import ~ ("," ~ nested_import)* ~ "}")
+}
+
+nested_import = {
+    identifier ~ ("::" ~ identifier)* ~ ("::" ~ "*")?
 }
 
 // 异常处理
 throw_statement = {
-    "掟個" ~ expression ~ "嚟睇下" ~ ("?" | "？")*
+    "掟個" ~ expression ~ "嚟睇下" 
 }
 
 try_catch_statement = {
     "执嘢" ~ "=>" ~ block ~
-    "揾到" ~ identifier ~ "嘅话" ~ "=>" ~ block ~
+    "揾到" ~ expression ~ "嘅话" ~ "=>" ~ block ~
     ("执手尾" ~ "=>" ~ block)?
 }
 
@@ -350,13 +334,13 @@ command_statement = {
 
 // 方法调用语句
 method_call_statement = {
-    object_call_expression
+    postfix_expression
 }
 
 // 函数调用语句
 function_call_statement = {
-    "好心" ~ "|" ~ call_expression ~ "|" ~ "啦" ~ "!"? |
-    call_expression ~ "啦" ~ "!"?
+    ("好心" ~ "|"? ~ postfix_expression ~ "|"? ~ "啦" ~ "!"?) |
+    (postfix_expression ~ ("啦" ~ "!")?)
 }
 
 // 模式匹配语句
@@ -468,15 +452,18 @@ exit_statement = {
 
 // 代码块
 block = {
-    "{" ~ statement* ~ "}" |
+    "{" ~ statement_list ~ "}" |
     ("=>" ~ statement_list ~ "先啦")
 }
 
+// 可选的分号分隔符
+semicolon = _{ ";" | "??" | "?" | "？" }
+
 statement_list = {
-    statement+
+    statement ~ (semicolon? ~ statement)* ~ semicolon?
 }
 
 // 定义程序
 program = {
-    SOI ~ statement* ~ EOI
+    SOI ~ (statement ~ semicolon?)* ~ EOI
 } 

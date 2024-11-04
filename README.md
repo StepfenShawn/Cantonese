@@ -165,14 +165,14 @@ pip install Cantonese
 ```
 ### <a name="9">斷言語句</a>
 ```Rust
-谂下「1 + 1 == 3」?
+諗下「1 + 1 == 3」?
 ```  
 運行結果：  
 ```
 濑嘢!!!: AssertionError:
  喺runtime察覺到錯誤!
  --> ../examples/basic/assert.cantonese 6:0
-  | 谂下 |1 - 1 == 1| ?
+  | 諗下 |1 - 1 == 1| ?
     ^^^^^^^^^^^^^^^^^^^^ Tips:  幫緊你只不過有心無力:(
 
 :D 不如跟住我嘅tips繼續符碌下?

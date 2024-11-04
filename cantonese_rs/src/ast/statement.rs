@@ -71,6 +71,8 @@ pub enum Statement {
 
     // 列表初始化
     ListInitStatement {
+        list_expr: Expression,
+        name: Expression,
         span: Span,
     },
 
@@ -247,7 +249,7 @@ impl Statement {
             Statement::ForStatement { span, .. } => *span,
             Statement::ForEachStatement { span, .. } => *span,
             Statement::WhileStatement { span, .. } => *span,
-            Statement::ListInitStatement { span } => *span,
+            Statement::ListInitStatement { span, .. } => *span,
             Statement::FunctionDeclaration { span, .. } => *span,
             Statement::FunctionTypeDeclaration { span, .. } => *span,
             Statement::MethodDeclaration { span, .. } => *span,
