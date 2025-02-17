@@ -121,6 +121,11 @@ fn test_while() {
     test_parse_file("examples/basic/while.cantonese");
 }
 
+#[test]
+fn test_helloworld_app() {
+    test_parse_file("examples/App/helloworld_app.cantonese");
+}
+
 // 批量测试所有基本示例文件
 #[test]
 fn test_all_basic_examples() {

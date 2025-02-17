@@ -81,13 +81,13 @@ fn test_control_flow_parsing() {
 fn test_loop_parsing() {
     let source = r#"
     介紹返 i 係 0
-    落操场玩跑步 {
+    落操场玩跑步
         畀我睇下 i 點樣先?
         如果 |i > 10| 嘅话 => {
             飲茶先啦
         }
         介紹返 i 係 i + 1
-    } 玩到 i 为止 收工
+    玩到 i 为止 收工
     "#;
 
     let ast_builder = AstBuilder::new(source);
@@ -143,7 +143,7 @@ fn test_pattern_matching_parsing() {
 #[test]
 fn test_lambda_parsing() {
     let source = r#"
-    介紹返 square 係 $$ |x| {x * x}
+    介紹返 square 係 就咁 |x| {x * x}
     "#;
 
     let ast_builder = AstBuilder::new(source);

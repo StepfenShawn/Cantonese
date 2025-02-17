@@ -33,7 +33,7 @@ fn test_complex_function_and_class() {
     搞掂
     
     # 使用函数和类
-    介紹返 p 係 create_person 下 -> "Alice", 30
+    介紹返 p 係 create_person 下 "Alice", 30
     # p->say_hello()啦!
     畀我睇下 "Age: " + p->get_age() 點樣先?
     "#;
@@ -59,13 +59,13 @@ fn test_nested_control_flow() {
         如果 |y > 0| 嘅话 => {
             畀我睇下 "x 大于 5，y 大于 0" 點樣先?
             
-            落操场玩跑步 {
+            落操场玩跑步
                 畀我睇下 i 點樣先?
                 如果 |i >= 3| 嘅话 => {
                     飲茶先啦
                 }
                 介紹返 i 係 i + 1
-            } 玩到 i 为止 收工
+            玩到 i 为止 收工
         } 唔係 嘅话 => {
             畀我睇下 "x 大于 5，y 不大于 0" 點樣先?
         }
@@ -97,13 +97,13 @@ fn test_data_structures_and_operations() {
     # 列表操作函数
     介紹返 $ sum_list |list| 點部署
         介紹返 total 係 0
-        i 喺 list => {
+        i 喺 list =>
             介紹返 total 係 total + i
-        }
+        先啦
         還數 total
     搞掂
     
-    畀我睇下 sum_list 下 -> numbers 點樣先?
+    畀我睇下 sum_list 下 numbers 點樣先?
     "#;
 
     let ast_builder = AstBuilder::new(source);
@@ -124,7 +124,7 @@ fn test_exception_and_pattern_matching() {
     搞掂
     
     执嘢 => {
-        介紹返 result 係 divide 下 -> 10, 0
+        介紹返 result 係 divide 下 10, 0
         畀我睇下 result 點樣先?
     } 揾到 e 嘅话 => {
         睇撚住 e => 
@@ -160,8 +160,8 @@ fn test_import_and_usage() {
         還數 pi * radius * radius
     搞掂
     
-    介紹返 area 係 calculate_area 下 -> 5
-    介紹返 formatted 係 format_string 下 -> "面积: {}", area
+    介紹返 area 係 calculate_area 下 5
+    介紹返 formatted 係 format_string 下 "面积: {}", area
     畀我睇下 formatted 點樣先?
     "#;
 

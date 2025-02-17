@@ -4,7 +4,7 @@
     佢個老豆叫 App
     佢識得 showButton |自己| => {
         /* Use BoxLayout */
-        |老作| 下 -> "Box" 就係 |布局|
+        介紹返 |布局| 係 |老作| 下 "Box"
         有条仆街叫 |组件|
         |i| 从 0 行到 7
             开掣 下 -> |"This is the button " + str(i) | 就係 |按钮|
@@ -19,4 +19,4 @@
     }
 }
 
-App运行 下 -> |ButtonApp, ButtonApp()->showButton| 啦
+好心 App运行 下 |ButtonApp, ButtonApp 下 || 嘅 showButton| 啦

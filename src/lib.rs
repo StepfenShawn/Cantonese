@@ -3,9 +3,9 @@ use pyo3::prelude::*;
 use std::collections::HashMap;
 
 pub mod ast;
-pub mod python;
 pub mod macros;
 pub mod parser;
+pub mod python;
 
 pub use ast::statement::Program;
 pub use macros::expand_macros;

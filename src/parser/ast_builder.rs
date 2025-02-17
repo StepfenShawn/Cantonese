@@ -759,45 +759,25 @@ impl<'a> AstBuilder<'a> {
         span: Span,
     ) -> Result<Statement, ParseError> {
         let mut inner = pair.into_inner();
-        let first_pair = inner.next().unwrap();
+        let postfix_pair = inner.next().unwrap();
+        let expr = self.build_postfix_expression(postfix_pair, span)?;
 
-        // 处理 "好心 |...|啦" 形式
-        if first_pair.as_str() == "好心" {
-            let postfix_pair = inner.next().unwrap();
-            let expr = self.build_postfix_expression(postfix_pair, span)?;
-
-            // 从后缀表达式中提取函数调用信息
-            match expr {
-                Expression::CallExpression {
-                    callee, arguments, ..
-                } => Ok(Statement::FunctionCallStatement {
-                    function: *callee,
-                    arguments,
-                    span,
-                }),
-                _ => Ok(Statement::FunctionCallStatement {
+        // 从后缀表达式中提取函数调用信息
+        match expr {
+            Expression::CallExpression {
+                callee, arguments, ..
+            } => Ok(Statement::FunctionCallStatement {
+                function: *callee,
+                arguments,
+                span,
+            }),
+            _ => {
+                // 如果不是CallExpression，就是没有参数的函数调用
+                Ok(Statement::FunctionCallStatement {
                     function: expr,
                     arguments: Vec::new(),
                     span,
-                }),
-            }
-        } else {
-            // 直接是后缀表达式形式
-            let expr = self.build_postfix_expression(first_pair, span)?;
-
-            // 从后缀表达式中提取函数调用信息
-            match expr {
-                Expression::CallExpression {
-                    callee, arguments, ..
-                } => Ok(Statement::FunctionCallStatement {
-                    function: *callee,
-                    arguments,
-                    span,
-                }),
-                _ => Err(ParseError::Custom(format!(
-                    "表达式不是函数调用: {:?}",
-                    expr
-                ))),
+                })
             }
         }
     }
@@ -1149,22 +1129,30 @@ impl<'a> AstBuilder<'a> {
         // 处理所有后缀操作符
         for op_pair in inner {
             // postfix_operator 是 silent ($)，所以我们直接获取其内部内容
-            for inner_op in op_pair.into_inner() {
+            let mut op_inner = op_pair.into_inner();
+            let mut is_function_call = false;
+            let mut arguments = Vec::new();
+            let mut call_span = span;
+
+            // 检查是否是函数调用模式
+            while let Some(inner_op) = op_inner.next() {
                 match inner_op.as_rule() {
                     // 对象属性访问: "->" | "." | "嘅" + identifier
                     Rule::identifier => {
-                        // 获取前缀操作符
-                        let property_name = inner_op.as_str().to_string();
-                        let property_span = Span::from_pest(inner_op.as_span(), self.source);
+                        if !is_function_call {
+                            // 获取属性名
+                            let property_name = inner_op.as_str().to_string();
+                            let property_span = Span::from_pest(inner_op.as_span(), self.source);
 
-                        expr = Expression::ObjectAccessExpression {
-                            object: Box::new(expr),
-                            property: Box::new(Expression::Identifier(
-                                property_name,
-                                property_span,
-                            )),
-                            span: property_span,
-                        };
+                            expr = Expression::ObjectAccessExpression {
+                                object: Box::new(expr),
+                                property: Box::new(Expression::Identifier(
+                                    property_name,
+                                    property_span,
+                                )),
+                                span: property_span,
+                            };
+                        }
                     }
 
                     // 列表索引访问: "[" + expression + "]"
@@ -1177,24 +1165,32 @@ impl<'a> AstBuilder<'a> {
                         };
                     }
 
-                    // 函数调用: "(" + arguments? + ")" | "下" + arguments
+                    // 函数调用参数列表: "(" + arguments? + ")" | argument_list
                     Rule::argument_list => {
-                        let mut arguments = Vec::new();
-                        for arg_pair in inner_op.clone().into_inner() {
+                        is_function_call = true;
+                        call_span = Span::from_pest(inner_op.as_span(), self.source);
+
+                        // 解析参数列表，可能为空
+                        for arg_pair in inner_op.into_inner() {
                             let arg = self.build_expression(arg_pair)?;
                             arguments.push(arg);
                         }
-
-                        expr = Expression::CallExpression {
-                            callee: Box::new(expr),
-                            arguments,
-                            span: Span::from_pest(inner_op.as_span(), self.source),
-                        };
                     }
 
-                    // 其他可能的后缀操作符
-                    _ => return Err(ParseError::InvalidNode(inner_op.as_rule())),
+                    // 其他标记（如"下"、"->"、"啦"等）会被忽略，因为它们是语法标记
+                    _ => {
+                        // 忽略语法标记，继续处理
+                    }
                 }
+            }
+
+            // 如果检测到函数调用，创建CallExpression
+            if is_function_call {
+                expr = Expression::CallExpression {
+                    callee: Box::new(expr),
+                    arguments,
+                    span: call_span,
+                };
             }
         }
 
