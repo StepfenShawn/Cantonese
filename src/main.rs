@@ -8,8 +8,10 @@ use std::path::{Path, PathBuf};
 
 use crate::macros::expand_macros;
 use crate::parser::ast_builder::AstBuilder;
+use crate::compiler::Codegen;
 
 pub mod ast;
+pub mod compiler;
 pub mod diagnostics;
 pub mod macros;
 pub mod parser;
@@ -57,8 +59,7 @@ fn main() -> Result<()> {
             parse_file(file, json)?;
         }
         Commands::Run { file } => {
-            println!("運行功能正在開發中");
-            parse_file(file, false)?;
+            run_file(file)?;
         }
         Commands::Check { file } => {
             check_file(file)?;
@@ -116,6 +117,85 @@ fn check_file(file: PathBuf) -> Result<()> {
             Ok(())
         }
     }
+}
+
+/// 运行粤语程序
+fn run_file(file: PathBuf) -> Result<()> {
+    let file_path = file.to_string_lossy().to_string();
+    let source = fs::read_to_string(&file)?;
+    let reporter = DiagnosticReporter::new(source.clone(), file_path.clone());
+
+    // 解析源代码为AST
+    let ast_builder = AstBuilder::new(&source);
+    let program = match ast_builder.parse() {
+        Ok(ast) => ast,
+        Err(e) => {
+            eprintln!("解析錯誤: {}", e);
+            return Ok(());
+        }
+    };
+
+    // 展开宏
+    let expanded_program = expand_macros(program);
+
+    // 编译为Python代码
+    let mut codegen = Codegen::new();
+    let python_code = codegen.compile(&expanded_program);
+
+    // 生成临时Python文件
+    let path = Path::new(&file_path);
+    let file_stem = path
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("output");
+    let py_path = format!("{}.py", file_stem);
+
+    // 添加必要的导入和辅助函数
+    let full_code = format!(
+        "# 由粤语编程语言编译生成\n\
+         import os\n\
+         import sys\n\
+         \n\
+         # 辅助函数\n\
+         def Str(s):\n\
+         \treturn s\n\
+         \n\
+         def List(lst):\n\
+         \treturn lst\n\
+         \n\
+         # 用户代码\n\
+         {}\n",
+        python_code
+    );
+
+    fs::write(&py_path, full_code)?;
+    println!("已编译为Python代码: {}", py_path);
+
+    // 运行Python代码
+    println!("\n=== 运行结果 ===");
+    let output = std::process::Command::new("python")
+        .arg(&py_path)
+        .output();
+
+    match output {
+        Ok(result) => {
+            if !result.stdout.is_empty() {
+                print!("{}", String::from_utf8_lossy(&result.stdout));
+            }
+            if !result.stderr.is_empty() {
+                eprint!("{}", String::from_utf8_lossy(&result.stderr));
+            }
+            if !result.status.success() {
+                eprintln!("\n程序执行失败，退出码: {:?}", result.status.code());
+            }
+        }
+        Err(e) => {
+            eprintln!("无法运行Python: {}", e);
+            eprintln!("请确保已安装Python并在PATH中");
+        }
+    }
+
+    Ok(())
 }
 
 fn print_program(program: &ast::statement::Program, source_path: &str) {

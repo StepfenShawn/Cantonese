@@ -1006,7 +1006,37 @@ impl<'a> AstBuilder<'a> {
         let inner_rule = pair.as_rule();
 
         match inner_rule {
-            Rule::expression => self.build_expression(pair.into_inner().next().unwrap()),
+            Rule::expression => {
+                // expression = { term ~ (binary_operator ~ term)* }
+                let mut inner = pair.into_inner();
+                let mut left = self.build_expression(inner.next().unwrap())?;
+
+                // 处理二元运算符和右侧表达式
+                while let Some(op_pair) = inner.next() {
+                    if op_pair.as_rule() == Rule::binary_operator {
+                        let op_str = op_pair.as_str();
+                        let operator = BinaryOperator::from_str(op_str)
+                            .ok_or_else(|| ParseError::InvalidOperator(op_str.to_string()))?;
+
+                        let right_pair = inner.next().unwrap();
+                        let right = self.build_expression(right_pair)?;
+
+                        let expr_span = Span {
+                            start: left.span().start,
+                            end: right.span().end,
+                        };
+
+                        left = Expression::BinaryExpression {
+                            left: Box::new(left),
+                            operator,
+                            right: Box::new(right),
+                            span: expr_span,
+                        };
+                    }
+                }
+
+                Ok(left)
+            }
             Rule::macro_call_expression => self.build_macro_call_expression(pair, span),
             Rule::term => {
                 let inner = pair.into_inner().next().unwrap();

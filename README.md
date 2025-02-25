@@ -48,7 +48,7 @@ pip install Cantonese
 ### <a name="2">Hello World</a>
 用粵語寫嘅第一個程序 Hello World：  
 ```Rust
-畀我睇下「"Hello World!"」點樣先？
+畀我睇下 "Hello World!" 點樣先？
 ```
 ### <a name="3">賦值語句</a>
 ```Rust
@@ -83,7 +83,7 @@ pip install Cantonese
     「结束」係 唔啱
 先啦
 落操场玩跑步
-    介紹返「start」係「start + 1」
+    介紹返「start」係「start」+ 1
     畀我睇下「start」 點樣先??
     如果 |start >= 100| 嘅话 => {
         飲茶先啦
@@ -102,10 +102,10 @@ pip install Cantonese
 ```Rust
 介紹返「A」係 2
 如果 |A 係 2| 嘅话 => {
-    畀我睇下「"A 係 2"」點樣先??
+    畀我睇下 "A 係 2" 點樣先??
 }
 唔係 嘅话 => {
-    畀我睇下「"A 唔係 2"」點樣先??
+    畀我睇下"A 唔係 2" 點樣先??
 }
 ```
 仲可以用`match`
@@ -229,10 +229,9 @@ def add(a, b):
 ```Rust
 介紹返 duck 係 乜X {
     佢個老豆叫 object
-    佢有啲咩?? => {
+    佢有啲咩?? =>
         性别: 公家嘢,
         年龄: 私家嘢
-    }
     佢識得 游下水 |自己| => {
         畀我睇下 "Duck is swimming" 點樣先??
     }
@@ -459,8 +458,8 @@ pip install kivy
 介紹返 HelloApp 係 乜X {
     佢個老豆叫 App
     佢識得 HelloWorld |自己| => {
-        |同我show| 下 -> "Hello World" 就係 |做嘢|
-        还数 |做嘢|
+        介紹返 做嘢 係 同我show 下 "Hello World"
+        还数 做嘢
     }
 }
 

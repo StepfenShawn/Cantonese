@@ -25,8 +25,7 @@ keyword = @{
 
 // 字面量
 string_literal = @{ 
-    ("\"" ~ (!"\"" ~ ANY)* ~ "\"") |
-    ("「" ~ (!"」" ~ ANY)* ~ "」")
+    ("\"" ~ (!"\"" ~ ANY)* ~ "\"")
 }
 number_literal = @{ 
     "0x" ~ ('0'..'9' | 'a'..'f' | 'A'..'F')+ ~ ("." ~ ('0'..'9' | 'a'..'f' | 'A'..'F')+)? |
@@ -37,7 +36,10 @@ null_literal = @{ "冇嘢" | "null" }
 var_arg = @{ "<*>" }
 
 // 标识符规则
-identifier = @{ !keyword ~ identifier_char+ }
+identifier = @{ 
+    (!keyword ~ identifier_char+) |
+    ("「" ~ identifier_char+ ~ "」")
+}
 
 // 表达式 - 使用 Pratt 解析器的形式
 expression = { 
@@ -172,8 +174,7 @@ assignment_statement = {
 var = {
     postfix_expression |
     map_expression |
-    identifier |
-    "「" ~ identifier ~ "」"
+    identifier
 }
 
 exp_list = {
