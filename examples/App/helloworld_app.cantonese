@@ -3,9 +3,9 @@
 介紹返 HelloApp 係 乜X {
     佢個老豆叫 App
     佢識得 HelloWorld |自己| => {
-        介紹返 做嘢 係 同我show 下 "Hello World"
-        還數 做嘢
+        |同我show| 下 -> "Hello World" 就係 |做嘢|
+        还数 |做嘢|
     }
 }
 
-好心 App运行 下 |HelloApp, HelloApp() 嘅 HelloWorld| 啦
+App运行 下 -> |HelloApp, HelloApp()->HelloWorld| 啦

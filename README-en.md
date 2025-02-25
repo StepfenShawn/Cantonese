@@ -126,7 +126,7 @@ You will get:
 ```
 ### <a name="9">Assertion statement</a>
 ```
-諗下: |1 + 1 == 3| ?
+谂下: |1 + 1 == 3| ?
 ```  
 You will get:  
 ```

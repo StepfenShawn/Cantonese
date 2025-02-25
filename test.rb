@@ -16,7 +16,7 @@ puts %q{
 class BasicTest < Test::Unit::TestCase
 
   def test_hello_world
-    res = %x(#{RUN} examples/basic/helloworld.cantonese).encode("UTF-8")
+    res = %x(#{RUN} examples/basic/HelloWorld.cantonese).encode("UTF-8")
     assert res == "Hello World!\n"
   end
 
