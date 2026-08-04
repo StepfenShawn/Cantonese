@@ -537,7 +537,7 @@ pub enum Stat {
 impl StatNode for Stat {}
 
 // =============================================================================
-// Macro nodes (translated from can_macro_node.py)
+// Macro nodes
 // =============================================================================
 
 /// Meta id inside macro *patterns* (input side), e.g. `@v: str`.
@@ -608,11 +608,7 @@ pub struct CallMacro {
     pub token_trees: Vec<TokenTreeChild>,
 }
 
-// =============================================================================
-// Top-level AST union (translated from __init__.py)
-// =============================================================================
-
-/// `AST = Union[Stat, Exp, TokenTree]` from the Python source.
+/// Top-level AST union
 #[derive(Debug, Clone)]
 pub enum Ast {
     Stat(Stat),

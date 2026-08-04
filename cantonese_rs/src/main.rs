@@ -1,12 +1,25 @@
-mod ast;
-mod lexer;
-mod parser;
+// use std::path::Path;
 
-use lexer::Lexer;
-use parser::{StatParser, Parser as CanParser, ParseError};
+use cantonese_rs::lexer::Lexer;
+use cantonese_rs::parser::{ParseError, Parser as CanParser, StatParser};
+
+// fn parse_cantonese_file(path: &Path) -> Result<Vec<cantonese_rs::ast::Stat>, String> {
+//     let source = std::fs::read_to_string(path)
+//         .map_err(|e| format!("failed to read {}: {e}", path.display()))?;
+//     let path_str = path.to_string_lossy().to_string();
+//     let mut lexer = Lexer::new(path_str.clone(), &source);
+//     let tokens = lexer
+//         .tokenize_all()
+//         .map_err(|e| format!("lexer error in {}: {e}", path.display()))?;
+//     let mut parser = CanParser::new(&tokens, &path_str);
+//     StatParser::parse_stats(&mut parser)
+//         .map_err(|e| format!("parser error in {}: {e}", path.display()))
+// }
 
 fn main() -> Result<(), ParseError> {
-    let source_code = r#"如果 1 > 2 嘅話 => {
+    let source_code = r#"
+使下 A::{B, C::*}
+如果 |1 > 2| 嘅話 => {
     畀我睇下 "Hello" 點樣先
 } 唔係 嘅話 => {
     畀我睇下 123 點樣先

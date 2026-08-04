@@ -449,7 +449,7 @@ impl ExpParser {
                         key_exp: Box::new(key_exp),
                     });
                 }
-                Some(TokenType::SepLParen) | _ if parser.match_value(KW_CALL_BEGIN) => {
+                Some(typ) if typ == TokenType::SepLParen || parser.peek_value() == Some(KW_CALL_BEGIN) => {
                     exp = Self::finish_functioncall_exp(parser, exp)?;
                 }
                 Some(TokenType::OpAssign) => {

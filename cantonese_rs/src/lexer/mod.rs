@@ -75,9 +75,17 @@ impl<'a> Lexer<'a> {
         Some(c)
     }
 
-    /// 检测接下来字符串是否匹配前缀
+    /// 检测接下来字符串是否匹配前缀（基于当前 peek 位置）
     fn starts_with(&mut self, s: &str) -> bool {
-        let mut chars = self.source[self.start_byte..].chars();
+        // 确保 peeked 已填充，从而拿到当前字符的字节位置
+        if self.peeked.is_none() {
+            let _ = self.peek();
+        }
+        let start_byte = self
+            .peeked
+            .map(|(byte, _)| byte)
+            .unwrap_or(self.source.len());
+        let mut chars = self.source[start_byte..].chars();
         for target in s.chars() {
             match chars.next() {
                 Some(c) if c == target => continue,
