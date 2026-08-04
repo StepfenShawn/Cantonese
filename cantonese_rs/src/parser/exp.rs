@@ -249,7 +249,7 @@ impl ExpParser {
                         exp2: Box::new(Self::parse_exp2(parser)?),
                     });
                 }
-                Some("餘") => {
+                Some("餘") | Some("余") => {
                     parser.skip();
                     exp = Exp::Binop(BinopExp {
                         op: "%".to_string(),

@@ -298,9 +298,8 @@ impl<'a> Lexer<'a> {
                 Token::new(start_pos, TokenType::OpMod, "%".into())
             }
             '~' => {
-                // ~ 开头原生调用表达式（原版逻辑）
-                let s = self.scan_python_inline();
-                Token::new(start_pos, TokenType::CallNativeExpr, s)
+                self.next_char();
+                Token::new(start_pos, TokenType::OpNot, "~".into())
             }
             '-' => {
                 if self.starts_with("->") {

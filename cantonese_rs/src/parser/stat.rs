@@ -630,6 +630,7 @@ impl StatParser {
     fn parse_call_native_stat(parser: &mut Parser) -> Result<Stat, ParseError> {
         let tk = parser.eat_kind(TokenType::CallNativeExpr)?;
         let code = if tk.value.len() > 8 {
+            println!("{}", tk.value);
             tk.value[3..tk.value.len() - 5].to_string()
         } else {
             tk.value
