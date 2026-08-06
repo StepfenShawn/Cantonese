@@ -6,8 +6,12 @@
 
 #![allow(dead_code)]
 
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use crate::ast::{Exp, Stat};
 use crate::lexer::token::{Pos, Token, TokenType};
+use crate::macros::MacroRegistry;
 use thiserror::Error;
 
 pub mod exp;
@@ -64,6 +68,7 @@ pub struct Parser<'a> {
     index: usize,
     last_token: Option<Token>,
     file_path: &'a str,
+    pub macro_registry: Rc<RefCell<MacroRegistry>>,
 }
 
 impl<'a> Parser<'a> {
@@ -74,6 +79,22 @@ impl<'a> Parser<'a> {
             index: 0,
             last_token: None,
             file_path,
+            macro_registry: Rc::new(RefCell::new(MacroRegistry::new())),
+        }
+    }
+
+    /// Create a parser that shares an existing macro registry.
+    pub fn new_with_registry(
+        tokens: &'a [Token],
+        file_path: &'a str,
+        macro_registry: Rc<RefCell<MacroRegistry>>,
+    ) -> Self {
+        Self {
+            tokens,
+            index: 0,
+            last_token: None,
+            file_path,
+            macro_registry,
         }
     }
 
@@ -87,6 +108,11 @@ impl<'a> Parser<'a> {
                     .map(|t| t.pos)
                     .unwrap_or_else(|| Pos::simple(0, 0))
             })
+    }
+
+    /// The source file path used for diagnostics.
+    pub fn file_path(&self) -> &'a str {
+        self.file_path
     }
 
     /// Position of the previously consumed token (used for end-of-AST spans).

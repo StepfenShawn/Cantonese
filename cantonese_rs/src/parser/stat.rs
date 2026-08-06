@@ -12,6 +12,7 @@ use crate::ast::{
 };
 use crate::lexer::keywords::*;
 use crate::lexer::token::{Pos, Token, TokenType};
+use crate::macros::Macro;
 use crate::parser::exp::ExpParser;
 use crate::parser::macro_body::MacroBodyParser;
 use crate::parser::macro_pat::MacroPatParser;
@@ -180,6 +181,13 @@ impl StatParser {
 
     fn with_prefix_stats(parser: &mut Parser) -> Result<Stat, ParseError> {
         let prefix_exp = ExpParser::parse_exp(parser)?;
+
+        // A statement-level macro may expand into a statement; unwrap it here
+        // instead of wrapping it as a bare expression call.
+        if let Exp::StatExpansion(stat) = prefix_exp {
+            return Ok(*stat);
+        }
+
         match parser.peek_value() {
             Some(v) if v == KW_FROM => Self::parse_for_stat(parser, prefix_exp),
             Some(v) if v == KW_GET_VALUE => Self::parse_suffix_assign_stat(parser, prefix_exp),
@@ -718,7 +726,23 @@ impl StatParser {
         ))
     }
 
-    fn parse_macro_def(parser: &mut Parser, _macro_name: Exp) -> Result<Stat, ParseError> {
+    fn parse_macro_def(parser: &mut Parser, macro_name: Exp) -> Result<Stat, ParseError> {
+        let name = match macro_name {
+            Exp::Id(IdExp { name }) => name,
+            _ => {
+                return Err(ParseError::syntax(
+                    parser.peek_token().unwrap_or(&Token {
+                        pos: Pos::simple(0, 0),
+                        typ: TokenType::EOF,
+                        value: "EOF".into(),
+                    }),
+                    parser.file_path,
+                    "Macro 名必須係 identifier",
+                    "例如 `介紹返 foo 係 袋仔的法寶`",
+                ))
+            }
+        };
+
         parser.eat_value(KW_DO)?;
         let mut match_rules: Vec<Vec<crate::ast::MacroPatItem>> = Vec::new();
         let mut match_blocks = Vec::new();
@@ -740,6 +764,17 @@ impl StatParser {
         }
 
         parser.eat_value(KW_FUNC_END)?;
+
+        // Register the macro so subsequent macro calls can expand it.
+        parser.macro_registry.borrow_mut().register(
+            name.clone(),
+            Macro {
+                name: name.clone(),
+                patterns: match_rules.clone(),
+                bodies: match_blocks.clone(),
+            },
+        );
+
         Ok(Stat::MacroDef(MacroDefStat {
             match_pats: match_rules,
             match_block: match_blocks,

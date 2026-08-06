@@ -18,12 +18,17 @@ use cantonese_rs::parser::{ParseError, Parser as CanParser, StatParser};
 
 fn main() -> Result<(), ParseError> {
     let source_code = r#"
-使下 A::{B, C::*}
-如果 |1 > 2| 嘅話 => {
-    畀我睇下 "Hello" 點樣先
-} 唔係 嘅話 => {
-    畀我睇下 123 點樣先
-}
+介紹返 vec 係 袋仔的法寶 =>
+    | ($(@element:expr),+) => {
+        [${@element},+]
+    }
+    | () => {
+        []
+    }
+搞掂
+
+畀我睇下 vec!("Hello", 1+1, "gg",) 點樣先??
+畀我睇下 vec!() 點樣先??
 "#;
 
     let mut lex = Lexer::new("<標準輸入>".to_string(), source_code);

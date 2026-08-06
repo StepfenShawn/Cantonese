@@ -208,6 +208,9 @@ pub enum Exp {
     MetaId(MetaIdExp),
     PatRep(Box<MacroMetaRepExpInPat>),
     BlockRep(Box<MacroMetaRepExpInBlock>),
+    /// Result of expanding a statement-level macro inside an expression parse.
+    /// Used to bridge the strongly-typed `Exp`/`Stat` split back to `StatParser`.
+    StatExpansion(Box<Stat>),
 }
 
 impl ExpNode for Exp {}

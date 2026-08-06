@@ -254,3 +254,27 @@ fn parse_random() {
 fn parse_re() {
     assert_parses("examples/lib_sample/re.cantonese");
 }
+
+// ---------------------------------------------------------------------------
+// MacroTest
+// ---------------------------------------------------------------------------
+
+#[test]
+fn parse_macro_hello() {
+    assert_parses("examples/macros/hello.cantonese");
+}
+
+#[test]
+fn parse_macro_max() {
+    assert_parses("examples/macros/max.cantonese");
+}
+
+#[test]
+fn parse_macro_eval() {
+    assert_parses("examples/macros/eval.cantonese");
+}
+
+#[test]
+fn parse_macro_vec() {
+    assert_parses("examples/macros/vec.cantonese");
+}

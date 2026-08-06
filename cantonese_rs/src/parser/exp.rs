@@ -6,13 +6,14 @@
 use crate::ast::{
     AnnotationExp, AssignExp, BinopExp, ConcatExp, Exp, FalseExp, FuncCallExp, IdExp, IfElseExp,
     LambdaExp, ListAccessExp, ListExp, MapExp, MappingExp, MetaIdExp, NullExp, NumeralExp,
-    ObjectAccessExp, ParensExp, StringExp, TrueExp, UnopExp, VarArgExp,
+    ObjectAccessExp, ParensExp, Stat, StringExp, TrueExp, UnopExp, VarArgExp,
 };
 use crate::lexer::keywords::*;
 use crate::lexer::token::{Pos, Token, TokenType};
+use crate::macros::MacroExpander;
 use crate::parser::macro_body::MacroBodyParser;
 use crate::parser::macro_pat::MacroPatParser;
-use crate::parser::{ParseError, Parser};
+use crate::parser::{ParseError, Parser, StatParser};
 
 pub struct ExpParser;
 
@@ -484,18 +485,19 @@ impl ExpParser {
                             ));
                         }
                     };
-                    let _tokentrees = MacroPatParser::parse_tokentrees(parser)?;
-                    // Macro expansion needs the macro registry; placeholder.
-                    return Err(ParseError::syntax(
-                        parser.peek_token().unwrap_or(&Token {
-                            pos: Pos::simple(0, 0),
-                            typ: TokenType::EOF,
-                            value: "EOF".into(),
-                        }),
+                    let tokentrees = MacroPatParser::parse_tokentrees(parser)?;
+                    let expanded = MacroExpander::expand(parser, &macro_name, tokentrees)?;
+                    let mut sub_parser = Parser::new_with_registry(
+                        &expanded,
                         parser.file_path,
-                        format!("Macro expansion not yet implemented: `{}`", macro_name),
-                        "parser 暫時只支援識別 macro 語法，未支援展開",
-                    ));
+                        parser.macro_registry.clone(),
+                    );
+                    let expanded_stat = StatParser::parse(&mut sub_parser)?;
+                    return match expanded_stat {
+                        Some(Stat::Call(call)) => Ok(call.exp),
+                        Some(stat) => Ok(Exp::StatExpansion(Box::new(stat))),
+                        None => Err(ParseError::UnexpectedEof),
+                    };
                 }
                 _ => break,
             }
