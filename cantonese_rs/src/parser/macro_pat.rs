@@ -37,7 +37,8 @@ impl MacroPatParser {
         }
         parser.eat_kind(TokenType::SepRParen)?;
         Ok(MacroPatItem::Rep(Box::new(Self::finish_meta_exp(
-            parser, token_trees,
+            parser,
+            token_trees,
         )?)))
     }
 

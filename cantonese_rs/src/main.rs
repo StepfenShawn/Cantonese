@@ -18,17 +18,12 @@ use cantonese_rs::parser::{ParseError, Parser as CanParser, StatParser};
 
 fn main() -> Result<(), ParseError> {
     let source_code = r#"
-介紹返 vec 係 袋仔的法寶 =>
-    | ($(@element:expr),+) => {
-        [${@element},+]
-    }
-    | () => {
-        []
-    }
-搞掂
+我係二五仔 #XD
+def add(a, b):
+    return a + b
+二五仔係我
 
-畀我睇下 vec!("Hello", 1+1, "gg",) 點樣先??
-畀我睇下 vec!() 點樣先??
+畀我睇下 |add 下 -> (8, 2)| 點樣先 /* 輸出10 */
 "#;
 
     let mut lex = Lexer::new("<標準輸入>".to_string(), source_code);

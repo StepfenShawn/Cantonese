@@ -17,7 +17,7 @@ use crate::parser::exp::ExpParser;
 use crate::parser::macro_body::MacroBodyParser;
 use crate::parser::macro_pat::MacroPatParser;
 use crate::parser::names::NamesParser;
-use crate::parser::{with_pos_stat, ParseError, Parser};
+use crate::parser::{ParseError, Parser, with_pos_stat};
 
 pub struct StatParser;
 
@@ -56,110 +56,108 @@ impl StatParser {
 
     /// Entry point for parsing a single statement.
     pub fn parse(parser: &mut Parser) -> Result<Option<Stat>, ParseError> {
-        with_pos_stat(parser, |p| {
-            match (p.peek_type(), p.peek_value()) {
-                (Some(TokenType::Keyword), Some(v)) => match v {
-                    KW_PRINT => {
-                        p.skip();
-                        Self::parse_print_stat(p)
-                    }
-                    KW_EXIT | KW_EXIT_1 | KW_EXIT_2 => {
-                        p.skip();
-                        Self::parse_exit_stat(p)
-                    }
-                    KW_ASSIGN => {
-                        p.skip();
-                        Self::parse_assign_stat(p)
-                    }
-                    KW_IF => {
-                        p.skip();
-                        Self::parse_if_stat(p)
-                    }
-                    KW_IMPORT => {
-                        p.skip();
-                        Self::parse_import_stat(p)
-                    }
-                    KW_GLOBAL_SET => {
-                        p.skip();
-                        Self::parse_global_stat(p)
-                    }
-                    KW_BREAK => {
-                        p.skip();
-                        Self::parse_break_stat(p)
-                    }
-                    KW_CONTINUE => {
-                        p.skip();
-                        Self::parse_continue_stat(p)
-                    }
-                    KW_WHILE_DO => {
-                        p.skip();
-                        Self::parse_while_stat(p)
-                    }
-                    KW_PASS => {
-                        p.skip();
-                        Self::parse_pass_stat(p)
-                    }
-                    KW_RETURN => {
-                        p.skip();
-                        Self::parse_return_stat(p)
-                    }
-                    KW_DEL | KW_DEL2 => {
-                        p.skip();
-                        Self::parse_del_stat(p)
-                    }
-                    KW_TYPE => {
-                        p.skip();
-                        Self::parse_type_stat(p)
-                    }
-                    KW_ASSERT => {
-                        p.skip();
-                        Self::parse_assert_stat(p)
-                    }
-                    KW_TRY => {
-                        p.skip();
-                        Self::parse_try_stat(p)
-                    }
-                    KW_RAISE => {
-                        p.skip();
-                        Self::parse_raise_stat(p)
-                    }
-                    KW_CMD => {
-                        p.skip();
-                        Self::parse_cmd_stat(p)
-                    }
-                    KW_STACKINIT => {
-                        p.skip();
-                        Self::parse_stack_init_stat(p)
-                    }
-                    KW_PUSH => {
-                        p.skip();
-                        Self::parse_stack_push_stat(p)
-                    }
-                    KW_POP => {
-                        p.skip();
-                        Self::parse_stack_pop_stat(p)
-                    }
-                    KW_MATCH => {
-                        p.skip();
-                        Self::parse_match_stat(p)
-                    }
-                    KW_CALL_NATIVE => {
-                        p.skip();
-                        Self::parse_call_native_stat(p)
-                    }
-                    "&&" => {
-                        p.skip();
-                        Self::parse_for_each_stat(p)
-                    }
-                    KW_PLS => {
-                        p.skip();
-                        Self::parse_pls_stat(p)
-                    }
-                    _ => Self::with_prefix_stats(p),
-                },
-                (Some(TokenType::EOF), _) => Ok(Stat::Exit(ExitStat { pos: None })),
+        with_pos_stat(parser, |p| match (p.peek_type(), p.peek_value()) {
+            (Some(TokenType::Keyword), Some(v)) => match v {
+                KW_PRINT => {
+                    p.skip();
+                    Self::parse_print_stat(p)
+                }
+                KW_EXIT | KW_EXIT_1 | KW_EXIT_2 => {
+                    p.skip();
+                    Self::parse_exit_stat(p)
+                }
+                KW_ASSIGN => {
+                    p.skip();
+                    Self::parse_assign_stat(p)
+                }
+                KW_IF => {
+                    p.skip();
+                    Self::parse_if_stat(p)
+                }
+                KW_IMPORT => {
+                    p.skip();
+                    Self::parse_import_stat(p)
+                }
+                KW_GLOBAL_SET => {
+                    p.skip();
+                    Self::parse_global_stat(p)
+                }
+                KW_BREAK => {
+                    p.skip();
+                    Self::parse_break_stat(p)
+                }
+                KW_CONTINUE => {
+                    p.skip();
+                    Self::parse_continue_stat(p)
+                }
+                KW_WHILE_DO => {
+                    p.skip();
+                    Self::parse_while_stat(p)
+                }
+                KW_PASS => {
+                    p.skip();
+                    Self::parse_pass_stat(p)
+                }
+                KW_RETURN => {
+                    p.skip();
+                    Self::parse_return_stat(p)
+                }
+                KW_DEL | KW_DEL2 => {
+                    p.skip();
+                    Self::parse_del_stat(p)
+                }
+                KW_TYPE => {
+                    p.skip();
+                    Self::parse_type_stat(p)
+                }
+                KW_ASSERT => {
+                    p.skip();
+                    Self::parse_assert_stat(p)
+                }
+                KW_TRY => {
+                    p.skip();
+                    Self::parse_try_stat(p)
+                }
+                KW_RAISE => {
+                    p.skip();
+                    Self::parse_raise_stat(p)
+                }
+                KW_CMD => {
+                    p.skip();
+                    Self::parse_cmd_stat(p)
+                }
+                KW_STACKINIT => {
+                    p.skip();
+                    Self::parse_stack_init_stat(p)
+                }
+                KW_PUSH => {
+                    p.skip();
+                    Self::parse_stack_push_stat(p)
+                }
+                KW_POP => {
+                    p.skip();
+                    Self::parse_stack_pop_stat(p)
+                }
+                KW_MATCH => {
+                    p.skip();
+                    Self::parse_match_stat(p)
+                }
+                KW_CALL_NATIVE => {
+                    p.skip();
+                    Self::parse_call_native_stat(p)
+                }
+                "&&" => {
+                    p.skip();
+                    Self::parse_for_each_stat(p)
+                }
+                KW_PLS => {
+                    p.skip();
+                    Self::parse_pls_stat(p)
+                }
                 _ => Self::with_prefix_stats(p),
-            }
+            },
+            (Some(TokenType::EOF), _) => Ok(Stat::Exit(ExitStat { pos: None })),
+            _ => Self::with_prefix_stats(p),
         })
         .map(Some)
     }
@@ -228,7 +226,12 @@ impl StatParser {
         while !parser.match_value(KW_END_ASSIGN) {
             var_list.push(Self::parse_var_list(parser)?.into_iter().next().unwrap());
             parser.eat_value(KW_IS)?;
-            exp_list.push(ExpParser::parse_exp_list(parser)?.into_iter().next().unwrap());
+            exp_list.push(
+                ExpParser::parse_exp_list(parser)?
+                    .into_iter()
+                    .next()
+                    .unwrap(),
+            );
         }
         parser.eat_value(KW_END_ASSIGN)?;
         Ok(Stat::AssignBlock(AssignBlockStat {
@@ -438,7 +441,10 @@ impl StatParser {
     fn parse_raise_stat(parser: &mut Parser) -> Result<Stat, ParseError> {
         let name_exp = ExpParser::parse_exp(parser)?;
         parser.eat_value(KW_RAISE_END)?;
-        Ok(Stat::Raise(RaiseStat { name_exp, pos: None }))
+        Ok(Stat::Raise(RaiseStat {
+            name_exp,
+            pos: None,
+        }))
     }
 
     fn parse_cmd_stat(parser: &mut Parser) -> Result<Stat, ParseError> {
@@ -475,7 +481,9 @@ impl StatParser {
         )?;
         parser.eat_value(KW_FUNC_END)?;
         Ok(Stat::FunctionDef(FunctionDefStat {
-            name_exp: Exp::Id(IdExp { name: name_tk.value }),
+            name_exp: Exp::Id(IdExp {
+                name: name_tk.value,
+            }),
             args,
             blocks,
             pos: None,
@@ -530,7 +538,9 @@ impl StatParser {
         Ok(Stat::Assign(AssignStat {
             var_list: vec![exps.clone()],
             exp_list: vec![Exp::FuncCall(FuncCallExp {
-                prefix_exp: Box::new(Exp::Id(IdExp { name: "stack".into() })),
+                prefix_exp: Box::new(Exp::Id(IdExp {
+                    name: "stack".into(),
+                })),
                 args: Vec::new(),
             })],
             pos: None,
@@ -543,7 +553,9 @@ impl StatParser {
         let args = ExpParser::parse_args(parser)?;
         Ok(Stat::MethodCall(MethodCallStat {
             name_exp: exps,
-            method: Exp::Id(IdExp { name: "push".into() }),
+            method: Exp::Id(IdExp {
+                name: "push".into(),
+            }),
             args,
             pos: None,
         }))
@@ -639,7 +651,7 @@ impl StatParser {
         let tk = parser.eat_kind(TokenType::CallNativeExpr)?;
         let code = if tk.value.len() > 8 {
             println!("{}", tk.value);
-            tk.value[3..tk.value.len() - 5].to_string()
+            tk.value[3..tk.value.chars().count() as usize - 5].to_string()
         } else {
             tk.value
         };
@@ -707,7 +719,10 @@ impl StatParser {
                 parser.eat_kind(TokenType::SepLCurly)?;
                 let attrs = ExpParser::parse_attrs_def(parser)?;
                 parser.eat_kind(TokenType::SepRCurly)?;
-                Ok(Stat::AttrDef(AttrDefStat { attrs_list: attrs, pos: None }))
+                Ok(Stat::AttrDef(AttrDefStat {
+                    attrs_list: attrs,
+                    pos: None,
+                }))
             }
             _ => Self::parse(parser).map(|s| s.unwrap_or(Stat::Pass(PassStat { pos: None }))),
         }
@@ -739,7 +754,7 @@ impl StatParser {
                     parser.file_path,
                     "Macro 名必須係 identifier",
                     "例如 `介紹返 foo 係 袋仔的法寶`",
-                ))
+                ));
             }
         };
 

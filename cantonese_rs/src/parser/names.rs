@@ -12,7 +12,9 @@ pub struct NamesParser;
 impl NamesParser {
     pub fn parse(parser: &mut Parser) -> Result<Exp, ParseError> {
         let name_tk = parser.eat_kind(TokenType::Identifier)?;
-        let root = Exp::Id(IdExp { name: name_tk.value });
+        let root = Exp::Id(IdExp {
+            name: name_tk.value,
+        });
         Self::finish(parser, root)
     }
 

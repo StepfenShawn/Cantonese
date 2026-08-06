@@ -46,7 +46,12 @@ pub enum ParseError {
 }
 
 impl ParseError {
-    pub fn syntax(token: &Token, file: &str, msg: impl Into<String>, tip: impl Into<String>) -> Self {
+    pub fn syntax(
+        token: &Token,
+        file: &str,
+        msg: impl Into<String>,
+        tip: impl Into<String>,
+    ) -> Self {
         ParseError::SyntaxError {
             file: file.to_string(),
             line: token.pos.line,
@@ -100,14 +105,12 @@ impl<'a> Parser<'a> {
 
     /// Position of the next token to be consumed.
     pub fn cur_pos(&self) -> Pos {
-        self.peek_token()
-            .map(|t| t.pos)
-            .unwrap_or_else(|| {
-                self.last_token
-                    .as_ref()
-                    .map(|t| t.pos)
-                    .unwrap_or_else(|| Pos::simple(0, 0))
-            })
+        self.peek_token().map(|t| t.pos).unwrap_or_else(|| {
+            self.last_token
+                .as_ref()
+                .map(|t| t.pos)
+                .unwrap_or_else(|| Pos::simple(0, 0))
+        })
     }
 
     /// The source file path used for diagnostics.

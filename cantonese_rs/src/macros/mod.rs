@@ -8,8 +8,8 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::ast::{
-    Exp, IdExp, MacroMetaId, MacroMetaRepExpInBlock, MacroMetaRepExpInPat, MacroPatItem,
-    MetaIdExp, TokenTree, TokenTreeChild,
+    Exp, IdExp, MacroMetaId, MacroMetaRepExpInBlock, MacroMetaRepExpInPat, MacroPatItem, MetaIdExp,
+    TokenTree, TokenTreeChild,
 };
 use crate::lexer::token::{Pos, Token, TokenType};
 use crate::parser::exp::ExpParser;
@@ -43,11 +43,7 @@ impl FragSpec {
             "str" => Ok(FragSpec::Str),
             "tt" => Ok(FragSpec::Tt),
             _ => Err(ParseError::syntax(
-                &Token::new(
-                    Pos::simple(0, 0),
-                    TokenType::Identifier,
-                    name.to_string(),
-                ),
+                &Token::new(Pos::simple(0, 0), TokenType::Identifier, name.to_string()),
                 "<macro>",
                 format!("唔識嘅 fragment specifier: `{}`", name),
                 "可用: id/ident, expr, lit, stmt, block, str, tt",
@@ -106,7 +102,7 @@ pub fn build_regex(items: &[MacroPatItem]) -> Result<Regex, ParseError> {
                 "<macro>",
                 "Macro pattern 入面唔應該出現 Tree/MetaId",
                 "檢查 macro 模式語法",
-            ))
+            ));
         }
     };
     Ok(Regex::Concat(Box::new(node), Box::new(build_regex(rest)?)))
@@ -147,11 +143,7 @@ fn build_rep_regex(rep: &MacroMetaRepExpInPat) -> Result<Regex, ParseError> {
             ))
         }
         _ => Err(ParseError::syntax(
-            &Token::new(
-                Pos::simple(0, 0),
-                TokenType::Identifier,
-                rep.rep_op.clone(),
-            ),
+            &Token::new(Pos::simple(0, 0), TokenType::Identifier, rep.rep_op.clone()),
             "<macro>",
             format!("唔識嘅 repetition operator: `{}`", rep.rep_op),
             "可用: *, +, ?",
@@ -361,11 +353,7 @@ impl Macro {
             }
         }
         Err(ParseError::syntax(
-            &Token::new(
-                Pos::simple(0, 0),
-                TokenType::Identifier,
-                self.name.clone(),
-            ),
+            &Token::new(Pos::simple(0, 0), TokenType::Identifier, self.name.clone()),
             "<macro>",
             format!("展開唔到Macro: `{}`", self.name),
             "檢查 macro 調用同模式係咪匹配",
@@ -417,8 +405,8 @@ impl MacroExpander {
                         "EOF".into(),
                     )),
                     parser.file_path(),
-                format!("揾唔到你嘅Macro: `{}`", name),
-                "係咪Macro喺其它文件? 咁就試下 import 啦!",
+                    format!("揾唔到你嘅Macro: `{}`", name),
+                    "係咪Macro喺其它文件? 咁就試下 import 啦!",
                 )
             })?;
         let input = token_tree_inner_tokens(&tokentrees);
@@ -464,11 +452,7 @@ pub fn token_tree_inner_tokens(tree: &TokenTree) -> Vec<Token> {
             TokenTreeChild::Tree(t) => token_tree_to_tokens(t),
             TokenTreeChild::MetaId(MetaIdExp { name }) => vec![
                 Token::new(Pos::simple(0, 0), TokenType::Keyword, "@".to_string()),
-                Token::new(
-                    Pos::simple(0, 0),
-                    TokenType::Identifier,
-                    name.clone(),
-                ),
+                Token::new(Pos::simple(0, 0), TokenType::Identifier, name.clone()),
             ],
             _ => Vec::new(),
         })
@@ -489,28 +473,18 @@ impl MacroSubstitute for TokenTree {
     }
 }
 
-fn substitute_child(
-    child: &TokenTreeChild,
-    state: &MatchState,
-) -> Result<Vec<Token>, ParseError> {
+fn substitute_child(child: &TokenTreeChild, state: &MatchState) -> Result<Vec<Token>, ParseError> {
     match child {
         TokenTreeChild::Token(t) => Ok(vec![t.clone()]),
         TokenTreeChild::MetaId(MetaIdExp { name }) => {
-            let mut mv = state
-                .get(name)
-                .cloned()
-                .ok_or_else(|| {
-                    ParseError::syntax(
-                        &Token::new(
-                            Pos::simple(0, 0),
-                            TokenType::Identifier,
-                            name.clone(),
-                        ),
-                        "<macro>",
-                        format!("Meta variable `{}` 未匹配", name),
-                        "檢查 macro 模式",
-                    )
-                })?;
+            let mut mv = state.get(name).cloned().ok_or_else(|| {
+                ParseError::syntax(
+                    &Token::new(Pos::simple(0, 0), TokenType::Identifier, name.clone()),
+                    "<macro>",
+                    format!("Meta variable `{}` 未匹配", name),
+                    "檢查 macro 模式",
+                )
+            })?;
             Ok(mv.next_capture())
         }
         TokenTreeChild::BlockRep(rep) => yield_repetition(rep, state),
@@ -578,11 +552,7 @@ fn yield_repetition(
             }
         }
         _ => Err(ParseError::syntax(
-            &Token::new(
-                Pos::simple(0, 0),
-                TokenType::Identifier,
-                op.to_string(),
-            ),
+            &Token::new(Pos::simple(0, 0), TokenType::Identifier, op.to_string()),
             "<macro>",
             format!("唔識嘅 repetition operator: `{}`", op),
             "可用: *, +, ?",

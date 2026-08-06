@@ -258,7 +258,10 @@ impl<'a> Lexer<'a> {
 
     pub fn consume_token(&mut self) -> Result<Token, LexError> {
         self.skip_whitespace_and_comment()?;
-        self.start_byte = self.peeked.map(|(byte, _)| byte).unwrap_or(self.source.len());
+        self.start_byte = self
+            .peeked
+            .map(|(byte, _)| byte)
+            .unwrap_or(self.source.len());
         let start_pos = self.cur_pos();
 
         let c = match self.peek() {

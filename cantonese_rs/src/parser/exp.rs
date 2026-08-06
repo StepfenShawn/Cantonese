@@ -362,7 +362,9 @@ impl ExpParser {
             }
             Some(TokenType::String) => {
                 let tk = parser.next_token().unwrap();
-                Exp::String(StringExp { s: tk.value.clone() })
+                Exp::String(StringExp {
+                    s: tk.value.clone(),
+                })
             }
             Some(TokenType::SepLBrack) => Self::parse_listcons(parser)?,
             Some(TokenType::Keyword) if parser.match_value("@") => {
@@ -450,7 +452,10 @@ impl ExpParser {
                         key_exp: Box::new(key_exp),
                     });
                 }
-                Some(typ) if typ == TokenType::SepLParen || parser.peek_value() == Some(KW_CALL_BEGIN) => {
+                Some(typ)
+                    if typ == TokenType::SepLParen
+                        || parser.peek_value() == Some(KW_CALL_BEGIN) =>
+                {
                     exp = Self::finish_functioncall_exp(parser, exp)?;
                 }
                 Some(TokenType::OpAssign) => {
@@ -577,7 +582,10 @@ impl ExpParser {
         parser.eat_kind(TokenType::SepLCurly)?;
         let blocks = Self::parse_exp_list(parser)?;
         parser.eat_kind(TokenType::SepRCurly)?;
-        Ok(Exp::Lambda(LambdaExp { id_list: idlist, blocks }))
+        Ok(Exp::Lambda(LambdaExp {
+            id_list: idlist,
+            blocks,
+        }))
     }
 
     fn parse_if_else_expr(parser: &mut Parser) -> Result<Exp, ParseError> {
