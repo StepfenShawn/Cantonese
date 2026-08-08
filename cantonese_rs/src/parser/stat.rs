@@ -351,7 +351,7 @@ impl StatParser {
             cond_exp: Exp::Unop(UnopExp {
                 op: "not".into(),
                 exp: Box::new(cond_exp),
-            }),
+            pos: None, }),
             blocks,
             pos: None,
         }))
@@ -483,7 +483,7 @@ impl StatParser {
         Ok(Stat::FunctionDef(FunctionDefStat {
             name_exp: Exp::Id(IdExp {
                 name: name_tk.value,
-            }),
+            pos: None, }),
             args,
             blocks,
             pos: None,
@@ -540,8 +540,9 @@ impl StatParser {
             exp_list: vec![Exp::FuncCall(FuncCallExp {
                 prefix_exp: Box::new(Exp::Id(IdExp {
                     name: "stack".into(),
-                })),
+                pos: None, })),
                 args: Vec::new(),
+                pos: None,
             })],
             pos: None,
         }))
@@ -555,7 +556,7 @@ impl StatParser {
             name_exp: exps,
             method: Exp::Id(IdExp {
                 name: "push".into(),
-            }),
+            pos: None, }),
             args,
             pos: None,
         }))
@@ -566,7 +567,7 @@ impl StatParser {
         let exps = ExpParser::parse_exp(parser)?;
         Ok(Stat::MethodCall(MethodCallStat {
             name_exp: exps,
-            method: Exp::Id(IdExp { name: "pop".into() }),
+            method: Exp::Id(IdExp { name: "pop".into(), pos: None }),
             args: Vec::new(),
             pos: None,
         }))
@@ -743,7 +744,7 @@ impl StatParser {
 
     fn parse_macro_def(parser: &mut Parser, macro_name: Exp) -> Result<Stat, ParseError> {
         let name = match macro_name {
-            Exp::Id(IdExp { name }) => name,
+            Exp::Id(IdExp { name, .. }) => name,
             _ => {
                 return Err(ParseError::syntax(
                     parser.peek_token().unwrap_or(&Token {

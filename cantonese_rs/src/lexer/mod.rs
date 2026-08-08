@@ -1,5 +1,6 @@
 pub mod keywords;
 pub mod token;
+pub mod span;
 
 use keywords::*;
 use thiserror::Error;
@@ -48,6 +49,17 @@ impl<'a> Lexer<'a> {
     /// 获取当前位置
     pub fn cur_pos(&self) -> Pos {
         Pos::simple(self.line, self.offset)
+    }
+
+    /// 构造 token 的结束位置（当前 lexer 位置作为 end）。
+    fn token_end_pos(&self, start_pos: Pos) -> Pos {
+        let end = self.cur_pos();
+        start_pos.with_end(end.line, end.offset)
+    }
+
+    /// 使用起始位置和当前 lexer 位置构造一个带 end 的 Token。
+    fn mk_token(&self, start_pos: Pos, typ: TokenType, value: impl Into<String>) -> Token {
+        Token::new(self.token_end_pos(start_pos), typ, value.into())
     }
 
     /// 向前预看1个字符，不消耗
@@ -266,198 +278,198 @@ impl<'a> Lexer<'a> {
 
         let c = match self.peek() {
             Some(ch) => ch,
-            None => return Ok(Token::new(start_pos, TokenType::EOF, "EOF".to_string())),
+            None => return Ok(self.mk_token(start_pos, TokenType::EOF, "EOF".to_string())),
         };
 
         let token = match c {
             '&' => {
                 if self.starts_with("&&") {
                     self.consume_many(2);
-                    Token::new(start_pos, TokenType::Keyword, "&&".into())
+                    self.mk_token(start_pos, TokenType::Keyword, "&&")
                 } else {
                     self.next_char();
-                    Token::new(start_pos, TokenType::OpBand, "&".into())
+                    self.mk_token(start_pos, TokenType::OpBand, "&")
                 }
             }
             '|' => {
                 self.next_char();
-                Token::new(start_pos, TokenType::Brack, "|".into())
+                self.mk_token(start_pos, TokenType::Brack, "|")
             }
             '?' => {
                 self.next_char();
-                Token::new(start_pos, TokenType::Mark, "?".into())
+                self.mk_token(start_pos, TokenType::Mark, "?")
             }
             ':' => {
                 if self.starts_with("::") {
                     self.consume_many(2);
-                    Token::new(start_pos, TokenType::DColon, "::".into())
+                    self.mk_token(start_pos, TokenType::DColon, "::")
                 } else {
                     self.next_char();
-                    Token::new(start_pos, TokenType::Colon, ":".into())
+                    self.mk_token(start_pos, TokenType::Colon, ":")
                 }
             }
             '%' => {
                 self.next_char();
-                Token::new(start_pos, TokenType::OpMod, "%".into())
+                self.mk_token(start_pos, TokenType::OpMod, "%")
             }
             '~' => {
                 self.next_char();
-                Token::new(start_pos, TokenType::OpNot, "~".into())
+                self.mk_token(start_pos, TokenType::OpNot, "~")
             }
             '-' => {
                 if self.starts_with("->") {
                     self.consume_many(2);
-                    Token::new(start_pos, TokenType::Keyword, KW_DOT.into())
+                    self.mk_token(start_pos, TokenType::Keyword, KW_DOT)
                 } else {
                     self.next_char();
-                    Token::new(start_pos, TokenType::OpMinus, "-".into())
+                    self.mk_token(start_pos, TokenType::OpMinus, "-")
                 }
             }
             '=' => {
                 if self.starts_with("==>") {
                     self.consume_many(3);
-                    Token::new(start_pos, TokenType::Keyword, "==>".into())
+                    self.mk_token(start_pos, TokenType::Keyword, "==>")
                 } else if self.starts_with("=>") {
                     self.consume_many(2);
-                    Token::new(start_pos, TokenType::Keyword, KW_DO.into())
+                    self.mk_token(start_pos, TokenType::Keyword, KW_DO)
                 } else if self.starts_with("==") {
                     self.consume_many(2);
-                    Token::new(start_pos, TokenType::OpEq, "==".into())
+                    self.mk_token(start_pos, TokenType::OpEq, "==")
                 } else {
                     self.next_char();
-                    Token::new(start_pos, TokenType::OpAssign, "=".into())
+                    self.mk_token(start_pos, TokenType::OpAssign, "=")
                 }
             }
             '$' => {
                 if self.starts_with("$$") {
                     self.consume_many(2);
-                    Token::new(start_pos, TokenType::Keyword, "$$".into())
+                    self.mk_token(start_pos, TokenType::Keyword, "$$")
                 } else {
                     self.next_char();
-                    Token::new(start_pos, TokenType::Keyword, "$".into())
+                    self.mk_token(start_pos, TokenType::Keyword, "$")
                 }
             }
             '<' => {
                 if self.starts_with("<*>") {
                     self.consume_many(3);
-                    Token::new(start_pos, TokenType::VarArg, "<*>".into())
+                    self.mk_token(start_pos, TokenType::VarArg, "<*>")
                 } else if self.starts_with("<|>") {
                     self.consume_many(3);
-                    Token::new(start_pos, TokenType::OpBor, "<|>".into())
+                    self.mk_token(start_pos, TokenType::OpBor, "<|>")
                 } else if self.starts_with("<->") {
                     self.consume_many(3);
-                    Token::new(start_pos, TokenType::OpConcat, "<->".into())
+                    self.mk_token(start_pos, TokenType::OpConcat, "<->")
                 } else if self.starts_with("<=") {
                     self.consume_many(2);
-                    Token::new(start_pos, TokenType::OpLe, "<=".into())
+                    self.mk_token(start_pos, TokenType::OpLe, "<=")
                 } else if self.starts_with("<<") {
                     self.consume_many(2);
-                    Token::new(start_pos, TokenType::OpShl, "<<".into())
+                    self.mk_token(start_pos, TokenType::OpShl, "<<")
                 } else {
                     self.next_char();
-                    Token::new(start_pos, TokenType::OpLt, "<".into())
+                    self.mk_token(start_pos, TokenType::OpLt, "<")
                 }
             }
             '>' => {
                 if self.starts_with(">=") {
                     self.consume_many(2);
-                    Token::new(start_pos, TokenType::OpGe, ">=".into())
+                    self.mk_token(start_pos, TokenType::OpGe, ">=")
                 } else if self.starts_with(">>") {
                     self.consume_many(2);
-                    Token::new(start_pos, TokenType::OpShr, ">>".into())
+                    self.mk_token(start_pos, TokenType::OpShr, ">>")
                 } else {
                     self.next_char();
-                    Token::new(start_pos, TokenType::OpGt, ">".into())
+                    self.mk_token(start_pos, TokenType::OpGt, ">")
                 }
             }
             '!' => {
                 if self.starts_with("!=") {
                     self.consume_many(2);
-                    Token::new(start_pos, TokenType::OpNe, "!=".into())
+                    self.mk_token(start_pos, TokenType::OpNe, "!=")
                 } else {
                     self.next_char();
-                    Token::new(start_pos, TokenType::Excl, "!".into())
+                    self.mk_token(start_pos, TokenType::Excl, "!")
                 }
             }
             '@' => {
                 if self.starts_with("@@") {
                     self.consume_many(2);
-                    Token::new(start_pos, TokenType::Keyword, "@@".into())
+                    self.mk_token(start_pos, TokenType::Keyword, "@@")
                 } else {
                     self.next_char();
-                    Token::new(start_pos, TokenType::Keyword, "@".into())
+                    self.mk_token(start_pos, TokenType::Keyword, "@")
                 }
             }
             '{' => {
                 self.next_char();
-                Token::new(start_pos, TokenType::SepLCurly, "{".into())
+                self.mk_token(start_pos, TokenType::SepLCurly, "{")
             }
             '}' => {
                 self.next_char();
-                Token::new(start_pos, TokenType::SepRCurly, "}".into())
+                self.mk_token(start_pos, TokenType::SepRCurly, "}")
             }
             '(' => {
                 self.next_char();
-                Token::new(start_pos, TokenType::SepLParen, "(".into())
+                self.mk_token(start_pos, TokenType::SepLParen, "(")
             }
             ')' => {
                 self.next_char();
-                Token::new(start_pos, TokenType::SepRParen, ")".into())
+                self.mk_token(start_pos, TokenType::SepRParen, ")")
             }
             '[' => {
                 self.next_char();
-                Token::new(start_pos, TokenType::SepLBrack, "[".into())
+                self.mk_token(start_pos, TokenType::SepLBrack, "[")
             }
             ']' => {
                 self.next_char();
-                Token::new(start_pos, TokenType::SepRBrack, "]".into())
+                self.mk_token(start_pos, TokenType::SepRBrack, "]")
             }
             '.' => {
                 self.next_char();
-                Token::new(start_pos, TokenType::SepDot, ".".into())
+                self.mk_token(start_pos, TokenType::SepDot, ".")
             }
             '\'' | '"' => {
                 let s = self.scan_string(c)?;
-                Token::new(start_pos, TokenType::String, s)
+                self.mk_token(start_pos, TokenType::String, s)
             }
             '0'..='9' => {
                 let num = self.scan_number();
-                Token::new(start_pos, TokenType::Num, num)
+                self.mk_token(start_pos, TokenType::Num, num)
             }
             '+' => {
                 self.next_char();
-                Token::new(start_pos, TokenType::OpAdd, "+".into())
+                self.mk_token(start_pos, TokenType::OpAdd, "+")
             }
             '*' => {
                 if self.starts_with("**") {
                     self.consume_many(2);
-                    Token::new(start_pos, TokenType::OpPow, "**".into())
+                    self.mk_token(start_pos, TokenType::OpPow, "**")
                 } else {
                     self.next_char();
-                    Token::new(start_pos, TokenType::OpMul, "*".into())
+                    self.mk_token(start_pos, TokenType::OpMul, "*")
                 }
             }
             '/' => {
                 if self.starts_with("//") {
                     self.consume_many(2);
-                    Token::new(start_pos, TokenType::OpIDiv, "//".into())
+                    self.mk_token(start_pos, TokenType::OpIDiv, "//")
                 } else {
                     self.next_char();
-                    Token::new(start_pos, TokenType::OpDiv, "/".into())
+                    self.mk_token(start_pos, TokenType::OpDiv, "/")
                 }
             }
             '^' => {
                 self.next_char();
-                Token::new(start_pos, TokenType::OpWave, "^".into())
+                self.mk_token(start_pos, TokenType::OpWave, "^")
             }
             ',' => {
                 self.next_char();
-                Token::new(start_pos, TokenType::SepComma, ",".into())
+                self.mk_token(start_pos, TokenType::SepComma, ",")
             }
             '#' => {
                 if self.starts_with("#XD") {
                     let s = self.scan_python_inline();
-                    Token::new(start_pos, TokenType::CallNativeExpr, s)
+                    self.mk_token(start_pos, TokenType::CallNativeExpr, s)
                 } else {
                     unreachable!("# 应该被注释分支提前跳过");
                 }
@@ -465,9 +477,9 @@ impl<'a> Lexer<'a> {
             ch if Self::is_chinese(ch) || ch == '_' || ch.is_ascii_alphabetic() => {
                 let ident = self.scan_ident();
                 if KEYWORDS.contains(&ident.as_str()) {
-                    Token::new(start_pos, TokenType::Keyword, ident)
+                    self.mk_token(start_pos, TokenType::Keyword, ident)
                 } else {
-                    Token::new(start_pos, TokenType::Identifier, ident)
+                    self.mk_token(start_pos, TokenType::Identifier, ident)
                 }
             }
             unknown => {

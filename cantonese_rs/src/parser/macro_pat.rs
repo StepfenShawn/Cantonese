@@ -20,10 +20,10 @@ impl MacroPatParser {
         Ok(MacroPatItem::MetaVar(MacroMetaId {
             id: crate::ast::Exp::Id(crate::ast::IdExp {
                 name: id_tk.value.clone(),
-            }),
+            pos: None, }),
             frag_spec: crate::ast::Exp::Id(crate::ast::IdExp {
                 name: frag_spec_tk.value.clone(),
-            }),
+            pos: None, }),
         }))
     }
 
@@ -81,7 +81,7 @@ impl MacroPatParser {
                     let meta_var = parser.eat_kind(TokenType::Identifier)?;
                     children.push(TokenTreeChild::MetaId(MetaIdExp {
                         name: meta_var.value.clone(),
-                    }));
+                    pos: None, }));
                 }
                 _ => {
                     children.push(TokenTreeChild::Token(parser.next_token().unwrap().clone()));

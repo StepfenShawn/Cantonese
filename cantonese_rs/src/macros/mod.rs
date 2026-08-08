@@ -53,7 +53,7 @@ impl FragSpec {
 
     pub fn from_exp(exp: &Exp) -> Result<Self, ParseError> {
         match exp {
-            Exp::Id(IdExp { name }) => Self::from_name(name),
+            Exp::Id(IdExp { name, .. }) => Self::from_name(name),
             _ => Err(ParseError::syntax(
                 &Token::new(Pos::simple(0, 0), TokenType::Identifier, "".to_string()),
                 "<macro>",
@@ -87,7 +87,7 @@ pub fn build_regex(items: &[MacroPatItem]) -> Result<Regex, ParseError> {
         MacroPatItem::Token(t) => Regex::Atom(t.clone()),
         MacroPatItem::MetaVar(MacroMetaId { id, frag_spec }) => {
             let name = match id {
-                Exp::Id(IdExp { name }) => name.clone(),
+                Exp::Id(IdExp { name, .. }) => name.clone(),
                 _ => String::new(),
             };
             Regex::Var {
@@ -425,7 +425,7 @@ pub fn token_tree_to_tokens(tree: &TokenTree) -> Vec<Token> {
         match child {
             TokenTreeChild::Token(t) => tokens.push(t.clone()),
             TokenTreeChild::Tree(t) => tokens.extend(token_tree_to_tokens(t)),
-            TokenTreeChild::MetaId(MetaIdExp { name }) => {
+            TokenTreeChild::MetaId(MetaIdExp { name, .. }) => {
                 tokens.push(Token::new(
                     Pos::simple(0, 0),
                     TokenType::Keyword,
@@ -450,7 +450,7 @@ pub fn token_tree_inner_tokens(tree: &TokenTree) -> Vec<Token> {
         .flat_map(|child| match child {
             TokenTreeChild::Token(t) => vec![t.clone()],
             TokenTreeChild::Tree(t) => token_tree_to_tokens(t),
-            TokenTreeChild::MetaId(MetaIdExp { name }) => vec![
+            TokenTreeChild::MetaId(MetaIdExp { name, .. }) => vec![
                 Token::new(Pos::simple(0, 0), TokenType::Keyword, "@".to_string()),
                 Token::new(Pos::simple(0, 0), TokenType::Identifier, name.clone()),
             ],
@@ -476,7 +476,7 @@ impl MacroSubstitute for TokenTree {
 fn substitute_child(child: &TokenTreeChild, state: &MatchState) -> Result<Vec<Token>, ParseError> {
     match child {
         TokenTreeChild::Token(t) => Ok(vec![t.clone()]),
-        TokenTreeChild::MetaId(MetaIdExp { name }) => {
+        TokenTreeChild::MetaId(MetaIdExp { name, .. }) => {
             let mut mv = state.get(name).cloned().ok_or_else(|| {
                 ParseError::syntax(
                     &Token::new(Pos::simple(0, 0), TokenType::Identifier, name.clone()),
@@ -523,7 +523,7 @@ fn yield_repetition(
         .rep_op
         .as_ref()
         .and_then(|e| match e {
-            Exp::Id(IdExp { name }) => Some(name.as_str()),
+            Exp::Id(IdExp { name, .. }) => Some(name.as_str()),
             _ => None,
         })
         .unwrap_or("+");
@@ -537,7 +537,7 @@ fn yield_repetition(
             for time in 0..times {
                 out.extend(rep.token_trees.substitute(state)?);
                 if time != times - 1 {
-                    if let Some(Exp::Id(IdExp { name })) = &rep.rep_sep {
+                    if let Some(Exp::Id(IdExp { name, .. })) = &rep.rep_sep {
                         out.push(separator_token(name));
                     }
                 }
@@ -575,7 +575,7 @@ fn ensure_repetition_tree(
     let mut times = 0;
     for child in &tree.child {
         let (child_ensure, child_times) = match child {
-            TokenTreeChild::MetaId(MetaIdExp { name }) => {
+            TokenTreeChild::MetaId(MetaIdExp { name, .. }) => {
                 if let Some(mv) = state.get(name) {
                     (true, mv.repetition_times())
                 } else {

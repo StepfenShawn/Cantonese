@@ -1,4 +1,5 @@
 use std::fmt;
+use super::span::Span;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Pos {
@@ -25,6 +26,16 @@ impl Pos {
 
     pub fn simple(line: usize, offset: usize) -> Self {
         Self::new(line, offset, None, None)
+    }
+
+    /// Create a span from this position up to (and including) `end`.
+    pub fn span_to(self, end: Pos) -> Span {
+        Span { start: self, end }
+    }
+
+    /// Return a copy of this position with the end fields filled in.
+    pub fn with_end(self, end_line: usize, end_offset: usize) -> Self {
+        Self::new(self.line, self.offset, Some(end_line), Some(end_offset))
     }
 }
 

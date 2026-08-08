@@ -1,8 +1,4 @@
 //! Recursive-descent parser for the Cantonese language.
-//!
-//! This module is a Rust translation of the Python `can_parser` package.
-//! The expression parser (`ExpParser`) is implemented first, together with the
-//! macro parsers it depends on.
 
 #![allow(dead_code)]
 
@@ -11,8 +7,9 @@ use std::rc::Rc;
 
 use crate::ast::{Exp, Stat};
 use crate::lexer::token::{Pos, Token, TokenType};
+use crate::lexer::span::Span;
 use crate::macros::MacroRegistry;
-use thiserror::Error;
+pub use crate::ui::diagnostic::{ColorChoice, Diagnostic};
 
 pub mod exp;
 pub mod macro_body;
@@ -31,18 +28,18 @@ pub use names::NamesParser;
 pub use stat::StatParser;
 
 /// Parser error type.
-#[derive(Error, Debug)]
+#[derive(Debug)]
 pub enum ParseError {
-    #[error("[{file}:{line}:{offset}] 濑嘢!!! {msg}\n  {tip}")]
     SyntaxError {
         file: String,
-        line: usize,
-        offset: usize,
+        span: Span,
         msg: String,
         tip: String,
     },
-    #[error("Unexpected end of input")]
-    UnexpectedEof,
+    UnexpectedEof {
+        file: String,
+        pos: Pos,
+    },
 }
 
 impl ParseError {
@@ -54,13 +51,52 @@ impl ParseError {
     ) -> Self {
         ParseError::SyntaxError {
             file: file.to_string(),
-            line: token.pos.line,
-            offset: token.pos.offset,
+            span: Span::from_token_pos(token.pos),
             msg: msg.into(),
             tip: tip.into(),
         }
     }
+
+    pub fn unexpected_eof(file: impl Into<String>, pos: Pos) -> Self {
+        ParseError::UnexpectedEof {
+            file: file.into(),
+            pos,
+        }
+    }
+
+    pub fn from_lexer(file: impl Into<String>, pos: Pos, msg: impl Into<String>) -> Self {
+        ParseError::SyntaxError {
+            file: file.into(),
+            span: Span::at(pos),
+            msg: msg.into(),
+            tip: "詞法錯誤".into(),
+        }
+    }
+
+    /// Render a full Rust-style diagnostic report for this error.
+    pub fn report(&self, source: &str, colors: ColorChoice) -> String {
+        Diagnostic::from_parse_error(self).render(source, colors)
+    }
 }
+
+impl std::fmt::Display for ParseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ParseError::SyntaxError { file, span, msg, .. } => {
+                write!(
+                    f,
+                    "error: {} at {}:{}:{}",
+                    msg, file, span.start.line, span.start.offset
+                )
+            }
+            ParseError::UnexpectedEof { file, pos } => {
+                write!(f, "error: unexpected end of input at {}:{}:{}", file, pos.line, pos.offset)
+            }
+        }
+    }
+}
+
+impl std::error::Error for ParseError {}
 
 /// Shared token-stream state used by all parsers.
 ///
@@ -189,7 +225,9 @@ impl<'a> Parser<'a> {
 
     /// Require the next token to have the given type and consume it.
     pub fn eat_kind(&mut self, kind: TokenType) -> Result<Token, ParseError> {
-        let tk = self.peek_token().ok_or(ParseError::UnexpectedEof)?.clone();
+        let tk = self.peek_token().ok_or_else(|| {
+            ParseError::unexpected_eof(self.file_path, self.cur_pos())
+        })?.clone();
         if tk.typ != kind {
             return Err(ParseError::syntax(
                 &tk,
@@ -205,7 +243,9 @@ impl<'a> Parser<'a> {
 
     /// Require the next token to have the given value and consume it.
     pub fn eat_value(&mut self, value: &str) -> Result<Token, ParseError> {
-        let tk = self.peek_token().ok_or(ParseError::UnexpectedEof)?.clone();
+        let tk = self.peek_token().ok_or_else(|| {
+            ParseError::unexpected_eof(self.file_path, self.cur_pos())
+        })?.clone();
         if tk.value != value {
             return Err(ParseError::syntax(
                 &tk,
@@ -221,7 +261,9 @@ impl<'a> Parser<'a> {
 
     /// Require the next token to have one of the given values and consume it.
     pub fn eat_any_value(&mut self, values: &[&str]) -> Result<Token, ParseError> {
-        let tk = self.peek_token().ok_or(ParseError::UnexpectedEof)?.clone();
+        let tk = self.peek_token().ok_or_else(|| {
+            ParseError::unexpected_eof(self.file_path, self.cur_pos())
+        })?.clone();
         if !values.contains(&tk.value.as_str()) {
             return Err(ParseError::syntax(
                 &tk,
@@ -276,10 +318,9 @@ where
     F: FnMut(&mut Parser) -> Result<Exp, ParseError>,
 {
     let start_pos = parser.cur_pos();
-    let exp = f(parser)?;
+    let mut exp = f(parser)?;
     let end_pos = parser.last_pos();
-    // TODO: store span on Exp once AST nodes carry position metadata.
-    let _ = (start_pos, end_pos);
+    exp.set_pos(Some(start_pos.span_to(end_pos)));
     Ok(exp)
 }
 
@@ -289,8 +330,8 @@ where
     F: FnMut(&mut Parser) -> Result<Stat, ParseError>,
 {
     let start_pos = parser.cur_pos();
-    let stat = f(parser)?;
+    let mut stat = f(parser)?;
     let end_pos = parser.last_pos();
-    let _ = (start_pos, end_pos);
+    stat.set_pos(Some(start_pos.span_to(end_pos)));
     Ok(stat)
 }

@@ -1,35 +1,45 @@
 //! AST (Abstract Syntax Tree) definitions for the Cantonese language.
 #![allow(dead_code)]
 
-use crate::lexer::token::{Pos, Token};
+use crate::lexer::token::Token;
+use crate::lexer::span::Span;
 
 /// Base marker for all expression nodes.
 pub trait ExpNode {}
 
 /// `null`
 #[derive(Debug, Clone)]
-pub struct NullExp;
+pub struct NullExp {
+    pub pos: Option<Span>,
+}
 impl ExpNode for NullExp {}
 
 /// `True`
 #[derive(Debug, Clone)]
-pub struct TrueExp;
+pub struct TrueExp {
+    pub pos: Option<Span>,
+}
 impl ExpNode for TrueExp {}
 
 /// `False`
 #[derive(Debug, Clone)]
-pub struct FalseExp;
+pub struct FalseExp {
+    pub pos: Option<Span>,
+}
 impl ExpNode for FalseExp {}
 
 /// `<*>` (varargs)
 #[derive(Debug, Clone)]
-pub struct VarArgExp;
+pub struct VarArgExp {
+    pub pos: Option<Span>,
+}
 impl ExpNode for VarArgExp {}
 
 /// Numeric literal.
 #[derive(Debug, Clone)]
 pub struct NumeralExp {
     pub val: String,
+    pub pos: Option<Span>,
 }
 impl ExpNode for NumeralExp {}
 
@@ -37,6 +47,7 @@ impl ExpNode for NumeralExp {}
 #[derive(Debug, Clone)]
 pub struct ConcatExp {
     pub exps: Vec<Exp>,
+    pub pos: Option<Span>,
 }
 impl ExpNode for ConcatExp {}
 
@@ -44,6 +55,7 @@ impl ExpNode for ConcatExp {}
 #[derive(Debug, Clone)]
 pub struct StringExp {
     pub s: String,
+    pub pos: Option<Span>,
 }
 impl ExpNode for StringExp {}
 
@@ -51,6 +63,7 @@ impl ExpNode for StringExp {}
 #[derive(Debug, Clone)]
 pub struct ListExp {
     pub elem_exps: Vec<Exp>,
+    pub pos: Option<Span>,
 }
 impl ExpNode for ListExp {}
 
@@ -58,6 +71,7 @@ impl ExpNode for ListExp {}
 #[derive(Debug, Clone)]
 pub struct MapExp {
     pub elem_exps: Vec<Exp>,
+    pub pos: Option<Span>,
 }
 impl ExpNode for MapExp {}
 
@@ -66,6 +80,7 @@ impl ExpNode for MapExp {}
 pub struct UnopExp {
     pub op: String,
     pub exp: Box<Exp>,
+    pub pos: Option<Span>,
 }
 impl ExpNode for UnopExp {}
 
@@ -75,6 +90,7 @@ pub struct BinopExp {
     pub op: String,
     pub exp1: Box<Exp>,
     pub exp2: Box<Exp>,
+    pub pos: Option<Span>,
 }
 impl ExpNode for BinopExp {}
 
@@ -83,6 +99,7 @@ impl ExpNode for BinopExp {}
 pub struct AssignExp {
     pub exp1: Box<Exp>,
     pub exp2: Box<Exp>,
+    pub pos: Option<Span>,
 }
 impl ExpNode for AssignExp {}
 
@@ -91,6 +108,7 @@ impl ExpNode for AssignExp {}
 pub struct AnnotationExp {
     pub exp: Box<Exp>,
     pub tyid: Box<Exp>,
+    pub pos: Option<Span>,
 }
 impl ExpNode for AnnotationExp {}
 
@@ -99,6 +117,7 @@ impl ExpNode for AnnotationExp {}
 pub struct MappingExp {
     pub exp1: Box<Exp>,
     pub exp2: Box<Exp>,
+    pub pos: Option<Span>,
 }
 impl ExpNode for MappingExp {}
 
@@ -106,6 +125,7 @@ impl ExpNode for MappingExp {}
 #[derive(Debug, Clone)]
 pub struct IdExp {
     pub name: String,
+    pub pos: Option<Span>,
 }
 impl ExpNode for IdExp {}
 
@@ -113,6 +133,7 @@ impl ExpNode for IdExp {}
 #[derive(Debug, Clone)]
 pub struct ParensExp {
     pub exp: Box<Exp>,
+    pub pos: Option<Span>,
 }
 impl ExpNode for ParensExp {}
 
@@ -121,6 +142,7 @@ impl ExpNode for ParensExp {}
 pub struct ObjectAccessExp {
     pub prefix_exp: Box<Exp>,
     pub key_exp: Box<Exp>,
+    pub pos: Option<Span>,
 }
 impl ExpNode for ObjectAccessExp {}
 
@@ -129,6 +151,7 @@ impl ExpNode for ObjectAccessExp {}
 pub struct ListAccessExp {
     pub prefix_exp: Box<Exp>,
     pub key_exp: Box<Exp>,
+    pub pos: Option<Span>,
 }
 impl ExpNode for ListAccessExp {}
 
@@ -136,6 +159,7 @@ impl ExpNode for ListAccessExp {}
 #[derive(Debug, Clone)]
 pub struct AttrAccessExp {
     pub key_exp: Box<Exp>,
+    pub pos: Option<Span>,
 }
 impl ExpNode for AttrAccessExp {}
 
@@ -144,6 +168,7 @@ impl ExpNode for AttrAccessExp {}
 pub struct FuncCallExp {
     pub prefix_exp: Box<Exp>,
     pub args: Vec<Exp>,
+    pub pos: Option<Span>,
 }
 impl ExpNode for FuncCallExp {}
 
@@ -152,6 +177,7 @@ impl ExpNode for FuncCallExp {}
 pub struct LambdaExp {
     pub id_list: Vec<Exp>,
     pub blocks: Vec<Exp>,
+    pub pos: Option<Span>,
 }
 impl ExpNode for LambdaExp {}
 
@@ -161,6 +187,7 @@ pub struct IfElseExp {
     pub if_cond_exp: Box<Exp>,
     pub if_exp: Box<Exp>,
     pub else_exp: Box<Exp>,
+    pub pos: Option<Span>,
 }
 impl ExpNode for IfElseExp {}
 
@@ -168,6 +195,7 @@ impl ExpNode for IfElseExp {}
 #[derive(Debug, Clone)]
 pub struct NamesExp {
     pub child: Vec<Exp>,
+    pub pos: Option<Span>,
 }
 impl ExpNode for NamesExp {}
 
@@ -176,6 +204,7 @@ impl ExpNode for NamesExp {}
 #[derive(Debug, Clone)]
 pub struct MetaIdExp {
     pub name: String,
+    pub pos: Option<Span>,
 }
 impl ExpNode for MetaIdExp {}
 
@@ -215,6 +244,43 @@ pub enum Exp {
 
 impl ExpNode for Exp {}
 
+impl Exp {
+    /// Set the source span on this expression node.
+    pub fn set_pos(&mut self, pos: Option<Span>) {
+        match self {
+            Exp::Null(e) => e.pos = pos,
+            Exp::True(e) => e.pos = pos,
+            Exp::False(e) => e.pos = pos,
+            Exp::VarArg(e) => e.pos = pos,
+            Exp::Numeral(e) => e.pos = pos,
+            Exp::Concat(e) => e.pos = pos,
+            Exp::String(e) => e.pos = pos,
+            Exp::List(e) => e.pos = pos,
+            Exp::Map(e) => e.pos = pos,
+            Exp::Unop(e) => e.pos = pos,
+            Exp::Binop(e) => e.pos = pos,
+            Exp::Assign(e) => e.pos = pos,
+            Exp::Annotation(e) => e.pos = pos,
+            Exp::Mapping(e) => e.pos = pos,
+            Exp::Id(e) => e.pos = pos,
+            Exp::Parens(e) => e.pos = pos,
+            Exp::ObjectAccess(e) => e.pos = pos,
+            Exp::ListAccess(e) => e.pos = pos,
+            Exp::AttrAccess(e) => e.pos = pos,
+            Exp::FuncCall(e) => e.pos = pos,
+            Exp::Lambda(e) => e.pos = pos,
+            Exp::IfElse(e) => e.pos = pos,
+            Exp::Names(e) => e.pos = pos,
+            Exp::MetaId(e) => e.pos = pos,
+            Exp::PatRep(_)
+            | Exp::BlockRep(_)
+            | Exp::StatExpansion(_) => {
+                // Macro-related nodes carry token positions internally.
+            }
+        }
+    }
+}
+
 /// Base marker for all statement nodes.
 pub trait StatNode {}
 
@@ -223,7 +289,7 @@ pub trait StatNode {}
 pub struct FuncCallStat {
     pub func_name: Exp,
     pub args: Vec<Exp>,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for FuncCallStat {}
 
@@ -235,7 +301,7 @@ pub struct IfStat {
     pub elif_exps: Vec<Exp>,
     pub elif_blocks: Vec<Vec<Stat>>,
     pub else_blocks: Vec<Vec<Stat>>,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for IfStat {}
 
@@ -243,14 +309,14 @@ impl StatNode for IfStat {}
 #[derive(Debug, Clone)]
 pub struct PrintStat {
     pub args: Vec<Exp>,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for PrintStat {}
 
 /// Pass statement.
 #[derive(Debug, Clone)]
 pub struct PassStat {
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for PassStat {}
 
@@ -259,7 +325,7 @@ impl StatNode for PassStat {}
 pub struct AssignStat {
     pub var_list: Vec<Exp>,
     pub exp_list: Vec<Exp>,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for AssignStat {}
 
@@ -268,7 +334,7 @@ impl StatNode for AssignStat {}
 pub struct AssignBlockStat {
     pub var_list: Vec<Exp>,
     pub exp_list: Vec<Exp>,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for AssignBlockStat {}
 
@@ -279,7 +345,7 @@ pub struct ForStat {
     pub from_exp: Exp,
     pub to_exp: Exp,
     pub blocks: Vec<Stat>,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for ForStat {}
 
@@ -289,7 +355,7 @@ pub struct ForEachStat {
     pub id_list: Vec<Exp>,
     pub exp_list: Vec<Exp>,
     pub blocks: Vec<Stat>,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for ForEachStat {}
 
@@ -298,14 +364,14 @@ impl StatNode for ForEachStat {}
 pub struct WhileStat {
     pub cond_exp: Exp,
     pub blocks: Vec<Stat>,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for WhileStat {}
 
 /// List initialisation statement.
 #[derive(Debug, Clone)]
 pub struct ListInitStat {
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for ListInitStat {}
 
@@ -315,7 +381,7 @@ pub struct FunctionDefStat {
     pub name_exp: Exp,
     pub args: Vec<Exp>,
     pub blocks: Vec<Stat>,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for FunctionDefStat {}
 
@@ -325,7 +391,7 @@ pub struct FuncTypeDefStat {
     pub func_name: Exp,
     pub args_type: Vec<Exp>,
     pub return_type: Vec<Exp>,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for FuncTypeDefStat {}
 
@@ -335,7 +401,7 @@ pub struct MethodDefStat {
     pub name_exp: Exp,
     pub args: Vec<Exp>,
     pub class_blocks: Vec<Stat>,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for MethodDefStat {}
 
@@ -343,7 +409,7 @@ impl StatNode for MethodDefStat {}
 #[derive(Debug, Clone)]
 pub struct AttrDefStat {
     pub attrs_list: Vec<Exp>,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for AttrDefStat {}
 
@@ -353,7 +419,7 @@ pub struct ClassDefStat {
     pub class_name: Exp,
     pub class_extend: Vec<Exp>,
     pub class_blocks: Vec<Stat>,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for ClassDefStat {}
 
@@ -361,7 +427,7 @@ impl StatNode for ClassDefStat {}
 #[derive(Debug, Clone)]
 pub struct ImportStat {
     pub names: Exp,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for ImportStat {}
 
@@ -369,7 +435,7 @@ impl StatNode for ImportStat {}
 #[derive(Debug, Clone)]
 pub struct RaiseStat {
     pub name_exp: Exp,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for RaiseStat {}
 
@@ -380,7 +446,7 @@ pub struct TryStat {
     pub except_exps: Vec<Exp>,
     pub except_blocks: Vec<Vec<Stat>>,
     pub finally_blocks: Vec<Stat>,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for TryStat {}
 
@@ -388,21 +454,21 @@ impl StatNode for TryStat {}
 #[derive(Debug, Clone)]
 pub struct GlobalStat {
     pub idlist: Vec<Exp>,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for GlobalStat {}
 
 /// Break statement.
 #[derive(Debug, Clone)]
 pub struct BreakStat {
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for BreakStat {}
 
 /// Continue statement.
 #[derive(Debug, Clone)]
 pub struct ContinueStat {
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for ContinueStat {}
 
@@ -410,7 +476,7 @@ impl StatNode for ContinueStat {}
 #[derive(Debug, Clone)]
 pub struct TypeStat {
     pub exps: Vec<Exp>,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for TypeStat {}
 
@@ -418,7 +484,7 @@ impl StatNode for TypeStat {}
 #[derive(Debug, Clone)]
 pub struct AssertStat {
     pub exps: Exp,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for AssertStat {}
 
@@ -426,7 +492,7 @@ impl StatNode for AssertStat {}
 #[derive(Debug, Clone)]
 pub struct ReturnStat {
     pub exps: Vec<Exp>,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for ReturnStat {}
 
@@ -434,7 +500,7 @@ impl StatNode for ReturnStat {}
 #[derive(Debug, Clone)]
 pub struct DelStat {
     pub exps: Vec<Exp>,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for DelStat {}
 
@@ -442,7 +508,7 @@ impl StatNode for DelStat {}
 #[derive(Debug, Clone)]
 pub struct CmdStat {
     pub args: Vec<Exp>,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for CmdStat {}
 
@@ -452,7 +518,7 @@ pub struct MethodCallStat {
     pub name_exp: Exp,
     pub method: Exp,
     pub args: Vec<Exp>,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for MethodCallStat {}
 
@@ -460,7 +526,7 @@ impl StatNode for MethodCallStat {}
 #[derive(Debug, Clone)]
 pub struct CallStat {
     pub exp: Exp,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for CallStat {}
 
@@ -471,7 +537,7 @@ pub struct MatchStat {
     pub match_val: Vec<Exp>,
     pub match_block: Vec<Vec<Stat>>,
     pub default_match_block: Vec<Stat>,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for MatchStat {}
 
@@ -479,14 +545,14 @@ impl StatNode for MatchStat {}
 #[derive(Debug, Clone)]
 pub struct ExtendStat {
     pub code: String,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for ExtendStat {}
 
 /// Exit statement.
 #[derive(Debug, Clone)]
 pub struct ExitStat {
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for ExitStat {}
 
@@ -496,7 +562,7 @@ impl StatNode for ExitStat {}
 pub struct MacroDefStat {
     pub match_pats: Vec<Vec<MacroPatItem>>,
     pub match_block: Vec<TokenTree>,
-    pub pos: Option<Pos>,
+    pub pos: Option<Span>,
 }
 impl StatNode for MacroDefStat {}
 
@@ -538,6 +604,46 @@ pub enum Stat {
 }
 
 impl StatNode for Stat {}
+
+impl Stat {
+    /// Set the source span on this statement node.
+    pub fn set_pos(&mut self, pos: Option<Span>) {
+        match self {
+            Stat::FuncCall(s) => s.pos = pos,
+            Stat::If(s) => s.pos = pos,
+            Stat::Print(s) => s.pos = pos,
+            Stat::Pass(s) => s.pos = pos,
+            Stat::Assign(s) => s.pos = pos,
+            Stat::AssignBlock(s) => s.pos = pos,
+            Stat::For(s) => s.pos = pos,
+            Stat::ForEach(s) => s.pos = pos,
+            Stat::While(s) => s.pos = pos,
+            Stat::ListInit(s) => s.pos = pos,
+            Stat::FunctionDef(s) => s.pos = pos,
+            Stat::FuncTypeDef(s) => s.pos = pos,
+            Stat::MethodDef(s) => s.pos = pos,
+            Stat::AttrDef(s) => s.pos = pos,
+            Stat::ClassDef(s) => s.pos = pos,
+            Stat::Import(s) => s.pos = pos,
+            Stat::Raise(s) => s.pos = pos,
+            Stat::Try(s) => s.pos = pos,
+            Stat::Global(s) => s.pos = pos,
+            Stat::Break(s) => s.pos = pos,
+            Stat::Continue(s) => s.pos = pos,
+            Stat::Type(s) => s.pos = pos,
+            Stat::Assert(s) => s.pos = pos,
+            Stat::Return(s) => s.pos = pos,
+            Stat::Del(s) => s.pos = pos,
+            Stat::Cmd(s) => s.pos = pos,
+            Stat::MethodCall(s) => s.pos = pos,
+            Stat::Call(s) => s.pos = pos,
+            Stat::Match(s) => s.pos = pos,
+            Stat::Extend(s) => s.pos = pos,
+            Stat::Exit(s) => s.pos = pos,
+            Stat::MacroDef(s) => s.pos = pos,
+        }
+    }
+}
 
 // =============================================================================
 // Macro nodes

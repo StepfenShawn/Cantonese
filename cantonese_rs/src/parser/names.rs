@@ -5,15 +5,20 @@
 
 use crate::ast::{Exp, IdExp, NamesExp};
 use crate::lexer::token::{Pos, Token, TokenType};
-use crate::parser::{ParseError, Parser};
+use crate::parser::{with_pos, ParseError, Parser};
 
 pub struct NamesParser;
 
 impl NamesParser {
     pub fn parse(parser: &mut Parser) -> Result<Exp, ParseError> {
+        with_pos(parser, Self::parse_inner)
+    }
+
+    fn parse_inner(parser: &mut Parser) -> Result<Exp, ParseError> {
         let name_tk = parser.eat_kind(TokenType::Identifier)?;
         let root = Exp::Id(IdExp {
             name: name_tk.value,
+            pos: None,
         });
         Self::finish(parser, root)
     }
@@ -25,13 +30,13 @@ impl NamesParser {
         parser.skip();
         let mut chain = Exp::Names(NamesExp {
             child: vec![root, Self::parse_next(parser)?],
-        });
+        pos: None, });
 
         while parser.match_kind(TokenType::DColon) {
             parser.skip();
             chain = Exp::Names(NamesExp {
                 child: vec![chain, Self::parse_next(parser)?],
-            });
+            pos: None, });
         }
 
         Ok(chain)
@@ -41,17 +46,17 @@ impl NamesParser {
         match (parser.peek_type(), parser.peek_value()) {
             (Some(TokenType::Identifier), _) => {
                 let tk = parser.eat_kind(TokenType::Identifier)?;
-                Ok(Exp::Id(IdExp { name: tk.value }))
+                Ok(Exp::Id(IdExp { name: tk.value, pos: None }))
             }
             (Some(TokenType::OpMul), _) | (_, Some("*")) => {
                 parser.skip();
-                Ok(Exp::Id(IdExp { name: "*".into() }))
+                Ok(Exp::Id(IdExp { name: "*".into(), pos: None }))
             }
             (Some(TokenType::SepLCurly), _) => {
                 parser.skip();
                 let set = Self::parse_names_set(parser)?;
                 parser.eat_kind(TokenType::SepRCurly)?;
-                Ok(Exp::Names(NamesExp { child: set }))
+                Ok(Exp::Names(NamesExp { child: set, pos: None }))
             }
             _ => Err(ParseError::syntax(
                 parser.peek_token().unwrap_or(&Token {

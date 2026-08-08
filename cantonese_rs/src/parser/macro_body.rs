@@ -27,12 +27,12 @@ impl MacroBodyParser {
         } else {
             Some(crate::ast::Exp::Id(crate::ast::IdExp {
                 name: parser.next_token().unwrap().value.clone(),
-            }))
+            pos: None, }))
         };
         let op_tk = parser.eat_any_value(&["*", "+", "?"])?;
         let rep_op = Some(crate::ast::Exp::Id(crate::ast::IdExp {
             name: op_tk.value.clone(),
-        }));
+        pos: None, }));
         Ok(MacroMetaRepExpInBlock {
             token_trees,
             rep_sep,
@@ -54,7 +54,7 @@ impl MacroBodyParser {
                     let meta_var = parser.eat_kind(TokenType::Identifier)?;
                     children.push(TokenTreeChild::MetaId(MetaIdExp {
                         name: meta_var.value.clone(),
-                    }));
+                    pos: None, }));
                 }
                 Some(TokenType::Keyword) if parser.match_value("$") => {
                     let rep = Self::parse_meta_rep_stmt(parser)?;
