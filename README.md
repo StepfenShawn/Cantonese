@@ -48,7 +48,7 @@ pip install Cantonese
 ### <a name="2">Hello World</a>
 用粵語寫嘅第一個程序 Hello World：  
 ```Rust
-畀我睇下 "Hello World!" 點樣先？
+畀我睇下「"Hello World!"」點樣先？
 ```
 ### <a name="3">賦值語句</a>
 ```Rust
@@ -83,7 +83,7 @@ pip install Cantonese
     「结束」係 唔啱
 先啦
 落操场玩跑步
-    介紹返「start」係「start」+ 1
+    介紹返「start」係「start + 1」
     畀我睇下「start」 點樣先??
     如果 |start >= 100| 嘅话 => {
         飲茶先啦
@@ -102,10 +102,10 @@ pip install Cantonese
 ```Rust
 介紹返「A」係 2
 如果 |A 係 2| 嘅话 => {
-    畀我睇下 "A 係 2" 點樣先??
+    畀我睇下「"A 係 2"」點樣先??
 }
 唔係 嘅话 => {
-    畀我睇下"A 唔係 2" 點樣先??
+    畀我睇下「"A 唔係 2"」點樣先??
 }
 ```
 仲可以用`match`
@@ -123,7 +123,8 @@ pip install Cantonese
 ### <a name="7">函数</a>
 返回最大值： 
 ```Rust
-介紹返 $get_max 计下 |数字1, 数字2| 點部署
+介紹返 $get_max
+    |数字1, 数字2| 点部署
         如果 |数字1 比唔上 数字2| 嘅话 => {
             还数「数字2」
         }
@@ -134,13 +135,14 @@ pip install Cantonese
 ```
 調用函數：  
 ```Rust
-介紹返 結果 係 get_max 计下 (23, 17)
+介紹返 結果 係 
+    get_max 下 -> 23, 17
 畀我睇下 結果 點樣先??
 ```
 函數式编程:  
 ```Rust
 畀我睇下 
-    |就咁 x, y { x + y } (2, 2)| 
+    |$$ x, y { x + y } 下 -> (2, 2)| 
 點樣先??
 ```
 運行結果：
@@ -163,14 +165,14 @@ pip install Cantonese
 ```
 ### <a name="9">斷言語句</a>
 ```Rust
-諗下「1 + 1 == 3」?
+谂下「1 + 1 == 3」?
 ```  
 運行結果：  
 ```
 濑嘢!!!: AssertionError:
  喺runtime察覺到錯誤!
  --> ../examples/basic/assert.cantonese 6:0
-  | 諗下 |1 - 1 == 1| ?
+  | 谂下 |1 - 1 == 1| ?
     ^^^^^^^^^^^^^^^^^^^^ Tips:  幫緊你只不過有心無力:(
 
 :D 不如跟住我嘅tips繼續符碌下?
@@ -205,7 +207,7 @@ def add(a, b):
     return a + b
 二五仔係我
 
-畀我睇下 |add 下 (8, 2)| 點樣先 /* 輸出10 */
+畀我睇下 |add 下 -> (8, 2)| 點樣先 /* 輸出10 */
 ```
 又或者使用`Macro`調用`Python`和`Rust`:  
 ```rust
@@ -229,9 +231,10 @@ def add(a, b):
 ```Rust
 介紹返 duck 係 乜X {
     佢個老豆叫 object
-    佢有啲咩?? =>
+    佢有啲咩?? => {
         性别: 公家嘢,
         年龄: 私家嘢
+    }
     佢識得 游下水 |自己| => {
         畀我睇下 "Duck is swimming" 點樣先??
     }
@@ -244,10 +247,10 @@ def add(a, b):
 ```Rust
 介紹返 myduck 係 阿->duck(性别="公")
 ```
-調用對象中嘅方法：   
+調用對象中嘅方法, 两總方式任你揀：   
 ```Rust
-好心 myduck -> 游下水 啦!
-好心 myduck -> 睡下觉 啦!
+myduck -> 游下水() 啦!
+好心 |myduck -> 睡下觉| 啦!
 ```
 運行結果：  
 ```
@@ -458,8 +461,8 @@ pip install kivy
 介紹返 HelloApp 係 乜X {
     佢個老豆叫 App
     佢識得 HelloWorld |自己| => {
-        介紹返 做嘢 係 同我show 下 "Hello World"
-        还数 做嘢
+        |同我show| 下 -> "Hello World" 就係 |做嘢|
+        还数 |做嘢|
     }
 }
 

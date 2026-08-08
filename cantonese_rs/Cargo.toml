@@ -1,0 +1,23 @@
+[package]
+name = "cantonese_rs"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "cantonese_rs"
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "cantonese_rs_cli"
+path = "src/main.rs"
+
+[features]
+default = []
+python = ["pyo3/extension-module"]
+
+[dependencies]
+thiserror = "2.0.19"
+unicode-width = "0.2"
+unicode-xid = "0.2.6"
+zhconv = "0.4.1"
+pyo3 = { version = "0.23", optional = true, features = ["abi3-py39"] }
