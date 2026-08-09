@@ -71,3 +71,4 @@ media/*
 .vscode/
 
 *.exe
+*.pdb
