@@ -10,9 +10,9 @@ import os
 import sys
 from typing import Dict, List, Tuple
 
-from ._core import to_python_with_line_map
-from .error_mapper import format_cantonese_traceback
-from .libs import get_globals
+from cantonese_rs import to_python_with_line_map
+from can_source.error_mapper import format_cantonese_traceback
+from can_source.libs import get_globals
 
 importlib.machinery.SOURCE_SUFFIXES.insert(0, ".cantonese")
 _py_source_to_code = importlib.machinery.SourceFileLoader.source_to_code

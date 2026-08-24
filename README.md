@@ -456,7 +456,7 @@ pip install kivy
 ```
 第一隻 App `HelloWord`：  
 ```Rust
-使下 py::kivy
+使下 std::手機程式
 
 介紹返 HelloApp 係 乜X {
     佢個老豆叫 App

@@ -236,31 +236,6 @@ impl Codegen {
         }
     }
 
-    /// Generate the argument list for a method definition.
-    ///
-    /// Ensures the first parameter is `self`, converting the Cantonese `自己`
-    /// convention to Python's `self`.
-    fn codegen_method_args(&mut self, args: &[Exp]) -> Result<String, CodegenError> {
-        let mut normalized = Vec::new();
-        let mut args_iter = args.iter();
-
-        if let Some(first) = args_iter.next() {
-            let first_name = match first {
-                Exp::Id(IdExp { name, .. }) if name == "自己" => "self".to_string(),
-                _ => self.codegen_expr(first)?,
-            };
-            normalized.push(first_name);
-        } else {
-            normalized.push("self".to_string());
-        }
-
-        for arg in args_iter {
-            normalized.push(self.codegen_expr(arg)?);
-        }
-
-        Ok(normalized.join(", "))
-    }
-
     pub fn codegen_stat(&mut self, stat: &Stat) -> Result<(), CodegenError> {
         match stat {
             Stat::Print(PrintStat { args, .. }) => {
@@ -384,7 +359,7 @@ impl Codegen {
             }
             Stat::MethodDef(MethodDefStat { name_exp, args, class_blocks, .. }) => {
                 let name_s = self.codegen_expr(name_exp)?;
-                let args_s = self.codegen_method_args(args)?;
+                let args_s = self.codegen_args(args)?;
                 self.emit(&format!("def {}({}):\n", name_s, args_s), stat);
                 self.codegen_block(class_blocks)?;
             }
@@ -400,10 +375,10 @@ impl Codegen {
                     .join(", ");
                 let attr_str = names
                     .iter()
-                    .map(|name| format!("self.{}={}", name, name))
+                    .map(|name| format!("自己.{}={}", name, name))
                     .collect::<Vec<_>>()
                     .join(";");
-                self.emit(&format!("def __init__(self, {}):{}\n", args_str, attr_str), stat);
+                self.emit(&format!("def __init__(自己, {}):{}\n", args_str, attr_str), stat);
             }
             Stat::MethodCall(MethodCallStat { name_exp, method, args, .. }) => {
                 let name_s = self.codegen_expr(name_exp)?;
@@ -483,11 +458,7 @@ impl Codegen {
     fn codegen_import(&mut self, names: &Exp) -> Result<Vec<String>, CodegenError> {
         let traces = names_to_traces(names);
         let mut out = Vec::new();
-        for trace in traces {
-            let resolved: Vec<String> = trace
-                .iter()
-                .map(|name| fix_lib_name(name).to_string())
-                .collect();
+        for resolved in traces {
             if resolved.is_empty() {
                 continue;
             }
@@ -507,13 +478,24 @@ impl Codegen {
                 }
                 continue;
             }
+          
             if resolved[0] == "std" {
-                // std::xxx becomes cantonese_rs.libs.xxx
-                let mut path = vec!["cantonese_rs".to_string(), "libs".to_string()];
-                path.extend(resolved.into_iter().skip(1));
-                out.push(import_stmt(&path));
-                continue;
+                if resolved.len() == 2 {
+                    out.push(format!("__cantonese_import__('{}')", resolved[1]));
+                } 
+                // TODO: fix here
+                // else if resolved.len() > 2 {
+                //     let module = resolved[1..resolved.len() - 1].join(".");
+                //     let name = &resolved[resolved.len() - 1];
+                //     if name == "*" {
+                //         out.push(format!("from __cantonese_import__('{}') import *", module));
+                //     } else {
+                //         out.push(format!("from __cantonese_import__('{}') import {}", module, name));
+                //     }
+                // }
+                continue;      
             }
+
             out.push(import_stmt(&resolved));
         }
         Ok(out)
@@ -587,29 +569,6 @@ fn import_stmt(path: &[String]) -> String {
     }
 }
 
-/// Map Cantonese built-in library aliases to Python module names.
-fn fix_lib_name(name: &str) -> &str {
-    match name {
-        "隨機數" => "random",
-        "日期" => "datetime",
-        "數學" => "math",
-        "郵箱" => "smtplib",
-        "xml解析" => "xml",
-        "csv解析" => "csv",
-        "系統" => "os",
-        "正則匹配" => "re",
-        "網頁獲取" => "urllib",
-        "網絡請求" => "requests",
-        "網絡連接" => "socket",
-        "手機程式" => "kivy",
-        "遊戲" => "pygame",
-        "json解析" => "json",
-        "數值計算" => "numpy",
-        "gui" | "画图" => "turtle",
-        _ => name,
-    }
-}
-
 /// Compile Cantonese source into Python source and a line map.
 pub fn to_python(source: &str, filename: &str) -> Result<(String, LineMap), CodegenError> {
     let mut lexer = Lexer::new(filename.to_string(), source);
@@ -664,7 +623,7 @@ mod tests {
     fn test_class_def() {
         assert_eq!(
             compile("介紹返 Duck 係 乜X {\n佢個老豆叫 |object|\n佢有啲咩?? => { 性別: 公家嘢 }\n佢識得 游 |自己| => {\n畀我睇下 1 點樣先？\n}\n}\n"),
-            "class Duck(object):\n\tdef __init__(self, 性別=None):self.性別=性別\n\tdef 游(self):\n\t\tprint(1)\n"
+            "class Duck(object):\n\tdef __init__(自己, 性別=None):自己.性別=性別\n\tdef 游(自己):\n\t\tprint(1)\n"
         );
     }
 }

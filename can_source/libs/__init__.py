@@ -1,5 +1,6 @@
 """Cantonese runtime library registry and bootstrap."""
 
+import importlib
 from collections import namedtuple
 from typing import Tuple
 
@@ -69,7 +70,7 @@ lib_list = [
     LibRegister(["random", "隨機數"], cantonese_random_init, "random"),
     LibRegister(["datetime", "日期"], cantonese_datetime_init, "datetime"),
     LibRegister(["math", "數學"], cantonese_math_init, "math"),
-    LibRegister(["smtplib", "郵箱"], cantonese_smtplib_init, "stmplib"),
+    LibRegister(["smtplib", "郵箱"], cantonese_smtplib_init, "smtplib"),
     LibRegister(["xml", "xml解析"], cantonese_xml_init, "xml"),
     LibRegister(["csv", "csv解析"], cantonese_csv_init, "csv"),
     LibRegister(["os", "系統"], None, "os"),
@@ -98,6 +99,21 @@ def fix_lib_name(name: str) -> Tuple[str, bool]:
                 lib.f_init()
             return lib.import_res, False
     return name, True
+
+
+def __cantonese_import__(alias: str):
+    """Runtime helper for built-in Cantonese library aliases.
+
+    The Rust compiler emits calls to this function instead of a plain
+    `import` statement. It resolves the Cantonese alias and triggers any
+    Cantonese wrapper initialization before importing the underlying Python
+    module.
+    """
+    import_name, _ = fix_lib_name(alias)
+    return importlib.import_module(import_name)
+
+
+lib_env["__cantonese_import__"] = __cantonese_import__
 
 
 def bootstrap() -> None:

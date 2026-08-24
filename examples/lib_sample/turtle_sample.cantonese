@@ -5,7 +5,7 @@
 
 {% std::macros::ui %}
 
-使下 py::turtle
+使下 std::turtle
 
 老作一下!(
     首先 画个圈(100),

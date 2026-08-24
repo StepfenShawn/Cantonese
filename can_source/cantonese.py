@@ -15,9 +15,9 @@ sys.dont_write_bytecode = True
 
 try:
     import cantonese_rs
-    import cantonese_rs.import_hook  # noqa: F401
-    from cantonese_rs.libs import bootstrap, lib_env
-    from cantonese_rs.error_mapper import run_with_mapping
+    from can_source import import_hook  # noqa: F401
+    from libs import bootstrap, lib_env
+    from error_mapper import run_with_mapping
 
     bootstrap()
 except ImportError as exc:

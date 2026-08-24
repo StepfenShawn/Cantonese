@@ -66,7 +66,7 @@ fn main() {
         TestCase{group:"BasicTest", name:"test_raise", file:"examples/basic/raise.cantonese", assert:Assertion::Contains(run_example("examples/basic/raise.cantonese"), "濑嘢!")},
         TestCase{group:"BasicTest", name:"test_set", file:"examples/basic/set.cantonese", assert:Assertion::NoContainsAndNonEmpty("濑嘢!")},
         TestCase{group:"BasicTest", name:"test_try_finally", file:"examples/basic/try_finally.cantonese", assert:Assertion::Eq(run_example("examples/basic/try_finally.cantonese"), "揾到NameError\n执手尾: \n1 1\n".into())},
-        TestCase{group:"BasicTest", name:"test_type", file:"examples/basic/type.cantonese", assert:Assertion::Eq(run_example("examples/basic/type.cantonese"), "<class 'int'>\n<class 'can_source.can_libs.std.impl.Str'>\n".into())},
+        TestCase{group:"BasicTest", name:"test_type", file:"examples/basic/type.cantonese", assert:Assertion::Eq(run_example("examples/basic/type.cantonese"), "<class 'int'>\n<class 'libs.std.impl.Str'>\n".into())},
         TestCase{group:"BasicTest", name:"test_while", file:"examples/basic/while.cantonese", assert:Assertion::Eq(run_example("examples/basic/while.cantonese"), "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n".into())},
 
         // ========== AlgoTest ==========
