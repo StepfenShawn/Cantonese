@@ -6,6 +6,8 @@ import sys
 import traceback
 from typing import Dict, List, Optional
 
+from ._core import format_runtime_diagnostic
+
 
 def format_cantonese_traceback(
     exc_type,
@@ -15,27 +17,34 @@ def format_cantonese_traceback(
     source: str,
     filename: str = "<cantonese>",
 ) -> str:
-    """Format a Python traceback with line numbers mapped to Cantonese source."""
-    source_lines = source.splitlines()
-    lines = [f"Traceback (most recent call, Cantonese source {filename}):"]
+    """Format a runtime error as a Rust-style diagnostic.
 
+    Walks the traceback to find the innermost frame that maps to a
+    Cantonese source line, then renders it with the Rust diagnostic
+    formatter (file location, source snippet, caret underline).
+    """
+    # Find the deepest frame that belongs to this Cantonese file and has a
+    # valid line-map entry.
+    chosen_can_line = None
     for frame, py_lineno in traceback.walk_tb(exc_tb):
         if frame.f_code.co_filename != filename:
             continue
         can_lines = line_map.get(py_lineno)
-        can_lineno = can_lines[0] if can_lines else py_lineno
-        can_line_text = (
-            source_lines[can_lineno - 1].strip()
-            if 1 <= can_lineno <= len(source_lines)
-            else ""
-        )
-        lines.append(
-            f'  File "{filename}", line {can_lineno}, in {frame.f_code.co_name}\n'
-            f"    {can_line_text}"
-        )
+        if can_lines:
+            chosen_can_line = can_lines[0]
 
-    lines.append(f"{exc_type.__name__}: {exc_value}")
-    return "\n".join(lines)
+    if chosen_can_line is None:
+        # Fallback: just use the exception message.
+        return f"{exc_type.__name__}: {exc_value}"
+
+    return format_runtime_diagnostic(
+        exc_type.__name__,
+        '喺runtime察覺到錯誤! ' + str(exc_value),
+        source,
+        chosen_can_line,
+        filename,
+        colors=None,  # auto-detect
+    )
 
 
 def run_with_mapping(
@@ -47,7 +56,7 @@ def run_with_mapping(
 ):
     """Execute generated Python code and rewrite tracebacks to Cantonese lines.
 
-    On error, a Cantonese-located traceback is printed to stderr and the
+    On error, a Cantonese-located diagnostic is printed to stderr and the
     original exception is re-raised.
     """
     if globals_dict is None:

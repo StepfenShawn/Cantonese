@@ -8,7 +8,7 @@ import os
 import sys
 from typing import Dict, List, Tuple
 
-from ._core import to_python_with_line_map
+from ._core import compile_with_diagnostics, to_python_with_line_map
 from .error_mapper import format_cantonese_traceback
 from .libs import get_globals
 
@@ -82,7 +82,12 @@ def _can_source_to_code(self, data, path, _optimize=-1):
     os.environ["CUR_FILE"] = path
 
     try:
-        py_code, line_map = to_python_with_line_map(source, path)
+        py_code, diagnostics = compile_with_diagnostics(source, path)
+        if diagnostics:
+            for d in diagnostics:
+                print(d.render(source, colors=True), file=sys.stderr)
+            raise RuntimeError(diagnostics[0].message)
+        _, line_map = to_python_with_line_map(source, path)
     finally:
         os.environ["CUR_FILE"] = cur_file
 

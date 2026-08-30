@@ -82,10 +82,10 @@ impl Diagnostic {
 
         // Header: "error: message"
         let severity_label = match self.severity {
-            Severity::Error => "error",
+            Severity::Error => "濑嘢!!!",
             Severity::Warning => "warning",
             Severity::Note => "note",
-            Severity::Help => "help",
+            Severity::Help => "tips",
         };
         out.push_str(&c.paint(
             severity_label,
@@ -143,7 +143,7 @@ impl Diagnostic {
             out.push('\n');
             out.push_str(&" ".repeat(line_num_width + 1));
             out.push(' ');
-            out.push_str(&c.paint("= help", ColorCode::GreenBold));
+            out.push_str(&c.paint("= tips", ColorCode::GreenBold));
             out.push_str(": ");
             out.push_str(&self.help);
             out.push('\n');
@@ -165,7 +165,7 @@ impl Diagnostic {
         let line_text = lines[line_idx];
 
         // Source line: " 2 | <text>"
-        out.push_str(&format!("{:>width$} ", line_no, width = line_num_width));
+        out.push_str(&format!("{:>width$} ", line_no, width = line_num_width + 1));
         out.push_str(&c.paint("|", ColorCode::Blue));
         out.push(' ');
         out.push_str(line_text);
@@ -213,7 +213,7 @@ impl Diagnostic {
             let line_no = line_idx + 1;
             let line_text = lines[line_idx];
 
-            out.push_str(&format!("{:>width$} ", line_no, width = line_num_width));
+            out.push_str(&format!("{:>width$} ", line_no, width = line_num_width + 1));
             out.push_str(&c.paint("|", ColorCode::Blue));
             out.push(' ');
             out.push_str(line_text);

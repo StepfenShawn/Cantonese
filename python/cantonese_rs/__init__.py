@@ -3,6 +3,10 @@
 try:
     from ._core import (
         CantoneseCompileError,
+        Diagnostic,
+        compile_diagnostics,
+        compile_with_diagnostics,
+        format_runtime_diagnostic,
         to_python,
         to_python_with_line_map,
         tokenize,
@@ -20,6 +24,10 @@ from .libs import bootstrap, get_globals, lib_env
 
 __all__ = [
     "CantoneseCompileError",
+    "Diagnostic",
+    "compile_diagnostics",
+    "compile_with_diagnostics",
+    "format_runtime_diagnostic",
     "to_python",
     "to_python_with_line_map",
     "tokenize",

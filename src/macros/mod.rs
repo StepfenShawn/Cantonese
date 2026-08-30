@@ -198,7 +198,7 @@ impl PartialEq for MetaVar {
 
 #[derive(Debug, Clone, Default)]
 pub struct MatchState {
-    vars: HashMap<String, MetaVar>,
+    pub vars: HashMap<String, MetaVar>,
 }
 
 impl MatchState {
@@ -414,8 +414,8 @@ impl MacroExpander {
                 )
             })?;
         let input = token_tree_inner_tokens(&tokentrees);
-        let (state, body) = macro_def.try_expand(&input, parser.macro_registry.clone())?;
-        body.substitute(&state)
+        let (mut state, body) = macro_def.try_expand(&input, parser.macro_registry.clone())?;
+        body.substitute(&mut state)
     }
 }
 
@@ -464,11 +464,11 @@ pub fn token_tree_inner_tokens(tree: &TokenTree) -> Vec<Token> {
 }
 
 pub trait MacroSubstitute {
-    fn substitute(&self, state: &MatchState) -> Result<Vec<Token>, ParseError>;
+    fn substitute(&self, state: &mut MatchState) -> Result<Vec<Token>, ParseError>;
 }
 
 impl MacroSubstitute for TokenTree {
-    fn substitute(&self, state: &MatchState) -> Result<Vec<Token>, ParseError> {
+    fn substitute(&self, state: &mut MatchState) -> Result<Vec<Token>, ParseError> {
         let mut out = Vec::new();
         for child in &self.child {
             out.extend(substitute_child(child, state)?);
@@ -477,11 +477,11 @@ impl MacroSubstitute for TokenTree {
     }
 }
 
-fn substitute_child(child: &TokenTreeChild, state: &MatchState) -> Result<Vec<Token>, ParseError> {
+fn substitute_child(child: &TokenTreeChild, state: &mut MatchState) -> Result<Vec<Token>, ParseError> {
     match child {
         TokenTreeChild::Token(t) => Ok(vec![t.clone()]),
         TokenTreeChild::MetaId(MetaIdExp { name, .. }) => {
-            let mut mv = state.get(name).cloned().ok_or_else(|| {
+            let mv = state.get_mut(name).ok_or_else(|| {
                 ParseError::syntax(
                     &Token::new(Pos::simple(0, 0), TokenType::Identifier, name.clone()),
                     "<macro>",
@@ -511,7 +511,7 @@ fn substitute_child(child: &TokenTreeChild, state: &MatchState) -> Result<Vec<To
 
 fn yield_repetition(
     rep: &MacroMetaRepExpInBlock,
-    state: &MatchState,
+    state: &mut MatchState,
 ) -> Result<Vec<Token>, ParseError> {
     let (ensure, times) = ensure_repetition(rep, state)?;
     if !ensure {

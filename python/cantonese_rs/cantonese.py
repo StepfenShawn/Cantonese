@@ -17,6 +17,7 @@ try:
     from . import import_hook  # noqa: F401
     from ._core import (
         CantoneseCompileError,
+        compile_with_diagnostics,
         to_python,
         to_python_with_line_map,
         tokenize,
@@ -144,7 +145,12 @@ def cantonese_run(
         _show_pretty_lex(tokens)
         return
 
-    py_code, line_map = to_python_with_line_map(code, file)
+    py_code, diagnostics = compile_with_diagnostics(code, file)
+    if diagnostics:
+        for d in diagnostics:
+            print(d.render(code, colors=True))
+        raise CantoneseCompileError(diagnostics[0].message)
+    _, line_map = to_python_with_line_map(code, file)
 
     if is_to_py:
         print("-> To python:")
@@ -181,6 +187,7 @@ def cantonese_run(
         try:
             run_with_mapping(py_code, line_map, code, file, lib_env)
         except Exception:
+            # Diagnostic already printed to stderr by run_with_mapping.
             if REPL:
                 raise
             sys.exit(1)
@@ -265,7 +272,12 @@ def main():
 
     if args.build:
         if args.file.endswith(".cantonese"):
-            code = to_python(code, args.file)
+            py_code, diagnostics = compile_with_diagnostics(code, args.file)
+            if diagnostics:
+                for d in diagnostics:
+                    print(d.render(code, colors=True))
+                sys.exit(1)
+            code = py_code
         code_obj = compile(code, args.file, "exec")
         exec(code_obj, lib_env)
         sys.exit(0)

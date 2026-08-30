@@ -3,11 +3,11 @@ requires = ["maturin>=1.0,<2.0"]
 build-backend = "maturin"
 
 [project]
-name = "cantonese-rs"
+name = "Cantonese"
 version = "1.0.11"
-description = "Cantonese language parser/compiler with Python runtime"
+description = "The Cantonese programming language"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.8"
 license = {text = "MIT"}
 authors = [
     {name = "Stepfen Shawn", email = "stepfencurryxiao@gmail.com"}
@@ -25,6 +25,7 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
