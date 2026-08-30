@@ -1,4 +1,4 @@
-//! Statement parser (translated from can_parser/stat/stat_parser.py).
+//! Statement parser
 //!
 //! Uses Rust `match` on the current token to dispatch to the corresponding
 //! statement parser, mirroring the keyword-driven structure of the original.
@@ -351,7 +351,8 @@ impl StatParser {
             cond_exp: Exp::Unop(UnopExp {
                 op: "not".into(),
                 exp: Box::new(cond_exp),
-            pos: None, }),
+                pos: None,
+            }),
             blocks,
             pos: None,
         }))
@@ -483,7 +484,8 @@ impl StatParser {
         Ok(Stat::FunctionDef(FunctionDefStat {
             name_exp: Exp::Id(IdExp {
                 name: name_tk.value,
-            pos: None, }),
+                pos: None,
+            }),
             args,
             blocks,
             pos: None,
@@ -540,7 +542,8 @@ impl StatParser {
             exp_list: vec![Exp::FuncCall(FuncCallExp {
                 prefix_exp: Box::new(Exp::Id(IdExp {
                     name: "stack".into(),
-                pos: None, })),
+                    pos: None,
+                })),
                 args: Vec::new(),
                 pos: None,
             })],
@@ -556,7 +559,8 @@ impl StatParser {
             name_exp: exps,
             method: Exp::Id(IdExp {
                 name: "push".into(),
-            pos: None, }),
+                pos: None,
+            }),
             args,
             pos: None,
         }))
@@ -567,7 +571,10 @@ impl StatParser {
         let exps = ExpParser::parse_exp(parser)?;
         Ok(Stat::MethodCall(MethodCallStat {
             name_exp: exps,
-            method: Exp::Id(IdExp { name: "pop".into(), pos: None }),
+            method: Exp::Id(IdExp {
+                name: "pop".into(),
+                pos: None,
+            }),
             args: Vec::new(),
             pos: None,
         }))

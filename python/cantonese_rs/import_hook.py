@@ -12,13 +12,65 @@ from ._core import to_python_with_line_map
 from .error_mapper import format_cantonese_traceback
 from .libs import get_globals
 
-importlib.machinery.SOURCE_SUFFIXES.insert(0, ".cantonese")
+importlib.machinery.SOURCE_SUFFIXES.append(".cantonese")
 _py_source_to_code = importlib.machinery.SourceFileLoader.source_to_code
 _py_exec_module = importlib.machinery.SourceFileLoader.exec_module
 
 # Cache of Cantonese source and line maps keyed by the .cantonese file path.
 # Used by exec_module to rewrite runtime tracebacks back to Cantonese lines.
 _cantonese_cache: Dict[str, Tuple[str, Dict[int, List[int]]]] = {}
+
+
+class _CantoneseShadowFinder:
+    """Meta path finder that prevents .cantonese files from shadowing .py files.
+
+    When both foo.py and foo.cantonese exist somewhere in sys.path,
+    ``import foo`` will load foo.py instead of foo.cantonese.  This avoids
+    circular-import errors when a Cantonese source file has the same stem as
+    a standard-library module (e.g. ``random.cantonese`` vs ``random.py``).
+    """
+
+    def find_spec(self, fullname, path, target=None):  # noqa: D102
+        # Only intercept absolute imports from sys.path (path is None).
+        if path is not None:
+            return None
+
+        # Don't interfere with modules that are already loaded.
+        if fullname in sys.modules:
+            return None
+
+        parts = fullname.split(".")
+
+        cantonese_file = None
+        py_file = None
+
+        for entry in sys.path:
+            if not entry:
+                entry = os.getcwd()
+
+            base = os.path.join(entry, *parts)
+
+            if cantonese_file is None and os.path.isfile(base + ".cantonese"):
+                cantonese_file = base + ".cantonese"
+
+            if py_file is None and os.path.isfile(base + ".py"):
+                py_file = base + ".py"
+
+        # A .cantonese file would be found AND a .py file also exists
+        # somewhere in sys.path – redirect to the .py file so that the
+        # standard library (or any .py module) is not shadowed.
+        if cantonese_file is not None and py_file is not None:
+            import importlib.util
+
+            return importlib.util.spec_from_file_location(fullname, py_file)
+
+        return None
+
+
+# Install the shadow-guard finder *before* PathFinder so that it gets the
+# first chance to resolve module names that have both .cantonese and .py
+# variants in sys.path.
+sys.meta_path.insert(0, _CantoneseShadowFinder())
 
 
 def _can_source_to_code(self, data, path, _optimize=-1):

@@ -68,7 +68,7 @@ cases: list[TestCase] = [
     TestCase("BasicTest", "test_raise", "examples/basic/raise.cantonese", "contains", "濑嘢!"),
     TestCase("BasicTest", "test_set", "examples/basic/set.cantonese", "no_contains_and_non_empty", "濑嘢!"),
     TestCase("BasicTest", "test_try_finally", "examples/basic/try_finally.cantonese", "eq", "揾到NameError\n执手尾: \n1 1\n"),
-    TestCase("BasicTest", "test_type", "examples/basic/type.cantonese", "eq", "<class 'int'>\n<class 'libs.std.impl.Str'>\n"),
+    TestCase("BasicTest", "test_type", "examples/basic/type.cantonese", "eq", "<class 'int'>\n<class 'cantonese_rs.libs.std.impl.Str'>\n"),
     TestCase("BasicTest", "test_while", "examples/basic/while.cantonese", "eq", "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n"),
     # ========== AlgoTest ==========
     TestCase("AlgoTest", "test_binary_search", "examples/algorithms/binary_search.cantonese", "eq", "揾到啦!!!\n揾唔到: (\n"),

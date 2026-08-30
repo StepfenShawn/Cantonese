@@ -5,13 +5,13 @@ use std::collections::HashMap;
 use crate::ast::{
     AnnotationExp, AssertStat, AssignBlockStat, AssignExp, AssignStat, AttrDefStat, BinopExp,
     BreakStat, CallStat, ClassDefStat, CmdStat, ConcatExp, ContinueStat, DelStat, ExitStat, Exp,
-    ExtendStat, FalseExp, ForEachStat, ForStat, FuncCallExp, FuncCallStat, FunctionDefStat,
-    FuncTypeDefStat, GlobalStat, IdExp, IfElseExp, IfStat, ImportStat, LambdaExp, ListAccessExp,
-    ListExp, ListInitStat, MappingExp, MapExp, MatchStat, MethodCallStat, MethodDefStat, NamesExp,
+    ExtendStat, FalseExp, ForEachStat, ForStat, FuncCallExp, FuncCallStat, FuncTypeDefStat,
+    FunctionDefStat, GlobalStat, IdExp, IfElseExp, IfStat, ImportStat, LambdaExp, ListAccessExp,
+    ListExp, ListInitStat, MapExp, MappingExp, MatchStat, MethodCallStat, MethodDefStat, NamesExp,
     NullExp, NumeralExp, ObjectAccessExp, ParensExp, PassStat, PrintStat, RaiseStat, ReturnStat,
     Stat, StringExp, TrueExp, TryStat, TypeStat, UnopExp, WhileStat,
 };
-use crate::lexer::{Lexer, LexError};
+use crate::lexer::{LexError, Lexer};
 use crate::parser::{ParseError, Parser as CanParser, StatParser};
 
 pub type LineMap = HashMap<usize, Vec<usize>>;
@@ -143,12 +143,20 @@ impl Codegen {
                 let right = self.codegen_expr(exp2)?;
                 Ok(format!("{}:{}", left, right))
             }
-            Exp::ObjectAccess(ObjectAccessExp { prefix_exp, key_exp, .. }) => {
+            Exp::ObjectAccess(ObjectAccessExp {
+                prefix_exp,
+                key_exp,
+                ..
+            }) => {
                 let prefix = self.codegen_expr(prefix_exp)?;
                 let key = self.codegen_expr(key_exp)?;
                 Ok(format!("{}.{}", prefix, key))
             }
-            Exp::ListAccess(ListAccessExp { prefix_exp, key_exp, .. }) => {
+            Exp::ListAccess(ListAccessExp {
+                prefix_exp,
+                key_exp,
+                ..
+            }) => {
                 let prefix = self.codegen_expr(prefix_exp)?;
                 let key = self.codegen_expr(key_exp)?;
                 Ok(format!("{}[{}]", prefix, key))
@@ -157,17 +165,26 @@ impl Codegen {
                 let exp_s = self.codegen_expr(exp)?;
                 Ok(format!("({} {})", op, exp_s))
             }
-            Exp::FuncCall(FuncCallExp { prefix_exp, args, .. }) => {
+            Exp::FuncCall(FuncCallExp {
+                prefix_exp, args, ..
+            }) => {
                 let prefix = self.codegen_expr(prefix_exp)?;
                 let args_s = self.codegen_args(args)?;
                 Ok(format!("{}({})", prefix, args_s))
             }
-            Exp::Lambda(LambdaExp { id_list, blocks, .. }) => {
+            Exp::Lambda(LambdaExp {
+                id_list, blocks, ..
+            }) => {
                 let args_s = self.codegen_args(id_list)?;
                 let body_s = self.codegen_args(blocks)?;
                 Ok(format!("(lambda {} : {})", args_s, body_s))
             }
-            Exp::IfElse(IfElseExp { if_cond_exp, if_exp, else_exp, .. }) => {
+            Exp::IfElse(IfElseExp {
+                if_cond_exp,
+                if_exp,
+                else_exp,
+                ..
+            }) => {
                 let cond = self.codegen_expr(if_cond_exp)?;
                 let then_ = self.codegen_expr(if_exp)?;
                 let else_ = self.codegen_expr(else_exp)?;
@@ -206,11 +223,9 @@ impl Codegen {
             Exp::AttrAccess(_) => Err(CodegenError::Unsupported(
                 "attribute access suffix in expression context".to_string(),
             )),
-            Exp::MetaId(_) | Exp::PatRep(_) | Exp::BlockRep(_) | Exp::StatExpansion(_) => {
-                Err(CodegenError::Unsupported(
-                    "macro-related expression node".to_string(),
-                ))
-            }
+            Exp::MetaId(_) | Exp::PatRep(_) | Exp::BlockRep(_) | Exp::StatExpansion(_) => Err(
+                CodegenError::Unsupported("macro-related expression node".to_string()),
+            ),
         }
     }
 
@@ -242,12 +257,16 @@ impl Codegen {
                 let args_s = self.codegen_args(args)?;
                 self.emit(&format!("print({})\n", args_s), stat);
             }
-            Stat::Assign(AssignStat { var_list, exp_list, .. }) => {
+            Stat::Assign(AssignStat {
+                var_list, exp_list, ..
+            }) => {
                 let vars_s = self.codegen_args(var_list)?;
                 let exps_s = self.codegen_args(exp_list)?;
                 self.emit(&format!("{} = {}\n", vars_s, exps_s), stat);
             }
-            Stat::AssignBlock(AssignBlockStat { var_list, exp_list, .. }) => {
+            Stat::AssignBlock(AssignBlockStat {
+                var_list, exp_list, ..
+            }) => {
                 for (var, exp) in var_list.iter().zip(exp_list.iter()) {
                     let var_s = self.codegen_expr(var)?;
                     let exp_s = self.codegen_expr(exp)?;
@@ -266,7 +285,14 @@ impl Codegen {
             Stat::Continue(ContinueStat { .. }) => {
                 self.emit("continue\n", stat);
             }
-            Stat::If(IfStat { if_exp, if_block, elif_exps, elif_blocks, else_blocks, .. }) => {
+            Stat::If(IfStat {
+                if_exp,
+                if_block,
+                elif_exps,
+                elif_blocks,
+                else_blocks,
+                ..
+            }) => {
                 let cond_s = self.codegen_expr(if_exp)?;
                 self.emit(&format!("if {}:\n", cond_s), stat);
                 self.codegen_block(if_block)?;
@@ -280,7 +306,13 @@ impl Codegen {
                     self.codegen_block(&else_blocks[0])?;
                 }
             }
-            Stat::Try(TryStat { try_blocks, except_exps, except_blocks, finally_blocks, .. }) => {
+            Stat::Try(TryStat {
+                try_blocks,
+                except_exps,
+                except_blocks,
+                finally_blocks,
+                ..
+            }) => {
                 self.emit("try:\n", stat);
                 self.codegen_block(try_blocks)?;
                 for (except_exp, except_block) in except_exps.iter().zip(except_blocks.iter()) {
@@ -297,12 +329,20 @@ impl Codegen {
                 let exp_s = self.codegen_expr(name_exp)?;
                 self.emit(&format!("raise {}\n", exp_s), stat);
             }
-            Stat::While(WhileStat { cond_exp, blocks, .. }) => {
+            Stat::While(WhileStat {
+                cond_exp, blocks, ..
+            }) => {
                 let cond_s = self.codegen_expr(cond_exp)?;
                 self.emit(&format!("while {}:\n", cond_s), stat);
                 self.codegen_block(blocks)?;
             }
-            Stat::For(ForStat { var, from_exp, to_exp, blocks, .. }) => {
+            Stat::For(ForStat {
+                var,
+                from_exp,
+                to_exp,
+                blocks,
+                ..
+            }) => {
                 let var_s = self.codegen_expr(var)?;
                 let from_s = self.codegen_expr(from_exp)?;
                 let to_s = self.codegen_expr(to_exp)?;
@@ -312,13 +352,20 @@ impl Codegen {
                 );
                 self.codegen_block(blocks)?;
             }
-            Stat::FunctionDef(FunctionDefStat { name_exp, args, blocks, .. }) => {
+            Stat::FunctionDef(FunctionDefStat {
+                name_exp,
+                args,
+                blocks,
+                ..
+            }) => {
                 let name_s = self.codegen_expr(name_exp)?;
                 let args_s = self.codegen_args(args)?;
                 self.emit(&format!("def {}({}):\n", name_s, args_s), stat);
                 self.codegen_block(blocks)?;
             }
-            Stat::FuncCall(FuncCallStat { func_name, args, .. }) => {
+            Stat::FuncCall(FuncCallStat {
+                func_name, args, ..
+            }) => {
                 let name_s = self.codegen_expr(func_name)?;
                 let args_s = self.codegen_args(args)?;
                 self.emit(&format!("{}({})\n", name_s, args_s), stat);
@@ -347,7 +394,12 @@ impl Codegen {
                 let exp_s = self.codegen_expr(exps)?;
                 self.emit(&format!("assert {}\n", exp_s), stat);
             }
-            Stat::ClassDef(ClassDefStat { class_name, class_extend, class_blocks, .. }) => {
+            Stat::ClassDef(ClassDefStat {
+                class_name,
+                class_extend,
+                class_blocks,
+                ..
+            }) => {
                 let name_s = self.codegen_expr(class_name)?;
                 let extend_s = if class_extend.is_empty() {
                     String::new()
@@ -357,7 +409,12 @@ impl Codegen {
                 self.emit(&format!("class {}({}):\n", name_s, extend_s), stat);
                 self.codegen_block(class_blocks)?;
             }
-            Stat::MethodDef(MethodDefStat { name_exp, args, class_blocks, .. }) => {
+            Stat::MethodDef(MethodDefStat {
+                name_exp,
+                args,
+                class_blocks,
+                ..
+            }) => {
                 let name_s = self.codegen_expr(name_exp)?;
                 let args_s = self.codegen_args(args)?;
                 self.emit(&format!("def {}({}):\n", name_s, args_s), stat);
@@ -378,9 +435,17 @@ impl Codegen {
                     .map(|name| format!("自己.{}={}", name, name))
                     .collect::<Vec<_>>()
                     .join(";");
-                self.emit(&format!("def __init__(自己, {}):{}\n", args_str, attr_str), stat);
+                self.emit(
+                    &format!("def __init__(自己, {}):{}\n", args_str, attr_str),
+                    stat,
+                );
             }
-            Stat::MethodCall(MethodCallStat { name_exp, method, args, .. }) => {
+            Stat::MethodCall(MethodCallStat {
+                name_exp,
+                method,
+                args,
+                ..
+            }) => {
                 let name_s = self.codegen_expr(name_exp)?;
                 let method_s = match method {
                     Exp::Id(IdExp { name, .. }) => name.clone(),
@@ -406,7 +471,13 @@ impl Codegen {
                     self.emit(&format!("{}\n", line), stat);
                 }
             }
-            Stat::Match(MatchStat { match_id, match_val, match_block, default_match_block, .. }) => {
+            Stat::Match(MatchStat {
+                match_id,
+                match_val,
+                match_block,
+                default_match_block,
+                ..
+            }) => {
                 for (i, (val, block)) in match_val.iter().zip(match_block.iter()).enumerate() {
                     let keyword = if i == 0 { "if" } else { "elif" };
                     let match_s = self.codegen_expr(match_id)?;
@@ -419,7 +490,12 @@ impl Codegen {
                     self.codegen_block(default_match_block)?;
                 }
             }
-            Stat::ForEach(ForEachStat { id_list, exp_list, blocks, .. }) => {
+            Stat::ForEach(ForEachStat {
+                id_list,
+                exp_list,
+                blocks,
+                ..
+            }) => {
                 let ids_s = self.codegen_args(id_list)?;
                 let exps_s = self.codegen_args(exp_list)?;
                 self.emit(&format!("for {} in {}:\n", ids_s, exps_s), stat);
@@ -478,11 +554,11 @@ impl Codegen {
                 }
                 continue;
             }
-          
+
             if resolved[0] == "std" {
                 if resolved.len() == 2 {
                     out.push(format!("__cantonese_import__('{}')", resolved[1]));
-                } 
+                }
                 // TODO: fix here
                 // else if resolved.len() > 2 {
                 //     let module = resolved[1..resolved.len() - 1].join(".");
@@ -493,7 +569,7 @@ impl Codegen {
                 //         out.push(format!("from __cantonese_import__('{}') import {}", module, name));
                 //     }
                 // }
-                continue;      
+                continue;
             }
 
             out.push(import_stmt(&resolved));
@@ -512,7 +588,11 @@ fn names_to_traces(exp: &Exp) -> Vec<Vec<String>> {
             // Special case: `A::{B, C}` is parsed as
             // NamesExp([A, NamesExp([B, C])]). Distribute over the alternatives.
             if tail.len() == 1 {
-                if let Exp::Names(NamesExp { child: set_children, .. }) = &tail[0] {
+                if let Exp::Names(NamesExp {
+                    child: set_children,
+                    ..
+                }) = &tail[0]
+                {
                     let mut result = Vec::new();
                     for alt in set_children {
                         for head_trace in names_to_traces(head) {
@@ -622,7 +702,9 @@ mod tests {
     #[test]
     fn test_class_def() {
         assert_eq!(
-            compile("介紹返 Duck 係 乜X {\n佢個老豆叫 |object|\n佢有啲咩?? => { 性別: 公家嘢 }\n佢識得 游 |自己| => {\n畀我睇下 1 點樣先？\n}\n}\n"),
+            compile(
+                "介紹返 Duck 係 乜X {\n佢個老豆叫 |object|\n佢有啲咩?? => { 性別: 公家嘢 }\n佢識得 游 |自己| => {\n畀我睇下 1 點樣先？\n}\n}\n"
+            ),
             "class Duck(object):\n\tdef __init__(自己, 性別=None):自己.性別=性別\n\tdef 游(自己):\n\t\tprint(1)\n"
         );
     }

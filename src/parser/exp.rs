@@ -1,4 +1,4 @@
-//! Expression parser (translated from can_parser/exp/exp_parser.py).
+//! Expression parser
 //!
 //! Uses Rust `match` on the current token to dispatch parsing, mirroring the
 //! precedence-climbing / Pratt-style structure of the original implementation.
@@ -13,7 +13,7 @@ use crate::lexer::token::{Pos, Token, TokenType};
 use crate::macros::MacroExpander;
 use crate::parser::macro_body::MacroBodyParser;
 use crate::parser::macro_pat::MacroPatParser;
-use crate::parser::{with_pos, ParseError, Parser, StatParser};
+use crate::parser::{ParseError, Parser, StatParser, with_pos};
 
 pub struct ExpParser;
 
@@ -41,7 +41,8 @@ impl ExpParser {
             exp = Exp::Mapping(MappingExp {
                 exp1: Box::new(exp),
                 exp2: Box::new(Self::parse_exp12(parser)?),
-            pos: None, });
+                pos: None,
+            });
         }
         Ok(exp)
     }
@@ -55,7 +56,8 @@ impl ExpParser {
                 op: "or".to_string(),
                 exp1: Box::new(exp),
                 exp2: Box::new(Self::parse_exp11(parser)?),
-            pos: None, });
+                pos: None,
+            });
         }
         Ok(exp)
     }
@@ -69,7 +71,8 @@ impl ExpParser {
                 op: "and".to_string(),
                 exp1: Box::new(exp),
                 exp2: Box::new(Self::parse_exp10(parser)?),
-            pos: None, });
+                pos: None,
+            });
         }
         Ok(exp)
     }
@@ -86,7 +89,8 @@ impl ExpParser {
                         op,
                         exp1: Box::new(exp),
                         exp2: Box::new(Self::parse_exp9(parser)?),
-                    pos: None, });
+                        pos: None,
+                    });
                 }
                 Some(v) if v == KW_IS => {
                     parser.skip();
@@ -94,7 +98,8 @@ impl ExpParser {
                         op: "==".to_string(),
                         exp1: Box::new(exp),
                         exp2: Box::new(Self::parse_exp9(parser)?),
-                    pos: None, });
+                        pos: None,
+                    });
                 }
                 Some(v) if matches!(v, "in" | KW_IN) => {
                     parser.skip();
@@ -102,7 +107,8 @@ impl ExpParser {
                         op: " in ".to_string(),
                         exp1: Box::new(exp),
                         exp2: Box::new(Self::parse_exp9(parser)?),
-                    pos: None, });
+                        pos: None,
+                    });
                 }
                 Some("比唔上") => {
                     parser.skip();
@@ -110,7 +116,8 @@ impl ExpParser {
                         op: "<".to_string(),
                         exp1: Box::new(exp),
                         exp2: Box::new(Self::parse_exp9(parser)?),
-                    pos: None, });
+                        pos: None,
+                    });
                 }
                 _ => break,
             }
@@ -127,7 +134,8 @@ impl ExpParser {
                 op: "|".to_string(),
                 exp1: Box::new(exp),
                 exp2: Box::new(Self::parse_exp8(parser)?),
-            pos: None, });
+                pos: None,
+            });
         }
         Ok(exp)
     }
@@ -141,7 +149,8 @@ impl ExpParser {
                 op: "^".to_string(),
                 exp1: Box::new(exp),
                 exp2: Box::new(Self::parse_exp8(parser)?),
-            pos: None, });
+                pos: None,
+            });
         }
         Ok(exp)
     }
@@ -155,7 +164,8 @@ impl ExpParser {
                 op: "&".to_string(),
                 exp1: Box::new(exp),
                 exp2: Box::new(Self::parse_exp8(parser)?),
-            pos: None, });
+                pos: None,
+            });
         }
         Ok(exp)
     }
@@ -174,7 +184,8 @@ impl ExpParser {
             op,
             exp1: Box::new(exp),
             exp2: Box::new(Self::parse_exp5(parser)?),
-        pos: None, });
+            pos: None,
+        });
         Ok(exp)
     }
 
@@ -204,7 +215,8 @@ impl ExpParser {
                         op,
                         exp1: Box::new(exp),
                         exp2: Box::new(Self::parse_exp3(parser)?),
-                    pos: None, });
+                        pos: None,
+                    });
                 }
                 Some("加") => {
                     parser.skip();
@@ -212,7 +224,8 @@ impl ExpParser {
                         op: "+".to_string(),
                         exp1: Box::new(exp),
                         exp2: Box::new(Self::parse_exp3(parser)?),
-                    pos: None, });
+                        pos: None,
+                    });
                 }
                 Some("減") => {
                     parser.skip();
@@ -220,7 +233,8 @@ impl ExpParser {
                         op: "-".to_string(),
                         exp1: Box::new(exp),
                         exp2: Box::new(Self::parse_exp3(parser)?),
-                    pos: None, });
+                        pos: None,
+                    });
                 }
                 _ => break,
             }
@@ -240,7 +254,8 @@ impl ExpParser {
                         op,
                         exp1: Box::new(exp),
                         exp2: Box::new(Self::parse_exp2(parser)?),
-                    pos: None, });
+                        pos: None,
+                    });
                 }
                 Some("乘") => {
                     parser.skip();
@@ -248,7 +263,8 @@ impl ExpParser {
                         op: "*".to_string(),
                         exp1: Box::new(exp),
                         exp2: Box::new(Self::parse_exp2(parser)?),
-                    pos: None, });
+                        pos: None,
+                    });
                 }
                 Some("餘") | Some("余") => {
                     parser.skip();
@@ -256,7 +272,8 @@ impl ExpParser {
                         op: "%".to_string(),
                         exp1: Box::new(exp),
                         exp2: Box::new(Self::parse_exp2(parser)?),
-                    pos: None, });
+                        pos: None,
+                    });
                 }
                 Some("整除") => {
                     parser.skip();
@@ -264,7 +281,8 @@ impl ExpParser {
                         op: "//".to_string(),
                         exp1: Box::new(exp),
                         exp2: Box::new(Self::parse_exp2(parser)?),
-                    pos: None, });
+                        pos: None,
+                    });
                 }
                 Some("除") => {
                     parser.skip();
@@ -272,7 +290,8 @@ impl ExpParser {
                         op: "//".to_string(),
                         exp1: Box::new(exp),
                         exp2: Box::new(Self::parse_exp2(parser)?),
-                    pos: None, });
+                        pos: None,
+                    });
                 }
                 _ => break,
             }
@@ -289,14 +308,16 @@ impl ExpParser {
                 Ok(Exp::Unop(UnopExp {
                     op,
                     exp: Box::new(Self::parse_exp2(parser)?),
-                pos: None, }))
+                    pos: None,
+                }))
             }
             Some("取反") => {
                 parser.skip();
                 Ok(Exp::Unop(UnopExp {
                     op: "~".to_string(),
                     exp: Box::new(Self::parse_exp2(parser)?),
-                pos: None, }))
+                    pos: None,
+                }))
             }
             _ => Self::parse_exp1(parser),
         }
@@ -312,7 +333,8 @@ impl ExpParser {
                 op,
                 exp1: Box::new(exp),
                 exp2: Box::new(Self::parse_exp2(parser)?),
-            pos: None, });
+                pos: None,
+            });
         }
         Ok(exp)
     }
@@ -328,7 +350,8 @@ impl ExpParser {
                     let tk = parser.next_token().unwrap();
                     Ok(Exp::Numeral(NumeralExp {
                         val: tk.value.clone(),
-                    pos: None, }))
+                        pos: None,
+                    }))
                 }
                 Some(TokenType::SepLCurly) => Self::parse_mapcons(parser),
                 Some(TokenType::Keyword) if parser.match_value(KW_EXPR_IF) => {
@@ -362,21 +385,36 @@ impl ExpParser {
                 let tk = parser.next_token().unwrap();
                 Exp::Id(IdExp {
                     name: tk.value.clone(),
-                pos: None, })
+                    pos: None,
+                })
             }
             Some(TokenType::String) => {
                 let tk = parser.next_token().unwrap();
                 Exp::String(StringExp {
                     s: tk.value.clone(),
-                pos: None, })
+                    pos: None,
+                })
             }
             Some(TokenType::SepLBrack) => Self::parse_listcons(parser)?,
             Some(TokenType::Keyword) if parser.match_value("@") => {
                 parser.skip();
                 let tk = parser.eat_kind(TokenType::Identifier)?;
+                // Check if this is a compile-time function call: @用下(...)
+                if tk.value == "用下" && parser.peek_type() == Some(TokenType::SepLParen) {
+                    // Parse the arguments: (A::B::C 嘅 法寶) or (A)
+                    parser.eat_kind(TokenType::SepLParen)?;
+                    let module_path = extract_module_path_from_call_args(parser)?;
+                    parser.eat_kind(TokenType::SepRParen)?;
+                    crate::compile_time::handle_use_macros(parser, &module_path)?;
+                    // Compile-time function produces no expression; return a pass statement
+                    return Ok(Exp::StatExpansion(Box::new(Stat::Pass(
+                        crate::ast::PassStat { pos: None },
+                    ))));
+                }
                 Exp::MetaId(MetaIdExp {
                     name: tk.value.clone(),
-                pos: None, })
+                    pos: None,
+                })
             }
             Some(TokenType::SepLParen) => Self::parse_parens_exp(parser)?,
             Some(TokenType::Keyword) if parser.match_value("$$") => {
@@ -395,7 +433,10 @@ impl ExpParser {
         parser.eat_kind(TokenType::SepLParen)?;
         let exp = Self::parse_exp(parser)?;
         parser.eat_kind(TokenType::SepRParen)?;
-        Ok(Exp::Parens(ParensExp { exp: Box::new(exp), pos: None }))
+        Ok(Exp::Parens(ParensExp {
+            exp: Box::new(exp),
+            pos: None,
+        }))
     }
 
     fn parse_brack_exp(parser: &mut Parser) -> Result<Exp, ParseError> {
@@ -416,7 +457,10 @@ impl ExpParser {
             parser.eat_kind(TokenType::SepRBrack)?;
             exps
         };
-        Ok(Exp::List(ListExp { elem_exps, pos: None }))
+        Ok(Exp::List(ListExp {
+            elem_exps,
+            pos: None,
+        }))
     }
 
     /// set_or_mapcons := '{' exp_list '}'
@@ -430,7 +474,10 @@ impl ExpParser {
             parser.eat_kind(TokenType::SepRCurly)?;
             exps
         };
-        Ok(Exp::Map(MapExp { elem_exps, pos: None }))
+        Ok(Exp::Map(MapExp {
+            elem_exps,
+            pos: None,
+        }))
     }
 
     fn finish_prefixexp(parser: &mut Parser, mut exp: Exp) -> Result<Exp, ParseError> {
@@ -443,18 +490,21 @@ impl ExpParser {
                     exp = Exp::ListAccess(ListAccessExp {
                         prefix_exp: Box::new(exp),
                         key_exp: Box::new(key_exp),
-                    pos: None, });
+                        pos: None,
+                    });
                 }
                 Some(TokenType::SepDot) | _ if parser.match_any_value(&[KW_DOT, "嘅"]) => {
                     parser.skip();
                     let tk = parser.eat_kind(TokenType::Identifier)?;
                     let key_exp = Exp::Id(IdExp {
                         name: tk.value.clone(),
-                    pos: None, });
+                        pos: None,
+                    });
                     exp = Exp::ObjectAccess(ObjectAccessExp {
                         prefix_exp: Box::new(exp),
                         key_exp: Box::new(key_exp),
-                    pos: None, });
+                        pos: None,
+                    });
                 }
                 Some(typ)
                     if typ == TokenType::SepLParen
@@ -467,14 +517,16 @@ impl ExpParser {
                     exp = Exp::Assign(AssignExp {
                         exp1: Box::new(exp),
                         exp2: Box::new(Self::parse_exp(parser)?),
-                    pos: None, });
+                        pos: None,
+                    });
                 }
                 Some(TokenType::Colon) => {
                     parser.skip();
                     exp = Exp::Annotation(AnnotationExp {
                         exp: Box::new(exp),
                         tyid: Box::new(Self::parse_exp(parser)?),
-                    pos: None, });
+                        pos: None,
+                    });
                     break;
                 }
                 Some(TokenType::Excl) => {
@@ -505,7 +557,10 @@ impl ExpParser {
                     return match expanded_stat {
                         Some(Stat::Call(call)) => Ok(call.exp),
                         Some(stat) => Ok(Exp::StatExpansion(Box::new(stat))),
-                        None => Err(ParseError::unexpected_eof(parser.file_path, parser.cur_pos())),
+                        None => Err(ParseError::unexpected_eof(
+                            parser.file_path,
+                            parser.cur_pos(),
+                        )),
                     };
                 }
                 _ => break,
@@ -526,13 +581,15 @@ impl ExpParser {
             Ok(Exp::FuncCall(FuncCallExp {
                 prefix_exp: Box::new(prefix_exp),
                 args,
-            pos: None, }))
+                pos: None,
+            }))
         } else {
             let args = Self::parse_args(parser)?;
             Ok(Exp::FuncCall(FuncCallExp {
                 prefix_exp: Box::new(prefix_exp),
                 args,
-            pos: None, }))
+                pos: None,
+            }))
         }
     }
 
@@ -545,15 +602,20 @@ impl ExpParser {
             Some(TokenType::Identifier) => {
                 let mut ids = vec![Exp::Id(IdExp {
                     name: parser.next_token().unwrap().value.clone(),
-                pos: None, })];
+                    pos: None,
+                })];
                 while parser.match_kind(TokenType::SepComma) {
                     parser.skip();
                     if parser.peek_type() != Some(TokenType::Identifier) {
-                        return Err(ParseError::unexpected_eof(parser.file_path, parser.cur_pos()));
+                        return Err(ParseError::unexpected_eof(
+                            parser.file_path,
+                            parser.cur_pos(),
+                        ));
                     }
                     ids.push(Exp::Id(IdExp {
                         name: parser.next_token().unwrap().value.clone(),
-                pos: None, }));
+                        pos: None,
+                    }));
                 }
                 Ok(Some(ids))
             }
@@ -561,15 +623,20 @@ impl ExpParser {
                 parser.skip();
                 let mut ids = vec![Exp::Id(IdExp {
                     name: parser.eat_kind(TokenType::Identifier)?.value.clone(),
-                pos: None, })];
+                    pos: None,
+                })];
                 while parser.match_kind(TokenType::SepComma) {
                     parser.skip();
                     if parser.peek_type() != Some(TokenType::Identifier) {
-                        return Err(ParseError::unexpected_eof(parser.file_path, parser.cur_pos()));
+                        return Err(ParseError::unexpected_eof(
+                            parser.file_path,
+                            parser.cur_pos(),
+                        ));
                     }
                     ids.push(Exp::Id(IdExp {
                         name: parser.next_token().unwrap().value.clone(),
-                    pos: None, }));
+                        pos: None,
+                    }));
                 }
                 parser.eat_value("|")?;
                 Ok(Some(ids))
@@ -589,7 +656,8 @@ impl ExpParser {
         Ok(Exp::Lambda(LambdaExp {
             id_list: idlist,
             blocks,
-        pos: None, }))
+            pos: None,
+        }))
     }
 
     fn parse_if_else_expr(parser: &mut Parser) -> Result<Exp, ParseError> {
@@ -603,7 +671,8 @@ impl ExpParser {
             if_cond_exp: Box::new(if_cond_exp),
             if_exp: Box::new(if_exp),
             else_exp: Box::new(else_exp),
-        pos: None, }))
+            pos: None,
+        }))
     }
 
     ///
@@ -649,10 +718,12 @@ impl ExpParser {
                 let mut attrs = vec![Exp::Annotation(AnnotationExp {
                     exp: Box::new(Exp::Id(IdExp {
                         name: name_tk.value.clone(),
-                    pos: None, })),
+                        pos: None,
+                    })),
                     tyid: Box::new(Exp::Id(IdExp {
                         name: ty_tk.value.clone(),
-                    pos: None, })),
+                        pos: None,
+                    })),
                     pos: None,
                 })];
                 while parser.match_kind(TokenType::SepComma) {
@@ -666,10 +737,12 @@ impl ExpParser {
                     attrs.push(Exp::Annotation(AnnotationExp {
                         exp: Box::new(Exp::Id(IdExp {
                             name: name_tk.value.clone(),
-                        pos: None, })),
+                            pos: None,
+                        })),
                         tyid: Box::new(Exp::Id(IdExp {
                             name: ty_tk.value.clone(),
-                        pos: None, })),
+                            pos: None,
+                        })),
                         pos: None,
                     }));
                 }
@@ -678,6 +751,55 @@ impl ExpParser {
             _ => Ok(Vec::new()),
         }
     }
+}
+
+///
+/// Extract the module path from compile-time function call arguments.
+///
+/// Parses tokens directly from the parser (not token tree).
+/// Supports formats like:
+/// - `@用下(A)` → `"A"`
+/// - `@用下(A::B::C)` → `"A::B::C"`
+/// - `@用下(A::B::C 嘅 法寶)` → `"A::B::C"` (strips trailing 嘅 法寶)
+fn extract_module_path_from_call_args(parser: &mut Parser) -> Result<String, ParseError> {
+    let mut parts = Vec::new();
+
+    loop {
+        if parser.match_kind(TokenType::SepRParen) || parser.is_eof() {
+            break;
+        }
+
+        let tk = parser.next_token().unwrap();
+        let val = tk.value.as_str();
+
+        // Stop at 嘅 or 法寶 (part of the "A 嘅 法寶" syntax)
+        if val == "嘅" || val == "法寶" {
+            // Skip remaining tokens until closing paren
+            while !parser.match_kind(TokenType::SepRParen) && !parser.is_eof() {
+                parser.skip();
+            }
+            break;
+        }
+
+        // Collect identifiers and :: separators
+        if tk.typ == TokenType::Identifier || tk.typ == TokenType::DColon {
+            parts.push(val.to_string());
+        }
+    }
+
+    if parts.is_empty() {
+        return Err(ParseError::syntax(
+            &crate::lexer::token::Token::new(Pos::simple(0, 0), TokenType::EOF, "".into()),
+            "<compile-time>",
+            "@用下 需要一個模塊路徑",
+            "例如: @用下(A::B::C 嘅 法寶)",
+        ));
+    }
+
+    // Join and remove trailing :: if any
+    let path = parts.join("");
+    let path = path.trim_end_matches("::").to_string();
+    Ok(path)
 }
 
 // Helper constructors used by the parser so that `Exp::True`, `Exp::False`,

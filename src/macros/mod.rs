@@ -1,4 +1,4 @@
-//! Macro expansion (translated from `can_source/can_macros`).
+//! Macro expansion
 //!
 //! Provides pattern matching, meta-variable capture, and body substitution for
 //! Cantonese macros.
@@ -377,6 +377,10 @@ impl MacroRegistry {
 
     pub fn get(&self, name: &str) -> Option<&Macro> {
         self.macros.get(name)
+    }
+
+    pub fn get_names(&self) -> Vec<String> {
+        self.macros.keys().cloned().collect()
     }
 }
 

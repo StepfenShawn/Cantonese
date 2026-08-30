@@ -130,22 +130,9 @@ impl Diagnostic {
             out.push_str(&c.paint("|", ColorCode::Blue));
             out.push('\n');
         } else if start_line == end_line {
-            self.render_single_line(
-                &lines,
-                start_line,
-                line_num_width,
-                &c,
-                &mut out,
-            );
+            self.render_single_line(&lines, start_line, line_num_width, &c, &mut out);
         } else {
-            self.render_multi_line(
-                &lines,
-                start_line,
-                end_line,
-                line_num_width,
-                &c,
-                &mut out,
-            );
+            self.render_multi_line(&lines, start_line, end_line, line_num_width, &c, &mut out);
         }
 
         // Help note

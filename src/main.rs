@@ -1,7 +1,7 @@
 // use std::path::Path;
 
 use cantonese_rs::lexer::token::Pos;
-use cantonese_rs::lexer::{Lexer, LexError};
+use cantonese_rs::lexer::{LexError, Lexer};
 use cantonese_rs::parser::{ColorChoice, ParseError, Parser as CanParser, StatParser};
 
 // fn parse_cantonese_file(path: &Path) -> Result<Vec<cantonese_rs::ast::Stat>, String> {
@@ -45,7 +45,10 @@ fn main() {
     let tokens = match lex.tokenize_all() {
         Ok(tks) => tks,
         Err(e) => {
-            eprintln!("{}", lexer_to_parse_error(e).report(source_code, ColorChoice::Auto));
+            eprintln!(
+                "{}",
+                lexer_to_parse_error(e).report(source_code, ColorChoice::Auto)
+            );
             std::process::exit(1);
         }
     };

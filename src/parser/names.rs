@@ -1,11 +1,11 @@
-//! Qualified-name parser (translated from can_parser/exp/names_parser.py).
+//! Qualified-name parser
 //!
 //! Parses import paths like `A::B::C` or `A::{B, C::*}` into a nested
 //! `NamesExp` structure.
 
 use crate::ast::{Exp, IdExp, NamesExp};
 use crate::lexer::token::{Pos, Token, TokenType};
-use crate::parser::{with_pos, ParseError, Parser};
+use crate::parser::{ParseError, Parser, with_pos};
 
 pub struct NamesParser;
 
@@ -30,13 +30,15 @@ impl NamesParser {
         parser.skip();
         let mut chain = Exp::Names(NamesExp {
             child: vec![root, Self::parse_next(parser)?],
-        pos: None, });
+            pos: None,
+        });
 
         while parser.match_kind(TokenType::DColon) {
             parser.skip();
             chain = Exp::Names(NamesExp {
                 child: vec![chain, Self::parse_next(parser)?],
-            pos: None, });
+                pos: None,
+            });
         }
 
         Ok(chain)
@@ -46,17 +48,26 @@ impl NamesParser {
         match (parser.peek_type(), parser.peek_value()) {
             (Some(TokenType::Identifier), _) => {
                 let tk = parser.eat_kind(TokenType::Identifier)?;
-                Ok(Exp::Id(IdExp { name: tk.value, pos: None }))
+                Ok(Exp::Id(IdExp {
+                    name: tk.value,
+                    pos: None,
+                }))
             }
             (Some(TokenType::OpMul), _) | (_, Some("*")) => {
                 parser.skip();
-                Ok(Exp::Id(IdExp { name: "*".into(), pos: None }))
+                Ok(Exp::Id(IdExp {
+                    name: "*".into(),
+                    pos: None,
+                }))
             }
             (Some(TokenType::SepLCurly), _) => {
                 parser.skip();
                 let set = Self::parse_names_set(parser)?;
                 parser.eat_kind(TokenType::SepRCurly)?;
-                Ok(Exp::Names(NamesExp { child: set, pos: None }))
+                Ok(Exp::Names(NamesExp {
+                    child: set,
+                    pos: None,
+                }))
             }
             _ => Err(ParseError::syntax(
                 parser.peek_token().unwrap_or(&Token {

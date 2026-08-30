@@ -1,8 +1,8 @@
 //! AST (Abstract Syntax Tree) definitions for the Cantonese language.
 #![allow(dead_code)]
 
-use crate::lexer::token::Token;
 use crate::lexer::span::Span;
+use crate::lexer::token::Token;
 
 /// Base marker for all expression nodes.
 pub trait ExpNode {}
@@ -272,9 +272,7 @@ impl Exp {
             Exp::IfElse(e) => e.pos = pos,
             Exp::Names(e) => e.pos = pos,
             Exp::MetaId(e) => e.pos = pos,
-            Exp::PatRep(_)
-            | Exp::BlockRep(_)
-            | Exp::StatExpansion(_) => {
+            Exp::PatRep(_) | Exp::BlockRep(_) | Exp::StatExpansion(_) => {
                 // Macro-related nodes carry token positions internally.
             }
         }

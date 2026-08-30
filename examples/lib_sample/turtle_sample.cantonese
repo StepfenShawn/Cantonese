@@ -3,7 +3,7 @@
     语句块里面仅支持Turtle命令
 */
 
-{% std::macros::ui %}
+@用下(ui 嘅 法寶)
 
 使下 std::turtle
 

@@ -1,6 +1,6 @@
 pub mod keywords;
-pub mod token;
 pub mod span;
+pub mod token;
 
 use keywords::*;
 use thiserror::Error;

@@ -1,5 +1,5 @@
-use std::fmt;
 use super::span::Span;
+use std::fmt;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Pos {

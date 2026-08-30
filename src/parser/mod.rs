@@ -6,8 +6,8 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::ast::{Exp, Stat};
-use crate::lexer::token::{Pos, Token, TokenType};
 use crate::lexer::span::Span;
+use crate::lexer::token::{Pos, Token, TokenType};
 use crate::macros::MacroRegistry;
 pub use crate::ui::diagnostic::{ColorChoice, Diagnostic};
 
@@ -82,7 +82,9 @@ impl ParseError {
 impl std::fmt::Display for ParseError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ParseError::SyntaxError { file, span, msg, .. } => {
+            ParseError::SyntaxError {
+                file, span, msg, ..
+            } => {
                 write!(
                     f,
                     "error: {} at {}:{}:{}",
@@ -90,7 +92,11 @@ impl std::fmt::Display for ParseError {
                 )
             }
             ParseError::UnexpectedEof { file, pos } => {
-                write!(f, "error: unexpected end of input at {}:{}:{}", file, pos.line, pos.offset)
+                write!(
+                    f,
+                    "error: unexpected end of input at {}:{}:{}",
+                    file, pos.line, pos.offset
+                )
             }
         }
     }
@@ -225,9 +231,10 @@ impl<'a> Parser<'a> {
 
     /// Require the next token to have the given type and consume it.
     pub fn eat_kind(&mut self, kind: TokenType) -> Result<Token, ParseError> {
-        let tk = self.peek_token().ok_or_else(|| {
-            ParseError::unexpected_eof(self.file_path, self.cur_pos())
-        })?.clone();
+        let tk = self
+            .peek_token()
+            .ok_or_else(|| ParseError::unexpected_eof(self.file_path, self.cur_pos()))?
+            .clone();
         if tk.typ != kind {
             return Err(ParseError::syntax(
                 &tk,
@@ -243,9 +250,10 @@ impl<'a> Parser<'a> {
 
     /// Require the next token to have the given value and consume it.
     pub fn eat_value(&mut self, value: &str) -> Result<Token, ParseError> {
-        let tk = self.peek_token().ok_or_else(|| {
-            ParseError::unexpected_eof(self.file_path, self.cur_pos())
-        })?.clone();
+        let tk = self
+            .peek_token()
+            .ok_or_else(|| ParseError::unexpected_eof(self.file_path, self.cur_pos()))?
+            .clone();
         if tk.value != value {
             return Err(ParseError::syntax(
                 &tk,
@@ -261,9 +269,10 @@ impl<'a> Parser<'a> {
 
     /// Require the next token to have one of the given values and consume it.
     pub fn eat_any_value(&mut self, values: &[&str]) -> Result<Token, ParseError> {
-        let tk = self.peek_token().ok_or_else(|| {
-            ParseError::unexpected_eof(self.file_path, self.cur_pos())
-        })?.clone();
+        let tk = self
+            .peek_token()
+            .ok_or_else(|| ParseError::unexpected_eof(self.file_path, self.cur_pos()))?
+            .clone();
         if !values.contains(&tk.value.as_str()) {
             return Err(ParseError::syntax(
                 &tk,

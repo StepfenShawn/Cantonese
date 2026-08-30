@@ -5,8 +5,8 @@ use std::collections::HashMap;
 use pyo3::create_exception;
 use pyo3::prelude::*;
 
-use crate::compiler::{to_python as compile_to_python, CodegenError};
-use crate::lexer::{Lexer, LexError};
+use crate::compiler::{CodegenError, to_python as compile_to_python};
+use crate::lexer::{LexError, Lexer};
 
 create_exception!(
     /// Python exception type for Cantonese compilation errors.
@@ -48,12 +48,10 @@ fn tokenize(source: &str, filename: Option<&str>) -> PyResult<Vec<String>> {
     let filename = filename.unwrap_or("<stdin>");
     let mut lexer = Lexer::new(filename.to_string(), source);
     let tokens = lexer.tokenize_all().map_err(|e| match e {
-        LexError::LexerErr { msg, pos, file } => {
-            PyErr::new::<CantoneseCompileError, _>(format!(
-                "lexer error at {}:{}:{}: {}",
-                file, pos.line, pos.offset, msg
-            ))
-        }
+        LexError::LexerErr { msg, pos, file } => PyErr::new::<CantoneseCompileError, _>(format!(
+            "lexer error at {}:{}:{}: {}",
+            file, pos.line, pos.offset, msg
+        )),
         LexError::UnfinishedString(pos) => PyErr::new::<CantoneseCompileError, _>(format!(
             "unfinished string at {}:{}",
             pos.line, pos.offset
@@ -66,7 +64,10 @@ fn tokenize(source: &str, filename: Option<&str>) -> PyResult<Vec<String>> {
 /// PyO3 module entry point. Maturin will expose this as `cantonese_rs._core`.
 #[pymodule]
 fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    m.add("CantoneseCompileError", m.py().get_type::<CantoneseCompileError>())?;
+    m.add(
+        "CantoneseCompileError",
+        m.py().get_type::<CantoneseCompileError>(),
+    )?;
     m.add_function(wrap_pyfunction!(to_python, m)?)?;
     m.add_function(wrap_pyfunction!(to_python_with_line_map, m)?)?;
     m.add_function(wrap_pyfunction!(tokenize, m)?)?;

@@ -1,0 +1,11 @@
+介紹返 老作一下 係 袋仔的法寶 =>
+    | () => {
+        None
+    }
+    | ($(@x: id @command: expr),+) => { 
+        [${@command},+]
+            .iter()
+            .map($$ x { x })
+            .collect() 啦
+    }
+搞掂

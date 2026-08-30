@@ -14,7 +14,10 @@ impl Span {
 
     /// Create a zero-width span at a single position.
     pub fn at(pos: Pos) -> Self {
-        Self { start: pos, end: pos }
+        Self {
+            start: pos,
+            end: pos,
+        }
     }
 
     /// Convert a token `Pos` (which may carry `end_*`) into a span.
