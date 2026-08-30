@@ -1,4 +1,6 @@
-"""Map Python runtime exceptions back to Cantonese source lines."""
+"""
+Map Python runtime exceptions back to Cantonese source lines.
+"""
 
 import sys
 import traceback

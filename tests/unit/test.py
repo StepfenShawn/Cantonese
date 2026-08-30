@@ -1,6 +1,6 @@
 # TODO
 import pytest
-from can_source.cantonese import cantonese_run
+from cantonese_rs.cantonese import cantonese_run
 
 
 def simple_test_case(code: str, result: str):

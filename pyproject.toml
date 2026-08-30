@@ -1,0 +1,49 @@
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "cantonese-rs"
+version = "1.0.11"
+description = "Cantonese language parser/compiler with Python runtime"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "Stepfen Shawn", email = "stepfencurryxiao@gmail.com"}
+]
+classifiers = [
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Natural Language :: Cantonese",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: POSIX",
+    "Operating System :: POSIX :: BSD",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "setuptools >= 0.7.0",
+    "pygments >= 2.12.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/StepfenShawn/Cantonese"
+Repository = "https://github.com/StepfenShawn/Cantonese"
+
+[project.scripts]
+cantonese = "cantonese_rs.cantonese:main"
+
+[tool.maturin]
+manifest = "Cargo.toml"
+python-source = "python"
+module-name = "cantonese_rs._core"
+features = ["python"]

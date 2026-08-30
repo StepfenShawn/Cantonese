@@ -109,8 +109,20 @@ def __cantonese_import__(alias: str):
     Cantonese wrapper initialization before importing the underlying Python
     module.
     """
+    import importlib.machinery
+
     import_name, _ = fix_lib_name(alias)
-    return importlib.import_module(import_name)
+    # Temporarily remove .cantonese from source suffixes so that
+    # e.g. `random.cantonese` in the working directory doesn't shadow
+    # Python's standard library `random` module.
+    # if ".cantonese" in importlib.machinery.SOURCE_SUFFIXES:
+    #     importlib.machinery.SOURCE_SUFFIXES.remove(".cantonese")
+    #     try:
+    #         importlib.import_module(import_name)
+    #     finally:
+    #         importlib.machinery.SOURCE_SUFFIXES.insert(0, ".cantonese")
+    # else:
+    #     importlib.import_module(import_name)
 
 
 lib_env["__cantonese_import__"] = __cantonese_import__

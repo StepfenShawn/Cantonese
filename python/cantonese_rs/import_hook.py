@@ -1,7 +1,5 @@
-"""Import hook that lets Python import `.cantonese` source files.
-
-Mirrors `can_source/can_import.py` but uses the Rust compiler exposed via
-`cantonese_rs._core` and injects the Cantonese runtime into imported modules.
+"""
+Import hook that lets Python import `.cantonese` source files.
 """
 
 import importlib
@@ -10,9 +8,9 @@ import os
 import sys
 from typing import Dict, List, Tuple
 
-from cantonese_rs import to_python_with_line_map
-from can_source.error_mapper import format_cantonese_traceback
-from can_source.libs import get_globals
+from ._core import to_python_with_line_map
+from .error_mapper import format_cantonese_traceback
+from .libs import get_globals
 
 importlib.machinery.SOURCE_SUFFIXES.insert(0, ".cantonese")
 _py_source_to_code = importlib.machinery.SourceFileLoader.source_to_code

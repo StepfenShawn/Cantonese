@@ -14,17 +14,22 @@ sys.path.append(os.getcwd())
 sys.dont_write_bytecode = True
 
 try:
-    import cantonese_rs
-    from can_source import import_hook  # noqa: F401
-    from libs import bootstrap, lib_env
-    from error_mapper import run_with_mapping
+    from . import import_hook  # noqa: F401
+    from ._core import (
+        CantoneseCompileError,
+        to_python,
+        to_python_with_line_map,
+        tokenize,
+    )
+    from .libs import bootstrap, lib_env
+    from .error_mapper import run_with_mapping
 
     bootstrap()
 except ImportError as exc:
     raise ImportError(
-        "can_source now depends on the `cantonese_rs` Rust extension. "
-        "Build and install it first with `maturin develop` inside cantonese_rs/ "
-        "(or `pip install ./cantonese_rs`)."
+        "Failed to initialize Cantonese runtime. "
+        "Build and install the Rust extension with `maturin develop` inside cantonese_rs/ "
+        "(or `pip install .`)."
     ) from exc
 
 try:
@@ -34,7 +39,7 @@ try:
 except Exception:
     highlight = None
 
-_version_ = "Cantonese\033[5;33m 1.0.10\033[0m Copyright (C) 2020-2024\033[5;35m StepfenShawn\033[0m"
+_version_ = "Cantonese\033[5;33m 1.0.11\033[0m Copyright (C) 2020-2024\033[5;35m StepfenShawn\033[0m"
 logo = (
     "\033[0;34m"
     + r"""
@@ -97,7 +102,7 @@ def start_cantonese(run_fn, exit_on_error=True):
     """Run a compilation/execution function and format errors."""
     try:
         return run_fn()
-    except cantonese_rs.CantoneseCompileError as e:
+    except CantoneseCompileError as e:
         print("!!編譯期間瀨嘢:(\n")
         print(e)
         if exit_on_error:
@@ -135,11 +140,11 @@ def cantonese_run(
     os.environ["CUR_FILE"] = file
 
     if Options.dump_lex:
-        tokens = cantonese_rs.tokenize(code, file)
+        tokens = tokenize(code, file)
         _show_pretty_lex(tokens)
         return
 
-    py_code, line_map = cantonese_rs.to_python_with_line_map(code, file)
+    py_code, line_map = to_python_with_line_map(code, file)
 
     if is_to_py:
         print("-> To python:")
@@ -260,7 +265,7 @@ def main():
 
     if args.build:
         if args.file.endswith(".cantonese"):
-            code = cantonese_rs.to_python(code, args.file)
+            code = to_python(code, args.file)
         code_obj = compile(code, args.file, "exec")
         exec(code_obj, lib_env)
         sys.exit(0)
