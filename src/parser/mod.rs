@@ -6,6 +6,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::ast::{Exp, Stat};
+use crate::compile_time::CompileTimeRegistry;
 use crate::lexer::span::Span;
 use crate::lexer::token::{Pos, Token, TokenType};
 use crate::macros::MacroRegistry;
@@ -105,17 +106,13 @@ impl std::fmt::Display for ParseError {
 impl std::error::Error for ParseError {}
 
 /// Shared token-stream state used by all parsers.
-///
-/// Equivalent to Python's `ParserFn`, but backed by a token vector and an index
-/// rather than an iterator + lookahead buffer. This makes backtracking and
-/// lookahead trivial and lets us use Rust's `match` extensively on the current
-/// token.
 pub struct Parser<'a> {
     tokens: &'a [Token],
     index: usize,
     last_token: Option<Token>,
     file_path: &'a str,
     pub macro_registry: Rc<RefCell<MacroRegistry>>,
+    pub compile_time_registry: Rc<CompileTimeRegistry>,
 }
 
 impl<'a> Parser<'a> {
@@ -127,6 +124,7 @@ impl<'a> Parser<'a> {
             last_token: None,
             file_path,
             macro_registry: Rc::new(RefCell::new(MacroRegistry::new())),
+            compile_time_registry: Rc::new(CompileTimeRegistry::with_builtins()),
         }
     }
 
@@ -142,6 +140,7 @@ impl<'a> Parser<'a> {
             last_token: None,
             file_path,
             macro_registry,
+            compile_time_registry: Rc::new(CompileTimeRegistry::with_builtins()),
         }
     }
 
@@ -320,8 +319,6 @@ impl<'a> Parser<'a> {
 }
 
 /// Attach source-position span to an AST expression.
-///
-/// Equivalent to Python's `@pos_tracker` decorator.
 pub fn with_pos<F>(parser: &mut Parser, mut f: F) -> Result<Exp, ParseError>
 where
     F: FnMut(&mut Parser) -> Result<Exp, ParseError>,

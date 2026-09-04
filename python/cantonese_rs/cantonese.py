@@ -29,18 +29,11 @@ try:
 except ImportError as exc:
     raise ImportError(
         "Failed to initialize Cantonese runtime. "
-        "Build and install the Rust extension with `maturin develop` inside cantonese_rs/ "
+        "Build and install the Rust extension with `maturin develop` "
         "(or `pip install .`)."
     ) from exc
 
-try:
-    from pygments import highlight
-    from pygments.lexers import PythonLexer
-    from pygments.formatters import TerminalFormatter
-except Exception:
-    highlight = None
-
-_version_ = "Cantonese\033[5;33m 1.0.11\033[0m Copyright (C) 2020-2024\033[5;35m StepfenShawn\033[0m"
+_version_ = "Cantonese\033[5;33m 1.0.12\033[0m Copyright (C) 2020-2026\033[5;35m StepfenShawn\033[0m"
 logo = (
     "\033[0;34m"
     + r"""
@@ -55,23 +48,10 @@ logo = (
     + "Keep cantonese alive!\nSource: https://github.com/StepfenShawn/Cantonese\n鐘意嘅話star埋我啊! Thank you!"
 )
 
-
-def _format_color(code, lang):
-    """Return syntax-highlighted code, falling back to plain text."""
-    if highlight is None:
-        return code
-    try:
-        lexer = {"Python": PythonLexer}.get(lang, PythonLexer)()
-        return highlight(code, lexer, TerminalFormatter())
-    except Exception:
-        return code
-
-
 class Options:
     dump_lex = False
     mkfile = False
     debug = False
-
 
 args = None
 
@@ -154,7 +134,7 @@ def cantonese_run(
 
     if is_to_py:
         print("-> To python:")
-        out_format = textwrap.indent(_format_color(py_code, "Python"), "  ")
+        out_format = textwrap.indent(py_code, "  ")
         print(out_format)
         print("->")
 

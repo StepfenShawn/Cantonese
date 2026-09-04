@@ -410,7 +410,7 @@ impl MacroExpander {
                     )),
                     parser.file_path(),
                     format!("揾唔到你嘅Macro: `{}`", name),
-                    "係咪Macro喺其它文件? 咁就試下 import 啦!",
+                    "係咪Macro喺其它文件? 咁就試下 用 `@用下(...)` import 啦!",
                 )
             })?;
         let input = token_tree_inner_tokens(&tokentrees);

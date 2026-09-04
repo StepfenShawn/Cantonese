@@ -32,8 +32,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
-    "setuptools >= 0.7.0",
-    "pygments >= 2.12.0",
+    "setuptools >= 0.7.0"
 ]
 
 [project.urls]

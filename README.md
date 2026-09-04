@@ -323,7 +323,6 @@ sayhello!(1) # 報錯: 無法匹配
     計算!(同我計 2 乘 2 好唔好) 
 點樣先?? # 4
 ```  
-標準庫嘅`macro`定義喺晒[依度](can_source/can_libs/std/macros)  
 
 # <a name="15">更多例子</a>
 ### <a name="16">顯示當前時間</a>
@@ -354,6 +353,7 @@ sayhello!(1) # 報錯: 無法匹配
 ### <a name="19">計相關係數</a>
 聲明兩個 list，計相關係數：  
 ```Rust
+/* 导入 math.cantonese 嘅所有宏定義 */
 @用下(math 嘅 法寶)
 使下 py::math
 
@@ -366,7 +366,7 @@ sayhello!(1) # 報錯: 無法匹配
 0.8066499427138474
 ```
 ### <a name="20">仲可以机器学习?</a>
-首先要搞清楚樣嘢, 喺源代碼`can_libs/macros/math.cantonese`入面, 其實定義咗一個`macro`, 負責簡單地替換函數調用同埋輸出結果:    
+首先要搞清楚樣嘢, 喺源代碼`examples/numerical/math.cantonese`入面, 其實定義咗一個`macro`, 負責簡單地替換函數調用同埋輸出結果:    
 ```rust
 介紹返 过嚟估下 係 袋仔的法寶 =>
     | (@model: id => $(@args: expr),*) => {
@@ -378,6 +378,7 @@ sayhello!(1) # 報錯: 無法匹配
 前面講過`macro`只係簡單地包裝咗一層語法, 咁我哋可以用`过嚟估下`宏定義去調用底層嘅算法函數喇!  
 實現 KNN 算法：
 ```Rust
+/* 导入 math.cantonese 嘅所有宏定義 */
 @用下(math 嘅 法寶)
 使下 py::math
 
@@ -407,6 +408,7 @@ y=0.530960991635149x+189.75347155122432
 ```
 ### <a name="21">海龜繪圖</a>
 ```Rust
+/* 导入 ui.cantonese 嘅所有宏定義 */
 @用下(ui 嘅 法寶)
 使下 py::turtle
 
@@ -544,4 +546,4 @@ send PR 前請睇 [貢獻指南](./CONTRIBUTING.md)
 * 完善自己嘅虛擬機
 * 完全支持`LLVM`同`JIT`
 
-Copyright (C) 2020-2024 StepfenShawn
+Copyright (C) 2020-2026 StepfenShawn

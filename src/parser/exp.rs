@@ -399,17 +399,11 @@ impl ExpParser {
             Some(TokenType::Keyword) if parser.match_value("@") => {
                 parser.skip();
                 let tk = parser.eat_kind(TokenType::Identifier)?;
-                // Check if this is a compile-time function call: @用下(...)
-                if tk.value == "用下" && parser.peek_type() == Some(TokenType::SepLParen) {
-                    // Parse the arguments: (A::B::C 嘅 法寶) or (A)
-                    parser.eat_kind(TokenType::SepLParen)?;
-                    let module_path = extract_module_path_from_call_args(parser)?;
-                    parser.eat_kind(TokenType::SepRParen)?;
-                    crate::compile_time::handle_use_macros(parser, &module_path)?;
-                    // Compile-time function produces no expression; return a pass statement
-                    return Ok(Exp::StatExpansion(Box::new(Stat::Pass(
-                        crate::ast::PassStat { pos: None },
-                    ))));
+                let ct_registry = parser.compile_time_registry.clone();
+                if let Some(ctfn) = ct_registry.get(&tk.value) {
+                    if parser.peek_type() == Some(TokenType::SepLParen) {
+                        return ctfn.execute(parser);
+                    }
                 }
                 Exp::MetaId(MetaIdExp {
                     name: tk.value.clone(),
@@ -751,55 +745,6 @@ impl ExpParser {
             _ => Ok(Vec::new()),
         }
     }
-}
-
-///
-/// Extract the module path from compile-time function call arguments.
-///
-/// Parses tokens directly from the parser (not token tree).
-/// Supports formats like:
-/// - `@用下(A)` → `"A"`
-/// - `@用下(A::B::C)` → `"A::B::C"`
-/// - `@用下(A::B::C 嘅 法寶)` → `"A::B::C"` (strips trailing 嘅 法寶)
-fn extract_module_path_from_call_args(parser: &mut Parser) -> Result<String, ParseError> {
-    let mut parts = Vec::new();
-
-    loop {
-        if parser.match_kind(TokenType::SepRParen) || parser.is_eof() {
-            break;
-        }
-
-        let tk = parser.next_token().unwrap();
-        let val = tk.value.as_str();
-
-        // Stop at 嘅 or 法寶 (part of the "A 嘅 法寶" syntax)
-        if val == "嘅" || val == "法寶" {
-            // Skip remaining tokens until closing paren
-            while !parser.match_kind(TokenType::SepRParen) && !parser.is_eof() {
-                parser.skip();
-            }
-            break;
-        }
-
-        // Collect identifiers and :: separators
-        if tk.typ == TokenType::Identifier || tk.typ == TokenType::DColon {
-            parts.push(val.to_string());
-        }
-    }
-
-    if parts.is_empty() {
-        return Err(ParseError::syntax(
-            &crate::lexer::token::Token::new(Pos::simple(0, 0), TokenType::EOF, "".into()),
-            "<compile-time>",
-            "@用下 需要一個模塊路徑",
-            "例如: @用下(A::B::C 嘅 法寶)",
-        ));
-    }
-
-    // Join and remove trailing :: if any
-    let path = parts.join("");
-    let path = path.trim_end_matches("::").to_string();
-    Ok(path)
 }
 
 // Helper constructors used by the parser so that `Exp::True`, `Exp::False`,
