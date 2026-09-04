@@ -1,6 +1,4 @@
 //! Macro body parser
-//!
-//! Parses the output-side of a macro rule, e.g. `${ @v + @v }+`.
 
 use crate::ast::{MacroMetaRepExpInBlock, MetaIdExp, TokenTree, TokenTreeChild};
 use crate::lexer::token::TokenType;
@@ -11,7 +9,6 @@ pub struct MacroBodyParser;
 impl MacroBodyParser {
     /// Parse a repetition group inside a macro body: `${...}+`.
     pub fn parse_meta_rep_stmt(parser: &mut Parser) -> Result<crate::ast::Exp, ParseError> {
-        parser.skip(); // '$'
         let token_tree = Self::parse_tokentrees(parser)?;
         Ok(crate::ast::Exp::BlockRep(Box::new(Self::finish_meta_exp(
             parser, token_tree,
@@ -51,18 +48,19 @@ impl MacroBodyParser {
                 Some(TokenType::SepLCurly) => {
                     children.push(TokenTreeChild::Tree(Self::parse_tokentrees(parser)?));
                 }
-                Some(TokenType::Keyword) if parser.match_value("@") => {
-                    parser.skip();
-                    let meta_var = parser.eat_kind(TokenType::Identifier)?;
-                    children.push(TokenTreeChild::MetaId(MetaIdExp {
-                        name: meta_var.value.clone(),
-                        pos: None,
-                    }));
-                }
                 Some(TokenType::Keyword) if parser.match_value("$") => {
-                    let rep = Self::parse_meta_rep_stmt(parser)?;
-                    if let crate::ast::Exp::BlockRep(r) = rep {
-                        children.push(TokenTreeChild::BlockRep(r));
+                    parser.skip(); // '$'
+                    if Some(TokenType::Identifier) == parser.peek_type() {
+                        let meta_var = parser.eat_kind(TokenType::Identifier)?;
+                        children.push(TokenTreeChild::MetaId(MetaIdExp {
+                            name: meta_var.value.clone(),
+                            pos: None,
+                        }));
+                    } else {
+                        let rep = Self::parse_meta_rep_stmt(parser)?;
+                        if let crate::ast::Exp::BlockRep(r) = rep {
+                            children.push(TokenTreeChild::BlockRep(r));
+                        }
                     }
                 }
                 _ => {

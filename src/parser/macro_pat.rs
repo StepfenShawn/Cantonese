@@ -11,9 +11,8 @@ use crate::parser::{ParseError, Parser};
 pub struct MacroPatParser;
 
 impl MacroPatParser {
-    /// Parse a meta variable inside a macro pattern: `@v: str`.
+    /// Parse a meta variable inside a macro pattern: `$v: str`.
     pub fn parse_meta_var(parser: &mut Parser) -> Result<MacroPatItem, ParseError> {
-        parser.skip(); // '@'
         let id_tk = parser.eat_kind(TokenType::Identifier)?;
         parser.eat_value(":")?;
         let frag_spec_tk = parser.eat_kind(TokenType::Identifier)?;
@@ -31,7 +30,6 @@ impl MacroPatParser {
 
     /// Parse a repetition group inside a macro pattern: `$(...)+`.
     pub fn parse_meta_rep_exp(parser: &mut Parser) -> Result<MacroPatItem, ParseError> {
-        parser.skip(); // '$'
         parser.eat_kind(TokenType::SepLParen)?;
         let mut token_trees = Vec::new();
         while !parser.match_kind(TokenType::SepRParen) {
@@ -46,8 +44,14 @@ impl MacroPatParser {
 
     pub fn parse_macro_rule(parser: &mut Parser) -> Result<MacroPatItem, ParseError> {
         match parser.peek_value() {
-            Some("$") => Self::parse_meta_rep_exp(parser),
-            Some("@") => Self::parse_meta_var(parser),
+            Some("$") => {
+                parser.skip(); // '$'
+                if Some(TokenType::Identifier) == parser.peek_type() {
+                    Self::parse_meta_var(parser)
+                } else {
+                    Self::parse_meta_rep_exp(parser)
+                }
+            }
             _ => Ok(MacroPatItem::Token(parser.next_token().unwrap().clone())),
         }
     }
@@ -78,7 +82,7 @@ impl MacroPatParser {
                 Some(TokenType::SepLParen) => {
                     children.push(TokenTreeChild::Tree(Self::parse_tokentrees(parser)?));
                 }
-                Some(TokenType::Keyword) if parser.match_value("@") => {
+                Some(TokenType::Keyword) if parser.match_value("$") => {
                     parser.skip();
                     let meta_var = parser.eat_kind(TokenType::Identifier)?;
                     children.push(TokenTreeChild::MetaId(MetaIdExp {

@@ -2,8 +2,8 @@
     | () => {
         None
     }
-    | ($(@x: id @command: expr),+) => { 
-        [${@command},+]
+    | ($($x: id $command: expr),+) => { 
+        [${$command},+]
             .iter()
             .map($$ x { x })
             .collect() 啦

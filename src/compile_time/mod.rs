@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crate::compile_time::built_in::UseMacrosFn;
 use crate::parser::{ParseError, Parser};
 
-use crate::ast::Exp ;
+use crate::ast::Exp;
 
 /// A compile-time function that executes during parsing.
 ///

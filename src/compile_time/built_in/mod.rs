@@ -1,11 +1,11 @@
 // ---------------------------------------------------------------------------
 // Built-in compile-time function: @用下
 // ---------------------------------------------------------------------------
-use std::path::{Path, PathBuf};
-use crate::ast::{Exp, Stat, PassStat};
-use crate::parser::{StatParser, ParseError};
+use crate::ast::{Exp, PassStat, Stat};
 use crate::lexer::{LexError, Lexer};
+use crate::parser::{ParseError, StatParser};
 use crate::{compile_time::CompileTimeFn, lexer::token::TokenType, parser::Parser};
+use std::path::{Path, PathBuf};
 
 /// `@用下(A::B::C 嘅 法寶)` — import macros from another Cantonese file.
 pub struct UseMacrosFn;

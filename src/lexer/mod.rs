@@ -392,13 +392,8 @@ impl<'a> Lexer<'a> {
                 }
             }
             '@' => {
-                if self.starts_with("@@") {
-                    self.consume_many(2);
-                    self.mk_token(start_pos, TokenType::Keyword, "@@")
-                } else {
-                    self.next_char();
-                    self.mk_token(start_pos, TokenType::Keyword, "@")
-                }
+                self.next_char();
+                self.mk_token(start_pos, TokenType::Keyword, "@")
             }
             '{' => {
                 self.next_char();
