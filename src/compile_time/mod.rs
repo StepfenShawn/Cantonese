@@ -3,7 +3,8 @@ pub mod built_in;
 
 use std::collections::HashMap;
 
-use crate::compile_time::built_in::UseMacrosFn;
+use crate::compile_time::built_in::stringify::StringfyFn;
+use crate::compile_time::built_in::use_macro::UseMacrosFn;
 use crate::parser::{ParseError, Parser};
 
 use crate::ast::Exp;
@@ -44,6 +45,7 @@ impl CompileTimeRegistry {
     pub fn with_builtins() -> Self {
         let mut reg = Self::new();
         reg.register(Box::new(UseMacrosFn));
+        reg.register(Box::new(StringfyFn));
         reg
     }
 

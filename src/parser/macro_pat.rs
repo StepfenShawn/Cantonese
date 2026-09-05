@@ -1,6 +1,4 @@
 //! Macro pattern parser
-//!
-//! Parses the input-side of a macro rule, e.g. `$(@v: str, @v: str)+`.
 
 use crate::ast::{
     MacroMetaId, MacroMetaRepExpInPat, MacroPatItem, MetaIdExp, TokenTree, TokenTreeChild,
@@ -52,6 +50,7 @@ impl MacroPatParser {
                     Self::parse_meta_rep_exp(parser)
                 }
             }
+            Some("(") => Self::parse_tokentrees_in_pat(parser),
             _ => Ok(MacroPatItem::Token(parser.next_token().unwrap().clone())),
         }
     }
@@ -73,6 +72,44 @@ impl MacroPatParser {
         })
     }
 
+    fn parse_tokentrees_in_pat(parser: &mut Parser) -> Result<MacroPatItem, ParseError> {
+        let mut children: Vec<TokenTreeChild> = Vec::new();
+        let open_ch = parser.eat_kind(TokenType::SepLParen)?.clone();
+        while !parser.match_kind(TokenType::SepRParen) {
+            match parser.peek_type() {
+                Some(TokenType::SepLParen) => {
+                    children.push(TokenTreeChild::Tree(Self::parse_tokentrees(parser)?));
+                }
+                _ => {
+                    let item = Self::parse_macro_rule(parser)?;
+                    children.push(Self::pat_item_to_tree_child(item));
+                }
+            }
+        }
+        let close_ch = parser.eat_kind(TokenType::SepRParen)?.clone();
+        Ok(MacroPatItem::Tree(TokenTree {
+            child: children,
+            open_ch,
+            close_ch,
+        }))
+    }
+
+    fn pat_item_to_tree_child(item: MacroPatItem) -> TokenTreeChild {
+        match item {
+            MacroPatItem::Token(tk) => TokenTreeChild::Token(tk),
+            MacroPatItem::MetaId(id) => TokenTreeChild::MetaId(id),
+            MacroPatItem::Tree(tree) => TokenTreeChild::Tree(tree),
+            MacroPatItem::Rep(rep) => TokenTreeChild::PatRep(rep),
+            MacroPatItem::MetaVar(mv) => TokenTreeChild::MetaId(MetaIdExp {
+                name: match mv.id {
+                    crate::ast::Exp::Id(id) => id.name,
+                    _ => String::new(),
+                },
+                pos: None,
+            }),
+        }
+    }
+
     /// Parse a balanced parenthesised token tree used as a macro pattern.
     pub fn parse_tokentrees(parser: &mut Parser) -> Result<TokenTree, ParseError> {
         let mut children: Vec<TokenTreeChild> = Vec::new();
@@ -81,14 +118,6 @@ impl MacroPatParser {
             match parser.peek_type() {
                 Some(TokenType::SepLParen) => {
                     children.push(TokenTreeChild::Tree(Self::parse_tokentrees(parser)?));
-                }
-                Some(TokenType::Keyword) if parser.match_value("$") => {
-                    parser.skip();
-                    let meta_var = parser.eat_kind(TokenType::Identifier)?;
-                    children.push(TokenTreeChild::MetaId(MetaIdExp {
-                        name: meta_var.value.clone(),
-                        pos: None,
-                    }));
                 }
                 _ => {
                     children.push(TokenTreeChild::Token(parser.next_token().unwrap().clone()));

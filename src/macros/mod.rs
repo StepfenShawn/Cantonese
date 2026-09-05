@@ -188,7 +188,13 @@ impl PatRuler {
             MacroPatItem::Token(t) => match &children[child_idx] {
                 TokenTreeChild::Token(ct) => {
                     if t.value == ct.value {
-                        self.match_items(pattern, pat_idx + 1, children, child_idx + 1, require_full)
+                        self.match_items(
+                            pattern,
+                            pat_idx + 1,
+                            children,
+                            child_idx + 1,
+                            require_full,
+                        )
                     } else {
                         false
                     }
@@ -204,12 +210,54 @@ impl PatRuler {
                     Ok(s) => s,
                     Err(_) => return false,
                 };
-                self.match_meta_var(&name, &spec, pattern, pat_idx + 1, children, child_idx, require_full)
+                self.match_meta_var(
+                    &name,
+                    &spec,
+                    pattern,
+                    pat_idx + 1,
+                    children,
+                    child_idx,
+                    require_full,
+                )
             }
             MacroPatItem::Rep(rep) => {
                 self.match_repetition(rep, pattern, pat_idx + 1, children, child_idx, require_full)
             }
-            _ => false,
+            MacroPatItem::Tree(pat_tree) => match &children[child_idx] {
+                TokenTreeChild::Tree(child_tree) => {
+                    if self.match_tokentree(pat_tree, child_tree) {
+                        self.match_items(
+                            pattern,
+                            pat_idx + 1,
+                            children,
+                            child_idx + 1,
+                            require_full,
+                        )
+                    } else {
+                        false
+                    }
+                }
+                _ => false,
+            },
+            MacroPatItem::MetaId(pat_id) => {
+                // MetaId inside a pattern TokenTree captures all remaining
+                // children as the value of this meta variable (like $:tt).
+                let remaining = &children[child_idx..];
+                if remaining.is_empty() {
+                    return false;
+                }
+                let tokens: Vec<Token> = remaining
+                    .iter()
+                    .flat_map(|c| match c {
+                        TokenTreeChild::Token(t) => vec![t.clone()],
+                        TokenTreeChild::Tree(t) => token_tree_to_tokens(t),
+                        _ => vec![],
+                    })
+                    .collect();
+                self.state.update(pat_id.name.clone(), tokens);
+                // MetaId is the last item in the pattern tree, so we're done.
+                self.match_items(pattern, pat_idx + 1, children, children.len(), require_full)
+            }
         }
     }
 
@@ -228,7 +276,13 @@ impl PatRuler {
                 if let TokenTreeChild::Token(t) = &children[child_idx] {
                     if t.typ == TokenType::Identifier {
                         self.state.update(name.to_string(), vec![t.clone()]);
-                        return self.match_items(pattern, pat_idx, children, child_idx + 1, require_full);
+                        return self.match_items(
+                            pattern,
+                            pat_idx,
+                            children,
+                            child_idx + 1,
+                            require_full,
+                        );
                     }
                 }
                 false
@@ -237,7 +291,13 @@ impl PatRuler {
                 if let TokenTreeChild::Token(t) = &children[child_idx] {
                     if t.typ == TokenType::String {
                         self.state.update(name.to_string(), vec![t.clone()]);
-                        return self.match_items(pattern, pat_idx, children, child_idx + 1, require_full);
+                        return self.match_items(
+                            pattern,
+                            pat_idx,
+                            children,
+                            child_idx + 1,
+                            require_full,
+                        );
                     }
                 }
                 false
@@ -246,7 +306,13 @@ impl PatRuler {
                 if let TokenTreeChild::Token(t) = &children[child_idx] {
                     if t.typ == TokenType::String || t.typ == TokenType::Num {
                         self.state.update(name.to_string(), vec![t.clone()]);
-                        return self.match_items(pattern, pat_idx, children, child_idx + 1, require_full);
+                        return self.match_items(
+                            pattern,
+                            pat_idx,
+                            children,
+                            child_idx + 1,
+                            require_full,
+                        );
                     }
                 }
                 false
@@ -255,7 +321,13 @@ impl PatRuler {
                 let (consumed, tokens) = self.gather_expr(children, child_idx);
                 if !tokens.is_empty() && try_parse_expr(&tokens, self.registry.clone()) {
                     self.state.update(name.to_string(), tokens);
-                    return self.match_items(pattern, pat_idx, children, child_idx + consumed, require_full);
+                    return self.match_items(
+                        pattern,
+                        pat_idx,
+                        children,
+                        child_idx + consumed,
+                        require_full,
+                    );
                 }
                 false
             }
@@ -263,7 +335,13 @@ impl PatRuler {
                 let (consumed, tokens) = self.gather_stmt(children, child_idx);
                 if !tokens.is_empty() && try_parse_stat(&tokens, self.registry.clone()) {
                     self.state.update(name.to_string(), tokens);
-                    return self.match_items(pattern, pat_idx, children, child_idx + consumed, require_full);
+                    return self.match_items(
+                        pattern,
+                        pat_idx,
+                        children,
+                        child_idx + consumed,
+                        require_full,
+                    );
                 }
                 false
             }
@@ -271,7 +349,13 @@ impl PatRuler {
                 if let TokenTreeChild::Tree(t) = &children[child_idx] {
                     let tokens = token_tree_to_tokens(t);
                     self.state.update(name.to_string(), tokens);
-                    return self.match_items(pattern, pat_idx, children, child_idx + 1, require_full);
+                    return self.match_items(
+                        pattern,
+                        pat_idx,
+                        children,
+                        child_idx + 1,
+                        require_full,
+                    );
                 }
                 false
             }
@@ -280,7 +364,13 @@ impl PatRuler {
                     if t.open_ch.value == "{" && t.close_ch.value == "}" {
                         let tokens = token_tree_to_tokens(t);
                         self.state.update(name.to_string(), tokens);
-                        return self.match_items(pattern, pat_idx, children, child_idx + 1, require_full);
+                        return self.match_items(
+                            pattern,
+                            pat_idx,
+                            children,
+                            child_idx + 1,
+                            require_full,
+                        );
                     }
                 }
                 false
@@ -292,6 +382,8 @@ impl PatRuler {
         let mut tokens = Vec::new();
         let mut i = start;
         let mut depth = 0;
+        let mut last_valid_tokens: Vec<Token> = Vec::new();
+        let mut last_valid_i = start;
 
         while i < children.len() {
             match &children[i] {
@@ -321,12 +413,25 @@ impl PatRuler {
                 }
                 _ => break,
             }
+
+            if depth == 0 && !tokens.is_empty() && try_parse_expr(&tokens, self.registry.clone()) {
+                last_valid_tokens = tokens.clone();
+                last_valid_i = i;
+            }
         }
-        (i - start, tokens)
+
+        (last_valid_i - start, last_valid_tokens)
     }
 
     fn gather_stmt(&self, children: &[TokenTreeChild], start: usize) -> (usize, Vec<Token>) {
         self.gather_expr(children, start)
+    }
+
+    fn match_tokentree(&mut self, pat: &TokenTree, child: &TokenTree) -> bool {
+        if pat.open_ch.value != child.open_ch.value || pat.close_ch.value != child.close_ch.value {
+            return false;
+        }
+        self.match_items(&pat_to_pat_items(&pat.child), 0, &child.child, 0, true)
     }
 
     fn match_repetition(
@@ -376,9 +481,13 @@ impl PatRuler {
         }
 
         match op {
-            "+" if times >= 1 => self.match_items(pattern, pat_idx, children, current_child, require_full),
+            "+" if times >= 1 => {
+                self.match_items(pattern, pat_idx, children, current_child, require_full)
+            }
             "*" => self.match_items(pattern, pat_idx, children, current_child, require_full),
-            "?" if times <= 1 => self.match_items(pattern, pat_idx, children, current_child, require_full),
+            "?" if times <= 1 => {
+                self.match_items(pattern, pat_idx, children, current_child, require_full)
+            }
             _ => false,
         }
     }
@@ -442,11 +551,30 @@ impl PatRuler {
                         break;
                     }
                 }
-                _ => {}
+                MacroPatItem::Tree(_) => {
+                    child_idx += 1;
+                }
+                MacroPatItem::MetaId(_) => {
+                    // MetaId captures all remaining children
+                    child_idx = children.len();
+                }
             }
         }
         child_idx - start
     }
+}
+
+fn pat_to_pat_items(children: &[TokenTreeChild]) -> Vec<MacroPatItem> {
+    children
+        .iter()
+        .map(|c| match c {
+            TokenTreeChild::Token(t) => MacroPatItem::Token(t.clone()),
+            TokenTreeChild::MetaId(id) => MacroPatItem::MetaId(id.clone()),
+            TokenTreeChild::Tree(tree) => MacroPatItem::Tree(tree.clone()),
+            TokenTreeChild::PatRep(rep) => MacroPatItem::Rep(rep.clone()),
+            _ => MacroPatItem::Token(Token::new(Pos::simple(0, 0), TokenType::EOF, String::new())),
+        })
+        .collect()
 }
 
 fn try_parse_expr(tokens: &[Token], registry: Rc<RefCell<MacroRegistry>>) -> bool {

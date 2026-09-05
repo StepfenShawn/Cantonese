@@ -279,10 +279,10 @@ Duck is sleeping
 Stack: [1,2]
 ```
 ### <a name="14">袋仔的法寶: 用`Macro`定义自己嘅语法</a>
-介紹咗咁多, `Cantonese`仲將類似於`Rust`入面嘅宏定義引入, 可以通過宏來擴展我哋嘅語法, 簡單啲講, 就相當於`match`語句, 匹配之後用`@`提取元變量喺編譯期間進行替換:    
+介紹咗咁多, `Cantonese`仲將類似於`Rust`入面嘅宏定義引入, 可以通過宏來擴展我哋嘅語法, 簡單啲講, 就相當於`match`語句, 匹配之後用`$`提取元變量喺編譯期間進行替換:    
 ```Rust
 介紹返 sayhello 係 袋仔的法寶 =>
-    | (Hello @s: str) => { 畀我睇下 "Hello " + @s 點樣先?? }
+    | (Hello $s: str) => { 畀我睇下 "Hello " + $s 點樣先?? }
     | () => { 畀我睇下 "Hello" 點樣先?? }
 搞掂
 
@@ -370,7 +370,7 @@ sayhello!(1) # 報錯: 無法匹配
 ```rust
 介紹返 过嚟估下 係 袋仔的法寶 =>
     | ($model: id => $($args: expr),*) => {
-        畀我睇下 @model(${$args},*) 點樣先??
+        畀我睇下 $model(${$args},*) 點樣先??
     }
     | () => { None }
 搞掂
@@ -472,18 +472,25 @@ App运行 下 -> |HelloApp, HelloApp()->HelloWorld| 啦
 ### <a href="#26">數據庫編程都得(開發緊)</a>
 select語句:
 ```Rust
-使下 macros::sql::*;
+@用下(sql 嘅 法宝);
 
-SQL!{
-喺 成績表 度揾 學生哥 邊個 (年紀 大于 10 同埋 名字 係 'dany');
-
-喺 成績表 度揾 最尾 10 个 學生哥;
-喺 成績表 度揾 排頭 20 个 學生哥; 
+介紹返 query 係 SQL!{
+    喺 成績表 度揾 學生哥 邊個 (年紀 大于 10 同埋 名字 係 'dany');
+    喺 成績表 度揾 排頭 20 个 學生哥; 
 }
+
+/*
+  select 學生哥 from 成績表 where (年紀 > 10 and 名字 = 'dany');
+  select 學生哥 from 成績表 limit 10;
+*/
+畀我睇下 query 點樣先??
+
 /* select * from xx  */
-SQL{
+介紹返 query2 係 SQL!{
     睇下 xx;
 }
+
+畀我睇下 query2 點樣先??
 ```
 
 # 仲有啲咩?
