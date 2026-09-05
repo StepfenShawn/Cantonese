@@ -8,8 +8,8 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::ast::{
-    Exp, IdExp, MacroMetaId, MacroMetaRepExpInBlock, MacroMetaRepExpInPat, MacroPatItem, MetaIdExp,
-    TokenTree, TokenTreeChild,
+    Exp, IdExp, MacroMetaRepExpInBlock, MacroMetaRepExpInPat, MacroPatItem, MetaIdExp, TokenTree,
+    TokenTreeChild,
 };
 use crate::lexer::token::{Pos, Token, TokenType};
 use crate::parser::exp::ExpParser;
@@ -58,96 +58,9 @@ impl FragSpec {
                 &Token::new(Pos::simple(0, 0), TokenType::Identifier, "".to_string()),
                 "<macro>",
                 "Fragment specifier 必須係 identifier",
-                "例如 `@x: expr`",
+                "例如 `$x: expr`",
             )),
         }
-    }
-}
-
-// =============================================================================
-// Regex-like pattern AST
-// =============================================================================
-
-#[derive(Debug, Clone)]
-pub enum Regex {
-    Empty,
-    Atom(Token),
-    Var { name: String, spec: FragSpec },
-    Concat(Box<Regex>, Box<Regex>),
-    Star(Box<Regex>),
-    Optional(Box<Regex>),
-}
-
-pub fn build_regex(items: &[MacroPatItem]) -> Result<Regex, ParseError> {
-    if items.is_empty() {
-        return Ok(Regex::Empty);
-    }
-    let (first, rest) = items.split_first().unwrap();
-    let node = match first {
-        MacroPatItem::Token(t) => Regex::Atom(t.clone()),
-        MacroPatItem::MetaVar(MacroMetaId { id, frag_spec }) => {
-            let name = match id {
-                Exp::Id(IdExp { name, .. }) => name.clone(),
-                _ => String::new(),
-            };
-            Regex::Var {
-                name,
-                spec: FragSpec::from_exp(frag_spec)?,
-            }
-        }
-        MacroPatItem::Rep(rep) => build_rep_regex(rep)?,
-        _ => {
-            return Err(ParseError::syntax(
-                &Token::new(Pos::simple(0, 0), TokenType::Identifier, "".to_string()),
-                "<macro>",
-                "Macro pattern 入面唔應該出現 Tree/MetaId",
-                "檢查 macro 模式語法",
-            ));
-        }
-    };
-    Ok(Regex::Concat(Box::new(node), Box::new(build_regex(rest)?)))
-}
-
-fn build_rep_regex(rep: &MacroMetaRepExpInPat) -> Result<Regex, ParseError> {
-    let inner = build_regex(&rep.token_trees)?;
-    let sep = rep.rep_sep.as_ref().cloned();
-    match rep.rep_op.as_str() {
-        "*" => {
-            let with_sep = if let Some(s) = sep {
-                Regex::Concat(Box::new(inner), Box::new(Regex::Atom(s)))
-            } else {
-                inner
-            };
-            Ok(Regex::Star(Box::new(with_sep)))
-        }
-        "+" => {
-            let unit = if let Some(s) = sep {
-                Regex::Concat(Box::new(inner.clone()), Box::new(Regex::Atom(s)))
-            } else {
-                inner.clone()
-            };
-            Ok(Regex::Concat(
-                Box::new(unit.clone()),
-                Box::new(Regex::Star(Box::new(unit))),
-            ))
-        }
-        "?" => {
-            let optional_sep = if let Some(s) = sep {
-                Regex::Optional(Box::new(Regex::Atom(s)))
-            } else {
-                Regex::Empty
-            };
-            Ok(Regex::Concat(
-                Box::new(Regex::Optional(Box::new(inner))),
-                Box::new(optional_sep),
-            ))
-        }
-        _ => Err(ParseError::syntax(
-            &Token::new(Pos::simple(0, 0), TokenType::Identifier, rep.rep_op.clone()),
-            "<macro>",
-            format!("唔識嘅 repetition operator: `{}`", rep.rep_op),
-            "可用: *, +, ?",
-        )),
     }
 }
 
@@ -248,73 +161,420 @@ impl PatRuler {
         self.state
     }
 
-    pub fn matches(&mut self, regex: &Regex, tokens: &[Token]) -> bool {
-        match regex {
-            Regex::Empty => tokens.is_empty(),
-            Regex::Atom(t) => tokens.len() == 1 && tokens[0].value == t.value,
-            Regex::Var { name, spec } => self.match_var(name, spec, tokens),
-            Regex::Optional(r) => self.matches(r, tokens) || tokens.is_empty(),
-            Regex::Concat(l, r) => {
-                for (prefix, suffix) in splits(tokens) {
-                    let saved = self.state.clone();
-                    if self.matches(l, prefix) && self.matches(r, suffix) {
-                        if let Regex::Var { name, .. } = l.as_ref() {
-                            self.state.update(name.clone(), prefix.to_vec());
-                        }
-                        if let Regex::Var { name, .. } = r.as_ref() {
-                            self.state.update(name.clone(), suffix.to_vec());
-                        }
-                        return true;
+    pub fn matches_tree(&mut self, pattern: &[MacroPatItem], children: &[TokenTreeChild]) -> bool {
+        self.match_items(pattern, 0, children, 0, true)
+    }
+
+    fn match_items(
+        &mut self,
+        pattern: &[MacroPatItem],
+        pat_idx: usize,
+        children: &[TokenTreeChild],
+        child_idx: usize,
+        require_full: bool,
+    ) -> bool {
+        if pat_idx >= pattern.len() {
+            return if require_full {
+                child_idx >= children.len()
+            } else {
+                true
+            };
+        }
+        if child_idx >= children.len() {
+            return false;
+        }
+
+        match &pattern[pat_idx] {
+            MacroPatItem::Token(t) => match &children[child_idx] {
+                TokenTreeChild::Token(ct) => {
+                    if t.value == ct.value {
+                        self.match_items(
+                            pattern,
+                            pat_idx + 1,
+                            children,
+                            child_idx + 1,
+                            require_full,
+                        )
+                    } else {
+                        false
                     }
-                    self.state = saved;
                 }
-                false
+                _ => false,
+            },
+            MacroPatItem::MetaVar(var) => {
+                let name = match &var.id {
+                    Exp::Id(IdExp { name, .. }) => name.clone(),
+                    _ => return false,
+                };
+                let spec = match FragSpec::from_exp(&var.frag_spec) {
+                    Ok(s) => s,
+                    Err(_) => return false,
+                };
+                self.match_meta_var(
+                    &name,
+                    &spec,
+                    pattern,
+                    pat_idx + 1,
+                    children,
+                    child_idx,
+                    require_full,
+                )
             }
-            Regex::Star(inner) => {
-                if tokens.is_empty() {
-                    return true;
-                }
-                for (prefix, suffix) in prefix_splits(tokens) {
-                    let saved = self.state.clone();
-                    if self.matches(inner, prefix) && self.matches(regex, suffix) {
-                        return true;
+            MacroPatItem::Rep(rep) => {
+                self.match_repetition(rep, pattern, pat_idx + 1, children, child_idx, require_full)
+            }
+            MacroPatItem::Tree(pat_tree) => match &children[child_idx] {
+                TokenTreeChild::Tree(child_tree) => {
+                    if self.match_tokentree(pat_tree, child_tree) {
+                        self.match_items(
+                            pattern,
+                            pat_idx + 1,
+                            children,
+                            child_idx + 1,
+                            require_full,
+                        )
+                    } else {
+                        false
                     }
-                    self.state = saved;
                 }
-                false
+                _ => false,
+            },
+            MacroPatItem::MetaId(pat_id) => {
+                // MetaId inside a pattern TokenTree captures all remaining
+                // children as the value of this meta variable (like $:tt).
+                let remaining = &children[child_idx..];
+                if remaining.is_empty() {
+                    return false;
+                }
+                let tokens: Vec<Token> = remaining
+                    .iter()
+                    .flat_map(|c| match c {
+                        TokenTreeChild::Token(t) => vec![t.clone()],
+                        TokenTreeChild::Tree(t) => token_tree_to_tokens(t),
+                        _ => vec![],
+                    })
+                    .collect();
+                self.state.update(pat_id.name.clone(), tokens);
+                // MetaId is the last item in the pattern tree, so we're done.
+                self.match_items(pattern, pat_idx + 1, children, children.len(), require_full)
             }
         }
     }
 
-    fn match_var(&mut self, _name: &str, spec: &FragSpec, tokens: &[Token]) -> bool {
+    fn match_meta_var(
+        &mut self,
+        name: &str,
+        spec: &FragSpec,
+        pattern: &[MacroPatItem],
+        pat_idx: usize,
+        children: &[TokenTreeChild],
+        child_idx: usize,
+        require_full: bool,
+    ) -> bool {
         match spec {
-            FragSpec::Ident => tokens.len() == 1 && tokens[0].typ == TokenType::Identifier,
-            FragSpec::Str => tokens.len() == 1 && tokens[0].typ == TokenType::String,
-            FragSpec::Literal => {
-                tokens.len() == 1
-                    && (tokens[0].typ == TokenType::String || tokens[0].typ == TokenType::Num)
+            FragSpec::Ident => {
+                if let TokenTreeChild::Token(t) = &children[child_idx] {
+                    if t.typ == TokenType::Identifier {
+                        self.state.update(name.to_string(), vec![t.clone()]);
+                        return self.match_items(
+                            pattern,
+                            pat_idx,
+                            children,
+                            child_idx + 1,
+                            require_full,
+                        );
+                    }
+                }
+                false
             }
-            FragSpec::Expr => try_parse_expr(tokens, self.registry.clone()),
-            FragSpec::Stmt => try_parse_stat(tokens, self.registry.clone()),
-            FragSpec::Tt | FragSpec::Block => false,
+            FragSpec::Str => {
+                if let TokenTreeChild::Token(t) = &children[child_idx] {
+                    if t.typ == TokenType::String {
+                        self.state.update(name.to_string(), vec![t.clone()]);
+                        return self.match_items(
+                            pattern,
+                            pat_idx,
+                            children,
+                            child_idx + 1,
+                            require_full,
+                        );
+                    }
+                }
+                false
+            }
+            FragSpec::Literal => {
+                if let TokenTreeChild::Token(t) = &children[child_idx] {
+                    if t.typ == TokenType::String || t.typ == TokenType::Num {
+                        self.state.update(name.to_string(), vec![t.clone()]);
+                        return self.match_items(
+                            pattern,
+                            pat_idx,
+                            children,
+                            child_idx + 1,
+                            require_full,
+                        );
+                    }
+                }
+                false
+            }
+            FragSpec::Expr => {
+                let (consumed, tokens) = self.gather_expr(children, child_idx);
+                if !tokens.is_empty() && try_parse_expr(&tokens, self.registry.clone()) {
+                    self.state.update(name.to_string(), tokens);
+                    return self.match_items(
+                        pattern,
+                        pat_idx,
+                        children,
+                        child_idx + consumed,
+                        require_full,
+                    );
+                }
+                false
+            }
+            FragSpec::Stmt => {
+                let (consumed, tokens) = self.gather_stmt(children, child_idx);
+                if !tokens.is_empty() && try_parse_stat(&tokens, self.registry.clone()) {
+                    self.state.update(name.to_string(), tokens);
+                    return self.match_items(
+                        pattern,
+                        pat_idx,
+                        children,
+                        child_idx + consumed,
+                        require_full,
+                    );
+                }
+                false
+            }
+            FragSpec::Tt => {
+                if let TokenTreeChild::Tree(t) = &children[child_idx] {
+                    let tokens = token_tree_to_tokens(t);
+                    self.state.update(name.to_string(), tokens);
+                    return self.match_items(
+                        pattern,
+                        pat_idx,
+                        children,
+                        child_idx + 1,
+                        require_full,
+                    );
+                }
+                false
+            }
+            FragSpec::Block => {
+                if let TokenTreeChild::Tree(t) = &children[child_idx] {
+                    if t.open_ch.value == "{" && t.close_ch.value == "}" {
+                        let tokens = token_tree_to_tokens(t);
+                        self.state.update(name.to_string(), tokens);
+                        return self.match_items(
+                            pattern,
+                            pat_idx,
+                            children,
+                            child_idx + 1,
+                            require_full,
+                        );
+                    }
+                }
+                false
+            }
         }
     }
+
+    fn gather_expr(&self, children: &[TokenTreeChild], start: usize) -> (usize, Vec<Token>) {
+        let mut tokens = Vec::new();
+        let mut i = start;
+        let mut depth = 0;
+        let mut last_valid_tokens: Vec<Token> = Vec::new();
+        let mut last_valid_i = start;
+
+        while i < children.len() {
+            match &children[i] {
+                TokenTreeChild::Token(t) => {
+                    if depth == 0
+                        && (t.value == "," || t.value == ";" || t.value == "=>" || t.value == "}")
+                    {
+                        break;
+                    }
+                    if t.typ == TokenType::SepLParen
+                        || t.typ == TokenType::SepLBrack
+                        || t.typ == TokenType::SepLCurly
+                    {
+                        depth += 1;
+                    } else if t.typ == TokenType::SepRParen
+                        || t.typ == TokenType::SepRBrack
+                        || t.typ == TokenType::SepRCurly
+                    {
+                        depth -= 1;
+                    }
+                    tokens.push(t.clone());
+                    i += 1;
+                }
+                TokenTreeChild::Tree(t) => {
+                    tokens.extend(token_tree_to_tokens(t));
+                    i += 1;
+                }
+                _ => break,
+            }
+
+            if depth == 0 && !tokens.is_empty() && try_parse_expr(&tokens, self.registry.clone()) {
+                last_valid_tokens = tokens.clone();
+                last_valid_i = i;
+            }
+        }
+
+        (last_valid_i - start, last_valid_tokens)
+    }
+
+    fn gather_stmt(&self, children: &[TokenTreeChild], start: usize) -> (usize, Vec<Token>) {
+        self.gather_expr(children, start)
+    }
+
+    fn match_tokentree(&mut self, pat: &TokenTree, child: &TokenTree) -> bool {
+        if pat.open_ch.value != child.open_ch.value || pat.close_ch.value != child.close_ch.value {
+            return false;
+        }
+        self.match_items(&pat_to_pat_items(&pat.child), 0, &child.child, 0, true)
+    }
+
+    fn match_repetition(
+        &mut self,
+        rep: &MacroMetaRepExpInPat,
+        pattern: &[MacroPatItem],
+        pat_idx: usize,
+        children: &[TokenTreeChild],
+        child_idx: usize,
+        require_full: bool,
+    ) -> bool {
+        let sep_value = rep.rep_sep.as_ref().map(|t| t.value.clone());
+        let op = rep.rep_op.as_str();
+
+        let mut times = 0;
+        let mut current_child = child_idx;
+
+        loop {
+            if current_child >= children.len() {
+                break;
+            }
+
+            let saved = self.state.clone();
+            if self.match_items(&rep.token_trees, 0, children, current_child, false) {
+                let consumed = self.count_consumed(&rep.token_trees, children, current_child);
+                if consumed == 0 {
+                    self.state = saved;
+                    break;
+                }
+                times += 1;
+                current_child += consumed;
+
+                if let Some(sep) = &sep_value {
+                    if current_child < children.len() {
+                        if let TokenTreeChild::Token(t) = &children[current_child] {
+                            if t.value == *sep {
+                                current_child += 1;
+                                continue;
+                            }
+                        }
+                    }
+                }
+                continue;
+            }
+            self.state = saved;
+            break;
+        }
+
+        match op {
+            "+" if times >= 1 => {
+                self.match_items(pattern, pat_idx, children, current_child, require_full)
+            }
+            "*" => self.match_items(pattern, pat_idx, children, current_child, require_full),
+            "?" if times <= 1 => {
+                self.match_items(pattern, pat_idx, children, current_child, require_full)
+            }
+            _ => false,
+        }
+    }
+
+    fn count_consumed(
+        &self,
+        pattern: &[MacroPatItem],
+        children: &[TokenTreeChild],
+        start: usize,
+    ) -> usize {
+        let mut child_idx = start;
+        for pat in pattern {
+            if child_idx >= children.len() {
+                return 0;
+            }
+            match pat {
+                MacroPatItem::Token(_) => {
+                    child_idx += 1;
+                }
+                MacroPatItem::MetaVar(var) => {
+                    let spec = match FragSpec::from_exp(&var.frag_spec) {
+                        Ok(s) => s,
+                        Err(_) => return 0,
+                    };
+                    match spec {
+                        FragSpec::Ident
+                        | FragSpec::Str
+                        | FragSpec::Literal
+                        | FragSpec::Tt
+                        | FragSpec::Block => {
+                            child_idx += 1;
+                        }
+                        FragSpec::Expr | FragSpec::Stmt => {
+                            let (consumed, _) = self.gather_expr(children, child_idx);
+                            child_idx += consumed;
+                        }
+                    }
+                }
+                MacroPatItem::Rep(rep) => {
+                    let sep_value = rep.rep_sep.as_ref().map(|t| t.value.clone());
+                    loop {
+                        if child_idx >= children.len() {
+                            break;
+                        }
+                        let inner_consumed =
+                            self.count_consumed(&rep.token_trees, children, child_idx);
+                        if inner_consumed == 0 {
+                            break;
+                        }
+                        child_idx += inner_consumed;
+                        if let Some(sep) = &sep_value {
+                            if child_idx < children.len() {
+                                if let TokenTreeChild::Token(t) = &children[child_idx] {
+                                    if t.value == *sep {
+                                        child_idx += 1;
+                                        continue;
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+                MacroPatItem::Tree(_) => {
+                    child_idx += 1;
+                }
+                MacroPatItem::MetaId(_) => {
+                    // MetaId captures all remaining children
+                    child_idx = children.len();
+                }
+            }
+        }
+        child_idx - start
+    }
 }
 
-fn splits<T>(xs: &[T]) -> Vec<(&[T], &[T])> {
-    let mut res = Vec::with_capacity(xs.len() + 1);
-    for i in 0..=xs.len() {
-        res.push((&xs[..i], &xs[i..]));
-    }
-    res
-}
-
-fn prefix_splits<T>(xs: &[T]) -> Vec<(&[T], &[T])> {
-    let mut res = Vec::with_capacity(xs.len());
-    for i in 1..=xs.len() {
-        res.push((&xs[..i], &xs[i..]));
-    }
-    res
+fn pat_to_pat_items(children: &[TokenTreeChild]) -> Vec<MacroPatItem> {
+    children
+        .iter()
+        .map(|c| match c {
+            TokenTreeChild::Token(t) => MacroPatItem::Token(t.clone()),
+            TokenTreeChild::MetaId(id) => MacroPatItem::MetaId(id.clone()),
+            TokenTreeChild::Tree(tree) => MacroPatItem::Tree(tree.clone()),
+            TokenTreeChild::PatRep(rep) => MacroPatItem::Rep(rep.clone()),
+            _ => MacroPatItem::Token(Token::new(Pos::simple(0, 0), TokenType::EOF, String::new())),
+        })
+        .collect()
 }
 
 fn try_parse_expr(tokens: &[Token], registry: Rc<RefCell<MacroRegistry>>) -> bool {
@@ -339,16 +599,15 @@ pub struct Macro {
 }
 
 impl Macro {
-    pub fn try_expand(
+    pub fn try_expand_tree(
         &self,
-        tokens: &[Token],
+        children: &[TokenTreeChild],
         registry: Rc<RefCell<MacroRegistry>>,
     ) -> Result<(MatchState, TokenTree), ParseError> {
         for (pat, body) in self.patterns.iter().zip(self.bodies.iter()) {
-            let regex = build_regex(pat)?;
             let state = MatchState::new();
             let mut ruler = PatRuler::with_state(state, registry.clone());
-            if ruler.matches(&regex, tokens) {
+            if ruler.matches_tree(pat, children) {
                 return Ok((ruler.into_state(), body.clone()));
             }
         }
@@ -413,8 +672,8 @@ impl MacroExpander {
                     "係咪Macro喺其它文件? 咁就試下 用 `@用下(...)` import 啦!",
                 )
             })?;
-        let input = token_tree_inner_tokens(&tokentrees);
-        let (mut state, body) = macro_def.try_expand(&input, parser.macro_registry.clone())?;
+        let (mut state, body) =
+            macro_def.try_expand_tree(&tokentrees.child, parser.macro_registry.clone())?;
         body.substitute(&mut state)
     }
 }
@@ -433,7 +692,7 @@ pub fn token_tree_to_tokens(tree: &TokenTree) -> Vec<Token> {
                 tokens.push(Token::new(
                     Pos::simple(0, 0),
                     TokenType::Keyword,
-                    "@".to_string(),
+                    "$".to_string(),
                 ));
                 tokens.push(Token::new(
                     Pos::simple(0, 0),
@@ -455,7 +714,7 @@ pub fn token_tree_inner_tokens(tree: &TokenTree) -> Vec<Token> {
             TokenTreeChild::Token(t) => vec![t.clone()],
             TokenTreeChild::Tree(t) => token_tree_to_tokens(t),
             TokenTreeChild::MetaId(MetaIdExp { name, .. }) => vec![
-                Token::new(Pos::simple(0, 0), TokenType::Keyword, "@".to_string()),
+                Token::new(Pos::simple(0, 0), TokenType::Keyword, "$".to_string()),
                 Token::new(Pos::simple(0, 0), TokenType::Identifier, name.clone()),
             ],
             _ => Vec::new(),
@@ -477,7 +736,10 @@ impl MacroSubstitute for TokenTree {
     }
 }
 
-fn substitute_child(child: &TokenTreeChild, state: &mut MatchState) -> Result<Vec<Token>, ParseError> {
+fn substitute_child(
+    child: &TokenTreeChild,
+    state: &mut MatchState,
+) -> Result<Vec<Token>, ParseError> {
     match child {
         TokenTreeChild::Token(t) => Ok(vec![t.clone()]),
         TokenTreeChild::MetaId(MetaIdExp { name, .. }) => {

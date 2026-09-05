@@ -2,14 +2,14 @@
     | () => { 
         None 
     }
-    | (@x:expr) => { 
-        @x
+    | ($x:expr) => { 
+        $x
     }
-    | (@x: expr , @y: expr) => {
-        max 下 -> |@x, @y|
+    | ($x: expr , $y: expr) => {
+        max 下 -> |$x, $y|
     }
-    | (@x:expr, $(@xs: expr),+) => { 
-        max 下 -> |@x, getmax!(${@xs},+)|
+    | ($x:expr, $($xs: expr),+) => { 
+        max 下 -> |$x, getmax!(${$xs},+)|
     }
 搞掂
 

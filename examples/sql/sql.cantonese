@@ -1,0 +1,5 @@
+介紹返 SQL 係 袋仔的法寶 =>
+    | (喺 $table: expr 度揾 $columns: expr 邊個 ($condition: expr)) => {
+        "select " + @扮字($columns) + " from " + @扮字($table)
+    }
+搞掂
