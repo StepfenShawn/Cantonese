@@ -123,7 +123,7 @@ pip install Cantonese
 ### <a name="7">函数</a>
 返回最大值： 
 ```Rust
-介紹返 $get_max
+介紹返 @get_max
     |数字1, 数字2| 点部署
         如果 |数字1 比唔上 数字2| 嘅话 => {
             还数「数字2」

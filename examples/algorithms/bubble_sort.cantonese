@@ -1,7 +1,7 @@
 /*
     Cantonese 实现冒泡排序
 */
-介紹返 $bubble_sort
+介紹返 @bubble_sort
     |数组| 點部署
         介紹返 |长度| 係 |数组 嘅 长度|
         |i| 从 1 行到 |长度|
