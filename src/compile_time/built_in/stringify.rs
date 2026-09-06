@@ -1,7 +1,6 @@
-
 use crate::parser::{MacroPatParser, ParseError};
 use crate::{
-    ast::{Exp, StringExp, TokenTree},
+    ast::{Exp, StringExp, TokenTree, TokenTreeChild},
     compile_time::CompileTimeFn,
 };
 // ---------------------------------------------------------------------------
@@ -28,10 +27,8 @@ fn token_tree_to_string(token_tree: &TokenTree) -> String {
     let mut result = "".to_string();
     for child in token_tree.child.iter() {
         match child {
-            crate::ast::TokenTreeChild::Token(token) => {
-                result += &format!(" {} ", token.value).to_string()
-            }
-            crate::ast::TokenTreeChild::Tree(token_tree) => {
+            TokenTreeChild::Token(token) => result += &format!(" {} ", token.value).to_string(),
+            TokenTreeChild::Tree(token_tree) => {
                 result += &token_tree_to_string(token_tree);
             }
             _ => unreachable!("MacroPatParser::parse_tokentrees just return "),

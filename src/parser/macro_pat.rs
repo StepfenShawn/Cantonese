@@ -62,7 +62,13 @@ impl MacroPatParser {
         let rep_sep = if parser.is_eof() {
             None
         } else {
-            Some(parser.next_token().unwrap().clone())
+            if let Some(x) = parser.peek_value()
+                && (x == "*" || x == "+" || x == "?")
+            {
+                None
+            } else {
+                Some(parser.next_token().unwrap().clone())
+            }
         };
         let op_tk = parser.eat_any_value(&["*", "+", "?"])?;
         Ok(MacroMetaRepExpInPat {

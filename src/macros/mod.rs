@@ -161,6 +161,12 @@ impl PatRuler {
         self.state
     }
 
+    fn remaining_patterns_are_optional(pattern: &[MacroPatItem], pat_idx: usize) -> bool {
+        pattern[pat_idx..].iter().all(|item| {
+            matches!(item, MacroPatItem::Rep(rep) if rep.rep_op == "?" || rep.rep_op == "*")
+        })
+    }
+
     pub fn matches_tree(&mut self, pattern: &[MacroPatItem], children: &[TokenTreeChild]) -> bool {
         self.match_items(pattern, 0, children, 0, true)
     }
@@ -181,9 +187,8 @@ impl PatRuler {
             };
         }
         if child_idx >= children.len() {
-            return false;
+            return Self::remaining_patterns_are_optional(pattern, pat_idx);
         }
-
         match &pattern[pat_idx] {
             MacroPatItem::Token(t) => match &children[child_idx] {
                 TokenTreeChild::Token(ct) => {
@@ -381,29 +386,12 @@ impl PatRuler {
     fn gather_expr(&self, children: &[TokenTreeChild], start: usize) -> (usize, Vec<Token>) {
         let mut tokens = Vec::new();
         let mut i = start;
-        let mut depth = 0;
         let mut last_valid_tokens: Vec<Token> = Vec::new();
         let mut last_valid_i = start;
 
         while i < children.len() {
             match &children[i] {
                 TokenTreeChild::Token(t) => {
-                    if depth == 0
-                        && (t.value == "," || t.value == ";" || t.value == "=>" || t.value == "}")
-                    {
-                        break;
-                    }
-                    if t.typ == TokenType::SepLParen
-                        || t.typ == TokenType::SepLBrack
-                        || t.typ == TokenType::SepLCurly
-                    {
-                        depth += 1;
-                    } else if t.typ == TokenType::SepRParen
-                        || t.typ == TokenType::SepRBrack
-                        || t.typ == TokenType::SepRCurly
-                    {
-                        depth -= 1;
-                    }
                     tokens.push(t.clone());
                     i += 1;
                 }
@@ -414,7 +402,7 @@ impl PatRuler {
                 _ => break,
             }
 
-            if depth == 0 && !tokens.is_empty() && try_parse_expr(&tokens, self.registry.clone()) {
+            if !tokens.is_empty() && try_parse_expr(&tokens, self.registry.clone()) {
                 last_valid_tokens = tokens.clone();
                 last_valid_i = i;
             }
