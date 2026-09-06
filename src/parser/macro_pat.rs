@@ -59,16 +59,10 @@ impl MacroPatParser {
         parser: &mut Parser,
         token_trees: Vec<MacroPatItem>,
     ) -> Result<MacroMetaRepExpInPat, ParseError> {
-        let rep_sep = if parser.is_eof() {
+        let rep_sep = if parser.is_eof() || parser.match_any_value(&["*", "+", "?"]) {
             None
         } else {
-            if let Some(x) = parser.peek_value()
-                && (x == "*" || x == "+" || x == "?")
-            {
-                None
-            } else {
-                Some(parser.next_token().unwrap().clone())
-            }
+            Some(parser.next_token().unwrap().clone())
         };
         let op_tk = parser.eat_any_value(&["*", "+", "?"])?;
         Ok(MacroMetaRepExpInPat {

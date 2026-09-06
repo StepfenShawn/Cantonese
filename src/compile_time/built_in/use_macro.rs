@@ -3,7 +3,7 @@
 // ---------------------------------------------------------------------------
 use crate::ast::{Exp, PassStat, Stat};
 use crate::lexer::{LexError, Lexer};
-use crate::parser::{ParseError, StatParser};
+use crate::parser::{ColorChoice, Diagnostic, ParseError, StatParser};
 use crate::{compile_time::CompileTimeFn, lexer::token::TokenType, parser::Parser};
 use std::path::{Path, PathBuf};
 
@@ -173,20 +173,13 @@ fn handle_use_macros(parser: &mut Parser, module_path: &str) -> Result<(), Parse
 
     let mut target_parser =
         Parser::new_with_registry(&tokens, &target_path_str, parser.macro_registry.clone());
-    let _stats = StatParser::parse_stats(&mut target_parser).map_err(|e| {
-        ParseError::syntax(
-            parser
-                .peek_token()
-                .unwrap_or(&crate::lexer::token::Token::new(
-                    crate::lexer::token::Pos::simple(0, 0),
-                    crate::lexer::token::TokenType::EOF,
-                    "EOF".into(),
-                )),
-            parser.file_path(),
-            format!("Error parsing imported module '{}': {}", module_path, e),
-            "檢查導入嘅模塊語法",
-        )
-    })?;
-
-    Ok(())
+    let _stats = StatParser::parse_stats(&mut target_parser);
+    match _stats {
+        Err(e) => {
+            let diagnostic = Diagnostic::from_parse_error(&e);
+            println!("{}", diagnostic.render(&source, ColorChoice::Auto));
+            Err(e)
+        }
+        _ => Ok(()),
+    }
 }

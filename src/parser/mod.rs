@@ -36,6 +36,7 @@ pub enum ParseError {
         span: Span,
         msg: String,
         tip: String,
+        notes: Vec<String>,
     },
     UnexpectedEof {
         file: String,
@@ -55,6 +56,23 @@ impl ParseError {
             span: Span::from_token_pos(token.pos),
             msg: msg.into(),
             tip: tip.into(),
+            notes: vec![],
+        }
+    }
+
+    pub fn syntax_with_notes(
+        token: &Token,
+        file: &str,
+        msg: impl Into<String>,
+        tip: impl Into<String>,
+        notes: Vec<String>,
+    ) -> Self {
+        ParseError::SyntaxError {
+            file: file.to_string(),
+            span: Span::from_token_pos(token.pos),
+            msg: msg.into(),
+            tip: tip.into(),
+            notes,
         }
     }
 
@@ -71,6 +89,7 @@ impl ParseError {
             span: Span::at(pos),
             msg: msg.into(),
             tip: "詞法錯誤".into(),
+            notes: vec![],
         }
     }
 

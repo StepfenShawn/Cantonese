@@ -39,13 +39,13 @@ impl MacroBodyParser {
         })
     }
 
-    /// Parse a balanced curly-braced token tree used as a macro body.
+    /// Parse a balanced token tree used as a macro body.
     pub fn parse_tokentrees(parser: &mut Parser) -> Result<TokenTree, ParseError> {
         let mut children: Vec<TokenTreeChild> = Vec::new();
-        let open_ch = parser.eat_kind(TokenType::SepLCurly)?.clone();
-        while !parser.match_kind(TokenType::SepRCurly) {
+        let open_ch = parser.eat_kind(TokenType::SepLParen)?.clone();
+        while !parser.match_kind(TokenType::SepRParen) {
             match parser.peek_type() {
-                Some(TokenType::SepLCurly) => {
+                Some(TokenType::SepLParen) => {
                     children.push(TokenTreeChild::Tree(Self::parse_tokentrees(parser)?));
                 }
                 Some(TokenType::Keyword) if parser.match_value("$") => {
@@ -68,7 +68,7 @@ impl MacroBodyParser {
                 }
             }
         }
-        let close_ch = parser.eat_kind(TokenType::SepRCurly)?.clone();
+        let close_ch = parser.eat_kind(TokenType::SepRParen)?.clone();
         Ok(TokenTree {
             child: children,
             open_ch,

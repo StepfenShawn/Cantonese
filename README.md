@@ -282,8 +282,8 @@ Stack: [1,2]
 介紹咗咁多, `Cantonese`仲將類似於`Rust`入面嘅宏定義引入, 可以通過宏來擴展我哋嘅語法, 簡單啲講, 就相當於`match`語句, 匹配之後用`$`提取元變量喺編譯期間進行替換:    
 ```Rust
 介紹返 sayhello 係 袋仔的法寶 =>
-    | (Hello $s: str) => { 畀我睇下 "Hello " + $s 點樣先?? }
-    | () => { 畀我睇下 "Hello" 點樣先?? }
+    | (Hello $s: str) => ( 畀我睇下 "Hello " + $s 點樣先?? )
+    | () => ( 畀我睇下 "Hello" 點樣先?? )
 搞掂
 
 sayhello!(Hello "dd")
@@ -291,9 +291,9 @@ sayhello!()
 sayhello!(1) # 報錯: 無法匹配
 
 介紹返 vec 係 袋仔的法寶 =>
-    | ($($element:expr),*) => {
+    | ($($element:expr),*) => (
         [$($element)*]
-    }
+    )
     | () => {
         []
     }
@@ -305,14 +305,14 @@ sayhello!(1) # 報錯: 無法匹配
 複雜啲嘅例子, 定义新嘅语法:`同我计 XX 乜 XX 好唔好`:  
 ```Rust
 介紹返 計算 係 袋仔的法寶 =>
-    | (同我計 $左: lit 加 $右: lit 好唔好) => { 
-        $左 + $右 }
-    | (同我計 $左: lit 减 $右: lit 好唔好) => { 
-        $左 - $右 }
-    | (同我計 $左: lit 除 $右: lit 好唔好) => { 
-        $左 / $右 }
-    | (同我計 $左: lit 乘 $右: lit 好唔好) => { 
-        $左 * $右 }
+    | (同我計 $左: lit 加 $右: lit 好唔好) => 
+        ( $左 + $右 )
+    | (同我計 $左: lit 减 $右: lit 好唔好) =>
+        ( $左 - $右 )
+    | (同我計 $左: lit 除 $右: lit 好唔好) =>
+        ( $左 / $右 )
+    | (同我計 $左: lit 乘 $右: lit 好唔好) =>
+        ( $左 * $右 )
 搞掂
 
 畀我睇下 
@@ -369,10 +369,10 @@ sayhello!(1) # 報錯: 無法匹配
 首先要搞清楚樣嘢, 喺源代碼`examples/numerical/math.cantonese`入面, 其實定義咗一個`macro`, 負責簡單地替換函數調用同埋輸出結果:    
 ```rust
 介紹返 过嚟估下 係 袋仔的法寶 =>
-    | ($model: id => $($args: expr),*) => {
-        畀我睇下 $model(${$args},*) 點樣先??
-    }
-    | () => { None }
+    | ($model: id => $($args: expr),*) => (
+        畀我睇下 $model($($args),*) 點樣先??
+    )
+    | () => ( None )
 搞掂
 ```
 前面講過`macro`只係簡單地包裝咗一層語法, 咁我哋可以用`过嚟估下`宏定義去調用底層嘅算法函數喇!  
@@ -469,27 +469,24 @@ App运行 下 -> |HelloApp, HelloApp()->HelloWorld| 啦
 ```
 <img src="img/HelloApp.jpg" width="300px">
 
-### <a href="#26">數據庫編程都得(開發緊)</a>
+### <a href="#26">數據庫編程都得</a>
 select語句:
 ```Rust
-@用下(sql 嘅 法宝);
+@用下(sql 嘅 法宝)
 
-介紹返 query 係 SQL!{
-    喺 成績表 度揾 學生哥 邊個 (年紀 大于 10 同埋 名字 係 'dany');
-    喺 成績表 度揾 排頭 20 个 學生哥; 
-}
+介紹返 query 係 SQL!(
+    喺 成績表 度揾 學生哥 邊個 (年紀 > 10 and 名字 = 'dany')
+)
 
-/*
-  select 學生哥 from 成績表 where (年紀 > 10 and 名字 = 'dany');
-  select 學生哥 from 成績表 limit 10;
-*/
+
+/* select 學生哥 from 成績表 where (年紀 > 10 and 名字 = 'dany') */
 畀我睇下 query 點樣先??
 
-/* select * from xx  */
-介紹返 query2 係 SQL!{
-    睇下 xx;
-}
+介紹返 query2 係 SQL!(
+  睇下 xx
+)
 
+/* select * from xx  */
 畀我睇下 query2 點樣先??
 ```
 

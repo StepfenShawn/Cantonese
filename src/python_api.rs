@@ -41,6 +41,7 @@ fn error_to_diagnostic(err: &CodegenError) -> Diagnostic {
                 span: Span::at(crate::lexer::token::Pos::simple(0, 0)),
                 label: String::new(),
                 help: String::new(),
+                notes: vec![],
             },
         },
         CodegenError::Unsupported(msg) => Diagnostic {
@@ -50,6 +51,7 @@ fn error_to_diagnostic(err: &CodegenError) -> Diagnostic {
             span: Span::at(crate::lexer::token::Pos::simple(0, 0)),
             label: String::new(),
             help: String::new(),
+            notes: vec![],
         },
     }
 }
@@ -240,6 +242,7 @@ fn format_runtime_diagnostic(
         span: Span::at(pos),
         label: String::new(),
         help: "幫緊你只不過有心無力:(".to_string(),
+        notes: vec![],
     };
     diag.render(source, cc)
 }
