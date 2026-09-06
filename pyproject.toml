@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "Cantonese"
-version = "1.0.11"
+version = "1.0.12"
 description = "The Cantonese programming language"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -31,9 +31,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
-dependencies = [
-    "setuptools >= 0.7.0"
-]
+dependencies = []
 
 [project.urls]
 Homepage = "https://github.com/StepfenShawn/Cantonese"

@@ -98,7 +98,7 @@ def cantonese_pygame_init() -> None:
                 if events.type == pygame.QUIT:
                     sys.exit()
 
-    @define_func("揾位")
+    @define_func("搵位")
     def direction(obj, dir):
         if dir == "左邊" or dir == "left" or dir == "左边":
             return obj.left

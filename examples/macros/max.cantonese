@@ -1,16 +1,16 @@
 介紹返 getmax 係 袋仔的法寶 =>
-    | () => { 
+    | () => (
         None 
-    }
-    | (@x:expr) => { 
-        @x
-    }
-    | (@x: expr , @y: expr) => {
-        max 下 -> |@x, @y|
-    }
-    | (@x:expr, $(@xs: expr),+) => { 
-        max 下 -> |@x, getmax!(${@xs},+)|
-    }
+    )
+    | ($x:expr) => ( 
+        $x
+    )
+    | ($x: expr , $y: expr) => (
+        max 下 -> |$x, $y|
+    )
+    | ($x:expr, $($xs: expr),+) => ( 
+        max 下 -> |$x, getmax!($($xs),+)|
+    )
 搞掂
 
 #畀我睇下 getmax!(0) 點樣先??

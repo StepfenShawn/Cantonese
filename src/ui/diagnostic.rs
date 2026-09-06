@@ -36,6 +36,7 @@ pub struct Diagnostic {
     pub span: Span,
     pub label: String,
     pub help: String,
+    pub notes: Vec<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -56,6 +57,7 @@ impl Diagnostic {
                 span,
                 msg,
                 tip,
+                notes,
             } => Diagnostic {
                 severity: Severity::Error,
                 message: msg.clone(),
@@ -63,6 +65,7 @@ impl Diagnostic {
                 span: *span,
                 label: String::new(),
                 help: tip.clone(),
+                notes: notes.clone(),
             },
             ParseError::UnexpectedEof { file, pos } => Diagnostic {
                 severity: Severity::Error,
@@ -71,6 +74,7 @@ impl Diagnostic {
                 span: Span::at(*pos),
                 label: String::new(),
                 help: "突然斷尾，係咪漏咗啲符號？".into(),
+                notes: vec![],
             },
         }
     }
@@ -133,6 +137,24 @@ impl Diagnostic {
             self.render_single_line(&lines, start_line, line_num_width, &c, &mut out);
         } else {
             self.render_multi_line(&lines, start_line, end_line, line_num_width, &c, &mut out);
+        }
+
+        // Notes
+        if !self.notes.is_empty() {
+            out.push_str(&" ".repeat(line_num_width + 1));
+            out.push(' ');
+            out.push_str(&c.paint("|", ColorCode::Blue));
+            out.push('\n');
+            for note in &self.notes {
+                out.push_str(&" ".repeat(line_num_width + 1));
+                out.push(' ');
+                out.push_str(&c.paint("|", ColorCode::Blue));
+                out.push(' ');
+                out.push_str(&c.paint("= note", ColorCode::BlueBold));
+                out.push_str(": ");
+                out.push_str(note);
+                out.push('\n');
+            }
         }
 
         // Help note

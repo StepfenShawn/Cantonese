@@ -28,9 +28,9 @@ fn error_to_diagnostic(err: &CodegenError) -> Diagnostic {
     match err {
         CodegenError::Parse(pe) => Diagnostic::from_parse_error(pe),
         CodegenError::Lex(le) => match le {
-            LexError::LexerErr { msg, pos, file } => {
-                Diagnostic::from_parse_error(&ParseError::from_lexer(file.clone(), *pos, msg.clone()))
-            }
+            LexError::LexerErr { msg, pos, file } => Diagnostic::from_parse_error(
+                &ParseError::from_lexer(file.clone(), *pos, msg.clone()),
+            ),
             LexError::UnfinishedString(pos) => Diagnostic::from_parse_error(
                 &ParseError::from_lexer("<stdin>", *pos, "未閉合字符串字面量"),
             ),
@@ -41,6 +41,7 @@ fn error_to_diagnostic(err: &CodegenError) -> Diagnostic {
                 span: Span::at(crate::lexer::token::Pos::simple(0, 0)),
                 label: String::new(),
                 help: String::new(),
+                notes: vec![],
             },
         },
         CodegenError::Unsupported(msg) => Diagnostic {
@@ -50,6 +51,7 @@ fn error_to_diagnostic(err: &CodegenError) -> Diagnostic {
             span: Span::at(crate::lexer::token::Pos::simple(0, 0)),
             label: String::new(),
             help: String::new(),
+            notes: vec![],
         },
     }
 }
@@ -62,7 +64,11 @@ fn error_to_diagnostic(err: &CodegenError) -> Diagnostic {
 /// compilation.  Use [`compile_diagnostics`] or [`compile_with_diagnostics`]
 /// to obtain instances, then call [`PyDiagnostic::render`] to get a formatted
 /// multi-line string suitable for terminal display.
-#[pyclass(name = "Diagnostic", module = "cantonese_rs._core", skip_from_py_object)]
+#[pyclass(
+    name = "Diagnostic",
+    module = "cantonese_rs._core",
+    skip_from_py_object
+)]
 #[derive(Debug, Clone)]
 struct PyDiagnostic {
     inner: Diagnostic,
@@ -178,10 +184,7 @@ fn compile_diagnostics(source: &str, filename: Option<&str>) -> Vec<PyDiagnostic
 /// list of diagnostics.  On success the diagnostics list is empty.
 #[pyfunction]
 #[pyo3(signature = (source, filename = None))]
-fn compile_with_diagnostics(
-    source: &str,
-    filename: Option<&str>,
-) -> (String, Vec<PyDiagnostic>) {
+fn compile_with_diagnostics(source: &str, filename: Option<&str>) -> (String, Vec<PyDiagnostic>) {
     let filename = filename.unwrap_or("<stdin>");
     match compile_to_python(source, filename) {
         Ok((code, _)) => (code, Vec::new()),
@@ -239,6 +242,7 @@ fn format_runtime_diagnostic(
         span: Span::at(pos),
         label: String::new(),
         help: "幫緊你只不過有心無力:(".to_string(),
+        notes: vec![],
     };
     diag.render(source, cc)
 }

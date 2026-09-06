@@ -28,7 +28,7 @@
 
 畀我睇下 |地图| 點樣先??
 
-介紹返 $Display 
+介紹返 @Display 
     點部署
         |行数| 从 0 行到 20
             |列数| 从 0 行到 30
@@ -39,12 +39,12 @@
 
 Display 下 -> || 啦
 
-介紹返 $Clear 
+介紹返 @Clear 
     點部署
         落Order "cls"
     搞掂
 
-介紹返 $GameBegin
+介紹返 @GameBegin
     點部署
         介紹返 x 係 1
         介紹返 y 係 1

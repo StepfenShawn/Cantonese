@@ -1,7 +1,7 @@
 /*
     Cantonese实现二分搜索
 */
-介紹返 $binarySearch 
+介紹返 @binarySearch 
     |数组, 数字| 點部署
         介紹返 |小下标| 係 0
         介紹返 |大下标| 係 |数组 嘅 长度 减 1|
