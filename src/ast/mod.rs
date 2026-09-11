@@ -647,7 +647,7 @@ impl Stat {
 // Macro nodes
 // =============================================================================
 
-/// Meta id inside macro *patterns* (input side), e.g. `@v: str`.
+/// Meta id inside macro *patterns* (input side), e.g. `$v: str`.
 #[derive(Debug, Clone)]
 pub struct MacroMetaId {
     pub id: Exp,
