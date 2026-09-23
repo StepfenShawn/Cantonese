@@ -1,138 +1,215 @@
 block ::= {stat} [retstat]
-stat ::= ';' |
-      | '饮茶先啦'
-      | '收工'
-      | 'Share下' idlist
-      | '介紹返' varlist '係' (explist | class_def_stmt | macro_def_stmt)
-      | '介紹返' '=>' assignblock '先啦'
-      | '介紹返' function_def_stmt
-      | printstmt
-      | importstmt
-      | '落操场玩跑步' block '玩到' exp '为止'
-      | '&&' idlist '喺' explist '=>' '{' block '}'
-      | id '从' exp '行到' exp block '到步'
-      | '起底' args
-      | '如果' exp '嘅话' '->' '{' block '}' [定係 exp 嘅话 '->' '{' block '}'] ['唔係嘅话' '->' '{' block '}']
-      | '睇撚住' id '=>' '{' matchblock '}'
-      | '掟个' id '嚟睇下'
-      | '谂下' args
-      | '落Order' args
-      | '有条仆街叫' ['|'] id ['|']
-      | '顶你' '=>' ['|'] id ['|'] exp
-      | '丢你' '=>' ['|'] id ['|']
-      | '嗌' exp 过嚟估下 '=>' exp
-      | '老作一下' '=>' '{' exp_list '}'
-      | exp '拍住上' '=>' ['|'] id ['|']
-      | exp ['啦' | '咁啦']!
-      | exp '就係' idlist
-      | 好心 exp '啦'!
-      | try_stmt
-      | class_def_stmt
 
-function_def_stmt ::=  '$' id [parlist] '點部署' block '搞掂'
+# ===========================================================================
+# Statements
+# ===========================================================================
 
-lambda_functoindef ::= '$$' [parlist] '{' exp_list '}' 
+stat ::= ';'
+       | '饮茶先啦'                              # break
+       | 'Hea阵先'                               # continue
+       | '收工' | '辛苦曬啦' | '同我躝'           # exit (3 variants)
+       | '介绍返' '=>' assignblock '先啦'        # multi-assign block
+       | '介绍返' '@' id idlist '点部署' block '搞掂'  # function def
+       | '介绍返' varlist '係' explist           # assignment
+       | '介绍返' varlist '係' class_def         # class def
+       | '介绍返' varlist '係' macro_def         # macro def
+       | '畀我睇下' args '点样先'                 # print
+       | '使下' names                           # import
+       | '落操场玩跑步' block '玩到' exp '为止'   # while loop
+       | '&&' idlist '喺' explist '=>' '{' block '}'  # for-each
+       | id '从' exp '行到' exp block '到步'      # for loop
+       | '起底' exp                              # type inspection
+       | '如果' exp '嘅话' '=>' '{' block '}'    # if
+           {'定係' exp '嘅话' '=>' '{' block '}'}
+           ['唔係' '嘅话' '=>' '{' block '}']
+       | '睇撚住' exp '=>' '{' matchblock '}'   # match
+       | '掟个' exp '嚟睇下'                     # raise
+       | '谂下' exp                              # assert
+       | '落Order' args                          # shell command
+       | '有条仆街叫' exp                        # stack init
+       | '顶你' '=>' exp explist                # stack push
+       | '丢你' '=>' exp                         # stack pop
+       | 'Share下' idlist                        # global decl
+       | '冇鳩用' explist | '冇撚用' explist     # del
+       | try_stmt
+       | exp '就係' idlist                       # suffix assign
+       | exp '拍住上' '=>' idlist                # list assign
+       | exp '埋堆' '=>' idlist                  # set assign
+       | exp ('啦' | '咁啦')                     # method call (suffix required)
+       | exp                                     # bare expression / call
 
-try_stmt ::= '执嘢' '=>' '{' block '}' ['揾到' exp '嘅话' '=>' '{' block '}']* ['执手尾' '=>' '{' block '}']
+# Function definition via '介绍返'
+function_def_stmt ::= '介绍返' '@' id idlist '点部署' block '搞掂'
 
-class_def_stmt ::= "乜X" '{' [佢個老豆叫 idlist] class_def_block '}'
-macro_def_stmt ::= "袋仔的法寶" '{' macro_def_block '}'
+lambda_functiondef ::= '$$' idlist '{' explist '}'
 
-class_def_block ::= '佢嘅' classvarlist 係 explist
-              | '佢識得' id [parlist] '=>' '{' block '}'
-              | '佢有啲咩' '=>' '{' attrdefblock '}'
+try_stmt ::= '执嘢' '=>' '{' block '}'
+           {'搵到' exp '嘅话' '=>' '{' block '}'}
+           ['执手尾' '=>' '{' block '}']
 
-attrdefblock ::= id: ["公家嘢" | "私家嘢"] (',' attrdefblock)
+# ===========================================================================
+# Class definition
+# ===========================================================================
 
-macro_def_block ::= '|' '撞见' macro_rules '=>' '{' macro_block '}'
-                | macro_def_block*
+class_def_stmt ::= '介绍返' id '係' class_def
 
-macro_rules :=
-   macro_rule (';'  macro_rule )* ;?
+class_def ::= '乜X' '{' [class_extend] {class_block} '}'
 
-macro_rulesr :=
-      ( MacroMatch* )
+class_extend ::= '佢个老豆叫' exp_list
 
-MacroMatch :=
-      Token排除 @ 和 定界符
-   | '@' id ':' MacroFragSpec
-   | '@' ( MacroMatch+ )? MacroRepSep? MacroRepOp
-MacroFragSpec :=
-      block | expr | expr_list | ident | str | num
-MacroRepOp :=
-   * | + | ?
-MacroRepSep :=
-      Token排除定界符
+class_block ::= '佢识得' id idlist '=>' '{' block '}'   # method
+             | '佢嘅' attrdefblock                        # attributes
+             | '佢有啲咩' '=>' '{' attrdefblock '}'       # attribute decl
+             | stat
 
-# macro_block ::= block with meta_var 
+attrdefblock ::= id ':' id [',' id ':' id]*
 
-retstat ::= '还数' [explist]
+# ===========================================================================
+# Macro definition
+# ===========================================================================
 
-exp ::= null
-    | false
-    | true
-    | Numeral
-    | LiteralString
-    | listconstructor
-    | mapconstructor
-    | prefixexp
-    | exp binop exp
-    | unop exp
-    | '<*>'
-    | '若然' exp "->" exp "唔係咁就" "=>" exp
-    | exp ':' exp
+macro_def_stmt ::= '介绍返' id '係' macro_def
 
-prefixexp ::= var
-          | '|' exp '|'
-          | '(' exp ')'
-          | id '!' '{' TokenTrees '}'
-          | functioncall
-          | lambda_functoindef
+macro_def ::= '袋仔的法寶' '=>' '{' {macro_rule} '}'
+
+macro_rule ::= '|' '(' {macro_pattern} ')' '=>' '(' tokentrees ')'
+
+macro_pattern ::= Token
+               | '$' id ':' id                        # typed meta var
+               | '$' '(' {macro_pattern} ')' [rep_sep] rep_op   # repetition
+               | '(' {TokenTreeChild} ')'             # grouped tokens
+
+rep_sep ::= Token (if not '*' '+' '?')
+rep_op  ::= '*' | '+' | '?'
+
+tokentrees ::= '(' {TokenTreeChild} ')'
+
+TokenTreeChild ::= Token
+               | '$' id                              # meta variable reference
+               | '$' '(' {TokenTreeChild} ')' [rep_sep] rep_op   # repetition
+               | '(' {TokenTreeChild} ')'            # nested group
+
+# ===========================================================================
+# Match block
+# ===========================================================================
+
+matchblock ::= '|' '撞见' exp '=>' '{' block '}'
+            | '|' '_' '=>' '{' block '}'
+
+# ===========================================================================
+# Return
+# ===========================================================================
+
+retstat ::= '还数' explist
+
+# ===========================================================================
+# Expressions (precedence from lowest to highest)
+# ===========================================================================
+
+exp ::= exp1
+
+exp1 ::= exp2 '==>' exp2                           # mapping
+
+exp2 ::= exp3 {'or' exp3 | '或者' exp3}            # logical or
+
+exp3 ::= exp4 {'and' exp4 | '同埋' exp4}           # logical and
+
+exp4 ::= exp5 {compare_op exp5}                     # comparison
+
+compare_op ::= '<' | '<=' | '>' | '>=' | '==' | '!='
+            | '係'                                   # == (alias)
+            | 'in' | '喺'
+            | '比唔上'                               # < (alias)
+
+exp5 ::= exp6 {'|' exp6 | '或' exp6}               # bitwise or
+
+exp6 ::= exp7 {'^' exp7 | '異或' exp7}             # bitwise xor
+
+exp7 ::= exp8 {'&' exp8 | '與' exp8}               # bitwise and
+
+exp8 ::= exp9 {shift_op exp9}                       # shift
+
+shift_op ::= '<<' | '>>' | '左移' | '右移'
+
+exp9  ::= exp10 {'<->' exp10}                       # string concat
+
+exp10 ::= exp11 {('+' | '-' | '加' | '減') exp11}  # add/sub
+
+exp11 ::= exp12 {('*' | '%' | '/' | '//' | '乘' | '餘' | '余' | '整除' | '除') exp12}
+                                                            # mul/div/mod
+
+exp12 ::= unop exp12                                # unary (right-assoc)
+
+unop  ::= '-' | 'not' | '~' | '取反'
+
+exp13 ::= exp14 ['**' exp12]                        # power (right-assoc)
+
+exp14 ::= '<*>'                                     # vararg
+        | Numeral
+        | LiteralString
+        | '{' [explist] '}'                          # map/set constructor
+        | '若然' exp '.' exp '唔系咁就' '.' exp       # if-else expression
+        | prefixexp
+
+# ===========================================================================
+# Prefix expressions and suffixes
+# ===========================================================================
+
+prefixexp ::= id
+           | LiteralString
+           | '[' [explist] ']'                       # list constructor
+           | '@' id                                  # compile-time identifier
+           | '(' exp ')'
+           | '|' exp '|'                             # pipe expression
+           | '$$' idlist '{' explist '}'             # lambda
+           | '$' tokentrees                          # macro body repetition
+           | prefixexp '[' exp ']'                   # list access
+           | prefixexp ('->' | '嘅' | '.') id        # object access
+           | prefixexp ':' exp                       # type annotation
+           | prefixexp '下' '.' args                 # function call (with dot)
+           | prefixexp args                          # function call
+           | prefixexp '=' exp                       # assignment expression
+           | prefixexp '!' tokentrees                # macro invocation
 
 var ::= id
-    | prefixexp '[' exp ']'
-    | prefixexp '->' id
-    | prefixexp '.' id 
+     | prefixexp '[' exp ']'
+     | prefixexp ('->' | '嘅' | '.') id
 
-functioncall ::= prefixexp '下' '->' args
-             | prefixexp '(' args ')'
+names      ::= id {'::' (id | '*' | '{' names_list '}')}
+names_list ::= names {',' names}
 
+# ===========================================================================
+# Assignment block
+# ===========================================================================
 
-listconstructor ::= '[' {fieldlist} ']'
-mapconstructor ::= '{' {fieldlist} '}'
+assignblock ::= varlist '係' explist {varlist '係' explist}
+             | '先啦'                                # empty (pass)
 
-fieldlist ::= field {',' field} [',']
+# ===========================================================================
+# Argument and parameter lists
+# ===========================================================================
 
-field ::= '[' exp ']'
-        | '{' exp '}'
-        | exp
+explist  ::= exp {',' exp}
+varlist  ::= var {',' var}
+idlist   ::= id {',' id} | '|' id {',' id} '|'
 
-printstmt ::= '畀我睇下' args '點樣先'
+parlist  ::= idlist ['<*>' | '<*>']
+           | '<*>'
 
-importstmt ::= '使下' idlist
-            | '使下' '|' idlist '|'
+args     ::= '(' [explist] ')'
+           | '|' [explist] '|'
+           | explist
 
-explist ::= exp {',' exp}
+# ===========================================================================
+# Binary operators (by precedence)
+# ===========================================================================
 
-varlist ::= var {',' var}
+binop ::= '+' | '-' | '*' | '/' | '^' | '%' | '<->'
+        | '<' | '<=' | '>' | '>=' | '==' | '!='
+        | 'and' | 'or' | 'not'
+        | '>>' | '<<'
+        | '==>'
+        | '&' | '|'
+        | 'is' | 'in'
 
-idlist ::= id {',' id}
-        | '|' id {',' id} '|'
-
-parlist ::= idlist {'<*>'}
-          | '<*>  
-
-args ::= '|' {explist} '|'
-      | '(' {explist} ')'
-      | explist
-
-binop ::= '+' | '-' | '*' | '/' | '^' | '%' | '<->' | 
-         '<' | '<=' | '>' | '>=' | '==' | '!=' | and | or
-         '>>' | '<<' | '==>'
-
-unop ::= not
-
-assignblock ::= varlist '係' explist [ assignblock ]
-matchblock ::= '|' '撞见' exp '=>' '{' block '}'
-            | '|' '_' exp '=>' '{' block '}'
-            | matchblock*
+unop ::= '-' | 'not' | '~'
