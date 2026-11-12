@@ -1,3 +1,4 @@
+#![cfg_attr(rustfmt, rustfmt_skip)]
 use std::rc::Rc;
 
 pub enum Opcode {

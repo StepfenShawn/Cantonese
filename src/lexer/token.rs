@@ -1,7 +1,7 @@
 use super::span::Span;
 use std::fmt;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct Pos {
     pub line: usize,
     pub offset: usize,
