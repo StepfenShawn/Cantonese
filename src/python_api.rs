@@ -5,7 +5,8 @@ use std::collections::HashMap;
 use pyo3::create_exception;
 use pyo3::prelude::*;
 
-use crate::compiler::{CodegenError, to_python as compile_to_python};
+use crate::compiler::CodegenError;
+use crate::compiler::py::to_python as compile_to_python;
 use crate::lexer::span::Span;
 use crate::lexer::{LexError, Lexer};
 use crate::parser::ParseError;
