@@ -115,6 +115,116 @@ CanValue can_function(const char *name, CanNativeFn fn) {
     return result;
 }
 
+CanValue can_class_new(const char *name, CanValue parent) {
+    CanClass *cls = can_alloc(sizeof(*cls));
+    memset(cls, 0, sizeof(*cls));
+    cls->name = name;
+    cls->parent = parent.tag == CAN_CLASS ? parent.v.class_ : NULL;
+
+    CanValue result = can_make(CAN_CLASS);
+    result.v.class_ = cls;
+    return result;
+}
+
+static CanClass *can_require_class(CanValue value) {
+    if (value.tag != CAN_CLASS) {
+        can_panic("value is not a class");
+    }
+    return value.v.class_;
+}
+
+void can_class_add_attr(CanValue cls, const char *name, CanValue default_value) {
+    CanClass *klass = can_require_class(cls);
+    if (klass->attr_count == klass->attr_capacity) {
+        klass->attr_capacity = klass->attr_capacity == 0 ? 4 : klass->attr_capacity * 2;
+        klass->attr_names =
+            can_realloc(klass->attr_names, klass->attr_capacity * sizeof(const char *));
+        klass->attr_defaults =
+            can_realloc(klass->attr_defaults, klass->attr_capacity * sizeof(CanValue));
+    }
+    klass->attr_names[klass->attr_count] = name;
+    klass->attr_defaults[klass->attr_count] = default_value;
+    klass->attr_count++;
+}
+
+void can_class_add_method(CanValue cls, const char *name, CanNativeFn fn) {
+    CanClass *klass = can_require_class(cls);
+    if (klass->method_count == klass->method_capacity) {
+        klass->method_capacity =
+            klass->method_capacity == 0 ? 4 : klass->method_capacity * 2;
+        klass->methods = can_realloc(
+            klass->methods, klass->method_capacity * sizeof(CanMethod));
+    }
+    klass->methods[klass->method_count].name = name;
+    klass->methods[klass->method_count].fn = fn;
+    klass->method_count++;
+}
+
+static void can_map_insert(CanMap *map, CanValue key, CanValue value) {
+    CanValue container = can_make(CAN_MAP);
+    container.v.map = map;
+    can_set_index(container, key, value);
+}
+
+static void can_instance_apply_defaults(CanClass *cls, CanMap *fields) {
+    if (cls->parent != NULL) {
+        can_instance_apply_defaults(cls->parent, fields);
+    }
+    for (size_t i = 0; i < cls->attr_count; i++) {
+        can_map_insert(fields, can_string(cls->attr_names[i]), cls->attr_defaults[i]);
+    }
+}
+
+CanValue can_class_instantiate(CanValue cls, int argc, const char *const *keys,
+                               const CanValue *values) {
+    CanClass *klass = can_require_class(cls);
+
+    CanInstance *instance = can_alloc(sizeof(*instance));
+    instance->cls = klass;
+    instance->fields = can_alloc(sizeof(*instance->fields));
+    memset(instance->fields, 0, sizeof(*instance->fields));
+    can_instance_apply_defaults(klass, instance->fields);
+
+    CanValue result = can_make(CAN_INSTANCE);
+    result.v.instance = instance;
+
+    for (int i = 0; i < argc; i++) {
+        can_set_attr(result, keys[i], values[i]);
+    }
+    return result;
+}
+
+static CanMethod *can_find_method(CanClass *cls, const char *name) {
+    for (CanClass *current = cls; current != NULL; current = current->parent) {
+        for (size_t i = 0; i < current->method_count; i++) {
+            if (strcmp(current->methods[i].name, name) == 0) {
+                return &current->methods[i];
+            }
+        }
+    }
+    return NULL;
+}
+
+CanValue can_call_method(CanValue object, const char *name, int argc,
+                         const CanValue *args) {
+    if (object.tag != CAN_INSTANCE) {
+        can_panic("value has no methods");
+    }
+    CanMethod *method = can_find_method(object.v.instance->cls, name);
+    if (method == NULL) {
+        can_panic("method not found");
+    }
+
+    CanValue *argv = can_alloc((size_t)(argc + 1) * sizeof(CanValue));
+    argv[0] = object;
+    for (int i = 0; i < argc; i++) {
+        argv[i + 1] = args[i];
+    }
+    CanValue result = method->fn(argc + 1, argv);
+    free(argv);
+    return result;
+}
+
 const char *can_type_name(CanValue value) {
     switch (value.tag) {
         case CAN_NIL: return "NoneType";
@@ -499,10 +609,10 @@ void can_print_value(CanValue value) {
             printf("<function %s>", value.v.fn->name);
             break;
         case CAN_CLASS:
-            printf("<class %s>", value.v.class_.name);
+            printf("<class %s>", value.v.class_->name);
             break;
         case CAN_INSTANCE:
-            printf("<instance %s>", value.v.instance->class_name);
+            printf("<instance %s>", value.v.instance->cls->name);
             break;
     }
 }
@@ -520,4 +630,8 @@ void can_exit(int status) { exit(status); }
 void can_panic(const char *message) {
     fprintf(stderr, "Cantonese runtime error: %s\n", message);
     exit(1);
+}
+
+void can_env_init() {
+    // TODO
 }

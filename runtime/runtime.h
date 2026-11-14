@@ -31,6 +31,11 @@ typedef struct CanInstance CanInstance;
 
 typedef CanValue (*CanNativeFn)(int argc, CanValue* argv);
 
+typedef struct CanMethod {
+    const char* name;
+    CanNativeFn fn;
+} CanMethod;
+
 struct CanString {
     size_t len;
     char* data;
@@ -56,10 +61,18 @@ struct CanFn {
 
 struct CanClass {
     const char* name;
+    CanClass* parent;
+    size_t attr_count;
+    size_t attr_capacity;
+    const char** attr_names;
+    CanValue* attr_defaults;
+    size_t method_count;
+    size_t method_capacity;
+    CanMethod* methods;
 };
 
 struct CanInstance {
-    const char* class_name;
+    CanClass* cls;
     CanMap* fields;
 };
 
@@ -73,7 +86,7 @@ struct CanValue {
         CanList* list;
         CanMap* map;
         CanFn* fn;
-        CanClass class_;
+        CanClass* class_;
         CanInstance* instance;
         void* pointer;
     } v;
@@ -116,6 +129,15 @@ CanValue can_le(CanValue a, CanValue b);
 CanValue can_gt(CanValue a, CanValue b);
 CanValue can_ge(CanValue a, CanValue b);
 
+/// Classes and instances
+CanValue can_class_new(const char *name, CanValue parent);
+void can_class_add_attr(CanValue cls, const char *name, CanValue default_value);
+void can_class_add_method(CanValue cls, const char *name, CanNativeFn fn);
+CanValue can_class_instantiate(CanValue cls, int argc, const char *const *keys,
+                               const CanValue *values);
+CanValue can_call_method(CanValue object, const char *name, int argc,
+                         const CanValue *args);
+
 /// Containers
 CanValue can_index(CanValue container, CanValue key);
 void can_set_index(CanValue container, CanValue key, CanValue value);
@@ -128,6 +150,8 @@ void can_exit(int status);
 
 /* Report a fatal runtime error.  Never returns. */
 void can_panic(const char *message);
+
+void can_env_init();
 
 #ifdef _cplusplus
 }
